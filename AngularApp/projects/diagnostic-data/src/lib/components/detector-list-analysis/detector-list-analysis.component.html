@@ -1,107 +1,77 @@
 <span *ngIf="showPreLoadingError" style="margin-left:30px;margin-top:10px;">{{preLoadingErrorMessage}}</span>
 <span *ngIf="showPreLoader"><i class="fa fa-circle-o-notch fa-2x fa-spin preloading-icon"></i></span>
-<div *ngIf = "searchMode != SearchAnalysisMode.Genie && inDrillDownMode && this.isPublic">
+<!-- <div *ngIf="searchMode != SearchAnalysisMode.Genie && inDrillDownMode && this.isPublic">
   <div>
     <div style="display: inline-block;margin-left: 20px">
       <h2>{{ detectorName }}</h2>
     </div>
     <div style="display: inline-block;margin-left: 10px">
       <a tabindex="0" (keyup.enter)="goBackToAnalysis()" aria-label="Link to go back to the analysis view" role="button"
-        (click)="goBackToAnalysis()" >Back to Observations</a>
+        (click)="goBackToAnalysis()">Back to Observations</a>
     </div>
   </div>
-</div>
-<div *ngIf = "inDrillDownMode && !this.isPublic">
-  <div style="margin-left:20px" class="tab-container" >
+</div> -->
+<!-- <div *ngIf="inDrillDownMode && !this.isPublic">
+  <div style="margin-left:20px" class="tab-container">
     <div style="margin-left:20px;margin-bottom: 10px">
       <div style="display: inline-block">
         <h4>{{ detectorName }}</h4>
       </div>
       <div class="pull-right">
-  
+
         <div style="display: inline-block">
-            <button class="btn btn-sm" (click)="navigateToDetector()">Go to Detector</button>
+          <button class="btn btn-sm" (click)="navigateToDetector()">Go to Detector</button>
         </div>
         <div style="display: inline-block;margin-left: 10px;margin-right:20px">
-            <button class="btn btn-sm" (click)="goBackToAnalysis()">Back to Observations</button>
+          <button class="btn btn-sm" (click)="goBackToAnalysis()">Back to Observations</button>
         </div>
       </div>
-    </div>  
+    </div>
   </div>
-</div>
-<div *ngIf = "!inDrillDownMode">
-  <div *ngIf="getPendingDetectorCount() > 0" style="margin-left:30px;margin-bottom: 30px">
-    <i class="fa fa-circle-o-notch fa-2x fa-spin spin-icon" aria-hidden="true"></i>
-    <span [@loadingAnimation]="showLoadingMessage ? 'shown' : 'hidden'"
-      class="loading-message">{{loadingMessages[loadingMessageIndex]}}</span>
-    <span style="margin-left:10px">({{ detectors.length - getPendingDetectorCount() }} of {{ detectors.length }}
-      checks completed)
-    </span>
-  </div>
+</div> -->
 
+<div *ngIf="getPendingDetectorCount() > 0" style="margin-bottom: 30px">
+  <div class="dot-flashing"></div>
+</div>
+
+<div>
   <div
     *ngIf="detectors.length > 0 && (issueDetectedViewModels.length > 0 || successfulViewModels.length > 0) || (getPendingDetectorCount() === 0 && loadingChildDetectors)"
-    class="list-wrapper" [ngClass]="{'list-wrapper-genie': withinGenie}">
-    <div class="red-line" [ngClass]="{'remove-padding':withinDiagnoseAndSolve}"></div>
+    [ngClass]="{'list-wrapper-genie': withinGenie}">
     <div class="list-item-wrapper" *ngIf="issueDetectedViewModels.length > 0">
-      <div class="stepper-circle">
-        <i aria-hidden="true" class="fa fa-search"></i>
-      </div>
-      <div class="list-item">
-        <div class="list-title">Observations</div>
-        <div>Events observed during this time period</div>
-
-        <div *ngIf="getPendingDetectorCount() > 0" style="margin-top:10px">
-          <i class="fa fa-circle-o-notch fa-spin spin-icon" aria-hidden="true"></i>
-          <span style="margin-left:5px">Loading...</span>
-        </div>
+      <div>
         <div class="list-text">
           <div *ngIf="issueDetectedViewModels.length === 0 && getPendingDetectorCount() === 0">
             <div class="success-msg">We could not identify any issues that caused availability drops to your
               app
             </div>
           </div>
-          <div *ngIf="issueDetectedViewModels.length > 0" class="table-responsive">
-            <table class="table detector-list">
-              <thead>
-                <tr>
-                  <th class="col-sm-2">Issues</th>
-                  <th class="col-sm-6">Description</th>
-                  <th class="col-sm-1">Link</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let viewModel of issueDetectedViewModels" class="detector-insight">
-                  <td>
-                    <div style="white-space: nowrap">
-                      <div style="display: inline-block">
-                        <status-icon [loading]="viewModel.model.loadingStatus" [status]="viewModel.model.status"
-                          [size]="20">
-                        </status-icon>
+          <div *ngIf="issueDetectedViewModels.length > 0 || getPendingDetectorCount() > 0">
+            <collapsible-list-fabric [collapsed]="false" [title]="'Observation and Solutions'">
+              <collapsible-list-item body>
+                <div *ngFor="let viewModel of issueDetectedViewModels" style="margin-bottom: 8px;">
+                  <fab-card [expanded]="false" [isExpandable]="!!viewModel.insightDescription">
+                    <div header>
+                      <div style="display: flex;align-items: center;min-height: 40px;">
+                        <status-icon class="mr-3" [status]="viewModel.model.status"></status-icon>
+                        <div style="color: #323130;font-weight:600;">{{viewModel.model.title}}</div>
                       </div>
-                      <div style="display: inline-block;margin-left: 10px;">
-                        <strong>{{ viewModel.model.title }} </strong>
-                      </div>
+                      <div style="margin: 12px 0px 16px 0px;">{{viewModel.insightTitle}}</div>
                     </div>
-                  </td>
-                  <td>
-                    {{ viewModel.insightTitle }}
-                    <div style="margin-top:10px">
+                    <div body>
                       <markdown [data]="viewModel.insightDescription"></markdown>
                     </div>
-                  </td>
-                  <td>
-                    <div style="margin-top: 5px;white-space: nowrap;">
-                      <a tabindex="0" role="button"
-                        attr.aria-label="More info for failed check - {{ viewModel.model.title }}"
-                        (keyup.enter)="selectDetector(viewModel)" (click)="selectDetector(viewModel)">More Info
-                        <i class="fa fa-arrow-circle-o-right" style="margin-left:5px; font-size: 15px"></i>
-                      </a>
+                    <div footer>
+                      <div style="display: flex;align-items: center;margin-bottom:15px;">
+                        <fab-primary-button *ngIf="allSolutionsMap.has(viewModel.model.title)" contentClass="mr-5"
+                          (onClick)="openSolutionPanel(viewModel.model.title)">View Solutions</fab-primary-button>
+                        <fab-link (onClick)="selectDetector(viewModel)">Go to detector</fab-link>
+                      </div>
                     </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </fab-card>
+                </div>
+              </collapsible-list-item>
+            </collapsible-list-fabric>
           </div>
         </div>
       </div>
@@ -181,7 +151,8 @@
         </div>
       </div>
     </div>
-    <ng-container *ngIf="!withinGenie">
+    <!-- Solution,Need to move to panel -->
+    <!-- <ng-container *ngIf="!withinGenie">
       <div class="list-item-wrapper" *ngIf="allSolutions.length > 0">
         <div class="stepper-circle stepper-circle-brown">
           <i aria-hidden="true" class="fa fa-wrench"></i>
@@ -207,61 +178,34 @@
           </div>
         </div>
       </div>
-    </ng-container>
+    </ng-container> -->
     <div class="list-item-wrapper" *ngIf="successfulViewModels.length > 0">
-      <div class="stepper-circle stepper-circle-green">
-        <i aria-hidden="true" class="fa fa-check"></i>
-      </div>
-      <div class="list-item">
-        <div
-          [ngClass]="{'remove-padding':withinDiagnoseAndSolve, 'white-line':withinDiagnoseAndSolve, 'gray-line':!withinDiagnoseAndSolve}">
-        </div>
-        <div class="list-title">Successful Checks ({{successfulViewModels.length}})
-          <span *ngIf="(isDynamicAnalysis || isSearchEmbedded)&&!withinGenie" class="expand-section" (click)="toggleSuccessful()">
-            <i *ngIf="!showSuccessfulChecks" class="fa fa-plus expand-icon"></i>
-            <i *ngIf="showSuccessfulChecks" class="fa fa-minus expand-icon"></i>
-          </span>
-        </div>
-        <div>Tests that succeeded</div>
-        <div class="list-text" [class.sucessful-check]="showSuccessfulChecks" [class.hide-successful-check]="!showSuccessfulChecks">
-          <table class="table detector-list">
-            <thead>
-              <tr>
-                <th class="col-sm-2">Checks</th>
-                <th class="col-sm-6">Description</th>
-                <th class="col-sm-1">Link</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let viewModel of successfulViewModels" class="detector-insight">
-                <td>
-                  <div style="white-space: nowrap">
-                    <div style="display: inline-block">
-                      <status-icon [loading]="viewModel.model.loadingStatus" [status]="viewModel.model.status"
-                        [size]="20">
-                      </status-icon>
-                    </div>
-                    <div style="display: inline-block;margin-left: 10px;">
-                      <strong>{{ viewModel.model.title }} </strong>
+      <div>
+        <collapsible-list-fabric [collapsed]="issueDetectedViewModels.length > 0 ||  getPendingDetectorCount() > 0" [title]="'Successful Checks'">
+          <collapsible-list-item body>
+            <div class="list-text">
+              <div *ngFor="let viewModel of successfulViewModels" style="margin-bottom: 8px;">
+                <fab-card [expanded]="false">
+                  <div header>
+                    <div style="display: flex;align-items: center;min-height: 40px;">
+                      <status-icon class="mr-3" [loading]="viewModel.model.loadingStatus"
+                        [status]="viewModel.model.status"></status-icon>
+                      <div style="color: #323130;font-weight:600;">{{viewModel.model.title}}</div>
                     </div>
                   </div>
-                </td>
-                <td>
-                  {{ viewModel.insightTitle }}
-                </td>
-                <td>
-                  <div style="margin-top: 5px;white-space: nowrap;">
-                    <a tabindex="0" role="button"
-                      attr.aria-label="More info for successful check - {{ viewModel.model.title }}"
-                      (keyup.enter)="selectDetector(viewModel)" (click)="selectDetector(viewModel)">More Info
-                      <i class="fa fa-arrow-circle-o-right" style="margin-left:5px; font-size: 15px"></i>
-                    </a>
+                  <div body>
+                    <span>{{viewModel.insightTitle}}</span>
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  <div footer>
+                    <div style="margin-bottom:15px;">
+                      <fab-link (onClick)="selectDetector(viewModel)">Go to detector</fab-link>
+                    </div>
+                  </div>
+                </fab-card>
+              </div>
+            </div>
+          </collapsible-list-item>
+        </collapsible-list-fabric>
       </div>
     </div>
   </div>
@@ -271,14 +215,18 @@
   </div>
   <div *ngIf="isDynamicAnalysis && ((!showPreLoader && getPendingDetectorCount() === 0) || showWebSearch)"
     style="margin-left:80px;margin-top:20px;">
-    <web-search [searchTerm]="searchTerm" 
-                [searchId]="searchId" 
-                [isChildComponent]="true"
-    >
+    <web-search [searchTerm]="searchTerm" [searchId]="searchId" [isChildComponent]="true">
     </web-search>
   </div>
 
-  <div class="list-wrapper" *ngIf="supportDocumentRendered">
+  <div *ngIf="isDynamicAnalysis && ((!showPreLoader && getPendingDetectorCount() === 0) || showWebSearch)"
+    style="margin-left:80px;margin-top:20px;">
+    <documents-search [searchTerm]="searchTerm" [searchId]="searchId" [isChildComponent]="true"
+      [numDocumentsExpanded]=2>
+    </documents-search>
+  </div>
+
+  <div *ngIf="supportDocumentRendered">
     <div class="list-item-wrapper" *ngIf="supportDocumentRendered">
       <div class="stepper-circle stepper-circle-dark-blue">
         <i aria-hidden="true" class="fa fa-file-text-o"></i>
@@ -294,3 +242,5 @@
     </div>
   </div>
 </div>
+
+<solutions-panel [isPanelOpenObservable]="solutionPanelOpenSubject" [solutions]="allSolutions" [title]="solutionTitle"></solutions-panel>

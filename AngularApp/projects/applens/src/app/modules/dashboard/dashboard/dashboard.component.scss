@@ -36,10 +36,9 @@ side-nav {
     color: #ffb353
 }
 
-.content-wrapper.white-background, .content-wrapper.gray-background {
-    min-height: calc(100vh - 95px);
-    height: 100%;
-    margin-top:0px;
+.dashboard-content {
+    // margin-left: 20px;
+    // padding-top: 30px;
 
     // Nested onboarding-flow components have two navbars totalling 92px
     ::ng-deep onboarding-flow {
@@ -50,6 +49,25 @@ side-nav {
     ::ng-deep>onboarding-flow {
         height: calc(100vh - 50px);
     }
+}
+
+.content-without-side-nav {
+    position: relative;
+
+}
+
+.content-with-side-nav {
+    position: relative;
+    left: 300px;
+    width: calc(100% - 300px);
+}
+
+.dashboard-container {
+    // position: relative;
+    // left: 70px;
+    // width: calc(100% - 70px);
+    padding: 30px 20px;
+    overflow-y: auto;
 }
 
 .avatar:hover {
@@ -101,10 +119,6 @@ side-nav {
 .user-panel {
     background: #367fa9;
     width: 230px;
-}
-
-.resource-logo {
-    max-width: 25px;
 }
 
 

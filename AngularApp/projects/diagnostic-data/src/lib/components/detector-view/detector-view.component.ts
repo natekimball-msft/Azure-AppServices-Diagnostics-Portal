@@ -1,7 +1,7 @@
 import { Moment } from 'moment';
 import { BehaviorSubject } from 'rxjs';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Component, Inject, Input, OnInit, Output, EventEmitter, Pipe, PipeTransform, SimpleChanges } from '@angular/core';
+import { Component, Inject, Input, OnInit, Output, EventEmitter, Pipe, PipeTransform, SimpleChanges, OnDestroy } from '@angular/core';
 import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagnostic-data-config';
 import { DetectorResponse, Rendering, RenderingType, DataTableResponseObject, DownTime, DowntimeInteractionSource, DetectorMetaData, DetectorType, DiagnosticData } from '../../models/detector';
 import { DetectorControlService } from '../../services/detector-control.service';
@@ -9,12 +9,12 @@ import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 import { TelemetryService } from '../../services/telemetry/telemetry.service';
 import { CompilationProperties } from '../../models/compilation-properties';
 import { GenericSupportTopicService } from '../../services/generic-support-topic.service';
-import { ActivatedRoute, UrlSegment } from '@angular/router';
+import { ActivatedRoute, Params, Router, UrlSegment } from '@angular/router';
 import { VersionService } from '../../services/version.service';
 import { CXPChatService } from '../../services/cxp-chat.service';
 import * as momentNs from 'moment';
 import { xAxisPlotBand, xAxisPlotBandStyles, zoomBehaviors, XAxisSelection } from '../../models/time-series';
-import { IDropdownOption } from 'office-ui-fabric-react';
+import { IButtonProps, IButtonStyles, IChoiceGroupOption, IDropdownOption, IIconProps } from 'office-ui-fabric-react';
 
 const moment = momentNs;
 const minSupportedDowntimeDuration: number = 10;
@@ -66,8 +66,28 @@ export class DetectorViewComponent implements OnInit {
 
   fabOptions: IDropdownOption[] = [];
   selectedKey: string = '';
-  fabDropdownWidth: number
-
+  fabDropdownWidth: number;
+  showDowntimeCallout: boolean = false;
+  fabChoiceGroupOptions: IChoiceGroupOption[] = [];
+  downtimeButtonStr: string = "";
+  openTimePickerSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  timePickerButtonStr: string = "";
+  buttonStyle: IButtonStyles = {
+    root: {
+      color: "#323130",
+      borderRadius: "12px",
+      margin: " 0px 5px",
+      background: "rgba(0, 120, 212, 0.1)",
+      fontSize: "13",
+      fontWeight: "600",
+      height: "80%"
+    }
+  }
+  iconStyles:IIconProps["styles"] = {
+    root: {
+      color: "#0078d4"
+    }
+  }
   @Input()
   set detectorResponse(value: DetectorResponse) {
     this.resetGlobals();
@@ -95,9 +115,9 @@ export class DetectorViewComponent implements OnInit {
   @Input() isAnalysisView: boolean = false;
   @Input() isPopoutFromAnalysis: boolean = false;
   @Input() hideDetectorHeader: boolean = false;
-  @Input() isCategoryOverview: boolean = false;
   @Input() isKeystoneView: boolean = false;
   @Input() isRiskAlertDetector: boolean = false;
+  @Input() overWriteDetectorDescription: string = "";
   feedbackButtonLabel: string = 'Send Feedback';
   hideShieldComponent: boolean = false;
 
@@ -148,14 +168,17 @@ export class DetectorViewComponent implements OnInit {
   private isLegacy: boolean;
 
   constructor(@Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, private telemetryService: TelemetryService,
-    private detectorControlService: DetectorControlService, private _supportTopicService: GenericSupportTopicService, private _cxpChatService: CXPChatService, protected _route: ActivatedRoute, private versionService: VersionService) {
+    private detectorControlService: DetectorControlService, private _supportTopicService: GenericSupportTopicService, private _cxpChatService: CXPChatService, protected _route: ActivatedRoute, private versionService: VersionService, private _router: Router) {
     this.isPublic = config && config.isPublic;
     this.feedbackButtonLabel = this.isPublic ? 'Send Feedback' : 'Rate Detector';
   }
 
   ngOnInit() {
     this.versionService.isLegacySub.subscribe(isLegacy => this.isLegacy = isLegacy);
-    this.loadDetector();
+    this._route.params.subscribe(p => {
+      this.loadDetector();
+    });
+
     this.errorSubject.subscribe((data: any) => {
       this.errorState = data;
       if (!!this.errorState) {
@@ -185,12 +208,17 @@ export class DetectorViewComponent implements OnInit {
     if (this._route.snapshot.queryParamMap.has('hideShieldComponent') && !!this._route.snapshot.queryParams['hideShieldComponent']) {
       this.hideShieldComponent = true;
     }
+
+    this.detectorControlService.timePickerStrSub.subscribe(s => {
+      this.timePickerButtonStr = s;
+    });
   }
 
   protected loadDetector() {
     this.detectorResponseSubject.subscribe((data: DetectorResponse) => {
       let metadata: DetectorMetaData = data ? data.metadata : null;
-      this.detectorDataLocalCopy = data;
+      // this.detectorDataLocalCopy = data;
+      this.detectorDataLocalCopy = this.mergeDetectorListResponse(data);
       if (data) {
         this.detectorEventProperties = {
           'StartTime': this.startTime.toISOString(),
@@ -340,6 +368,7 @@ export class DetectorViewComponent implements OnInit {
     this.xAxisPlotBands = [];
     this.zoomBehavior = zoomBehaviors.Zoom;
     this.populateFabricDowntimeDropDown(this.downTimes);
+    this.updateDownTimeErrorMessage("");
   }
 
   getTimestampAsString(dateTime: Moment) {
@@ -398,18 +427,11 @@ export class DetectorViewComponent implements OnInit {
     }
   }
 
-  calculateFabWidth(options: IDropdownOption[]): number {
-    //each char 7px
-    let length = 0;
-    options.forEach(option => {
-      length = Math.max(length, option.text.length);
-    });
-    return (length * 7) + 50;
-  }
 
-  selectFabricKey(event: { option: IDropdownOption }) {
-    this.selectedKey = this.getKeyForDownTime(event.option.data);
-    this.onDownTimeChange(event.option.data, DowntimeInteractionSource.Dropdown);
+  selectFabricKey() {
+    this.downtimeButtonStr = this.selectedDownTime.downTimeLabel;
+    this.onDownTimeChange(this.selectedDownTime, DowntimeInteractionSource.Dropdown);
+    this.showDowntimeCallout = false;
   }
 
   private getKeyForDownTime(d: DownTime): string {
@@ -421,15 +443,17 @@ export class DetectorViewComponent implements OnInit {
     }
   }
 
-  getDefaultFabricDownTimeEntry(): IDropdownOption {
+  getDefaultFabricDownTimeEntry(): IChoiceGroupOption {
     let d = this.getDefaultDowntimeEntry();
-    return {
+    const defaultOption: IChoiceGroupOption = {
       key: this.getKeyForDownTime(d),
       text: this.getDowntimeLabel(d),
       ariaLabel: this.getDowntimeLabel(d),
-      data: d,
-      isSelected: d.isSelected
-    } as IDropdownOption;
+      onClick: () => {
+        this.selectedKey = this.getKeyForDownTime(d);
+      }
+    }
+    return defaultOption;
   }
 
   prepareCustomDowntimeLabel(startTime: Moment, endTime: Moment): string {
@@ -447,32 +471,36 @@ export class DetectorViewComponent implements OnInit {
 
   private populateFabricDowntimeDropDown(downTimes: DownTime[]): void {
     if (!!downTimes) {
-      this.fabOptions = [];
+      this.fabChoiceGroupOptions = [];
       downTimes.forEach(d => {
-        this.fabOptions.push({
+        this.fabChoiceGroupOptions.push({
           key: this.getKeyForDownTime(d),
           text: this.getDowntimeLabel(d),
           ariaLabel: this.getDowntimeLabel(d),
-          data: d,
-          isSelected: d.isSelected
+          onClick: () => {
+            this.selectedKey = this.getKeyForDownTime(d);
+            this.selectedDownTime = d;
+          }
         });
+      })
 
-        if (d.isSelected) {
-          this.selectedKey = this.getKeyForDownTime(d);
-        }
-
-      });
-
-      this.fabOptions.push(this.getDefaultFabricDownTimeEntry());
-
-      let defaultOption = this.fabOptions.find(x => x.isSelected);
-      if (defaultOption == null && this.fabOptions.length > 0) {
-        this.fabOptions[0].isSelected = true;
-        this.selectedKey = this.getKeyForDownTime(this.fabOptions[0].data);
+      this.fabChoiceGroupOptions.push(this.getDefaultFabricDownTimeEntry());
+      const defaultDowntime = this.downTimes.find(x => x.isSelected);
+      if (defaultDowntime != null) {
+        this.selectedKey = this.getKeyForDownTime(defaultDowntime);
+        this.selectedDownTime = defaultDowntime;
+      } else if (this.fabChoiceGroupOptions.length > 0) {
+        this.selectedKey = this.fabChoiceGroupOptions[0].key;
+        this.selectedDownTime = this.fabChoiceGroupOptions.length > 1 ? this.downTimes[0] : this.getDefaultDowntimeEntry();
       }
 
-      this.fabDropdownWidth = this.calculateFabWidth(this.fabOptions);
-
+      // if (this.isAnalysisView) {
+      //   this.downtimeButtonStr = this.selectedDownTime.downTimeLabel;
+      // } 
+      this.downtimeButtonStr = this.selectedDownTime.downTimeLabel;
+      // else if(this.checkHaveDownTimeForDetector(this._route.snapshot.queryParams)){
+      //   this.downtimeButtonStr = this.getDownTimeButtonStrForDetector(this._route.snapshot.queryParams);
+      // }
     }
   }
 
@@ -727,6 +755,46 @@ export class DetectorViewComponent implements OnInit {
     }
   }
 
+  getDownTimeButtonStrForDetector(queryParams: Params) {
+    let buttonStr = "";
+    if (!!queryParams["startTimeChildDetector"] && !!queryParams['endTimeChildDetector']) {
+      const qStartTime = moment.utc(queryParams["startTimeChildDetector"]);
+      const qEndTime = moment.utc(queryParams['endTimeChildDetector']);
+      buttonStr = this.prepareCustomDowntimeLabel(qStartTime, qEndTime);
+    }
+    return buttonStr;
+  }
+
+  //Merge all child detectors and put it into last place
+  private mergeDetectorListResponse(response: DetectorResponse):DetectorResponse {
+    if(!response || !response.dataset || !response.dataset.find(d => d.renderingProperties.type === RenderingType.DetectorList)) return response;
+    
+    const mergedResponse = {...response};
+    let lastIndex = 0;
+    const detectorIds:string[] = [];
+
+    for(let i = 0;i < response.dataset.length;i++){
+      const data = response.dataset[i];
+      const isVisible = (<Rendering>data.renderingProperties).isVisible;
+      if(data.renderingProperties.type === RenderingType.DetectorList && isVisible !== false){
+        lastIndex = i;
+        const detectors:string[] = data.renderingProperties.detectorIds ? data.renderingProperties.detectorIds : [];
+        detectorIds.push(...detectors);
+      }
+    }
+
+    const dataSet = mergedResponse.dataset.filter((data,index) => {
+      return data.renderingProperties.type !== RenderingType.DetectorList || index === lastIndex;
+    });
+
+    const detectorMetaData = dataSet.find(d => d.renderingProperties.type === RenderingType.DetectorList);
+    if(detectorMetaData){
+      detectorMetaData.renderingProperties.detectorIds = detectorIds;
+    }
+
+    mergedResponse.dataset = dataSet;
+    return mergedResponse;
+  }
 }
 
 @Pipe({

@@ -81,9 +81,9 @@ import { CustomMaterialModule } from './material-module';
 import { DetectorListAnalysisComponent } from './components/detector-list-analysis/detector-list-analysis.component';
 import { AppDependenciesComponent } from './components/app-dependencies/app-dependencies.component';
 import { HighchartsChartModule } from 'highcharts-angular';
-import { HighchartsGraphComponent } from './components/highcharts-graph/highcharts-graph.component';
+import { ChartMetricPipe, HighchartsGraphComponent } from './components/highcharts-graph/highcharts-graph.component';
 import { FabNavModule } from './components/fab-nav/fab-nav.module';
-import { FabPanelModule, FabIconModule, FabChoiceGroupModule, FabCommandBarModule, FabSearchBoxModule, FabDropdownModule, FabDetailsListModule, FabTextFieldModule, FabMessageBarModule, FabButtonModule, FabTooltipModule, FabSpinnerModule, FabCalloutModule, FabCheckboxModule, FabPivotModule, FabLinkModule, FabBreadcrumbModule } from '@angular-react/fabric';
+import { FabPanelModule, FabIconModule, FabChoiceGroupModule, FabSearchBoxModule, FabDropdownModule, FabDetailsListModule, FabTextFieldModule, FabMessageBarModule, FabButtonModule, FabTooltipModule, FabSpinnerModule, FabCalloutModule, FabCheckboxModule, FabPivotModule, FabLinkModule, FabDatePickerModule, FabCalendarModule, FabCommandBarModule, FabBreadcrumbModule } from '@angular-react/fabric';
 import { SummaryCardsComponent } from './components/summary-cards/summary-cards.component';
 import { InsightsV4Component } from './components/insights-v4/insights-v4.component';
 import { CardSelectionV4Component } from './components/card-selection-v4/card-selection-v4.component';
@@ -118,10 +118,16 @@ import { DropDownStepComponent, GetDropdownOptionsPipe } from './components/step
 import { CheckStepComponent } from './components/step-views/check-step-view/check-step.component';
 import { CheckComponent, ConvertLevelToHealthStatusPipe } from './components/step-views/check-step-view/check.component';
 import {SolutionOrchestratorComponent} from "./components/solution-orchestrator/solution-orchestrator.component";
-import { RouterModule } from '@angular/router';
 import { ButtonStepComponent } from './components/step-views/button-step-view/button-step.component';
 import { FabCoachmarkModule } from './modules/fab-coachmark/coachmark.module';
 import { FabTeachingBubbleModule } from './modules/fab-teachingbubble/teachingbubble.module';
+import { HighChartsHoverService } from './services/highcharts-hover.service';
+import { RouterModule } from '@angular/router';
+import { FabDataTableComponent } from './components/fab-data-table/fab-data-table.component';
+import { FabCardComponent } from './components/fab-card/fab-card.component';
+import { SolutionsPanelComponent } from './components/solutions-panel/solutions-panel.component';
+import { DetectorTimePickerComponent } from './components/detector-time-picker/detector-time-picker.component';
+import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-feedback.component';
 
 @NgModule({
   imports: [
@@ -133,6 +139,7 @@ import { FabTeachingBubbleModule } from './modules/fab-teachingbubble/teachingbu
     MonacoEditorModule.forRoot(),
     CustomMaterialModule,
     HighchartsChartModule,
+    RouterModule,
     FabPanelModule,
     FabIconModule,
     FabChoiceGroupModule,
@@ -153,7 +160,9 @@ import { FabTeachingBubbleModule } from './modules/fab-teachingbubble/teachingbu
     FabPivotModule,
     FabLinkModule,
     FabBreadcrumbModule,
-    RouterModule
+    RouterModule,
+    FabDatePickerModule,
+    FabCalendarModule
   ],
   providers: [
     ClipboardService
@@ -207,7 +216,13 @@ import { FabTeachingBubbleModule } from './modules/fab-teachingbubble/teachingbu
     CheckComponent,
     ConvertLevelToHealthStatusPipe,
     GetDropdownOptionsPipe,
-    SolutionOrchestratorComponent
+    SolutionOrchestratorComponent,
+    FabCardComponent,
+    FabDataTableComponent,
+    SolutionsPanelComponent,
+    DetectorTimePickerComponent,
+    FabricFeedbackComponent,
+    ChartMetricPipe
   ],
   entryComponents: [DetectorListAnalysisComponent],
   exports: [
@@ -243,6 +258,10 @@ import { FabTeachingBubbleModule } from './modules/fab-teachingbubble/teachingbu
     SolutionOrchestratorComponent,
     FabCoachmarkModule,
     FabTeachingBubbleModule,
+    FabTabComponent,
+    DetectorTimePickerComponent,
+    FabDataTableComponent,
+    FabricFeedbackComponent
   ],
 })
 export class DiagnosticDataModule {
@@ -265,7 +284,8 @@ export class DiagnosticDataModule {
         FeatureNavigationService,
         AppInsightsQueryService,
         ParseResourceService,
-        FabNavModule
+        FabNavModule,
+        HighChartsHoverService
       ]
     };
   }

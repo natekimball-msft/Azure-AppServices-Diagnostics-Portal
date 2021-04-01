@@ -1,0 +1,25 @@
+<fab-command-bar contentClass="fab-command-bar-class">
+  <items>
+    <fab-command-bar-item key="feedback" text="Feedback" [iconProps]="{ iconName: 'Emoji2' }" (click)="openFeedback()">
+    </fab-command-bar-item>
+  </items>
+</fab-command-bar>
+<collapsible-list-fabric [collapsed]="false" [title]="'Resource Information'">
+  <collapsible-list-item body>
+    <div class="info-container">
+      <div *ngIf="observerLink !== ''" class="info-item">
+        <div class="info-item-key">Observer Link</div>
+        <div class="info-item-splitter">:</div>
+        <div class="observer-link">
+          <a href="{{observerLink}}" target="_blank">Observer Link<i class="hyper-link-icon ml-1" aria-hidden="true"></i></a>
+        </div>
+
+      </div>
+      <div *ngFor="let key of keys" class="info-item">
+        <div class="info-item-key sub-title">{{key}}</div>
+        <div class="info-item-splitter">:</div>
+        <div class="info-item-value">{{resource[key]}}</div>
+      </div>
+    </div>
+  </collapsible-list-item>
+</collapsible-list-fabric>

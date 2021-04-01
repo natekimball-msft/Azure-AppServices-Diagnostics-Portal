@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { BehaviorSubject } from 'rxjs';
 import { SearchPipe } from '../../pipes/search.pipe';
+import { DirectionalHint } from 'office-ui-fabric-react';
 
 @Component({
   selector: 'collapsible-menu-item',
@@ -25,11 +26,18 @@ export class CollapsibleMenuItemComponent {
   @Input() set searchValue(value) {
     this._searchValueSubject.next(value);
   };
+  //if alwaysShowItem is true, item will show even searchTerm is not matched
+  @Input() alwaysShowItem: boolean = false;
 
   children: CollapsibleMenuItem[];
 
   hasChildren: boolean;
   matchesSearchTerm: boolean = true;
+  get iconName() {
+    return this.menuItem.expanded ? "ChevronRight" : "ChevronDown";
+  }
+
+  directionalHint = DirectionalHint.bottomLeftEdge;
 
   constructor(private _searchPipe: SearchPipe) { }
 
@@ -62,11 +70,15 @@ export class CollapsibleMenuItemComponent {
   }
 
   getPadding() {
-    return (25 + this.level * 10) + 'px';
+    return (10 + this.level * 10) + 'px';
   }
 
   getFontSize() {
-      return (14 - this.level) + 'px';
+    return (13 - this.level) + 'px';
+  }
+
+  isLabelWordBreakable(label: string): boolean {
+    return label.includes(" ");
   }
 
 }
@@ -80,6 +92,7 @@ export class CollapsibleMenuItem {
   subItems: CollapsibleMenuItem[];
   isSelected: Function;
   icon: string;
+  group?:string
 
   constructor(label: string, id: string, onClick: Function, isSelected: Function, icon: string = null, expanded: boolean = false, subItems: CollapsibleMenuItem[] = [], metadata: string = null) {
     this.label = label;

@@ -1,5 +1,7 @@
 import * as momentNs from 'moment';
-import { Solution } from '../components/solution/solution';
+import { Solution, SolutionButtonOption } from '../components/solution/solution';
+import { TableColumnOption } from './data-table';
+import { MetricType } from './time-series';
 
 export interface ArmObject {
     id: string;
@@ -42,20 +44,27 @@ export interface DataTableResponseObject {
 
 export interface DataTableResponseColumn {
     columnName: string;
-    dataType: string;
-    columnType: string;
+    dataType?: string;
+    columnType?: string;
 }
 
-export interface DetectorMetaData {
-    id: string;
-    name: string;
-    description: string;
-    author: string;
+export interface DetectorMetaData extends DetectorMetaDataBase {
     supportTopicList: SupportTopic[];
     analysisTypes: string[];
     type: DetectorType;
     category: string;
     score: number;
+}
+
+interface DetectorMetaDataBase {
+    id: string;
+    name: string;
+    description: string;
+    author: string;
+}
+
+export interface ExtendDetectorMetaData extends DetectorMetaDataBase {
+    internalOnly: boolean;
 }
 
 export interface DataProviderMetadata {
@@ -156,23 +165,6 @@ export interface DataTableRendering extends Rendering {
     searchPlaceholder: string;
 }
 
-export enum TableFilterSelectionOption {
-    None = 0,
-    Single,
-    Multiple
-}
-
-export interface TableFilter {
-    selectionOption: TableFilterSelectionOption;
-    name: string;
-    defaultSelection: string[];
-}
-
-export interface TableColumnOption extends TableFilter {
-    minWidth: number;
-    maxWidth: number;
-    visible: boolean;
-}
 
 export interface TimeSeriesRendering extends Rendering {
     defaultValue: number;
@@ -181,6 +173,7 @@ export interface TimeSeriesRendering extends Rendering {
     timestampColumnName: string;
     counterColumnName: string;
     seriesColumns: string[];
+    metricType: MetricType;
 }
 
 export interface TimeSeriesPerInstanceRendering extends Rendering {
@@ -194,6 +187,7 @@ export interface TimeSeriesPerInstanceRendering extends Rendering {
     instanceFilter: string[];
     counterNameFilter: string[];
     selectedInstance: string;
+    metricType: MetricType;
 }
 
 export interface InsightsRendering extends Rendering {
@@ -202,6 +196,8 @@ export interface InsightsRendering extends Rendering {
     nameColumnName: string;
     valueColumnName: string;
     typeColumnName: string;
+    isBackgroundPainted: boolean;
+    solutionButtonOption: SolutionButtonOption;
 }
 
 export interface NotificationRendering extends Rendering {

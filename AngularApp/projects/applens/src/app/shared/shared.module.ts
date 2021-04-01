@@ -18,6 +18,12 @@ import { LoginComponent } from './components/login/login.component';
 import { RouterModule } from '@angular/router';
 import { CaseCleansingApiService } from './services/casecleansing-api.service';
 import { ApplensBannerComponent } from './applens-banner/applens-preview-banner.component';
+import { ApplensHeaderComponent } from './components/applens-header/applens-header.component';
+import { ApplensDiagnosticService } from '../modules/dashboard/services/applens-diagnostic.service';
+import { FabButtonModule, FabDialogModule, FabPanelModule } from '@angular-react/fabric';
+import { L1SideNavComponent } from './components/l1-side-nav/l1-side-nav.component';
+import { UserSettingService } from '../modules/dashboard/services/user-setting.service';
+import { ApplensDocsComponent } from './components/applens-docs/applens-docs.component';
 
 @NgModule({
   imports: [
@@ -25,15 +31,19 @@ import { ApplensBannerComponent } from './applens-banner/applens-preview-banner.
     HttpClientModule,
     FormsModule,
     RouterModule,
+    FabPanelModule,
+    FabDialogModule,
+    FabButtonModule
   ],
-  declarations: [TreeViewComponent, LoginComponent, ApplensBannerComponent],
-  exports: [TreeViewComponent, ApplensBannerComponent]
+  declarations: [TreeViewComponent, LoginComponent, ApplensBannerComponent, L1SideNavComponent, ApplensHeaderComponent, ApplensDocsComponent],
+  exports: [TreeViewComponent, ApplensBannerComponent, L1SideNavComponent, ApplensHeaderComponent, ApplensDocsComponent]
 })
 export class SharedModule {
   static forRoot(): ModuleWithProviders {
     return {
       ngModule: SharedModule,
       providers: [
+        ApplensDiagnosticService,
         DiagnosticApiService,
         ResourceService,
         SiteService,
@@ -44,7 +54,8 @@ export class SharedModule {
         GithubApiService,
         CacheService,
         AadAuthGuard,
-        CaseCleansingApiService
+        CaseCleansingApiService,
+        UserSettingService
       ]
     }
   }

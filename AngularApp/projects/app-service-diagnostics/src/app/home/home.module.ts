@@ -518,7 +518,7 @@ export const HomeRoutes = RouterModule.forChild([
                 },
                 resolve: {
                     time: TimeControlResolver,
-                    navigationTitle: TabTitleResolver,
+                    navigationTitle: TabTitleResolver
                 }
             },
             {

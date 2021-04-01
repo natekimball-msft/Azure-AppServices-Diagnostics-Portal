@@ -1,0 +1,38 @@
+.info-container {
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 13px;
+}
+
+.observer-link {
+    flex:100%;
+    margin-bottom: 8px;
+}
+
+.info-item {
+    flex:50%;
+    margin-top: 6px;
+    display: flex;
+}
+
+.info-item-key {
+    width: 160px;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.info-item-value {
+    color: #323130;
+    flex: 1 0 auto;
+}
+
+.info-item-splitter {
+    flex: 0 0 15px;
+    text-align: center;
+}
+
+.observer-link > a:focus {
+    border: 1px solid black;
+}

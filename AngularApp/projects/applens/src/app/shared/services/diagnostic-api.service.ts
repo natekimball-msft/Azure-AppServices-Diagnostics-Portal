@@ -1,9 +1,9 @@
 import { AdalService } from 'adal-angular4';
-import { DetectorMetaData, DetectorResponse, QueryResponse, TelemetryService } from 'diagnostic-data';
+import { DetectorMetaData, DetectorResponse, ExtendDetectorMetaData, QueryResponse, TelemetryService } from 'diagnostic-data';
 import { map, retry, catchError, tap } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { Observable, throwError as observableThrowError } from 'rxjs';
+import { Observable, of, throwError as observableThrowError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { HttpMethod } from '../models/http';
 import { Package } from '../models/package';
@@ -11,6 +11,8 @@ import { CacheService } from './cache.service';
 import { Guid } from 'projects/app-service-diagnostics/src/app/shared/utilities/guid';
 import { Router } from '@angular/router';
 import { TelemetryPayload } from 'diagnostic-data';
+import { RecentResource, UserSetting } from '../models/user-setting';
+
 
 @Injectable()
 export class DiagnosticApiService {
@@ -54,6 +56,12 @@ export class DiagnosticApiService {
       path = path + "?" + queryParams.map(qp => qp.key + "=" + qp.value).join("&");
     }
     return this.invoke<DetectorResponse[]>(path, HttpMethod.POST, body, true, false, internalClient).pipe(retry(1), map(response => response.map(detector => detector.metadata)));
+  }
+
+  public getDetectorsWithExtendDefinition(version: string, resourceId: string, body?: any, internalClient: boolean = true): Observable<ExtendDetectorMetaData[]> {
+    // let path = `${version}${resourceId}/detectorsWithExtendDefinition`;
+    let path = `${version}${resourceId}/internal/detectors`;
+    return this.invoke<ExtendDetectorMetaData[]>(path, HttpMethod.POST, body, true, false, internalClient);
   }
 
   public getUserPhoto(userId: string, useCache: boolean = true, invalidateCache: boolean = false): Observable<any> {
@@ -158,7 +166,7 @@ export class DiagnosticApiService {
     return this._cacheService.get(this.getCacheKey(method, path), request, true);
   }
 
-  public  verfifyPublishingDetectorAccess(resourceType: string, detectorCode: string, isOriginalCodeMarkedPublic: boolean) : Observable<any> {
+  public verfifyPublishingDetectorAccess(resourceType: string, detectorCode: string, isOriginalCodeMarkedPublic: boolean): Observable<any> {
     let url: string = `${this.diagnosticApi}api/publishingaccess`;
     var body =
     {
@@ -311,8 +319,7 @@ export class DiagnosticApiService {
     return `${HttpMethod[method]}-${path}`;
   }
 
-  private isLocalizationApplicable(locale: string): boolean
-  {
+  private isLocalizationApplicable(locale: string): boolean {
     return locale != null && locale != "" && locale != "en" && !locale.startsWith("en");
   }
 
@@ -345,9 +352,8 @@ export class DiagnosticApiService {
       headers = headers.set('x-ms-location', encodeURI(this.Location));
     }
 
-    if (this.isLocalizationApplicable(this.effectiveLocale))
-    {
-        headers = headers.set('x-ms-localization-language', encodeURI(this.effectiveLocale.toLowerCase()));
+    if (this.isLocalizationApplicable(this.effectiveLocale)) {
+      headers = headers.set('x-ms-localization-language', encodeURI(this.effectiveLocale.toLowerCase()));
     }
 
     if (additionalHeaders) {
@@ -386,22 +392,22 @@ export class DiagnosticApiService {
       additionalParams.getFullResponse, additionalHeaders);
   }
 
-  public getDevopsConfig(resourceProviderType: string): Observable<any>{
-    let path = `devops/devopsConfig?resourceProviderType=${resourceProviderType}`;
-    return this.invoke(path, HttpMethod.GET);
-  }
-  
-  public getDetectorDevelopmentEnv(): Observable<string> {
-    const path = "api/appsettings/DetectorDevelopmentEnv";
-    return this.get(path).pipe(map((res:string) => {
-      return res;
-    }));
+  public getUserSetting(userId: string): Observable<UserSetting> {
+    let url: string = `${this.diagnosticApi}api/usersetting/${userId}`;
+    let request = this._httpClient.get(url, {
+      headers: this._getHeaders()
+    });
+    return request.pipe(map(res => <UserSetting>res));
+    // return this.get(`api/recent/${userId}`);
   }
 
-  public getPPEHostname(): Observable<string> {
-    const path = "api/appsettings/PPEHostname";
-    return this.get(path).pipe(map((res:string) => {
-      return res;
-    }));
+  public updateUserSetting(userSettings: UserSetting):Observable<UserSetting> {
+    //let url = `${this.diagnosticApi}api/recent/${userInfo.id}`;
+    let url = `${this.diagnosticApi}api/usersetting`;
+    let request = this._httpClient.post(url,userSettings, {
+      headers: this._getHeaders()
+    });
+    // return this._cacheService.get(this.getCacheKey(HttpMethod.POST, url), request, false);
+    return request.pipe(map(res => <UserSetting>res));
   }
 }

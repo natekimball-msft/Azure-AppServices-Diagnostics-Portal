@@ -44,6 +44,7 @@ export * from './lib/models/search';
 export * from './lib/models/documents-search-config';
 export * from './lib/models/styles';
 export * from './lib/models/resiliencyReportData';
+export * from './lib/models/data-table';
 
 export * from './lib/components/detector-list-analysis/detector-list-analysis.component'
 
@@ -53,3 +54,4 @@ export * from './lib/utilities/uri-utilities';
 export * from './lib/utilities/string-utilities';
 export * from './lib/components/step-views/step-view-lib';
 export * from "./lib/components/solution-orchestrator/solution-orchestrator.component";
+export * from './lib/utilities/uri-utilities';

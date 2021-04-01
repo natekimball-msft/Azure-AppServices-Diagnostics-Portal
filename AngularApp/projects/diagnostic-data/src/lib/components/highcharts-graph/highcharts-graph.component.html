@@ -1,5 +1,15 @@
-<highcharts-chart *ngIf="HighchartData && !loading" [Highcharts]="Highcharts" [options]="options" style="display: block;">
+<highcharts-chart *ngIf="HighchartData && !loading" [Highcharts]="Highcharts" [options]="options"
+  style="display: block;" (mouseleave)="leaveMetric()">
 </highcharts-chart>
 <div *ngIf="!HighchartData || loading" style="height:200px">
   <i class="fa fa-circle-o-notch fa-spin"></i>
+</div>
+
+<div *ngIf="metricType !== MetricType.None && hoverData.length > 0" style="display: flex; flex-wrap: wrap;">
+  <ng-container *ngFor="let data of hoverData;let i = index;">
+    <div (mouseenter)="selectMetric(i)" (mouseleave)="leaveMetric()" style="border-left:10px solid; width: 150px;padding-left: 5px;margin-right: 16px;" [ngStyle]="{'border-left-color' : data.color, 'opacity': data.isSelect ? '1' : '0.3'}">
+      <div style="overflow-wrap: break-word;font-size: 10px;"><strong>{{data.name}}--{{MetricType[metricType]}}</strong></div>
+      <div style="font-size: 24px;"><strong>{{data.value | chartMetricPipe}}</strong></div>
+    </div>
+  </ng-container>
 </div>

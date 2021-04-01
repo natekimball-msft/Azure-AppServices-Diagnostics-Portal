@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { DataTableDataType, DiagnosticData, TimeSeriesPerInstanceRendering, DataTableResponseObject, DataTableResponseColumn } from '../../models/detector';
 import { GraphSeries, GraphPoint } from '../nvd3-graph/nvd3-graph.component';
 import { DataRenderBaseComponent, DataRenderer } from '../data-render-base/data-render-base.component';
-import { InstanceDetails, DetailedInstanceTimeSeries, DetailedInstanceHighChartTimeSeries } from '../../models/time-series';
+import { InstanceDetails, DetailedInstanceTimeSeries, DetailedInstanceHighChartTimeSeries,MetricType } from '../../models/time-series';
 import { TimeZones, TimeUtilities } from '../../utilities/time-utilities';
 import * as momentNs from 'moment';
 import { HighchartsData, HighchartGraphSeries } from '../highcharts-graph/highcharts-graph.component';
@@ -42,7 +42,7 @@ export class TimeSeriesInstanceGraphComponent extends DataRenderBaseComponent im
 
   timeGrainInMinutes: number = 5;
   useHighchart: boolean = true;
-
+  metricType: MetricType = MetricType.Avg;
   processData(data: DiagnosticData) {
     super.processData(data);
 
@@ -66,6 +66,10 @@ export class TimeSeriesInstanceGraphComponent extends DataRenderBaseComponent im
       if (this.graphOptions != undefined && this.graphOptions.useHighchart != undefined)
       {
         this.useHighchart = this.graphOptions && this.graphOptions.useHighchart &&  this.graphOptions.useHighchart === "true";
+      }
+
+      if(this.renderingProperties.metricType != undefined) {
+        this.metricType = this.renderingProperties.metricType;
       }
     }
   }

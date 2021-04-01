@@ -3,7 +3,7 @@ import { DataTableDataType, DiagnosticData, TimeSeriesRendering, DataTableRespon
 import { GraphSeries, GraphPoint } from '../nvd3-graph/nvd3-graph.component';
 import { HighchartsData, HighchartGraphSeries } from '../highcharts-graph/highcharts-graph.component';
 import { DataRenderBaseComponent, DataRenderer } from '../data-render-base/data-render-base.component';
-import { TimeSeries, TablePoint, HighChartTimeSeries } from '../../models/time-series';
+import { TimeSeries, TablePoint, HighChartTimeSeries, MetricType } from '../../models/time-series';
 import * as momentNs from 'moment';
 import { TimeUtilities } from '../../utilities/time-utilities';
 import { TelemetryService } from '../../services/telemetry/telemetry.service';
@@ -41,7 +41,7 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
     useHighchart: boolean = true;
 
     timeGrain: momentNs.Duration;
-
+    metricType: MetricType = MetricType.Avg;
     processData(data: DiagnosticData) {
         super.processData(data);
 
@@ -51,6 +51,10 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
             this.graphOptions = this.renderingProperties.graphOptions;
             if (this.graphOptions != undefined && this.graphOptions.useHighchart != undefined) {
                 this.useHighchart = this.graphOptions && this.graphOptions.useHighchart && this.graphOptions.useHighchart === "true";
+            }
+
+            if(this.renderingProperties.metricType != undefined) {
+                this.metricType = this.renderingProperties.metricType;
             }
 
             this.customizeXAxis = this.graphOptions && this.graphOptions.customizeX && this.graphOptions.customizeX === 'true';

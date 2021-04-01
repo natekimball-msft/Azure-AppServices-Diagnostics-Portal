@@ -26,15 +26,7 @@
       [iconProps]="gRPDFButtonIcon" (click)="generateResiliencyPDF()" [disabled]="gRPDFButtonDisabled" >
     </fab-command-bar-item>
   </items>
-
-  <far-items>
-    <fab-command-bar-item key="timepicker" [text]="time" [iconProps]="{ iconName: 'ChevronDown' }"
-      (click)="toggleOpenTimePicker()">
-    </fab-command-bar-item>
-  </far-items>
 </fab-command-bar>
-<detector-time-picker (updateTimerMessage)="updateMessage($event)"></detector-time-picker>
-
 
 <fab-coachmark 
    *ngIf="showCoachmark==true"
@@ -62,4 +54,5 @@
     Download a report to check how well your Web App scores against our recommended resiliency best practices.
   </fab-teachingbubble>
 </fab-coachmark>
+
 
