@@ -82,7 +82,7 @@ import { CustomMaterialModule } from './material-module';
 import { DetectorListAnalysisComponent } from './components/detector-list-analysis/detector-list-analysis.component';
 import { AppDependenciesComponent } from './components/app-dependencies/app-dependencies.component';
 import { HighchartsChartModule } from 'highcharts-angular';
-import { ChartMetricPipe, HighchartsGraphComponent } from './components/highcharts-graph/highcharts-graph.component';
+import { HighchartsGraphComponent } from './components/highcharts-graph/highcharts-graph.component';
 import { FabPanelModule, FabIconModule, FabChoiceGroupModule, FabSearchBoxModule, FabDropdownModule, FabDetailsListModule, FabTextFieldModule, FabMessageBarModule, FabButtonModule, FabTooltipModule, FabSpinnerModule, FabCalloutModule, FabCheckboxModule, FabPivotModule, FabLinkModule, FabDatePickerModule, FabCalendarModule, FabCommandBarModule, FabBreadcrumbModule } from '@angular-react/fabric';
 import { SummaryCardsComponent } from './components/summary-cards/summary-cards.component';
 import { InsightsV4Component } from './components/insights-v4/insights-v4.component';
@@ -218,7 +218,6 @@ import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-fee
     SolutionsPanelComponent,
     DetectorTimePickerComponent,
     FabricFeedbackComponent,
-    ChartMetricPipe
   ],
   entryComponents: [DetectorListAnalysisComponent],
   exports: [
@@ -251,9 +250,7 @@ import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-fee
     ConvertLevelToHealthStatusPipe,
     GetDropdownOptionsPipe,
     SolutionOrchestratorComponent,
-    DetectorTimePickerComponent,
-    FabDataTableComponent,
-    FabricFeedbackComponent
+    DetectorTimePickerComponent
   ],
 })
 export class DiagnosticDataModule {
