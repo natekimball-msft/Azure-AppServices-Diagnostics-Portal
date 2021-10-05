@@ -1,8 +1,15 @@
-import { Component, AfterViewInit, Input } from '@angular/core';
+import {
+  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService,TelemetryEventNames, TelemetrySource
+} from 'diagnostic-data';
+import { forkJoin, Observable, of } from 'rxjs';
+import { Component, AfterViewInit, EventEmitter, Output, Input } from '@angular/core';
 import { Globals } from '../../../globals';
-import { DetectorControlService } from 'projects/diagnostic-data/src/lib/services/detector-control.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TelemetryService,TelemetryEventNames, TelemetrySource } from 'diagnostic-data';
+import {  } from 'diagnostic-data';
+import * as pdfMake from "pdfmake/build/pdfmake";
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from '../resiliencyReportData';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'detector-command-bar',
@@ -12,8 +19,13 @@ import { TelemetryService,TelemetryEventNames, TelemetrySource } from 'diagnosti
 export class DetectorCommandBarComponent implements AfterViewInit{
   @Input() disableGenie:boolean=false;
   time: string;
-  constructor(private globals: Globals, private detectorControlService: DetectorControlService, private _route: ActivatedRoute, private router: Router, private telemetryService:TelemetryService) { }
-  toggleOpenState() {
+  detector: DetectorMetaData;
+  fullReportPath: string;
+  resiliencyReportData: ResiliencyReportData;
+  localResponse: 'assets/response.temp.json'
+
+  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService:TelemetryService, private http: HttpClient) { }
+  toggleOpenState() {    
     this.telemetryService.logEvent(TelemetryEventNames.OpenGenie,{
       'Location':TelemetrySource.CategoryPage
     })
@@ -26,7 +38,36 @@ export class DetectorCommandBarComponent implements AfterViewInit{
     });
     this.globals.openFeedback = !this.globals.openFeedback;
   }
+  getLocalResponse() {
+    return this.http.get(this.localResponse)
+  }
+  generateResiliencyPDF(){
+    
+    console.log("Calling ResiliencyScore detector");
+    this.getLocalResponse
 
+    this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString).subscribe(response => {
+    console.log("ResiliencyScore detector call finished");
+    console.log(response);  
+    let dataset = response.dataset;
+    let table = dataset[0].table;
+    let rows = table.rows;
+    var cName = JSON.stringify(rows[0][1], ["CustomerName"]);      
+    var resiliencyReportData = new ResiliencyReportData(cName);
+    //resiliencyReportData.resiliencyResourceList[]
+    // this.detector = response.metadata;
+    // this.fullReportPath = `detectors/${this.detector.id}`;
+    // this.processDetectorResponse(response).subscribe(() => {
+    //   this.onComplete.emit({ status: true })
+    //   (<any>pdfMake).vfs = pdfFonts.pdfMake.vfs;;
+    // });
+  });
+  
+ 
+  //this.telemetryService.logEvent(TelemetryEventNames.OpenFeedbackPanel,{
+  //  'Location': TelemetrySource.CategoryPage
+  //});
+}  
   refreshPage() {
     let childRouteSnapshot = this._route.firstChild.snapshot;
     let childRouteType = childRouteSnapshot.url[0].toString();
@@ -59,7 +100,7 @@ export class DetectorCommandBarComponent implements AfterViewInit{
     }
     else if (instanceId)
     {
-      this.detectorControlService.refresh(instanceId);
+      this._detectorControlService.refresh(instanceId);
     }
   }
 
