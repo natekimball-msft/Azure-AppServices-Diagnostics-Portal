@@ -77,7 +77,7 @@ export class InitResolver implements Resolve<Observable<ResourceInfo>>{
                 resourceUri: resourceInfo.resourceUri,
                 kind: resourceInfo.kind
             }
-            this._userInfoService.updateRecentResource(recentResource).subscribe();
+            this._userInfoService.updateRecentResource(recentResource);
             return resourceInfo;
         }));
     }
@@ -119,10 +119,10 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
                     }
                 ]
             },
-            {
-                path: 'categories/:category',
-                component: CategoryPageComponent,
-            },
+            // {
+            //     path: 'categories/:category',
+            //     component: CategoryPageComponent,
+            // },
             {
                 path: 'supportTopics/:supportTopic',
                 component: SupportTopicPageComponent,
