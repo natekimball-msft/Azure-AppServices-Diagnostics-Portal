@@ -15,6 +15,14 @@ import { RecommendedUtterance } from '../../../../../../diagnostic-data/src/publ
 import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.service';
 import {TelemetryEventNames} from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
 import { environment } from '../../../../environments/environment';
+import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
+import ReconnectingWebSocket from 'reconnecting-websocket';
+import {WebSocket} from "ws";
+import {
+  MonacoLanguageClient, CloseAction, ErrorAction,
+  MonacoServices, createConnection
+} from 'monaco-languageclient';
+import { NgxEditorModel } from 'ngx-monaco-editor';
 
 const moment = momentNs;
 const newDetectorId:string = "NEW_DETECTOR";
@@ -91,6 +99,11 @@ export class OnboardingFlowComponent implements OnInit {
 
   private emailRecipients: string = '';
   private _monacoEditor:monaco.editor.ICodeEditor = null;
+  monacoEditorModel: NgxEditorModel = {
+    value: "",
+    language: "csharp",
+    uri: monaco.Uri.parse('file:///workspace/Solution.cs')
+  }
   private _oldCodeDecorations:string[] = [];
   
 
@@ -140,8 +153,56 @@ export class OnboardingFlowComponent implements OnInit {
   }
 
   onInit(editor: any) {
-    this._monacoEditor = editor;    
- }
+    this._monacoEditor = editor;
+    /*//const model = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse('file:///workspace/Solution.cs'));
+    //this._monacoEditor.setModel(model);
+    //this._monacoEditor.model.uri = monaco.Uri.parse('file:///workspace/Solution.cs');
+    MonacoServices.install(this._monacoEditor as monaco.editor.IStandaloneCodeEditor, {rootUri: "file:///workspace"});
+    const url = "wss://langservonline.azurewebsites.net/socket";
+    const webSocket = this.createWebSocket(url);
+    listen({
+      webSocket,
+      onConnection: connection => {
+          // create and start the language client
+          const languageClient = this.createLanguageClient(connection);
+          const disposable = languageClient.start();
+          connection.onClose(() => disposable.dispose());
+      }
+    });*/
+  }
+
+  createLanguageClient(connection: MessageConnection): MonacoLanguageClient {
+    return new MonacoLanguageClient({
+        name: "AppLens Language Client",
+        clientOptions: {
+            // use a language id as a document selector
+            documentSelector: ['csharp'],
+            // disable the default error handler
+            errorHandler: {
+                error: () => ErrorAction.Continue,
+                closed: () => CloseAction.DoNotRestart
+            }
+        },
+        // create a language client connection from the JSON RPC connection on demand
+        connectionProvider: {
+            get: (errorHandler, closeHandler) => {
+                return Promise.resolve(createConnection(connection, errorHandler, closeHandler))
+            }
+        }
+    });
+  }
+
+  createWebSocket(url: string): WebSocket {
+    const socketOptions = {
+        maxReconnectionDelay: 10000,
+        minReconnectionDelay: 1000,
+        reconnectionDelayGrowFactor: 1.3,
+        connectionTimeout: 10000,
+        maxRetries: Infinity,
+        debug: false
+    };
+    return new ReconnectingWebSocket(url, undefined, socketOptions);
+  }
 
   ngOnChanges() {
     if (this.initialized) {
