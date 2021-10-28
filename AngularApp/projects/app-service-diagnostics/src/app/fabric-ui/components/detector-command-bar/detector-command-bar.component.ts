@@ -6,7 +6,7 @@ import { Component, AfterViewInit, EventEmitter, Output, Injectable, Input } fro
 import { Globals } from '../../../globals';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as pdfMake from "pdfmake/build/pdfmake";
-import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+import * as pdfFonts from  "pdfmake/build/vfs_fonts";
 import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from '../resiliencyReportData';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 
@@ -37,6 +37,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   resiliencyReportData: ResiliencyReportData;
   localResponse = 'assets/responsetemp.json';
   config: Config | undefined;
+  
   
 
   constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private http: HttpClient) { }
@@ -79,6 +80,8 @@ export class DetectorCommandBarComponent implements AfterViewInit {
         'Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines'
       ]
     };    
+    (<any>pdfMake).vfs = pdfFonts.pdfMake.vfs;
+    //pdfMake.vfs = pdfFonts.pdfMake.vfs;
     pdfMake.createPdf(docDefinition).download('resiliencyReport.pdf');     
   }
 
