@@ -44,7 +44,8 @@ export class NetworkCheckComponent implements OnInit, AfterViewInit {
     vnetIntegrationDetected = null;
     openFeedback = false;
     debugMode = false;
-    isSupportTopic: boolean;
+    supportTopic: string;
+
     logEvent: (eventMessage: string, properties: { [name: string]: string }, measurements?: any) => void;
     width = 'calc(100vw - 298px)';
     height = 'calc(100vh - 35px)';
@@ -61,8 +62,10 @@ export class NetworkCheckComponent implements OnInit, AfterViewInit {
             var feedbackPanelConfig = { defaultFeedbackText: this._feedbackQuestions, detectorName: "NetworkCheckingTool", notResetOnDismissed: true, url: window.location.href }
             _globals.messagesData.feedbackPanelConfig = feedbackPanelConfig;
             var queryParams = _route.snapshot.queryParams;
-            this.isSupportTopic = (queryParams["redirectFrom"] === "supportTopic");
-            if (this.isSupportTopic || queryParams["redirectFrom"] === "referrer") {
+            if (queryParams["redirectFrom"] === "supportTopic") {
+                this.supportTopic = queryParams["supportTopic"];
+            }
+            if (this.supportTopic || queryParams["redirectFrom"] === "referrer") {
                 this.width = '100vw';
                 this.height = '100vh';
             }
@@ -124,7 +127,7 @@ export class NetworkCheckComponent implements OnInit, AfterViewInit {
                 flows = flows.concat(remoteFlows);
             }
             var mgr = this.stepFlowManager;
-            if (this.isSupportTopic &&
+            if (this.supportTopic &&
                 this.siteInfo.kind.includes("functionapp") &&
                 this.siteInfo.sku.toLowerCase() == "dynamic") {
                 mgr.addView(new InfoStepView({
@@ -139,9 +142,10 @@ export class NetworkCheckComponent implements OnInit, AfterViewInit {
                     description: "Tell us more about the problem you are experiencing:",
                     dropdowns: [{
                         options: flows.map(f => f.title),
-                        placeholder: "Please select..."
+                        placeholder: "Please select...",
+                        defaultChecked: this.supportTopic === "Outbound Connectivity" ? 0 : undefined
                     }],
-                    expandByDefault: true,
+                    expandByDefault: this.supportTopic !== "Outbound Connectivity",
                     async callback(dropdownIdx: number, selectedIdx: number): Promise<void> {
                         mgr.reset(state);
                         var flow = flows[selectedIdx];
@@ -220,5 +224,3 @@ export class NetworkCheckComponent implements OnInit, AfterViewInit {
         Object.keys(globalClasses).forEach(key => window[key] = globalClasses[key]);
     }
 }
-
-

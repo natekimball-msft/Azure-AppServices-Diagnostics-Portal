@@ -60,14 +60,28 @@ export class SupportTopicService {
                 } else {
                     if (kind.includes("linux")) {
                         // linux app, not supported yet
-                        
-                    } else{
+
+                    } else {
                         // non-container windows webapp/function app
-                        return observableOf({ path: 'tools/networkchecks', queryParams: { "redirectFrom": "supportTopic" }});
+                        return observableOf({ path: 'tools/networkchecks', queryParams: { "redirectFrom": "supportTopic", "supportTopic": "VNet Integration" } });
                     }
                 }
-            } 
+            } else if (supportTopicId == "32820919" || supportTopicId == "32820562") {
+                // WebApp/VNET integration with App Service or FunctionApp/Configuring VNET integration with AppService
+                var kind = this._resourceService.resource.kind;
+                if (kind.includes("container")) {
+                    // container based WebApp, not supported yet
+                } else {
+                    if (kind.includes("linux")) {
+                        // linux app, not supported yet
 
+                    } else {
+                        // non-container windows webapp/function app
+                        return observableOf({ path: 'tools/networkchecks', queryParams: { "redirectFrom": "supportTopic", "supportTopic": "Outbound Connectivity" } });
+                    }
+                }
+            }
+            
             this.pesId = pesId;
             this.detectorTask = this._diagnosticService.getDetectors();
             return this.detectorTask.pipe(flatMap(detectors => {
@@ -89,7 +103,7 @@ export class SupportTopicService {
                     else {
                         if ((this._resourceService.subscriptionId == "c258f9c0-3d64-4761-8697-cab631f28422")
                             && this.solutionOrchestratorConfig && this.solutionOrchestratorConfig[this.pesId]
-                            && this.solutionOrchestratorConfig[this.pesId].length>0 && this.solutionOrchestratorConfig[this.pesId].findIndex(s => s==this.supportTopicId)>=0) {
+                            && this.solutionOrchestratorConfig[this.pesId].length > 0 && this.solutionOrchestratorConfig[this.pesId].findIndex(s => s == this.supportTopicId) >= 0) {
                             detectorPath = `solutionorchestrator`;
                             return observableOf({ path: detectorPath, queryParams: queryParamsDic });
                         }
@@ -98,7 +112,7 @@ export class SupportTopicService {
                         }
                     }
                 }
-                
+
                 let keywordsList = [];
                 return this._resourceService.getKeystoneDetectorId().pipe(flatMap(keystoneDetectorId => {
                     detectorPath = `/integratedSolutions` + detectorPath;
