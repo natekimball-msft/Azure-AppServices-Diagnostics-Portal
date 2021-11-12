@@ -70,7 +70,7 @@
     "node-sass": "^4.12.0",
     "office-ui-fabric-core": "11.0.0",
     "office-ui-fabric-react": "6.201.1",
-    "pdfmake": "^0.2.2",
+    "pdfmake": "^0.2.4",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
     "reflect-metadata": "^0.1.3",
