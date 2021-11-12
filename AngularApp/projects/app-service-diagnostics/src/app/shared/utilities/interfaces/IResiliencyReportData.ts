@@ -2,39 +2,39 @@ export interface IResiliencyReportData {
     /**
      * Used to receive data for generating the Resiliency Score report PDF
      *
-     * @param customerName Name of the customer's company used to generate the report.
-     * @param resiliencyResourceList Array of resources evaluated for Resiliency Report.
+     * @param CustomerName Name of the customer's company used to generate the report.
+     * @param ResiliencyResourceList Array of resources evaluated for Resiliency Report.
      */
-    customerName:string;
-    resiliencyResourceList: IResiliencyResource[];    
+    CustomerName:string;
+    ResiliencyResourceList: IResiliencyResource[];    
 }
 
 export interface IResiliencyResource {
      /**
      * Resource and all of the Resiliency Features evaluated to calculate the Resiliency Score
      *
-     * @param name Name of the resource
-     * @param overallScore Total score of the resource
-     * @param resiliencyFeaturesList Array of all the resiliency features evaluated for this resource
+     * @param Name Name of the resource
+     * @param OverallScore Total score of the resource
+     * @param ResiliencyFeaturesList Array of all the resiliency features evaluated for this resource
      */
-    name: string;
-    overallScore: number;    
-    resiliencyFeaturesList: IResiliencyFeature[];
+    Name: string;
+    OverallScore: number;    
+    ResiliencyFeaturesList: IResiliencyFeature[];
 }
 
 export interface IResiliencyFeature {
     /**
      * Used to describe each Resiliency feature evaluated 
      *
-     * @param name Name of the feature
-     * @param featureWeight This defines whether the features is considered Mandatory, Important, Good to have or Not counted
-     * @param resiliencyFeaturesList Array of all the resiliency features evaluated for this resource
+     * @param Name Name of the feature
+     * @param FeatureWeight This defines whether the features is considered Mandatory, Important, Good to have or Not counted
+     * @param ResiliencyFeaturesList Array of all the resiliency features evaluated for this resource
      */
-    name: String,
-    featureWeight: Weight,
-    implementationGrade: Grade,
-    gradeComments: string;
-    solutionComments: string;    
+    Name: string,
+    FeatureWeight: Weight,
+    ImplementationGrade: Grade,
+    GradeComments: string;
+    SolutionComments: string;    
 
 }
 

@@ -1,5 +1,5 @@
 import {
-  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource
+  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource, 
 } from 'diagnostic-data';
 import { forkJoin, Observable, of } from 'rxjs';
 import { Component, AfterViewInit, EventEmitter, Output, Injectable, Input } from '@angular/core';
@@ -7,17 +7,13 @@ import { Globals } from '../../../globals';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as pdfMake from "pdfmake/build/pdfmake";
 import * as pdfFonts from  "pdfmake/build/vfs_fonts";
-import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from '../resiliencyReportData';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { ResiliencyScoreReportHelper } from '../../../shared/utilities/resiliencyScoreReportHelper';
+
+//import { table } from 'console';
+//import { parse } from 'querystring';
 
 
-export interface Config {
-  metadata: string;
-  dataset: string;
-  status: string;
-  dataProvidersMetadata: string;
-  suggestedUtterances: string;
-}
 
 @Injectable()
 export class ConfigService {
@@ -34,11 +30,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   time: string;
   detector: DetectorMetaData;
   fullReportPath: string;
-  resiliencyReportData: ResiliencyReportData;
-  localResponse = 'assets/responsetemp.json';
-  config: Config | undefined;
-  
-  
+ 
 
   constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private http: HttpClient) { }
   toggleOpenState() {
@@ -54,55 +46,47 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     });
     this.globals.openFeedback = !this.globals.openFeedback;
   }
-  getLocalResponse() {
-    return this.http.get<Config>(this.localResponse);
-  }
-  generateResiliencyPDF() {
 
-    console.log("Calling ResiliencyScore detector");
-    //this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString).subscribe((data:response => {
-    this.http.get<any>(this.localResponse)
-      .subscribe((response: any) => {
-        this.config = {
-        metadata: response.metadata,
-        dataset: response.dataset,
-        status: response.status,
-        dataProvidersMetadata: response.dataProvidersMetadata,
-        suggestedUtterances: response.suggestedUtterances,
+  generateResiliencyPDF() {
+  var localResponse = '../assets/response.temp.json';
+  var response = {
+  };    
+  var customerName: string;
+  // var resiliencyReportData: ResiliencyReportData;
+  // var resiliencyResourceList: ResiliencyResource[];  
+
+  console.log("Calling ResiliencyScore detector");
+  //this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString).subscribe((data:response => {
+  this.http.get<DetectorResponse>(localResponse)
+      .subscribe((httpResponse: DetectorResponse) => {
+        response = {
+        metadata: httpResponse.metadata,
+        dataset: httpResponse.dataset,
+        status: httpResponse.status,
+        dataProvidersMetadata: httpResponse.dataProvidersMetadata,
+        suggestedUtterances: httpResponse.suggestedUtterances,        
       };
       console.log("ResiliencyScore detector call finished");
+      console.log(response);
+      ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table);
     },error => {
       console.error(error); 
     });
-    var docDefinition = {
-      content: [
-        'First paragraph',
-        'Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines'
-      ]
-    };    
-    (<any>pdfMake).vfs = pdfFonts.pdfMake.vfs;
-    //pdfMake.vfs = pdfFonts.pdfMake.vfs;
-    pdfMake.createPdf(docDefinition).download('resiliencyReport.pdf');     
+
+    // var docDefinition = {
+    //   content: [
+    //     'First paragraph',
+    //     'Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines'
+    //   ]
+    // };    
+
+    
+    // (<any>pdfMake).vfs = pdfFonts.pdfMake.vfs;
+    // //pdfMake.vfs = pdfFonts.pdfMake.vfs;
+    // pdfMake.createPdf(docDefinition).download('resiliencyReport.pdf');     
   }
 
-  // 
-  // console.log(response);  
-  // let dataset = response.dataset;
-  // let table = dataset[0].table;
-  // let rows = table.rows;
-  // var cName = JSON.stringify(rows[0][1], ["CustomerName"]);      
-  // var resiliencyReportData = new ResiliencyReportData(cName);
-  // resiliencyReportData.resiliencyResourceList[]
-  // this.detector = response.metadata;
-  // this.fullReportPath = `detectors/${this.detector.id}`;
-  // this.processDetectorResponse(response).subscribe(() => {
-  //   this.onComplete.emit({ status: true })
-  //   (<any>pdfMake).vfs = pdfFonts.pdfMake.vfs;;
-  // });
-  //}); 
-  //this.telemetryService.logEvent(TelemetryEventNames.OpenFeedbackPanel,{
-  //  'Location': TelemetrySource.CategoryPage
-  //});
+
 
   refreshPage() {
     let childRouteSnapshot = this._route.firstChild.snapshot;
