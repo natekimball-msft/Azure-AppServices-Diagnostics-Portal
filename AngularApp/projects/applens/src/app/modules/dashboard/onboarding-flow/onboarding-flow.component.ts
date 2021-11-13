@@ -373,16 +373,6 @@ export class OnboardingFlowComponent implements OnInit {
       let serializedParams = this.serializeQueryParams(queryParams);
       if (serializedParams && serializedParams.length > 0) {
         serializedParams = "&" + serializedParams;
-      }
-    });
-
-    this._activatedRoute.queryParams.subscribe((params: Params) => {
-      let queryParams = JSON.parse(JSON.stringify(params));
-      queryParams.startTime = undefined;
-      queryParams.endTime = undefined;
-      let serializedParams = this.serializeQueryParams(queryParams);
-      if (serializedParams && serializedParams.length > 0) {
-        serializedParams = "&" + serializedParams;
       };
       this.diagnosticApiService.getCompilerResponse(body, isSystemInvoker, this.id, this._detectorControlService.startTimeString,
       this._detectorControlService.endTimeString, this.dataSource, this.timeRange, {
