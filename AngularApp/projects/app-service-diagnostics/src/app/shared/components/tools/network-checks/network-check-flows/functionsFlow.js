@@ -238,11 +238,11 @@ export var functionsFlow = {
             title: "Explanation of the results and recommended next steps",
             markdown: "Other than for Storage, Service Bus and Event Hubs dependencies, positive tests above indicate a network layer connection was successfully established between this app and the configured remote service."
                 + "\r\n\r\n" + "If the tests passed and your app is still having runtime connection failures with this endpoint, possible reasons could be:"
-                + "\r\n\r\n" + "-  Firewall rules configured on Function App binding resource are blocking access to the Function App. Refer to this [troubleshooting guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-networking-options#debug-access-to-virtual-network-hosted-resources) to further debug the issue."
+                + "\r\n\r\n" + "-  Firewall rules configured on Function App binding resource are blocking access to the Function App. Refer to this [troubleshooting guide](https://docs.microsoft.com/azure/azure-functions/functions-networking-options#debug-access-to-virtual-network-hosted-resources) to further debug the issue."
                 + "\r\n\r\n" + "-  There were authentication issues and the credentials involved have expired or are invalid. Only network connectivity was tested."
                 + "\r\n\r\n" + "-  The application setting was configured as a key vault reference and this diagnostics tool does not retrieve secrets from Key Vault.  Check application logs to debug further."
                 + "\r\n\r\n" + "-  The target endpoint/service is not available intermittently."
-                + "\r\n\r\n" + "Note: If a resource has a private endpoint setup, the resource's endpoint is not publicly addressable (DNS lookup fails) and if the private endpoint does not allow network connectivity from this Function App the network connectivity test will report a \"Resource not found\"."
+                + "\r\n\r\n" + "Note: If a resource has a private endpoint setup, the resource's endpoint is not publicly addressable (DNS lookup fails) and if the private endpoint does not allow network connectivity from this Function App the network connectivity test will report a \"Resource not found\".  Another possible reason is a DNS configuration issues.  Please refer to these docs for more information: [Azure DNS private zones](https://docs.microsoft.com/azure/azure-functions/functions-networking-options#azure-dns-private-zones) and [Private Endpoints](https://docs.microsoft.com/azure/azure-functions/functions-networking-options#private-endpoints)."
         }));
     }
 };
