@@ -15,6 +15,7 @@ import { RecommendedUtterance } from '../../../../../../diagnostic-data/src/publ
 import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.service';
 import {TelemetryEventNames} from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
 import { environment } from '../../../../environments/environment';
+import {ActivatedRoute, Params} from "@angular/router";
 
 const moment = momentNs;
 const newDetectorId:string = "NEW_DETECTOR";
@@ -97,7 +98,7 @@ export class OnboardingFlowComponent implements OnInit {
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService,
     private diagnosticApiService: ApplensDiagnosticService, private resourceService: ResourceService,
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
-    public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService) {
+    public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute) {
     this.editorOptions = {
       theme: 'vs',
       language: 'csharp',
@@ -320,6 +321,15 @@ export class OnboardingFlowComponent implements OnInit {
       }));
   }
 
+  serializeQueryParams(obj) {
+    var str = [];
+    for (var p in obj)
+      if (obj.hasOwnProperty(p) && obj[p] !== undefined) {
+        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+      }
+    return str.join("&");
+  }
+
   runCompilation() {
     this.buildOutput = [];
     this.buildOutput.push("------ Build started ------");
@@ -356,10 +366,29 @@ export class OnboardingFlowComponent implements OnInit {
 
     let isSystemInvoker: boolean = this.mode === DevelopMode.EditMonitoring || this.mode === DevelopMode.EditAnalytics;
 
-    this.diagnosticApiService.getCompilerResponse(body, isSystemInvoker, this.id, this._detectorControlService.startTimeString,
+    this._activatedRoute.queryParams.subscribe((params: Params) => {
+      let queryParams = JSON.parse(JSON.stringify(params));
+      queryParams.startTime = undefined;
+      queryParams.endTime = undefined;
+      let serializedParams = this.serializeQueryParams(queryParams);
+      if (serializedParams && serializedParams.length > 0) {
+        serializedParams = "&" + serializedParams;
+      }
+    });
+
+    this._activatedRoute.queryParams.subscribe((params: Params) => {
+      let queryParams = JSON.parse(JSON.stringify(params));
+      queryParams.startTime = undefined;
+      queryParams.endTime = undefined;
+      let serializedParams = this.serializeQueryParams(queryParams);
+      if (serializedParams && serializedParams.length > 0) {
+        serializedParams = "&" + serializedParams;
+      };
+      this.diagnosticApiService.getCompilerResponse(body, isSystemInvoker, this.id, this._detectorControlService.startTimeString,
       this._detectorControlService.endTimeString, this.dataSource, this.timeRange, {
         scriptETag: this.compilationPackage.scriptETag,
         assemblyName: this.compilationPackage.assemblyName,
+        formQueryParams: serializedParams,
         getFullResponse: true
       }, this.getDetectorId())
       .subscribe((response: any) => {
@@ -528,6 +557,7 @@ export class OnboardingFlowComponent implements OnInit {
         });
         this.markCodeLinesInEditor(this.detailedCompilationTraces);
       }));
+    });
   }
 
   getDetectorId():string {
