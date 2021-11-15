@@ -148,6 +148,44 @@ export class ResiliencyScoreReportHelper {
         console.log('green color');
     }
 
+
+    // Creating Resiliency status per feature table
+
+    static ResiliencyStatusPerFeatureTable(resiliencyReportData: ResiliencyReportData) {
+        let headers = `[{ text: 'Feature/Site name', style: 'rspfTableheader', margin: [0, 10] }, { text: '${resiliencyReportData.ResiliencyResourceList[0].Name}', style: 'rspfTableheader', margin: [0, 10] }, `;
+        //`{ text: ${resiliencyReportData.ResiliencyResourceList[1].Name}, style: 'rspfTableheader', margin: [0, 10] }, { text: ${resiliencyReportData.ResiliencyResourceList[2].Name}, style: 'rspfTableheader', margin: [0, 10] }],`         
+        let resiliencyStatusPerFeatureTable: string = "";
+
+        //Generating headers
+        for (let i: number = 1; i < resiliencyReportData.ResiliencyResourceList.length; i++) {
+            headers = `${headers}{ text: '${resiliencyReportData.ResiliencyResourceList[i].Name}', style: 'rspfTableheader', margin: [0, 10] }`;
+            if (i + 1 < resiliencyReportData.ResiliencyResourceList.length) {
+                headers = `${headers},`
+            }
+            else {
+                headers = `${headers}],`
+            }
+        };
+
+        //Adding rows for each feature
+        let rows = "";
+        for (let i: number = 0; i < resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList.length; i++) {
+            rows = `${rows}[{ text: '${resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[i].Name}', style: 'rspfTableheader', }, `;
+            for (let j: number = 0; j < resiliencyReportData.ResiliencyResourceList.length; j++) {
+                rows = `${rows}{ margin: [50, 2], image: ${ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[j].ResiliencyFeaturesList[i].ImplementationGrade)}, fit: [20, 20] }`;
+                if (j + 1 < resiliencyReportData.ResiliencyResourceList.length) {
+                    rows = `${rows},`
+                }
+                else {
+                    rows = `${rows}],`
+                }
+            }
+        }
+        let finalStr = `${headers}${rows}`;
+        return finalStr.replace(/^"|"$/g, '');
+    }
+
+
     static PDFMake(resiliencyReportData: ResiliencyReportData) {
         console.log(resiliencyReportData.CustomerName);
         console.log('Sitename1: ', resiliencyReportData.ResiliencyResourceList[0].Name, 'SiteScore1: ', resiliencyReportData.ResiliencyResourceList[0].OverallScore);
@@ -241,7 +279,6 @@ export class ResiliencyScoreReportHelper {
                         // Resiliency score table
                         {
                             text: '\n',
-                            //width: ColumnSizeScoreTable(resiliencyReportData.resiliencyResourceList[0].Name, toString(arguments[0].sitescore1), resiliencyReportData.resiliencyResourceList[1].name, toString(arguments[0].sitescore2), resiliencyReportData.resiliencyResourceList[2].name, toString(arguments[0].sitescore3)),
                             width: 140
                         },
                         {
@@ -253,11 +290,14 @@ export class ResiliencyScoreReportHelper {
                                 headerRows: 1,
                                 widths: ['auto', 'auto'],
                                 body: [
-                                    [{ text: 'Site name', style: 'apsrcTableheader' }, { text: 'Score', style: 'apsrcTableheader' }],
-                                    [{ text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'apsrcTableevenrow' }, { text: resiliencyReportData.ResiliencyResourceList[0].OverallScore, bold: true, fontSize: 18, fillColor: ResiliencyScoreReportHelper.ScoreColor(resiliencyReportData.ResiliencyResourceList[0].OverallScore) }],
-                                    [{ text: resiliencyReportData.ResiliencyResourceList[1].Name, style: 'apsrcTableoddrow' }, { text: resiliencyReportData.ResiliencyResourceList[1].OverallScore, bold: true, fontSize: 18, fillColor: ResiliencyScoreReportHelper.ScoreColor(resiliencyReportData.ResiliencyResourceList[1].OverallScore) }],
-                                    [{ text: resiliencyReportData.ResiliencyResourceList[2].Name, style: 'apsrcTableevenrow' }, { text: resiliencyReportData.ResiliencyResourceList[1].OverallScore, bold: true, fontSize: 18, fillColor: ResiliencyScoreReportHelper.ScoreColor(resiliencyReportData.ResiliencyResourceList[1].OverallScore) }],
-                                    //[{ text: 'Bold value', bold: true }, 'Val 2', 'Val 3', 'Val 4']
+                                    [
+                                        { text: 'Site name', style: 'apsrcTableheader' }, { text: 'Score', style: 'apsrcTableheader' }
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'apsrcTableevenrow' },
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].OverallScore, bold: true, fontSize: 18, fillColor: ResiliencyScoreReportHelper.ScoreColor(resiliencyReportData.ResiliencyResourceList[0].OverallScore) }
+                                    ],
+                                    // [{ text: 'Bold value', bold: true }, 'Val 2', 'Val 3', 'Val 4']
                                 ]
                             },
                             layout: {
@@ -354,42 +394,92 @@ export class ResiliencyScoreReportHelper {
                     text: '\n'
                 },
                 {
-                    table: {
-                        // headers are automatically repeated if the table spans over multiple pages
-                        // you can declare how many rows should be treated as headers
-                        headerRows: 1,
-                        widths: [170, 109, 109, 109],
-                        body: [
-                            [{ text: 'Feature/Site name', style: 'rspfTableheader', margin: [0, 10] }, { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'rspfTableheader', margin: [0, 10] }, { text: resiliencyReportData.ResiliencyResourceList[1].Name, style: 'rspfTableheader', margin: [0, 10] }, { text: resiliencyReportData.ResiliencyResourceList[2].Name, style: 'rspfTableheader', margin: [0, 10] }],
-                            [{ text: 'Multiple Instances', style: 'rspfTableheader', }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[0].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[0].ImplementationGrade), fit: [20, 20] }],
-                            [{ text: 'Health Check', style: 'rspfTableheader' }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[1].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[1].ImplementationGrade), fit: [20, 20] }],
-                            [{ text: 'Auto Heal', style: 'rspfTableheader' }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[2].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[2].ImplementationGrade), fit: [20, 20] }],
-                            [{ text: 'Deploy in Multiple\n Regions/Zones', style: 'rspfTableheader' }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[3].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[3].ImplementationGrade), fit: [20, 20] }],
-                            [{ text: 'Regional Pairing', style: 'rspfTableheader' }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[4].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[4].ImplementationGrade), fit: [20, 20] }],
-                            [{ text: 'App Density', style: 'rspfTableheader' }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[5].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[5].ImplementationGrade), fit: [20, 20] }],
-                            [{ text: 'Platform Upgrades Resiliency', style: 'rspfTableheader' }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[6].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[6].ImplementationGrade), fit: [20, 20] }],
-                            [{ text: 'SNAT port exhaustion', style: 'rspfTableheader' }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[7].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[7].ImplementationGrade), fit: [20, 20] }],
-                            [{ text: 'Always on check', style: 'rspfTableheader' }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[8].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[8].ImplementationGrade), fit: [20, 20] }],
-                            [{ text: 'Production SKU Used', style: 'rspfTableheader' }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[9].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[9].ImplementationGrade), fit: [20, 20] }],
-                            [{ text: 'App Service Advisor Recommendations', style: 'rspfTableheader' }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[10].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[10].ImplementationGrade), fit: [20, 20] }],
-                            [{ text: 'ARR Affinity Check\n(Not counted against the score)', style: 'rspfTableheader' }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[11].ImplementationGrade), fit: [20, 20] }, { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[11].ImplementationGrade), fit: [20, 20] }],
-                        ]
-                    },
-                    layout: {
-                        hLineWidth: function (i, node) {
-                            return (i === 0 || i === node.table.body.length) ? 1 : 1;
+                    columns: [
+                        // Resiliency score table
+                        {
+                            text: '\n',
+                            width: 120
                         },
-                        vLineWidth: function (i, node) {
-                            return (i === 0 || i === node.table.widths.length) ? 1 : 1;
-                        },
-                        hLineColor: function (i, node) {
-                            return 'black';
-                        },
-                        vLineColor: function (i, node) {
-                            return 'black';
+                        {
+                            // Resiliency status per feature table
+                            table: {
+                                // headers are automatically repeated if the table spans over multiple pages
+                                // you can declare how many rows should be treated as headers
+                                headerRows: 1,
+                                widths: [170, 109, 109, 109],
+                                body: [
+                                    [
+                                        { text: 'Feature/Site name', style: 'rspfTableheader', margin: [0, 10] },
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'rspfTableheader', margin: [0, 10] }
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].Name, style: 'rspfTableheader', },
+                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade), fit: [20, 20] },
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].Name, style: 'rspfTableheader' },
+                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].ImplementationGrade), fit: [20, 20] }
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].Name, style: 'rspfTableheader' },
+                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].ImplementationGrade), fit: [20, 20] }
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].Name, style: 'rspfTableheader' },
+                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade), fit: [20, 20] }
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].Name, style: 'rspfTableheader' },
+                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].ImplementationGrade), fit: [20, 20] }
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].Name, style: 'rspfTableheader' },
+                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].ImplementationGrade), fit: [20, 20] }
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].Name, style: 'rspfTableheader' },
+                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].ImplementationGrade), fit: [20, 20] }
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].Name, style: 'rspfTableheader' },
+                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].ImplementationGrade), fit: [20, 20] }
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].Name, style: 'rspfTableheader' },
+                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].ImplementationGrade), fit: [20, 20] }
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].Name, style: 'rspfTableheader' },
+                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].ImplementationGrade), fit: [20, 20] }
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].Name, style: 'rspfTableheader' },
+                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].ImplementationGrade), fit: [20, 20] }
+                                    ],
+                                    [
+                                        { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].Name, style: 'rspfTableheader' },
+                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].ImplementationGrade), fit: [20, 20] }
+                                    ]
+                                ],
+                                layout: {
+                                    hLineWidth: function (i, node) {
+                                        return (i === 0 || i === node.table.body.length) ? 1 : 1;
+                                    },
+                                    vLineWidth: function (i, node) {
+                                        return (i === 0 || i === node.table.widths.length) ? 1 : 1;
+                                    },
+                                    hLineColor: function (i, node) {
+                                        return 'black';
+                                    },
+                                    vLineColor: function (i, node) {
+                                        return 'black';
+                                    }
+                                }
+                            }
                         }
-                    }
+                    ]
                 },
+                // Start of Use of multiple instances section
                 {
                     text: 'Use of multiple instances',
                     style: 'header3',
@@ -418,19 +508,22 @@ export class ResiliencyScoreReportHelper {
                 {
                     margin: [0, 2],
                     alignment: 'center',
-                    //layout: 'lightHorizontalLines', // optional						
                     table: {
                         // headers are automatically repeated if the table spans over multiple pages
                         // you can declare how many rows should be treated as headers
                         headerRows: 1,
                         widths: [109, 'auto', 359],
                         body: [
-                            [{ text: 'Site name', style: 'detectTableheader' }, { text: 'Grade', style: 'detectTableheader' }, { text: 'Comments', style: 'detectTableheader' }],
-                            [{ text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow' }, { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade) }, { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].GradeComments, style: 'detectTableevenrow' }],
-                            [{ text: resiliencyReportData.ResiliencyResourceList[1].Name, style: 'detectTableoddrow' }, { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[0].ImplementationGrade), style: 'detectTableoddrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[0].ImplementationGrade) }, { text: resiliencyReportData.ResiliencyResourceList[1].ResiliencyFeaturesList[0].GradeComments, style: 'detectTableoddrow' }],
-                            [{ text: resiliencyReportData.ResiliencyResourceList[2].Name, style: 'detectTableevenrow' }, { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[0].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[0].ImplementationGrade) }, { text: resiliencyReportData.ResiliencyResourceList[2].ResiliencyFeaturesList[0].GradeComments, style: 'detectTableevenrow' }],
-                            //[{ text: 'Bold value', bold: true }, 'Val 2', 'Val 3', 'Val 4']
-                        ]
+                            [
+                                { text: 'Site name', style: 'detectTableheader' },
+                                { text: 'Grade', style: 'detectTableheader' },
+                                { text: 'Comments', style: 'detectTableheader' }
+                            ],
+                            [
+                                { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow' },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade) },
+                                { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].GradeComments, style: 'detectTableevenrow' }
+                            ]]
                     },
                     layout: {
                         hLineWidth: function (i, node) {
@@ -458,6 +551,30 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 20]
                 },
                 {
+                    text: [resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].SolutionComments],
+                    style: 'paragraph',
+                    alignment: 'justify'
+                },
+                {
+                    text: ['\nIf you need to add more instances in the future:\n    •	Azure Portal:\n     •	Open the Azure Portal\n     •	Click on an App Service Plans\n     •	Click on the App Service Plan hosting the Web App(s) you want to scale out.\n       •	Under Settings click in Scale out (App Service plan).\n     •	Click Manual scale.\n       •	Increase the number of instances to the desired value (at least 2). •	PowerShell:\n       •	Use the Set-AzAppServicePlan command.\n     For more information see: https://docs.microsoft.com/en-us/azure/app-service/scripts/powershell-scale-manual\n  •	Azure CLI:      •	Use the az appservice plan update command.\n        For more information see: https://docs.microsoft.com/en-us/azure/app-service/scripts/cli-scale-manual\n'],
+                    style: 'paragraph',
+                    alignment: 'justify'
+                },
+                {
+                    text: 'More information',
+                    style: 'header4',
+                    margin: [0, 20]
+                },
+                {
+                    text: ['\n• The Ultimate Guide to Running Healthy Apps in the Cloud - Use Multiple Instances\n  https://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#use-multiple-instances'],
+                    style: 'paragraph',
+                    alignment: 'justify'
+
+                },
+                // End of Use of multiple instances section
+                // ------------------------------------------
+                //start of Heal check section
+                {
                     text: 'Health Check',
                     style: 'header3',
                     pageOrientation: 'portrait',
@@ -466,6 +583,30 @@ export class ResiliencyScoreReportHelper {
                     tocStyle: { fontSize: 11 },
                     tocMargin: [0, 5, 0, 0]
                 },
+                {
+                    text: [resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].SolutionComments],
+                    style: 'paragraph',
+                    alignment: 'justify'
+                },
+                {
+                    text: ['\nIf you need to enable Health check on another Web Apps, here are the instructions:\n  •	To enable Health check using the Azure Portal:\n    •	Open the Azure Portal\n     •	Click on an App Services\n      •	Click on the Web App where for which you want to enable Health Check.\n     •	Under Monitoring click in Health check.\n       •	Click Enable.\n       •	Under Path, add the path to a page that will only return 200 once your app and its dependencies are responsive.\n     •	Configure the time in Load Balancing and click Save.\n'],
+                    style: 'paragraph',
+                    alignment: 'justify'
+                },
+                {
+                    text: 'More information',
+                    style: 'header4',
+                    margin: [0, 20]
+                },
+                {
+                    text: ['\nMore information.\n   •	Health Check is now Generally Available\n   https://azure.github.io/AppService/2020/08/24/healthcheck-on-app-service.htm\n  •	The Ultimate Guide to Running Healthy Apps in the Cloud – Set your Health Check path\n  https://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#set-your-health-check-path'],
+                    style: 'paragraph',
+                    alignment: 'justify'
+
+                },
+                // End of Health check section
+                // ------------------------------------------
+                //start of Auto-Heal section
                 {
                     text: 'Auto-Heal',
                     style: 'header3',
