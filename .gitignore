@@ -407,3 +407,4 @@ MigrationBackup/
 .ionide/
 
 .vscode/launch.json
+AngularApp/projects/app-service-diagnostics/src/assets/response.temp.json

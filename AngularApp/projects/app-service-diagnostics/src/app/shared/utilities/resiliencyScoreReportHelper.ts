@@ -214,6 +214,15 @@ export class ResiliencyScoreReportHelper {
         };
         resiliencyReportData.ResiliencyResourceList[0].Name
         var docDefinition = {
+            footer: function(currentPage, pageCount) { return { text:currentPage.toString() + ' of ' + pageCount, alingment: 'center' }; },
+            header: function(currentPage, pageCount, pageSize) {
+              // you can apply any logic and return any valid pdfmake element
+          
+              return [
+                { text: ResiliencyScoreReportHelper.generatedOn(), alignment: (currentPage % 2) ? 'left' : 'right' },
+                { canvas: [ { type: 'rect', x: 170, y: 32, w: pageSize.width - 170, h: 40 } ] }
+              ]
+            },
             pageSize: 'LETTER',
             pageOrientation: 'portrait',
             content: [

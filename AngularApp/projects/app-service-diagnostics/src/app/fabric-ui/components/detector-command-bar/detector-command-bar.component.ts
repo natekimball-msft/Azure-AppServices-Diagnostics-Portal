@@ -48,7 +48,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   }
 
   generateResiliencyPDF() {
-  var localResponse = '../assets/response.temp.json';
+  var localResponse = 'C:\\code\\ResiliencyReport\\response.temp.json';
   var response = {
   };    
   var customerName: string;
