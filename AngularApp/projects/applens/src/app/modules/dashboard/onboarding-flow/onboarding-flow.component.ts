@@ -26,6 +26,16 @@ import { NgxEditorModel } from 'ngx-monaco-editor';
 
 const moment = momentNs;
 const newDetectorId:string = "NEW_DETECTOR";
+const codePrefix = `using Diagnostics.DataProviders;
+using Diagnostics.ModelsAndUtils.Utilities;
+using Diagnostics.ModelsAndUtils.Models;
+using Diagnostics.ModelsAndUtils.Models.ResponseExtensions;
+using Diagnostics.ModelsAndUtils.Attributes;
+using Diagnostics.ModelsAndUtils.ScriptUtilities;
+using Kusto.Data;
+using System.Data;
+
+`;
 
 export enum DevelopMode {
   Create,
@@ -99,11 +109,6 @@ export class OnboardingFlowComponent implements OnInit {
 
   private emailRecipients: string = '';
   private _monacoEditor:monaco.editor.ICodeEditor = null;
-  monacoEditorModel: NgxEditorModel = {
-    value: "",
-    language: "csharp",
-    uri: monaco.Uri.parse('file:///workspace/Solution.cs')
-  }
   private _oldCodeDecorations:string[] = [];
   
 
@@ -154,11 +159,10 @@ export class OnboardingFlowComponent implements OnInit {
 
   onInit(editor: any) {
     this._monacoEditor = editor;
-    /*//const model = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse('file:///workspace/Solution.cs'));
-    //this._monacoEditor.setModel(model);
-    //this._monacoEditor.model.uri = monaco.Uri.parse('file:///workspace/Solution.cs');
-    MonacoServices.install(this._monacoEditor as monaco.editor.IStandaloneCodeEditor, {rootUri: "file:///workspace"});
-    const url = "wss://langservonline.azurewebsites.net/socket";
+    let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse('file:///workspace/Solution.cs'));
+    editor.setModel(editorModel);
+    MonacoServices.install(editor, {rootUri: "file:///workspace"});
+    const url = "ws://localhost:3000/socket";
     const webSocket = this.createWebSocket(url);
     listen({
       webSocket,
@@ -168,7 +172,7 @@ export class OnboardingFlowComponent implements OnInit {
           const disposable = languageClient.start();
           connection.onClose(() => disposable.dispose());
       }
-    });*/
+    });
   }
 
   createLanguageClient(connection: MessageConnection): MonacoLanguageClient {
@@ -403,7 +407,7 @@ export class OnboardingFlowComponent implements OnInit {
     this.markCodeLinesInEditor(null);
 
     var body = {
-      script: this.code,
+      script: this.code.replace(codePrefix, ""),
       references: this.reference,
       entityType: this.gistMode ? 'gist' : 'signal',
       detectorUtterances: JSON.stringify(this.allUtterances.map(x => x.text))
@@ -713,7 +717,7 @@ export class OnboardingFlowComponent implements OnInit {
     update.subscribe(_ => {
       this.publishingPackage = {
         id: queryResponse.invocationOutput.metadata.id,
-        codeString: code,
+        codeString: code.replace(codePrefix, ""),
         committedByAlias: this.userName,
         dllBytes: this.compilationPackage.assemblyBytes,
         pdbBytes: this.compilationPackage.pdbBytes,
@@ -795,7 +799,7 @@ export class OnboardingFlowComponent implements OnInit {
 
     forkJoin(detectorFile, configuration, this.diagnosticApiService.getGists()).subscribe(res => {
       this.codeLoaded = true;
-      this.code = res[0];
+      this.code = codePrefix + res[0];
       this.originalCode = this.code;
       if (res[1] !== null) {
         this.gists = Object.keys(this.configuration['dependencies']);
