@@ -1,5 +1,6 @@
 import { TelemetryService } from 'diagnostic-data';
 import { Globals } from 'projects/app-service-diagnostics/src/app/globals';
+import { stringify } from 'querystring';
 import { ResponseMessageEnvelope } from '../../../models/responsemessageenvelope';
 import { Site, SiteInfoMetaData } from '../../../models/site';
 import { ArmService } from '../../../services/arm.service';
@@ -123,7 +124,7 @@ export class DiagProvider {
             });
     }
 
-    public postDaaSExtApiAsync(api: string, body?: any, timeoutInSec: number = 15): Promise<any>  {
+    public postDaaSExtApiAsync(api: string, body?: any, timeoutInSec: number = 15): Promise<any> {
         var params = "api-version=2015-08-01";
         var prefix = `management.azure.com/${this._siteInfo.resourceUri}/extensions/DaaS/api`;
 
@@ -140,8 +141,7 @@ export class DiagProvider {
         return Promise.race([promise, timeoutPromise]);
     }
 
-    public async checkConnectionStringAsync(connectionString: string, type: string, timeoutInSec: number = 30): Promise<any> 
-    {
+    public async checkConnectionStringAsync(connectionString: string, type: string, timeoutInSec: number = 30): Promise<any> {
         var result: any = await this.postDaaSExtApiAsync("connectionstringvalidation/validate", { "ConnectionString": connectionString, "Type": type }, timeoutInSec);
         return result;
     }
@@ -149,7 +149,7 @@ export class DiagProvider {
     public getKuduApiAsync(uri: string, instance?: string, timeoutInSec: number = 15, scm = false): Promise<any> {
         var stack = new Error("error_message_placeholder").stack;
         var params = [];
-        if(instance != null){
+        if (instance != null) {
             params.push(`instance=${instance}`);
         }
         return this.getExtensionApiAsync("api/" + uri, params, timeoutInSec, scm);
@@ -158,7 +158,7 @@ export class DiagProvider {
     public getExtensionApiAsync(uri: string, params = [], timeoutInSec: number = 15, scm = false): Promise<any> {
         var stack = new Error("error_message_placeholder").stack;
         var prefix = scm ? this.scmHostName : `management.azure.com/${this._siteInfo.resourceUri}/extensions`;
-        if(!scm){
+        if (!scm) {
             params.push("api-version=2015-08-01");
         }
         return this._armService.get(`https://${prefix}/${uri}?${params.join("&")}`)
@@ -237,7 +237,7 @@ export class DiagProvider {
                     } else if (line.startsWith("Complete")) {
                         break;
                     } else {
-                        throw new Error(`checkConnectionAsync: unknown status ${pingResult}`);
+                        throw new Error(`tcpPingAsync: unknown status ${pingResult}`);
                     }
                 }
             }
@@ -257,7 +257,7 @@ export class DiagProvider {
             ip = hostname;
         } else {
             try {
-                 // TODO: implement nameresolver in DaaS extension to replace the CLI
+                // TODO: implement nameresolver in DaaS extension to replace the CLI
                 var result = await this.runKuduCommand(`nameresolver ${hostname} ${dns || ""}`, undefined, instance);
                 if (result != null) {
                     if (result.includes("Aliases")) {
@@ -280,31 +280,28 @@ export class DiagProvider {
         return { ip, aliases };
     }
 
-    public async checkConnectionAsync(hostname: string, port: number, count?: number, timeout?: number, dns: string = "", instance?: string): Promise<{ status: ConnectionCheckStatus, ip: string, aliases: string, statuses: ConnectionCheckStatus[] }> {
-        var stack = new Error("error_message_placeholder").stack;
-        var promise = (async () => {
-            var nameResolverPromise = this.nameResolveAsync(hostname, dns, instance);
-
-            var pingPromise = this.tcpPingAsync(hostname, port, count, timeout, instance);
-            await Promise.all([nameResolverPromise.catch(e => e), pingPromise.catch(e => e)]);
-            var nameResovlerResult = await nameResolverPromise;
-            var pingResult = await (pingPromise.catch(e => null));
-            this._globals.logDebugMessage(nameResovlerResult, pingResult);
-
-
-            var connectionStatus: ConnectionCheckStatus;
-            if (nameResovlerResult.ip == null) {
-                connectionStatus = ConnectionCheckStatus.hostNotFound;
+    public async nameResolveByDaasAsync(hostname: string, instance?: string): Promise<{ ip: string, aliases: string }> {
+        var ip: string = null, aliases: string = null;
+        if (this.isIp(hostname)) {
+            ip = hostname;
+        } else {
+            // TODO: implement nameresolver in DaaS extension to replace the CLI
+            var resp = await this.getExtensionApiAsync("DaaS/api/nameresolver", [`hostname=${hostname}`]);
+            if (resp != null && resp.body != null) {
+                var result = resp.body;
+                if (result.Status == "success") {
+                    ip = result.IpAddresses.join(";");
+                }else if(result.Status == "host not found"){
+                    ip = "";
+                }
+                else{
+                    throw new Error("DaaS nameresolver failed, result: " + stringify(result));
+                }
             } else {
-                connectionStatus = (pingResult && pingResult.status);
+                throw new Error("DaaS nameresolver response is null, response: " + stringify(resp));
             }
-            return { status: connectionStatus, ip: nameResovlerResult.ip, aliases: nameResovlerResult.aliases, statuses: pingResult && pingResult.statuses };
-        })();
-
-        return promise.catch(e => {
-            e.stack = stack.replace("error_message_placeholder", e.message || "");
-            throw e;
-        });
+        }
+        return { ip, aliases };
     }
 
     public async checkKuduReachable(timeoutInSec: number): Promise<boolean> {
@@ -319,7 +316,7 @@ export class DiagProvider {
     public async checkDaasExtReachable(timeoutInSec: number): Promise<boolean> {
         try {
             var result = await this.checkConnectionStringAsync("dummy-connection-string", "StorageAccount");
-            
+
             return (result != undefined);
         } catch (error) {
             return false;

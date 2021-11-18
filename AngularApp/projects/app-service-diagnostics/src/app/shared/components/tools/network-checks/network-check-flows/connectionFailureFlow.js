@@ -106,13 +106,17 @@ async function checkNameResolvingAsync(hostname, siteInfo, diagProvider) {
         isIp = true;
     }
     else {
-        var result = await diagProvider.nameResolveAsync(hostname).catch(e => {
+        var result = await diagProvider.nameResolveByDaasAsync(hostname).catch(e => {
             logDebugMessage(e);
             return {};
         });
 
         if (result.ip != null) {
-            ips = result.ip.split(';');
+            ips = result.ip.split(';').filter(s => s.length > 0);
+            if (ips.length == 0) {
+                isContinue = false;
+                views = views.concat(wordings.hostNotFound.get(hostname));
+            }
         } else {
             isContinue = false;
             views = views.concat(wordings.failedToResolveHostname.get(hostname));

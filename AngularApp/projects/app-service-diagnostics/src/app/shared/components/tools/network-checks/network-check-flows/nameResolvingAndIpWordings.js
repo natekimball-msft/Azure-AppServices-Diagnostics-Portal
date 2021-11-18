@@ -24,7 +24,19 @@ export class NameResolvingAndIpWordings {
             get(hostname) {
                 var views = [
                     new CheckStepView({
-                        title: `Failed to resolve hostname ${hostname}`,
+                        title: `Failed to resolve hostname ${hostname}, please retry`,
+                        level: 2
+                    })
+                ];
+                return views;
+            }
+        }
+
+        this.hostNotFound = {
+            get(hostname) {
+                var views = [
+                    new CheckStepView({
+                        title: `Hostname ${hostname} not found`,
                         level: 2
                     }),
                     new InfoStepView({
