@@ -48,7 +48,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   }
 
   generateResiliencyPDF() {
-  var localResponse = 'C:\\code\\ResiliencyReport\\response.temp.json';
+  var localResponse = '../assets/response.temp.json';
   var response = {
   };    
   var customerName: string;
@@ -57,6 +57,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
 
   console.log("Calling ResiliencyScore detector");
   //this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString).subscribe((data:response => {
+  //this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString)
   this.http.get<DetectorResponse>(localResponse)
       .subscribe((httpResponse: DetectorResponse) => {
         response = {

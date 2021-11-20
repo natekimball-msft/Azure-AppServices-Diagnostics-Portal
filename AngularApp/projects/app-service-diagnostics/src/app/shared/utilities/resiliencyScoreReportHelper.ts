@@ -188,7 +188,7 @@ export class ResiliencyScoreReportHelper {
     // Prints date and time in which the report was generated
     static generatedOn(){
         let d = new Date();
-        return d.toUTCString();
+        return d.toISOString();
     }
 
     static PDFMake(resiliencyReportData: ResiliencyReportData) {
@@ -214,17 +214,16 @@ export class ResiliencyScoreReportHelper {
         };
         resiliencyReportData.ResiliencyResourceList[0].Name
         var docDefinition = {
-            footer: function(currentPage, pageCount) { return { text:currentPage.toString() + ' of ' + pageCount, alingment: 'center' }; },
-            header: function(currentPage, pageCount, pageSize) {
-              // you can apply any logic and return any valid pdfmake element
-          
-              return [
-                { text: ResiliencyScoreReportHelper.generatedOn(), alignment: (currentPage % 2) ? 'left' : 'right' },
-                { canvas: [ { type: 'rect', x: 170, y: 32, w: pageSize.width - 170, h: 40 } ] }
-              ]
-            },
+            footer: function(currentPage, pageCount, pageSize) {
+                 return [
+                     { text: `${currentPage.toString()} of ${pageCount}`, alignment: 'center', fontsize: 6 },
+                     { text: `Report generated on: ${ResiliencyScoreReportHelper.generatedOn()}`, alignment: 'right', fontSize: 6, margin: 15   },
+                     { canvas: [ { type: 'rect', x: 170, y: 32, w: pageSize.width - 170, h: 40 } ] }
+                    ]
+                },
             pageSize: 'LETTER',
             pageOrientation: 'portrait',
+            pageMargins: 60,
             content: [
                 //Cover
                 '\n\n\n\n\n',
@@ -263,12 +262,15 @@ export class ResiliencyScoreReportHelper {
                 },
                 {
                     text: [
-                        { text: 'Risk & Resiliency Assessment report\nPrepared for: ', style: 'header2', aligment: 'center' },
-                        { text: resiliencyReportData.CustomerName, style: 'header', bold: true, aligment: 'center' }
+                        { text: 'Risk & Resiliency Assessment report\nPrepared for: ', style: 'title2', alignment: 'center' },
+                        { text: resiliencyReportData.CustomerName, style: 'header', bold: true, alignment: 'center' }
                     ]
                 },
-                { text: ['\n\n\n\n Generated on ', {text: ResiliencyScoreReportHelper.generatedOn()}], pageOrientation: 'portrait', pageBreak: 'after' },
-
+                {
+                    text: '\n\n\n\n',
+                    pageOrientation: 'portrait',
+                    pageBreak: 'after'
+                },
                 // Table of contents
 
                 { text: '\n\n\n\n\n' },
@@ -391,7 +393,7 @@ export class ResiliencyScoreReportHelper {
                         // Resiliency score table
                         {
                             text: '\n',
-                            width: 118
+                            width: 108
                         },
                         {
                             // Resiliency status per feature table
@@ -399,7 +401,7 @@ export class ResiliencyScoreReportHelper {
                                 // headers are automatically repeated if the table spans over multiple pages
                                 // you can declare how many rows should be treated as headers
                                 headerRows: 1,
-                                widths: [170, 109, 109, 109],
+                                widths: [159, 109, 109, 109],
                                 body: [
                                     [
                                         { text: 'Feature/Site name', style: 'rspfTableheader', margin: [0, 10] },
@@ -488,7 +490,7 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nRunning your app on only one VM instance is an immediate single point-of-failure. By ensuring that you have multiple instances allocated to your app, if something goes wrong with any instance, your app will still be able to respond to requests going to the other instances. Keep in mind that your app code should be able to handle multiple instances without synchronization issues when reading from or writing to data sources.',
+                    text: 'Running your app on only one VM instance is an immediate single point-of-failure. By ensuring that you have multiple instances allocated to your app, if something goes wrong with any instance, your app will still be able to respond to requests going to the other instances. Keep in mind that your app code should be able to handle multiple instances without synchronization issues when reading from or writing to data sources.',
                     style: 'paragraph',
                     alignment: 'justify'
 
@@ -503,7 +505,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -512,7 +514,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]]
                     },
@@ -542,7 +544,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'justify'
                 },
                 {
-                    text: '\nIf you need to add more instances in the future:\n',
+                    text: 'If you need to add more instances in the future:\n',
                     style: 'paragraph',
                     alignment: 'justify'
                 },
@@ -563,13 +565,13 @@ export class ResiliencyScoreReportHelper {
                         'PowerShell:',
                         {
                             ul: [
-                                { text: ['Use the ', { text: 'Set-AzAppServicePlan ', bold: true }, 'command.\nFor more information see: https://docs.microsoft.com/en-us/azure/app-service/scripts/powershell-scale-manual\n'] }
+                                { text: ['Use the ', { text: 'Set-AzAppServicePlan ', bold: true }, {text: 'command.\nFor more information see: https://docs.microsoft.com/en-us/azure/app-service/scripts/powershell-scale-manual\n', alignment: 'left'} ] }
                             ],
                         },
                         'Azure CLI:',
                         {
                             ul: [
-                                { text: ['Use the ', { text: 'az appservice plan update ', bold: true }, 'command.\nFor more information see: https://docs.microsoft.com/en-us/azure/app-service/scripts/cli-scale-manual\n'] }
+                                { text: ['Use the ', { text: 'az appservice plan update ', bold: true }, {text: 'command.\nFor more information see: https://docs.microsoft.com/en-us/azure/app-service/scripts/cli-scale-manual\n', alignment: 'left' } ] }
                             ]
                         },
                     ]
@@ -582,7 +584,7 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        'The Ultimate Guide to Running Healthy Apps in the Cloud - Use Multiple Instances\nhttps://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#use-multiple-instances',
+                        { text: 'The Ultimate Guide to Running Healthy Apps in the Cloud - Use Multiple Instances\nhttps://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#use-multiple-instances', alignment: 'left' } ,
                     ]
                 },
                 // End of Use of multiple instances section
@@ -603,7 +605,7 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nApp Service makes it easy to automatically scale your apps to multiple instances when traffic increases. This increases your app’s throughput, but what if there is an uncaught exception on one of the instances? App Service allows you to specify a health check path on your apps. The platform pings this path to determine if your application is healthy and responding to requests. If an instance fails to respond to the ping, the system determines it is unhealthy and removes it from the load balancer rotation. This increases your application’s average availability and resiliency. When your site is scaled out to multiple instances, App Service will exclude any unhealthy instance(s) from serving requests, improving your overall availability. Your app’s health check path should poll the critical components of your application, such as your database, cache, or messaging service and return a 5xx error if any of them fail. This ensures that the status returned by the health check path is an accurate picture of the overall health of your application.',
+                    text: 'App Service makes it easy to automatically scale your apps to multiple instances when traffic increases. This increases your app’s throughput, but what if there is an uncaught exception on one of the instances? App Service allows you to specify a health check path on your apps. The platform pings this path to determine if your application is healthy and responding to requests. If an instance fails to respond to the ping, the system determines it is unhealthy and removes it from the load balancer rotation. This increases your application’s average availability and resiliency. When your site is scaled out to multiple instances, App Service will exclude any unhealthy instance(s) from serving requests, improving your overall availability. Your app’s health check path should poll the critical components of your application, such as your database, cache, or messaging service and return a 5xx error if any of them fail. This ensures that the status returned by the health check path is an accurate picture of the overall health of your application.',
                     style: 'paragraph',
                     alignment: 'justify'
 
@@ -618,7 +620,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -627,7 +629,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -658,7 +660,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'justify'
                 },
                 {
-                    text: '\nIf you need to enable Health check on other Web App(s), follow these instructions:\n',
+                    text: 'If you need to enable Health check on other Web App(s), follow these instructions:\n',
                     style: 'paragraph',
                     alignment: 'justify'
                 },
@@ -687,8 +689,8 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        'Health Check is now Generally Available\nhttps://azure.github.io/AppService/2020/08/24/healthcheck-on-app-service.htm\n',
-                        'The Ultimate Guide to Running Healthy Apps in the Cloud – Set your Health Check path\nhttps://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#set-your-health-check-path\n'
+                        { text: 'Health Check is now Generally Available\nhttps://azure.github.io/AppService/2020/08/24/healthcheck-on-app-service.htm', alignment: 'left' },
+                        {text: 'The Ultimate Guide to Running Healthy Apps in the Cloud – Set your Health Check path\nhttps://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#set-your-health-check-path', alignment: 'left' } 
                     ],
                 },
                 // End of Health check section
@@ -709,12 +711,14 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nSometimes your app may run into issues, resulting in downtimes, slowness, or other unexpected behaviors. We’ve built App Service Diagnostics to help you diagnose and solve issues with your web app with recommended troubleshooting and next steps. However, these unexpected behaviors may be temporarily resolved with some simple mitigation steps, such as restarting the process or starting another executable, or require additional data collection, so that you can better troubleshoot the ongoing issue later. With Auto Healing, you can set up custom mitigation actions to run when certain conditions (that you define as unexpected or a sign of unhealthy behavior) are met:',
+                    text: 'Sometimes your app may run into issues, resulting in downtimes, slowness, or other unexpected behaviors. We’ve built App Service Diagnostics to help you diagnose and solve issues with your web app with recommended troubleshooting and next steps. However, these unexpected behaviors may be temporarily resolved with some simple mitigation steps, such as restarting the process or starting another executable, or require additional data collection, so that you can better troubleshoot the ongoing issue later. With Auto Healing, you can set up custom mitigation actions to run when certain conditions (that you define as unexpected or a sign of unhealthy behavior) are met:',
                     style: 'paragraph',
                     alignment: 'justify'
 
                 },
                 {
+                    style: 'paragraph',
+                    margin: 15,
                     ul: [
                         'Request Duration: examines slow requests',
                         'Memory Limit: examines process memory in private bytes',
@@ -732,7 +736,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -741,7 +745,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -772,7 +776,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'justify'
                 },
                 {
-                    text: ['\nIf you need to enable ', { text: 'Auto-Heal ', bold: true }, 'on other Web App(s), follow these instructions:\n'],
+                    text: ['If you need to enable ', { text: 'Auto-Heal ', bold: true }, 'on other Web App(s), follow these instructions:\n'],
                     style: 'paragraph',
                     alignment: 'justify'
                 },
@@ -786,17 +790,17 @@ export class ResiliencyScoreReportHelper {
                                 { text: ['Click on an ', { text: 'App Services', bold: true }] },
                                 'Click on the Web App where for which you want to enable Auto-Heal',
                                 { text: ['Click ', { text: 'Diagnose and solve problems ', bold: true }] },
-                                { text: ['Type', { text: 'Auto-Heal ', bold: true }, 'in the “Search for common problems or tools.” box and click in ', { text: 'Auto-Heal ', bold: true }, 'under the results'] },
+                                { text: ['Type ', { text: 'Auto-Heal ', bold: true }, 'in the “Search for common problems or tools.” box and click in ', { text: 'Auto-Heal ', bold: true }, 'under the results'] },
                                 'For custom rules:',
                                 {
                                     ul: [
-                                        { text: ['Under the ', { text: 'Custom Auto-Heal Rules ', bold: true }, 'tab set', { text: 'Custom Auto-Heal Rules ', bold: true }, 'to ', { text: 'Enabled', bold: true }] }
+                                        { text: ['Under the ', { text: 'Custom Auto-Heal Rules ', bold: true }, 'tab set ', { text: 'Custom Auto-Heal Rules ', bold: true }, 'to ', { text: 'Enabled', bold: true }] }
                                     ]
                                 },
                                 'For Proactive  Auto-Heal',
                                 {
                                     ul: [
-                                        { text: ['Under the ', { text: 'Proactive Auto-Heal ', bold: true }, 'tab set', { text: 'Proactive Auto-Heal ', bold: true }, 'to ', { text: 'Enabled', bold: true }] }
+                                        { text: ['Under the ', { text: 'Proactive Auto-Heal ', bold: true }, 'tab set ', { text: 'Proactive Auto-Heal ', bold: true }, 'to ', { text: 'Enabled', bold: true }] }
                                     ]
                                 }
                             ]
@@ -811,8 +815,8 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        'Announcing the New Auto Healing Experience in App Service Diagnostics\n https://azure.github.io/AppService/2018/09/10/Announcing-the-New-Auto-Healing-Experience-in-App-Service-Diagnostics.html\n'
-                    ],
+                        {text: ['Announcing the New Auto Healing Experience in App Service Diagnostics\n', {text: "https://azure.github.io/AppService/2018/09/10/Announcing-the-New-Auto-Healing-Experience-in-App-Service-Diagnostics.html", link: "https://azure.github.io/AppService/2018/09/10/Announcing-the-New-Auto-Healing-Experience-in-App-Service-Diagnostics.html", alignment: 'left' }]}
+                    ]
                 },
                 // End of Auto-Heal section
                 // ------------------------------------------
@@ -832,7 +836,7 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nYou can deploy Azure Front Door or Azure Traffic Manager to intercept traffic before they hit your site. They help in routing & distributing traffic between your instances/regions. If a catastrophic incident happens in one of the Azure Datacenters, you can still guarantee that your app will run and serve requests by investing in one of them.\n There are additional benefits to using Front Door or Traffic Manager, such as routing incoming requests based the customers’ geography to provide the shortest respond time to customers and distribute the load among your instances in order not to overload one of them with requests.',
+                    text: 'You can deploy Azure Front Door or Azure Traffic Manager to intercept traffic before they hit your site. They help in routing & distributing traffic between your instances/regions. If a catastrophic incident happens in one of the Azure Datacenters, you can still guarantee that your app will run and serve requests by investing in one of them.\n There are additional benefits to using Front Door or Traffic Manager, such as routing incoming requests based the customers’ geography to provide the shortest respond time to customers and distribute the load among your instances in order not to overload one of them with requests.',
                     style: 'paragraph',
                     alignment: 'justify'
 
@@ -847,7 +851,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -856,7 +860,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -894,9 +898,9 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        'The Ultimate Guide to Running Healthy Apps in the Cloud - Deploy in Multiple Regions\nhttps://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#deploy-in-multiple-regions\n',
-                        'Controlling Azure App Service traffic with Azure Traffic Manager\nhttps://docs.microsoft.com/en-us/azure/app-service/web-sites-traffic-manager\n',
-                        'Quickstart: Create a Front Door for a highly available global web application\nhttps://docs.microsoft.com/en-us/azure/frontdoor/quickstart-create-front-door\n'
+                        { text: 'The Ultimate Guide to Running Healthy Apps in the Cloud - Deploy in Multiple Regions\nhttps://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#deploy-in-multiple-regions', alignment: 'left' },
+                        { text: 'Controlling Azure App Service traffic with Azure Traffic Manager\nhttps://docs.microsoft.com/en-us/azure/app-service/web-sites-traffic-manager', alignment: 'left' } ,
+                        { text: 'Quickstart: Create a Front Door for a highly available global web application\nhttps://docs.microsoft.com/en-us/azure/frontdoor/quickstart-create-front-door', alignment: 'left' } 
                     ],
                 },
                 // End of Deploy in Multiple Regions/Zones section
@@ -917,7 +921,7 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nYou can deploy Azure Front Door or Azure Traffic Manager to intercept traffic before they hit your site. They help in routing & distributing traffic between your instances/regions. If a catastrophic incident happens in one of the Azure Datacenters, you can still guarantee that your app will run and serve requests by investing in one of them.\n There are additional benefits to using Front Door or Traffic Manager, such as routing incoming requests based the customers’ geography to provide the shortest respond time to customers and distribute the load among your instances in order not to overload one of them with requests.',
+                    text: 'You can deploy Azure Front Door or Azure Traffic Manager to intercept traffic before they hit your site. They help in routing & distributing traffic between your instances/regions. If a catastrophic incident happens in one of the Azure Datacenters, you can still guarantee that your app will run and serve requests by investing in one of them.\n There are additional benefits to using Front Door or Traffic Manager, such as routing incoming requests based the customers’ geography to provide the shortest respond time to customers and distribute the load among your instances in order not to overload one of them with requests.',
                     style: 'paragraph',
                     alignment: 'justify'
 
@@ -932,7 +936,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -941,7 +945,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -979,9 +983,9 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        'The Ultimate Guide to Running Healthy Apps in the Cloud - Deploy in Multiple Regions\nhttps://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#deploy-in-multiple-regions\n',
-                        'Controlling Azure App Service traffic with Azure Traffic Manager\nhttps://docs.microsoft.com/en-us/azure/app-service/web-sites-traffic-manager\n',
-                        'Quickstart: Create a Front Door for a highly available global web application\nhttps://docs.microsoft.com/en-us/azure/frontdoor/quickstart-create-front-door\n'
+                        { text: 'The Ultimate Guide to Running Healthy Apps in the Cloud - Deploy in Multiple Regions\nhttps://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#deploy-in-multiple-regions' , alignment: 'left' } ,
+                        { text: 'Controlling Azure App Service traffic with Azure Traffic Manager\nhttps://docs.microsoft.com/en-us/azure/app-service/web-sites-traffic-manager', alignment: 'left' },
+                        { text: 'Quickstart: Create a Front Door for a highly available global web application\nhttps://docs.microsoft.com/en-us/azure/frontdoor/quickstart-create-front-door', alignment: 'left' } 
                     ],
                 },
                 // End of Deploy in Multiple Regions/Zones section
@@ -1002,7 +1006,7 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nAn Azure region consists of a set of data centers deployed within a latency-defined perimeter and connected through a dedicated low-latency network. This ensures that Azure services within an Azure region offer the best possible performance and security.\nAn Azure geography defines an area of the world containing at least one Azure region. Geographies define a discrete market, typically containing two or more regions, that preserve data residency and compliance boundaries.\nA regional pair consists of two regions within the same geography. Azure serializes platform updates (planned maintenance) across regional pairs, ensuring that only one region in each pair updates at a time. If an outage affects multiple regions, at least one region in each pair will be prioritized for recovery',
+                    text: 'An Azure region consists of a set of data centers deployed within a latency-defined perimeter and connected through a dedicated low-latency network. This ensures that Azure services within an Azure region offer the best possible performance and security.\nAn Azure geography defines an area of the world containing at least one Azure region. Geographies define a discrete market, typically containing two or more regions, that preserve data residency and compliance boundaries.\nA regional pair consists of two regions within the same geography. Azure serializes platform updates (planned maintenance) across regional pairs, ensuring that only one region in each pair updates at a time. If an outage affects multiple regions, at least one region in each pair will be prioritized for recovery',
                     style: 'paragraph',
                     alignment: 'justify'
 
@@ -1017,7 +1021,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -1026,7 +1030,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1062,9 +1066,9 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 20]
                 },
                 {
-                    text: '\nBusiness continuity and disaster recovery (BCDR): Azure Paired Regions\nhttps://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions\n',
+                    text: 'Business continuity and disaster recovery (BCDR): Azure Paired Regions\nhttps://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions',
                     style: 'paragraph',
-                    alignment: 'justify'
+                    alignment: 'left'
                 },
                 // End of Regional Pairing section
                 // ------------------------------------------
@@ -1084,7 +1088,7 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nAzure App Service platform upgrades take place regularly. When Azure App Service upgrades the instances that your application(s) are using, it will cause a restart of your Web App once the instance(s) hosting your application are upgraded.\nWe reviewed your Web App during the time of the most recent Platform upgrade while doing this report to see how it affected availability.',
+                    text: 'Azure App Service platform upgrades take place regularly. When Azure App Service upgrades the instances that your application(s) are using, it will cause a restart of your Web App once the instance(s) hosting your application are upgraded.\nWe reviewed your Web App during the time of the most recent Platform upgrade while doing this report to see how it affected availability.',
                     style: 'paragraph',
                     alignment: 'justify'
                 },
@@ -1098,7 +1102,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -1107,7 +1111,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1145,7 +1149,7 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        'Demystifying the magic behind App Service OS updates\nhttps://azure.github.io/AppService/2018/01/18/Demystifying-the-magic-behind-App-Service-OS-updates.html\n',
+                        { text: 'Demystifying the magic behind App Service OS updates\nhttps://azure.github.io/AppService/2018/01/18/Demystifying-the-magic-behind-App-Service-OS-updates.html', alignment: 'left' } ,
                     ],
                 },
                 // End of Platform Upgrades Resiliency section
@@ -1166,7 +1170,9 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: ['\nYou can register to receive notifications from the platform before the instances hosting your Azure App Service Web App running on App Service Environment (ASE) will be restarted due to a platform upgrade and again once the upgrade has finished.\nWith a combination of Azure Front Door and a Logic App, you can configure your environment so that traffic is automatically redirected to your Web App on another region while your Web App is going through a Platform Upgrade by following the steps on this document:\nhttps://github.com/Azure-Samples/azure-logic-app-traffic-update-samples\n', { text: 'IMPORTANT: This opt-in feature is currently available only per request. Reach out to your CSAM to opt-in in this feature.', bold: true }],
+                    text: [
+                        { text: ['You can register to receive notifications from the platform before the instances hosting your Azure App Service Web App running on App Service Environment (ASE) will be restarted due to a platform upgrade and again once the upgrade has finished.\nWith a combination of Azure Front Door and a Logic App, you can configure your environment so that traffic is automatically redirected to your Web App on another region while your Web App is going through a Platform Upgrade by following the steps on this document:\n', { text: 'https://github.com/Azure-Samples/azure-logic-app-traffic-update-samples\n', alignment: 'left' }, { text: 'IMPORTANT: This opt-in feature is currently available only per request. Reach out to your CSAM to opt-in in this feature.', bold: true } ] } 
+                    ],
                     style: 'paragraph',
                     alignment: 'justify'
 
@@ -1189,28 +1195,28 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nFor production applications, it is recommended that an App Service Plan does not host more than a certain number of sites. The number may be lower depending on how resource intensive the hosted applications are, however as a general guidance, you may refer to the table below:',
+                    text: 'For production applications, it is recommended that an App Service Plan does not host more than a certain number of sites. The number may be lower depending on how resource intensive the hosted applications are, however as a general guidance, you may refer to the table below:',
                     style: 'paragraph',
                     alignment: 'justify'
                 },
                 {
-                    margin: [0, 2],
+                    margin: [170, 2],
                     alignment: 'center',
                     table: {
                         headerRows: 1,
                         widths: ['auto', 'auto'],
                         body: [
                             [
-                                { text: 'Worker Size', style: 'maxSiterperWorkerSizeheader' }, { text: 'Max sites', style: 'maxSiterperWorkerSizeheader' }
+                                { text: 'Worker Size', style: 'maxSiteperWorkerSizeheader' }, { text: 'Max sites', style: 'maxSiteperWorkerSizeheader' }
                             ],
                             [
-                                { text: 'Small', bold: true, style: 'maxSiterperWorkerSizeevenRow' }, { text: '8', style: 'maxSiterperWorkerSizeevenrow' }
+                                { text: 'Small', style: 'maxSiteperWorkerSizeevenRow', fillColor: 'gray' }, { text: '8', style: 'maxSiteperWorkerSizeevenrow' }
                             ],
                             [
-                                { text: 'Medium', bold: true, style: 'maxSiterperWorkerSizeoddRow' }, { text: '16', style: 'maxSiterperWorkerSizeoddrow' }
+                                { text: 'Medium', style: 'maxSiteperWorkerSizeoddRow' }, { text: '16', style: 'maxSiteperWorkerSizeoddrow' }
                             ],
                             [
-                                  { text: 'Large', bold: true, style: 'maxSiterperWorkerSizeevenRow' }, { text: '32', style: 'maxSiterperWorkerSizeevenrow' }
+                                { text: 'Large', style: 'maxSiteperWorkerSizeevenRow', fillColor: 'gray' }, { text: '32', style: 'maxSiteperWorkerSizeevenrow' }
                             ]
                         ]
                     },
@@ -1239,7 +1245,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -1248,7 +1254,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1279,7 +1285,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'justify'
                 },
                 {
-                    text: '\nFor any other applications exceeding the amount of recommended Web Apps per worker listed above, move the extra Web Apps to one or more App Service Plans.\n',
+                    text: 'For any other applications exceeding the amount of recommended Web Apps per worker listed above, move the extra Web Apps to one or more App Service Plans.\n',
                     style: 'paragraph',
                     alignment: 'justify'
                 },
@@ -1291,7 +1297,7 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        'Azure App Service plan overview\nhttps://docs.microsoft.com/en-us/azure/app-service/azure-web-sites-web-hosting-plans-in-depth-overview'
+                        { text: 'Azure App Service plan overview\nhttps://docs.microsoft.com/en-us/azure/app-service/azure-web-sites-web-hosting-plans-in-depth-overview', alignment: 'left' } 
                     ],
                 },
                 // End of App density section
@@ -1312,7 +1318,7 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nAzure uses source network address translation (SNAT) and Load Balancers (not exposed to customers) to communicate with public IP addresses. Each instance on Azure App service is initially given a pre-allocated number of 128 SNAT ports. The SNAT port limit affects opening connections to the same address and port combination. If your app creates connections to a mix of address and port combinations, you will not use up your SNAT ports. The SNAT ports are used up when you have repeated calls to the same address and port combination. Once a port has been released, the port is available for reuse as needed. The Azure Network load balancer reclaims SNAT port from closed connections only after waiting for 4 minutes.',
+                    text: 'Azure uses source network address translation (SNAT) and Load Balancers (not exposed to customers) to communicate with public IP addresses. Each instance on Azure App service is initially given a pre-allocated number of 128 SNAT ports. The SNAT port limit affects opening connections to the same address and port combination. If your app creates connections to a mix of address and port combinations, you will not use up your SNAT ports. The SNAT ports are used up when you have repeated calls to the same address and port combination. Once a port has been released, the port is available for reuse as needed. The Azure Network load balancer reclaims SNAT port from closed connections only after waiting for 4 minutes.',
                     style: 'paragraph',
                     alignment: 'justify'
 
@@ -1327,7 +1333,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -1336,7 +1342,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1367,7 +1373,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'justify'
                 },
                 {
-                    text: '\nIf you have other Web Apps with SNAT issues, consider the following:\nYou should limit the number of outbound connections to the same URL/IP address/Port combination to 100 or less by using the following recommendations:\n',
+                    text: 'If you have other Web Apps with SNAT issues, consider the following:\nYou should limit the number of outbound connections to the same URL/IP address/Port combination to 100 or less by using the following recommendations:\n',
                     style: 'paragraph',
                     alignment: 'justify'
                 },
@@ -1397,9 +1403,9 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        'Improper Instantiation antipattern (Code sample included)\nhttps://docs.microsoft.com/en-us/azure/architecture/antipatterns/improper-instantiation/#how-to-fix-the-problem',
-                        'Troubleshooting intermittent outbound connection errors in Azure App Service\nhttps://docs.microsoft.com/en-us/azure/architecture/antipatterns/improper-instantiation/#how-to-fix-the-problem',
-                        'Understanding SNAT with App Service\nhttps://4lowtherabbit.github.io/blogs/2019/10/SNAT/'
+                        { text: 'Improper Instantiation antipattern (Code sample included)\nhttps://docs.microsoft.com/en-us/azure/architecture/antipatterns/improper-instantiation/#how-to-fix-the-problem', alignment: 'left' } ,
+                        { text: 'Troubleshooting intermittent outbound connection errors in Azure App Service\nhttps://docs.microsoft.com/en-us/azure/architecture/antipatterns/improper-instantiation/#how-to-fix-the-problem', alignment: 'left' } ,
+                        { text: 'Understanding SNAT with App Service\nhttps://4lowtherabbit.github.io/blogs/2019/10/SNAT/', alignment: 'left' } 
                     ],
                 },
                 // End of SNAT port exhaustion section
@@ -1431,7 +1437,7 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nWebsites unload if they sit idle for too long, which helps the system conserve resources. Always On setting (available for Standard tier and above), keeps your site up and running, which translates to higher availability and faster response times across the board.\nKeeps the app loaded even when there\'s no traffic. It\'s required for continuous WebJobs or for WebJobs that are triggered using a CRON expression.\nIf Always On is enabled but there’s something preventing it from reaching the actual root of the Web App (like redirects due authentication/authorization/HTTPS Only, etc.), it might not be able to keep your application from going idle',
+                    text: 'Websites unload if they sit idle for too long, which helps the system conserve resources. Always On setting (available for Standard tier and above), keeps your site up and running, which translates to higher availability and faster response times across the board.\nKeeps the app loaded even when there\'s no traffic. It\'s required for continuous WebJobs or for WebJobs that are triggered using a CRON expression.\nIf Always On is enabled but there’s something preventing it from reaching the actual root of the Web App (like redirects due authentication/authorization/HTTPS Only, etc.), it might not be able to keep your application from going idle',
                     style: 'paragraph',
                     alignment: 'justify'
 
@@ -1446,7 +1452,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -1455,7 +1461,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1486,7 +1492,8 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'justify'
                 },
                 {
-                    text: ['\nEnable ',{text: 'Always on', bold:true, style: 'paragraph',}]
+                    style: 'paragraph',
+                    text: ['Enable ', { text: 'Always on', bold:true }]
                 },
                 {
                     style: 'paragraph',
@@ -1498,8 +1505,8 @@ export class ResiliencyScoreReportHelper {
                                 'Click on the Portal menu on the top left corner',
                                 { text: ['Click on ', {text: 'App Services', bold:true}]},
                                 { text: ['Select the App Service for which you want to enable ', { text: 'Always on ', bold: true }] },
-                                { text: ['Click on ', { text: 'Configuration', bold: true }] },
-                                { text: 'General settings', bold:true},
+                                { text: ['Click on ', { text: 'Configuration', bold: true } ] },
+                                { text: ['Click on ', { text: 'General settings', bold:true } ] },
                                 { text: ['Change ', { text: 'Always on ', bold: true }, 'from Off to ', { text: 'On', bold: true }, '.'] },
                                 { text: ['Click on ', { text: 'Save', bold: true }] },                                
                             ]
@@ -1529,9 +1536,9 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        'Configure an App Service app in the Azure portal\nhttps://docs.microsoft.com/en-us/azure/app-service/configure-common#configure-general-settings',
-                        'Set-AzWebApp\nhttps://docs.microsoft.com/en-us/powershell/module/az.websites/set-azwebapp?view=azps-5.7.0#parameters',
-                        'az webapp config\nhttps://docs.microsoft.com/en-us/cli/azure/webapp/config?view=azure-cli-latest#az-webapp-config-set'                        
+                        { text: 'Configure an App Service app in the Azure portal\nhttps://docs.microsoft.com/en-us/azure/app-service/configure-common#configure-general-settings', alignment: 'left' } ,
+                        { text: 'Set-AzWebApp\nhttps://docs.microsoft.com/en-us/powershell/module/az.websites/set-azwebapp?view=azps-5.7.0#parameters', alignment: 'left' },
+                        { text: 'az webapp config\nhttps://docs.microsoft.com/en-us/cli/azure/webapp/config?view=azure-cli-latest#az-webapp-config-set', alignment: 'left' } 
                     ],
                 },
                 // End of AlwaysOn Check section
@@ -1552,7 +1559,7 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nAzure Advisor integrates recommendations for improving your App Service experience and discovering relevant platform capabilities. Examples of App Service recommendations are:',
+                    text: 'Azure Advisor integrates recommendations for improving your App Service experience and discovering relevant platform capabilities. Examples of App Service recommendations are:',
                     style: 'paragraph',
                     alignment: 'justify'
 
@@ -1573,7 +1580,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -1582,7 +1589,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1613,7 +1620,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'justify'
                 },
                 {
-                    text: ['\nJust keep reviewing periodically ', {text: 'App Service Advisory ', bold:true}, 'recommendations:'],
+                    text: ['Just keep reviewing periodically ', {text: 'App Service Advisory ', bold:true}, 'recommendations:'],
                     style: 'paragraph',
                     alignment: 'justify'
                 },
@@ -1639,8 +1646,8 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        'Improve the performance of Azure applications by using Azure Advisor - Improve App Service performance and reliability\nhttps://docs.microsoft.com/en-us/azure/advisor/advisor-performance-recommendations#improve-app-service-performance-and-reliability',
-                        'Best Practices for Azure App Service\nhttps://docs.microsoft.com/en-us/azure/app-service/app-service-best-practices'
+                        { text: 'Improve the performance of Azure applications by using Azure Advisor - Improve App Service performance and reliability\nhttps://docs.microsoft.com/en-us/azure/advisor/advisor-performance-recommendations#improve-app-service-performance-and-reliability', alignment: 'left' },
+                        { text: 'Best Practices for Azure App Service\nhttps://docs.microsoft.com/en-us/azure/app-service/app-service-best-practices', alignment: 'left' } 
                     ],
                 },
                 // End of App Service Advisor Recommendations section
@@ -1661,7 +1668,7 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nARR Affinity creates sticky sessions so that clients will connect to the same app instance on subsequent requests. However, ARR Affinity can cause unequal distribution of requests between your instances and possibly overload an instance. For production apps that are aiming to be robust, it is recommended to set Always on to On and ARR Affinity to Off. Disabling ARR Affinity assumes that your application is either stateless, or the session state is stored on a remote service such as a cache or database.\nUsing ARR Affinity for a stateful application is not very reliable as instances could be restarted/replaced at any given time and that will make the client lose its session state.\nWe are not counting this against the score to account for those customers whose applications rely on ARR Affinity.',
+                    text: 'ARR Affinity creates sticky sessions so that clients will connect to the same app instance on subsequent requests. However, ARR Affinity can cause unequal distribution of requests between your instances and possibly overload an instance. For production apps that are aiming to be robust, it is recommended to set Always on to On and ARR Affinity to Off. Disabling ARR Affinity assumes that your application is either stateless, or the session state is stored on a remote service such as a cache or database.\nUsing ARR Affinity for a stateful application is not very reliable as instances could be restarted/replaced at any given time and that will make the client lose its session state.\nWe are not counting this against the score to account for those customers whose applications rely on ARR Affinity.',
                     style: 'paragraph',
                     alignment: 'justify'
 
@@ -1676,7 +1683,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -1685,7 +1692,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1738,7 +1745,7 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        'The Ultimate Guide to Running Healthy Apps in the Cloud – Set your Health Check path\nhttps://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#set-your-health-check-path\n'
+                        { text: 'The Ultimate Guide to Running Healthy Apps in the Cloud – Set your Health Check path\nhttps://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#set-your-health-check-path\n', alignment: 'left' }
                     ],
                 },
                 // End of ARR Affinity Check (Recommendation. Not counted against the score) section
@@ -1759,7 +1766,7 @@ export class ResiliencyScoreReportHelper {
                     margin: [0, 5]
                 },
                 {
-                    text: '\nAzure App Service brings together everything you need to create websites, mobile backends, and web APIs for any platform or device. Free and Shared (preview) plans provide different options to test your apps within your budget. Basic, Standard and Premium plans are for production workloads and run on dedicated Virtual Machine instances. Each instance can support multiple application and domains. The Isolated plan hosts your apps in a private, dedicated Azure environment and is ideal for apps that require secure connections with your on-premises network, or additional performance and scale. App Service plans are billed on a per second basis.',
+                    text: 'Azure App Service brings together everything you need to create websites, mobile backends, and web APIs for any platform or device. Free and Shared (preview) plans provide different options to test your apps within your budget. Basic, Standard and Premium plans are for production workloads and run on dedicated Virtual Machine instances. Each instance can support multiple application and domains. The Isolated plan hosts your apps in a private, dedicated Azure environment and is ideal for apps that require secure connections with your on-premises network, or additional performance and scale. App Service plans are billed on a per second basis.',
                     style: 'paragraph',
                     alignment: 'justify'
 
@@ -1774,7 +1781,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'center',
                     table: {
                         headerRows: 1,
-                        widths: [109, 'auto', 359],
+                        widths: [109, 'auto', 329],
                         body: [
                             [
                                 { text: 'Site name', style: 'detectTableheader' },
@@ -1783,7 +1790,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].ImplementationGrade), style: 'detectTableevenrow', color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].ImplementationGrade) },
+                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1814,7 +1821,7 @@ export class ResiliencyScoreReportHelper {
                     alignment: 'justify'
                 },
                 {
-                    text: '\nFor Web Apps that are not under a Production SKU, to scale up the App Service Plan using the Azure Portal:',
+                    text: 'For Web Apps that are not under a Production SKU, to scale up the App Service Plan using the Azure Portal:',
                     style: 'paragraph',
                     alignment: 'justify'
                 },
@@ -1841,8 +1848,8 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        'App Service pricing\nhttps://azure.microsoft.com/en-us/pricing/details/app-service/windows/'                        
-                    ],
+                        { text: ['App Service pricing\n', {text: "https://azure.microsoft.com/en-us/pricing/details/app-service/windows", link: "https://azure.microsoft.com/en-us/pricing/details/app-service/windows", alignment: 'left' } ] }                        
+                    ]
                 },
                // End of Production SKU used section
             ],
@@ -1852,11 +1859,11 @@ export class ResiliencyScoreReportHelper {
                     fontSize: 28,
                     bold: false
                 },
-                header2: {
-                    alignment: 'center',
+                header2: {                    
                     font: 'Calibri',
-                    fontSize: 28,
-                    light: true
+                    fontSize: 16,
+                    color: '#10438e',
+                    lineHeight: 2
                 },
                 header3: {
                     font: 'Calibri',
@@ -1868,9 +1875,16 @@ export class ResiliencyScoreReportHelper {
                     fontSize: 13,
                     color: '#10438e'
                 },
+                title2: {
+                    alignment: 'center',
+                    font: 'Calibri',
+                    fontSize: 28,
+                    light: true
+                },
                 paragraph: {
                     font: 'Calibri',
                     fontSize: 11,
+                    lineHeight: 1.2,
                     alignment: 'justify'
                 },
                 apsrcTableevenrow: {
@@ -1913,28 +1927,28 @@ export class ResiliencyScoreReportHelper {
                     fontSize: 11,
                     fillColor: 'white'
                 },
-                maxSiterperWorkerSizeheader: {
+                maxSiteperWorkerSizeheader: {
                     font: 'Calibri',
                     color: 'white',
                     bold: true,
                     fontSize: 11,
                     fillColor: 'black'
                 },
-                maxSiterperWorkerSizeevenrow: {
+                maxSiteperWorkerSizeevenrow: {
                     font: 'Calibri',
                     color: 'black',
                     fontSize: 11,
-                    fillColor: '#848b79' //Sage gray
+                    fillColor: 'gray'//'#848b79' //Sage gray
                 },
-                maxSiterperWorkerSizeoddrow: {
+                maxSiteperWorkerSizeoddrow: {
                     font: 'Calibri',
                     color: 'black',
                     fontSize: 11,
                     fillColor: 'white'
                 },
             }
-        }
-        pdfMake.createPdf(docDefinition).download('ResiliencyScoreReport.pdf');
+        }   
+        pdfMake.createPdf(docDefinition).download(`ResiliencyReport-${resiliencyReportData.ResiliencyResourceList[0].Name}-${ResiliencyScoreReportHelper.generatedOn().replace(":","-")}.pdf`);
         console.log("Resiliency Score Report");
     }
 
