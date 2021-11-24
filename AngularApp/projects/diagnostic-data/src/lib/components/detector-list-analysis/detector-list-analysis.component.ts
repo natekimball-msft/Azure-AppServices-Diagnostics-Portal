@@ -29,8 +29,10 @@ import { GenericResourceService } from '../../services/generic-resource-service'
 import { zoomBehaviors } from '../../models/time-series';
 import * as momentNs from 'moment';
 const moment = momentNs;
+
 import { ILinkProps, PanelType } from 'office-ui-fabric-react';
 import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.service';
+import { GenericUserSettingService } from '../../services/generic-user-setting.service';
 
 const WAIT_TIME_IN_SECONDS_TO_ALLOW_DOWNTIME_INTERACTION: number = 58;
 const PERCENT_CHILD_DETECTORS_COMPLETED_TO_ALLOW_DOWNTIME_INTERACTION: number = 0.9;
@@ -121,12 +123,13 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     solutionPanelType: PanelType = PanelType.custom;
     solutionPanelOpenSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
     solutionTitle: string = "";
+    expandIssuedAnalysisChecks: boolean = false;
 
     constructor(public _activatedRoute: ActivatedRoute, private _router: Router,
         private _diagnosticService: DiagnosticService, private _detectorControl: DetectorControlService,
         protected telemetryService: TelemetryService, public _appInsightsService: AppInsightsQueryService,
         private _supportTopicService: GenericSupportTopicService, protected _globals: GenieGlobals, private _solutionService: SolutionService,
-        @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, private portalActionService: PortalActionGenericService, private _resourceService: GenericResourceService, private _genericBreadcrumbService: GenericBreadcrumbService) {
+        @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, private portalActionService: PortalActionGenericService, private _resourceService: GenericResourceService, private _genericBreadcrumbService: GenericBreadcrumbService, private _genericUserSettingsService:GenericUserSettingService) {
         super(telemetryService);
         this.isPublic = config && config.isPublic;
 
@@ -169,6 +172,10 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                 }
             });
         }
+
+        this._genericUserSettingsService.getExpandAnalysisCheckCard().subscribe(expandAnalysisCheckCard => {
+            this.expandIssuedAnalysisChecks = expandAnalysisCheckCard;
+        })
 
         this.startTime = this._detectorControl.startTime;
         this.endTime = this._detectorControl.endTime;

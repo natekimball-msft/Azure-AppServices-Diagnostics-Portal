@@ -172,7 +172,7 @@ export class MainComponent implements OnInit {
         }
       });
 
-      this._userInfoService.getRecentResources().subscribe(userInfo => {
+      this._userInfoService.getUserSetting().subscribe(userInfo => {
         if (userInfo && userInfo.resources) {
           this.table = this.generateDataTable(userInfo.resources);
         }

@@ -19,8 +19,18 @@
       <fab-search-box (onSearch)="triggerSearch()" [value]="searchValue" [styles]="searchStyles" [placeholder]="'Describe your problem and hit enter'" (onChange)="updateSearchValue($event)"></fab-search-box>
     </div>
 
-    <div *ngIf="userPhotoSource !== ''" style="margin-right: 16px;">
+    <div *ngIf="userPhotoSource !== ''" class="user-photo-container" (click)="openCallout()" (keyup.enter)="openCallout()" tabindex="0">
       <img [src]="userPhotoSource" alt="User Profile Photo" class="avatar header-img">
     </div>
   </nav>
 </header>
+
+<div *ngIf="showCallout" class="header-callout">
+  <div class="user-setting-section" style="height: 80%;">
+    <fab-toggle [onnText]="'Expand'" [offText]="'Collapse'" [label]="'Expand Analysis Card'" [checked]="expandCheckCard" (onChange)="toggleExpandCheckCard($event)"></fab-toggle>
+  </div>
+  <div class="user-setting-section" style="border-top: 1px solid gray;">
+    <fab-primary-button (onClick)="applyUserSettingChange()" contentClass="mr-5">Apply</fab-primary-button>
+    <fab-default-button (onClick)="cancelUserSettingChange()">Cancel</fab-default-button>
+  </div>
+</div>

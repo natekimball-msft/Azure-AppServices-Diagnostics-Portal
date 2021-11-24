@@ -123,6 +123,7 @@ import { SolutionsPanelComponent } from './components/solutions-panel/solutions-
 import { DetectorTimePickerComponent } from './components/detector-time-picker/detector-time-picker.component';
 import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-feedback.component';
 import { GenericBreadcrumbService } from './services/generic-breadcrumb.service';
+import { GenericUserSettingService } from './services/generic-user-setting.service';
 
 @NgModule({
   imports: [
@@ -266,6 +267,7 @@ export class DiagnosticDataModule {
         GenericContentService,
         GenericDocumentsSearchService,
         GenericBreadcrumbService,
+        GenericUserSettingService,
         { provide: DIAGNOSTIC_DATA_CONFIG, useValue: config },
         CXPChatService,
         KustoTelemetryService,

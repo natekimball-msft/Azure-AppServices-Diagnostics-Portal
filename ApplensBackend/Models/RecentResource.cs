@@ -18,6 +18,9 @@ namespace AppLensV3.Models
         [JsonProperty(PropertyName = "PartitionKey")]
         public string PartitionKey;
 
+        [JsonProperty(PropertyName = "expandAnalysisCheckCard")]
+        public bool ExpandAnalysisCheckCard { get; set; }
+
         public UserSetting(string id, List<RecentResource> resources)
         {
             Id = id;

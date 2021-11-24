@@ -15,7 +15,7 @@ export class UserSettingService {
         this.userId = alias.replace('@microsoft.com', '');
     }
 
-    getRecentResources() {
+    getUserSetting() {
         if (this.userSetting) {
             return of(this.userSetting);
         }
@@ -28,12 +28,16 @@ export class UserSettingService {
         );
     }
 
+    getExpandAnalysisCheckCard() {
+        return this.getUserSetting().pipe(map(userSetting => userSetting.expandAnalysisCheckCard));
+    }
+
     updateRecentResource(recentResource: RecentResource) {
         this.updateUserSetting(recentResource, this.addRecentResource);
     }
 
-    private updateUserSetting(item: any, fn: UpdateUserSettingCallBack) {
-        this.getRecentResources().pipe(catchError(error => {
+    updateUserSetting(item: any, fn: UpdateUserSettingCallBack) {
+        this.getUserSetting().pipe(catchError(error => {
             if (error.status === 404) {
                 const userSetting = new UserSetting(this.userId);
                 return of(userSetting);
