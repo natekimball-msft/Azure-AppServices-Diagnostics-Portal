@@ -14,7 +14,10 @@ import { VersionService } from '../../services/version.service';
 import { CXPChatService } from '../../services/cxp-chat.service';
 import * as momentNs from 'moment';
 import { xAxisPlotBand, xAxisPlotBandStyles, zoomBehaviors, XAxisSelection } from '../../models/time-series';
-import { IButtonStyles, IChoiceGroupOption, IDropdownOption, IIconProps } from 'office-ui-fabric-react';
+import { IButtonStyles } from 'office-ui-fabric-react/lib/components/Button';
+import { IChoiceGroupOption } from 'office-ui-fabric-react/lib/components/ChoiceGroup';
+import { IDropdownOption } from 'office-ui-fabric-react/lib/components/Dropdown';
+import { IIconProps } from 'office-ui-fabric-react/lib/components/Icon';
 
 const moment = momentNs;
 const minSupportedDowntimeDuration: number = 10;
