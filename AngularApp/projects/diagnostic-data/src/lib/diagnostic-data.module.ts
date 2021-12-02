@@ -243,6 +243,7 @@ import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-fee
     ConvertLevelToHealthStatusPipe,
     GetDropdownOptionsPipe,
     SolutionOrchestratorComponent,
+    FabricFeedbackComponent,
     DetectorTimePickerComponent
   ],
 })
