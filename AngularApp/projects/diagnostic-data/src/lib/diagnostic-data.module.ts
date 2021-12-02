@@ -244,6 +244,7 @@ import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-fee
     GetDropdownOptionsPipe,
     SolutionOrchestratorComponent,
     FabricFeedbackComponent,
+    FabDataTableComponent,
     DetectorTimePickerComponent
   ],
 })
