@@ -245,12 +245,6 @@ export class OnboardingFlowComponent implements OnInit {
   }
 
   modalPublishingButtonText: string;
-  //gradPublishButtonText: string;
-
-  // get correctPublishButtonText() {
-  //   return this.detectorGraduation ? this.gradPublishButtonText : this.modalPublishingButtonText;
-  // }
-
   modalPublishingButtonDisabled: boolean;
   publishAccessControlResponse: any;
 
@@ -318,7 +312,6 @@ export class OnboardingFlowComponent implements OnInit {
   }
 
   updateTempBranch(event: any) {
-    //console.log(event);
     this.tempBranch = event.option.key;
   }
 
@@ -365,19 +358,12 @@ export class OnboardingFlowComponent implements OnInit {
   }
 
   ableToDelete: boolean = false;
-    //return true;
-    //return this.detectorGraduation && this.mode !== DevelopMode.Create;
-    //return this.mode !== DevelopMode.Create;
-    //return this.detectorGraduation == true;
-
   deleteVisibilityStyle = {};
 
   ngOnInit() {
     this.detectorGraduation = true;
     this.diagnosticApiService.getDetectorGraduationSetting().subscribe(graduationFlag => {
       this.detectorGraduation = graduationFlag;
-      //this.disableDelete = !(graduationFlag === true && this.mode !== DevelopMode.Create);
-      //this.ableToDelete = this.mode !== DevelopMode.Create;
       this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
 
       this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
@@ -1125,8 +1111,6 @@ export class OnboardingFlowComponent implements OnInit {
         this.ngxSmartModalService.getModal('publishModal').close();
         this.detectorName = this.publishingPackage.id;
         this.publishSuccess = true;
-        //this.showAlertBox('alert-success', 'Detector published successfully. Changes will be live shortly.');
-
         this._telemetryService.logEvent("SearchTermPublish", { detectorId: this.id.toLowerCase(), numUtterances: this.allUtterances.length.toString(), ts: Math.floor((new Date()).getTime() / 1000).toString() });
       }, err => {
         this.enableRunButton();
@@ -1451,8 +1435,4 @@ export class OnboardingFlowComponent implements OnInit {
 
     return false;
   }
-
-  // ngOnDestroy() {
-
-  // }
 }
