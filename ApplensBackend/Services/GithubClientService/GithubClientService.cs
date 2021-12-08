@@ -129,11 +129,13 @@ namespace AppLensV3
                 id,
                 Branch);
 
-            try {
+            try
+            {
                 return await GetRawFile(metadataFileUrl);
             }
-            catch (WebException ex) {
-                response = (HttpWebResponse)ex.Response;
+            catch (WebException ex)
+            {
+                HttpWebResponse response = (HttpWebResponse)ex.Response;
                 switch (response.StatusCode)
                 {
                     case HttpStatusCode.NotFound: // 404
