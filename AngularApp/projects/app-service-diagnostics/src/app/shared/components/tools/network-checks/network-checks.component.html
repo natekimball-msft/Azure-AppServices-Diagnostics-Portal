@@ -1,6 +1,6 @@
 <div class="network-checking-tool" #networkCheckingTool [ngStyle]="{width: width, height: height}">
     <div class="container">
-        <h2 >{{ title }} <span (click)="onClickPreview()">(Preview)</span></h2>
+        <h2 >{{ title }} (Preview)</h2>
         <p>{{ description }}</p>
         <div *ngFor="let viewModel of stepViews" >
             <div class="step-container" *ngIf="!viewModel.stepView.hidden" [ngSwitch]="viewModel.stepView.type">
