@@ -46,9 +46,10 @@ export class SubnetDeletionWordings {
         this.subnetIsInUseBySites = {
             get(sites, portalDomain) {
                 var table = "| App(Slot) | ResourceId |\r\n"+"| - | - |\r\n" + sites.map(site => 
-                    `| ${site.site_name}(${site.slot_name}) |[/${site.subscription_name}/${site.resource_group_name}/sites/${site.site_name}/${site.slot_name}](${portalDomain}/#resource/subscriptions/${site.subscription_name}`+
+                    `| [${site.site_name}(${site.slot_name})](${portalDomain}/#resource/subscriptions/${site.subscription_name}`+
                     `/resourceGroups/${site.resource_group_name}/providers/Microsoft.Web/sites/${site.site_name}`+
-                    `${site.slot_name === "Production" ? "" : `/slots/${site.slot_name}`}/networkingHub)|`).join("\r\n"); 
+                    `${site.slot_name === "Production" ? "" : `/slots/${site.slot_name}`}/networkingHub)`+
+                    `| /${site.subscription_name}/${site.resource_group_name}/sites/${site.site_name}/${site.slot_name} |`).join("\r\n"); 
                 var views = [
                     new CheckStepView({
                     title: `Subnet is integrated with ${sites.length} app(s)`,
@@ -57,8 +58,9 @@ export class SubnetDeletionWordings {
                     }),
                     new InfoStepView({
                         infoType: 1,
-                        title: "Problem detected: Subnet is used by following apps",
-                        markdown: table + "\r\n\r\n Please disconnect the VNet integration before deleting the VNet or Subnet"
+                        title: "Problem detected: Subnet is used by the following apps",
+                        markdown: table + "\r\n\r\n Please disconnect the VNet integration from the apps above and retry VNet/Subnet.\r\n\r\n" + 
+                        "To disconnect the VNet, click the App name above to navigate to Networking -> VNet Integration and click on disconnect. "
                     })
                 ];
                 return views;
@@ -86,14 +88,14 @@ export class SubnetDeletionWordings {
                 uri = uri.replaceAll("/","&#8203;/");
                 var views = [
                     new CheckStepView({
-                        title: `Orphaned Service Association Link detected`,
+                        title: `Unused Service Association Link detected`,
                         level: 2
                     }),
                     new InfoStepView({
                         infoType: 1,
-                        title: "Problem detected: orphaned SAL",
-                        markdown: "We will fix this orphaned state object in next a few business days, please try again to delete the VNet or Subnet later.\r\n\r\n" +
-                            `To get it deleted immediately, open a support ticket and provide this resource id\r\n\r\n  **${uri}**`
+                        title: "Problem detected: unused Service Association Link",
+                        markdown: "This unused Service Association Link has just been flagged by our system and will be deleted in the next 3-5 business days to resolve your issue. Please try deleting the VNet/subnet again after this time.\r\n\r\n" +
+                            `If you need it deleted immediately, please file a support request and include the resource id below:\r\n\r\n  **${uri}**`
                     })
                 ];
 
