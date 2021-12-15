@@ -2,13 +2,13 @@
     "homePageText": {
         "title": "Azure Batch Diagnostics",
         "description": "Investigate how your pools are performing, diagnose issues, and discover how to improve their reliability.",
-        "searchBarPlaceHolder": "Search Azure Batch"
+        "searchBarPlaceHolder": "Search for common problems or tools"
     },
     "matchRegEx": "/Microsoft.Batch/batchAccounts/",
     "searchSuffix": "Batch",
     "azureServiceName": "Azure Batch",
     "armApiConfig": {
-        "armApiVersion": "2021-01-01",
+        "armApiVersion": "2022-01-01",
         "isArmApiResponseBase64Encoded": true
     },
     "isSearchEnabled": true,
@@ -19,7 +19,7 @@
     },
     "categories": [
         {
-            "id": "Pools and Nodes",
+            "id": "poolsandnodesbatch",
             "name": "Pools and Nodes",
             "description": "Investigate potential issues with your pools and nodes.",
             "keywords": [
@@ -28,7 +28,8 @@
             ],
             "color": "rgb(186, 211, 245)",
             "createFlowForCategory": false,
-            "chatEnabled": false
+            "chatEnabled": false,
+            "overviewDetectorId": "poolsAndNodes"
         }
     ],
     "queryLinks": [],
