@@ -16,6 +16,25 @@ import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/serv
 import {TelemetryEventNames} from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
 import { environment } from '../../../../environments/environment';
 import {ActivatedRoute, Params} from "@angular/router";
+import {DiagnosticApiService} from "../../../shared/services/diagnostic-api.service";
+import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
+import ReconnectingWebSocket from 'reconnecting-websocket';
+import {WebSocket} from "ws";
+import {
+  MonacoLanguageClient, CloseAction, ErrorAction,
+  MonacoServices, createConnection
+} from 'monaco-languageclient';
+
+const codePrefix = `using Diagnostics.DataProviders;
+using Diagnostics.ModelsAndUtils.Utilities;
+using Diagnostics.ModelsAndUtils.Models;
+using Diagnostics.ModelsAndUtils.Models.ResponseExtensions;
+using Diagnostics.ModelsAndUtils.Attributes;
+using Diagnostics.ModelsAndUtils.ScriptUtilities;
+using Kusto.Data;
+using System.Data;
+
+`;
 
 const moment = momentNs;
 const newDetectorId:string = "NEW_DETECTOR";
@@ -87,6 +106,9 @@ export class OnboardingFlowComponent implements OnInit {
   initialized = false;
   codeLoaded: boolean = false;
 
+  codeCompletionEnabled: boolean = false;
+  languageServerUrl: any = null;
+
   private publishingPackage: Package;
   private userName: string;
 
@@ -96,7 +118,7 @@ export class OnboardingFlowComponent implements OnInit {
   
 
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService,
-    private diagnosticApiService: ApplensDiagnosticService, private resourceService: ResourceService,
+    private diagnosticApiService: ApplensDiagnosticService, private _diagnosticApi: DiagnosticApiService, private resourceService: ResourceService,
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
     public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute) {
     this.editorOptions = {
@@ -141,8 +163,62 @@ export class OnboardingFlowComponent implements OnInit {
   }
 
   onInit(editor: any) {
-    this._monacoEditor = editor;    
+    this._monacoEditor = editor;
+    let getEnabled = this._diagnosticApi.get('api/appsettings/CodeCompletion:Enabled');
+    let getServerUrl = this._diagnosticApi.get('api/appsettings/CodeCompletion:LangServerUrl');
+    forkJoin([getEnabled, getServerUrl]).subscribe(resList => {
+      this.codeCompletionEnabled = resList[0] == true || resList[0].toString().toLowerCase() == "true";
+      this.languageServerUrl = resList[1];
+      if (this.codeCompletionEnabled && this.languageServerUrl && this.languageServerUrl.length > 0) {
+        let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse('file:///workspace/Solution.cs'));
+        editor.setModel(editorModel);
+        MonacoServices.install(editor, {rootUri: "file:///workspace"});
+        const webSocket = this.createWebSocket(this.languageServerUrl);
+        listen({
+          webSocket,
+          onConnection: connection => {
+              // create and start the language client
+              const languageClient = this.createLanguageClient(connection);
+              const disposable = languageClient.start();
+              connection.onClose(() => disposable.dispose());
+          }
+        });
+      }
+    });
  }
+
+ createLanguageClient(connection: MessageConnection): MonacoLanguageClient {
+  return new MonacoLanguageClient({
+      name: "AppLens Language Client",
+      clientOptions: {
+          // use a language id as a document selector
+          documentSelector: ['csharp'],
+          // disable the default error handler
+          errorHandler: {
+              error: () => ErrorAction.Continue,
+              closed: () => CloseAction.DoNotRestart
+          }
+      },
+      // create a language client connection from the JSON RPC connection on demand
+      connectionProvider: {
+          get: (errorHandler, closeHandler) => {
+              return Promise.resolve(createConnection(connection, errorHandler, closeHandler))
+          }
+      }
+  });
+}
+
+createWebSocket(url: string): WebSocket {
+  const socketOptions = {
+      maxReconnectionDelay: 10000,
+      minReconnectionDelay: 1000,
+      reconnectionDelayGrowFactor: 1.3,
+      connectionTimeout: 10000,
+      maxRetries: Infinity,
+      debug: false
+  };
+  return new ReconnectingWebSocket(url, undefined, socketOptions);
+}
 
   ngOnChanges() {
     if (this.initialized) {
@@ -352,7 +428,7 @@ export class OnboardingFlowComponent implements OnInit {
     this.markCodeLinesInEditor(null);
 
     var body = {
-      script: this.code,
+      script: this.codeCompletionEnabled? this.code.replace(codePrefix, ""): this.code,
       references: this.reference,
       entityType: this.gistMode ? 'gist' : 'signal',
       detectorUtterances: JSON.stringify(this.allUtterances.map(x => x.text))
@@ -672,7 +748,7 @@ export class OnboardingFlowComponent implements OnInit {
     update.subscribe(_ => {
       this.publishingPackage = {
         id: queryResponse.invocationOutput.metadata.id,
-        codeString: code,
+        codeString: this.codeCompletionEnabled? code.replace(codePrefix, ""): code,
         committedByAlias: this.userName,
         dllBytes: this.compilationPackage.assemblyBytes,
         pdbBytes: this.compilationPackage.pdbBytes,
@@ -754,7 +830,7 @@ export class OnboardingFlowComponent implements OnInit {
 
     forkJoin(detectorFile, configuration, this.diagnosticApiService.getGists()).subscribe(res => {
       this.codeLoaded = true;
-      this.code = res[0];
+      this.code = (this.codeCompletionEnabled? codePrefix: "") + res[0];
       this.originalCode = this.code;
       if (res[1] !== null) {
         this.gists = Object.keys(this.configuration['dependencies']);
