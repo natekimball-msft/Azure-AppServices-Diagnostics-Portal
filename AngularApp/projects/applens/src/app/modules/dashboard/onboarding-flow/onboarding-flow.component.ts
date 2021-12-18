@@ -24,6 +24,7 @@ import {
   MonacoLanguageClient, CloseAction, ErrorAction,
   MonacoServices, createConnection
 } from 'monaco-languageclient';
+import { v4 as uuid } from 'uuid';
 
 const codePrefix = `using Diagnostics.DataProviders;
 using Diagnostics.ModelsAndUtils.Utilities;
@@ -170,7 +171,11 @@ export class OnboardingFlowComponent implements OnInit {
       this.codeCompletionEnabled = resList[0] == true || resList[0].toString().toLowerCase() == "true";
       this.languageServerUrl = resList[1];
       if (this.codeCompletionEnabled && this.languageServerUrl && this.languageServerUrl.length > 0) {
-        let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse('file:///workspace/Solution.cs'));
+        if (this.code.indexOf(codePrefix) < 0) {
+          this.code = codePrefix + this.code;
+        }
+        let fileName = uuid();
+        let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse(`file:///workspace/${fileName}.cs`));
         editor.setModel(editorModel);
         MonacoServices.install(editor, {rootUri: "file:///workspace"});
         const webSocket = this.createWebSocket(this.languageServerUrl);
