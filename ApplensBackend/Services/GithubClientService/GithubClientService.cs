@@ -140,8 +140,6 @@ namespace AppLensV3
                 {
                     case HttpStatusCode.NotFound: // 404
                         return "";
-                    case HttpStatusCode.InternalServerError: // 500
-                        return "";
                     default:
                         throw;
                 }
