@@ -33,7 +33,6 @@ using Diagnostics.ModelsAndUtils.Models.ResponseExtensions;
 using Diagnostics.ModelsAndUtils.Attributes;
 using Diagnostics.ModelsAndUtils.ScriptUtilities;
 using Kusto.Data;
-using System.Data;
 //PLEASE DO NOT MODIFY ABOVE THIS LINE
 `;
 
