@@ -433,7 +433,7 @@ createWebSocket(url: string): WebSocket {
     this.markCodeLinesInEditor(null);
 
     var body = {
-      script: this.codeCompletionEnabled? this.code.replace(codePrefix, ""): this.code,
+      script: this.code,
       references: this.reference,
       entityType: this.gistMode ? 'gist' : 'signal',
       detectorUtterances: JSON.stringify(this.allUtterances.map(x => x.text))
