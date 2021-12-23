@@ -122,14 +122,28 @@ namespace AppLensV3
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var gistFileUrl = string.Format(
+            var metadataFileUrl = string.Format(
                 GithubConstants.MetadataFilePathFormat,
                 UserName,
                 RepoName,
                 id,
                 Branch);
 
-            return await GetRawFile(gistFileUrl);
+            try
+            {
+                return await GetRawFile(metadataFileUrl);
+            }
+            catch (WebException ex)
+            {
+                HttpWebResponse response = (HttpWebResponse)ex.Response;
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.NotFound: // 404
+                        return "";
+                    default:
+                        throw;
+                }
+            }
         }
 
         /// <summary>
