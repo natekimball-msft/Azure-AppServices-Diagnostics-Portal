@@ -219,7 +219,7 @@ createWebSocket(url: string): WebSocket {
       minReconnectionDelay: 1000,
       reconnectionDelayGrowFactor: 1.3,
       connectionTimeout: 10000,
-      maxRetries: Infinity,
+      maxRetries: 3,
       debug: false
   };
   return new ReconnectingWebSocket(url, undefined, socketOptions);
