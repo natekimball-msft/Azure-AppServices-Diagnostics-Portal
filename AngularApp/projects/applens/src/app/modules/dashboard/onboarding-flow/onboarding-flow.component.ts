@@ -26,14 +26,15 @@ import {
 } from 'monaco-languageclient';
 import { v4 as uuid } from 'uuid';
 
-const codePrefix = `using Diagnostics.DataProviders;
+const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
+using Diagnostics.DataProviders;
 using Diagnostics.ModelsAndUtils.Utilities;
 using Diagnostics.ModelsAndUtils.Models;
 using Diagnostics.ModelsAndUtils.Models.ResponseExtensions;
 using Diagnostics.ModelsAndUtils.Attributes;
 using Diagnostics.ModelsAndUtils.ScriptUtilities;
 using Kusto.Data;
-//PLEASE DO NOT MODIFY ABOVE THIS LINE
+//*****END OF DO NOT MODIFY PART*****
 `;
 
 const moment = momentNs;
@@ -162,6 +163,26 @@ export class OnboardingFlowComponent implements OnInit {
     }
   }
 
+  addCodePrefix(codeString) {
+    if (this.codeCompletionEnabled) {
+      var isLoadIndex = codeString.indexOf("#load");
+      // If gist is being loaded in the code
+      if (isLoadIndex>=0) {
+        codeString = codeString.replace(codePrefix, "");
+        var splitted = codeString.split("\n");
+        var lastIndex = splitted.slice().reverse().findIndex(x => x.startsWith("#load"));
+        lastIndex = lastIndex>0? splitted.length-1-lastIndex: lastIndex;
+        if (lastIndex>=0) {
+          var finalJoin = [...splitted.slice(0, lastIndex+1), codePrefix, ...splitted.slice(lastIndex+1,)].join("\n");
+          return finalJoin;
+        }
+      }
+      // No gist scenario
+      return codePrefix + codeString;
+    }
+    return codeString;
+  }
+
   onInit(editor: any) {
     this._monacoEditor = editor;
     let getEnabled = this._diagnosticApi.get('api/appsettings/CodeCompletion:Enabled');
@@ -171,7 +192,7 @@ export class OnboardingFlowComponent implements OnInit {
       this.languageServerUrl = resList[1];
       if (this.codeCompletionEnabled && this.languageServerUrl && this.languageServerUrl.length > 0) {
         if (this.code.indexOf(codePrefix) < 0) {
-          this.code = codePrefix + this.code;
+          this.code = this.addCodePrefix(this.code);
         }
         let fileName = uuid();
         let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse(`file:///workspace/${fileName}.cs`));
@@ -834,7 +855,7 @@ createWebSocket(url: string): WebSocket {
 
     forkJoin(detectorFile, configuration, this.diagnosticApiService.getGists()).subscribe(res => {
       this.codeLoaded = true;
-      this.code = (this.codeCompletionEnabled? codePrefix: "") + res[0];
+      this.code = this.addCodePrefix(res[0]);
       this.originalCode = this.code;
       if (res[1] !== null) {
         this.gists = Object.keys(this.configuration['dependencies']);
