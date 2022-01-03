@@ -53,7 +53,6 @@ export class NetworkCheckComponent implements OnInit, AfterViewInit {
         "- What was the issue?\r\n\r\n\r\n" +
         "- If the issue was not resolved, what can be the reason?\r\n\r\n\r\n" +
         "- What else do you expect from this tool?\r\n";
-    private _isPreview = false;
 
     //checks: any[];
 
@@ -114,10 +113,9 @@ export class NetworkCheckComponent implements OnInit, AfterViewInit {
                 networkCheckFlows["connectionFailureFlow"] = connectionFailureFlow;
             }
             networkCheckFlows["configFailureFlow"] = configFailureFlow;
+            networkCheckFlows["subnetDeletionFlow"] = subnetDeletionFlow;
             networkCheckFlows["learnMoreFlow"] = learnMoreFlow;
-            if (this._isPreview) {
-                networkCheckFlows["subnetDeletionFlow"] = subnetDeletionFlow;
-            }
+            
 
             var flows = this.processFlows(networkCheckFlows);
             if (this.debugMode) {
@@ -209,14 +207,6 @@ export class NetworkCheckComponent implements OnInit, AfterViewInit {
         };
 
         return stepFlow;
-    }
-
-    onClickPreview() {
-        if (this._isPreview == false) {
-            this._isPreview = true;
-            this.stepFlowManager.reset(-1);
-            this.loadFlowsAsync();
-        }
     }
 
     loadClassesToGlobalContext() {

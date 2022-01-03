@@ -1,1 +1,1 @@
-docker build -t placeholder.repo:angularappimage .
+docker build -t applens/portal-dev-env .
