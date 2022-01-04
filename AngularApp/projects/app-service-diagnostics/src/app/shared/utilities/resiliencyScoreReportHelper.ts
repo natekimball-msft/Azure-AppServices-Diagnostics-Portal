@@ -689,10 +689,11 @@ export class ResiliencyScoreReportHelper {
                 {
                     style: 'paragraph',
                     ul: [
-                        { text: 'Health Check is now Generally Available\nhttps://azure.github.io/AppService/2020/08/24/healthcheck-on-app-service.htm', alignment: 'left' },
-                        {text: 'The Ultimate Guide to Running Healthy Apps in the Cloud – Set your Health Check path\nhttps://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#set-your-health-check-path', alignment: 'left' } 
+                        { text: [ 'Health Check is now Generally Available\n', { text: "https://azure.github.io/AppService/2020/08/24/healthcheck-on-app-service.htm", color: 'blue', link: "https://azure.github.io/AppService/2020/08/24/healthcheck-on-app-service.htm", alignment: 'left' , decoration: 'underline'}] },
+                        { text: [ 'The Ultimate Guide to Running Healthy Apps in the Cloud – Set your Health Check path\n', { text: "https://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#set-your-health-check-path", color: 'blue', link: "https://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#set-your-health-check-path", alignment: 'left' , decoration: 'underline'}] }
                     ],
                 },
+                // End of Health check section
                 // End of Health check section
                 // ------------------------------------------
                 // Start of Auto-Heal section

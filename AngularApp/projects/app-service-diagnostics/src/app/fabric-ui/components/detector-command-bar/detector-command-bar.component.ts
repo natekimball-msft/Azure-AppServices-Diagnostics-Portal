@@ -32,9 +32,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   time: string;
   detector: DetectorMetaData;
   fullReportPath: string;
-  readonly id: string = "Id__32";
-  
- 
+   
 
   constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private http: HttpClient) { }
   toggleOpenState() {
@@ -55,13 +53,10 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   var localResponse = '../assets/response.temp.json';
   var response = {
   };    
-  var customerName: string;
-  // var resiliencyReportData: ResiliencyReportData;
-  // var resiliencyResourceList: ResiliencyResource[];  
+  var customerName: string;  
 
   console.log("Calling ResiliencyScore detector");
-  //this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString).subscribe((data:response => {
-  
+    
   //this.http.get<DetectorResponse>(localResponse)
   this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString)
   .subscribe((httpResponse: DetectorResponse) => {
@@ -79,17 +74,6 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       console.error(error); 
     });
 
-    // var docDefinition = {
-    //   content: [
-    //     'First paragraph',
-    //     'Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines'
-    //   ]
-    // };    
-
-    
-    // (<any>pdfMake).vfs = pdfFonts.pdfMake.vfs;
-    // //pdfMake.vfs = pdfFonts.pdfMake.vfs;
-    // pdfMake.createPdf(docDefinition).download('resiliencyReport.pdf');     
   }
 
 

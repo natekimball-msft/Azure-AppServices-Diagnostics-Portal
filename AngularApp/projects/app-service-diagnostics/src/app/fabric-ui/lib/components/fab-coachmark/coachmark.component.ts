@@ -13,7 +13,7 @@ import {
   Renderer2,
   ViewChild,  
 } from '@angular/core';
-import { Coachmark, ICoachmarkProps } from 'office-ui-fabric-react/lib/Coachmark';
+import { ICoachmarkProps } from 'office-ui-fabric-react/lib/Coachmark';
 
 
 
