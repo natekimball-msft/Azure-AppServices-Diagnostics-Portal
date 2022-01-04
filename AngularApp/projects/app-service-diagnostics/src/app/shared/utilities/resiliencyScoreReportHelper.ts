@@ -693,7 +693,7 @@ export class ResiliencyScoreReportHelper {
                         { text: [ 'The Ultimate Guide to Running Healthy Apps in the Cloud – Set your Health Check path\n', { text: "https://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#set-your-health-check-path", color: 'blue', link: "https://azure.github.io/AppService/2020/05/15/Robust-Apps-for-the-cloud.html#set-your-health-check-path", alignment: 'left' , decoration: 'underline'}] }
                     ],
                 },
-                // End of Health check section
+                //
                 // End of Health check section
                 // ------------------------------------------
                 // Start of Auto-Heal section
