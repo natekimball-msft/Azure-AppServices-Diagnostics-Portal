@@ -21,8 +21,29 @@
     </fab-command-bar-item>
     <fab-command-bar-item key="sendFeedback" text="Feedback" [iconProps]="{ iconName: 'Emoji2' }"
       (click)="sendFeedback()"></fab-command-bar-item>
-    <fab-command-bar-item key="generateResiliencyPDF" text="Download Resiliency Report" [iconProps]="{ iconName: 'DownloadDocument' }"
-      (click)="generateResiliencyPDF()"></fab-command-bar-item>
+    <fab-command-bar-item id="generateResiliencyPDF" key="generateResiliencyPDF" text="Get Resiliency Score Report" [iconProps]="{ iconName: 'DownloadDocument' }"
+      (click)="generateResiliencyPDF()"> </fab-command-bar-item>    
+    <fab-coachmark
+      target="#generateResiliencyPDF"
+      positioningContainerProps="7"
+      ariaAlertText="A coachmark has appeared"
+      ariaDescribedBy="coachmark-desc1"
+      ariaLabelledBy="coachmark-label1"
+      ariaDescribedByText="Press enter or alt + C to open the coachmark notification"
+      ariaLabelledByText="Coachmark notification"
+    >      
+  </fab-coachmark>
+  <fab-teachingbubble
+          headline="Example title"
+          hasCloseButton
+          closeButtonAriaLabel="Close"
+          primaryButtonProps={children:Test}
+          secondaryButtonProps={buttonProps2}
+          onDismiss={hideCoachmark}
+          ariaDescribedBy="example-description1"
+          ariaLabelledBy="example-label1"
+    >           
+   </fab-teachingbubble>}
   </items>
 
   <far-items>
@@ -32,3 +53,6 @@
   </far-items>
 </fab-command-bar>
 <detector-time-picker (updateTimerMessage)="updateMessage($event)"></detector-time-picker>
+
+       
+

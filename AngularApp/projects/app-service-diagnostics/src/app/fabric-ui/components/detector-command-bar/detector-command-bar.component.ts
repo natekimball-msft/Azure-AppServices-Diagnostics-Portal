@@ -4,14 +4,16 @@ import {
 import { forkJoin, Observable, of } from 'rxjs';
 import { Component, AfterViewInit, EventEmitter, Output, Injectable, Input } from '@angular/core';
 import { Globals } from '../../../globals';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, ChildActivationEnd, Router } from '@angular/router';
 import * as pdfMake from "pdfmake/build/pdfmake";
 import * as pdfFonts from  "pdfmake/build/vfs_fonts";
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ResiliencyScoreReportHelper } from '../../../shared/utilities/resiliencyScoreReportHelper';
+import * as React from 'react';
+import { FabCoachmarkComponent } from '../../lib/components/fab-coachmark/coachmark.component';
+import { Event as NavigationEvent } from '@angular/router';
+import { IButtonProps } from 'office-ui-fabric-react/lib/Button'
 
-//import { table } from 'console';
-//import { parse } from 'querystring';
 
 
 
@@ -30,6 +32,8 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   time: string;
   detector: DetectorMetaData;
   fullReportPath: string;
+  readonly id: string = "Id__32";
+  
  
 
   constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private http: HttpClient) { }
@@ -39,7 +43,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     })
     this.globals.openGeniePanel = !this.globals.openGeniePanel;
   }
-
+  
   sendFeedback() {
     this.telemetryService.logEvent(TelemetryEventNames.OpenFeedbackPanel, {
       'Location': TelemetrySource.CategoryPage

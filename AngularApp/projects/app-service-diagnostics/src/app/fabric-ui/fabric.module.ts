@@ -57,6 +57,9 @@ import { DiagosticSessionsPanelComponent } from './components/diagostic-sessions
 import { SharedModule } from '../shared/shared.module';
 import { CreateStorageAccountPanelComponent } from './components/create-storage-account-panel/create-storage-account-panel.component';
 import { CallstackPanelComponent } from './components/callstack-panel/callstack-panel.component';
+import { FabCoachmarkModule } from './lib/components/fab-coachmark/coachmark.module';
+import { FabTeachingBubbleModule } from './lib/components/fab-teachingbubble/teachingbubble.module';
+
 
 @NgModule({
     declarations: [
@@ -91,6 +94,8 @@ import { CallstackPanelComponent } from './components/callstack-panel/callstack-
         FabCommandBarModule,
         FabBreadcrumbModule,
         FabCalloutModule,
+        FabCoachmarkModule,
+        FabTeachingBubbleModule,        
         FabCheckboxModule,
         FabChoiceGroupModule,
         FabComboBoxModule,
@@ -125,7 +130,7 @@ import { CallstackPanelComponent } from './components/callstack-panel/callstack-
     ],
     exports: [
         FabricSearchResultsComponent,
-        FabricFeedbackComponent,
+        FabricFeedbackComponent,        
         DetectorTimePickerComponent,
         DetectorCommandBarComponent,
         CategorySummaryComponent,
