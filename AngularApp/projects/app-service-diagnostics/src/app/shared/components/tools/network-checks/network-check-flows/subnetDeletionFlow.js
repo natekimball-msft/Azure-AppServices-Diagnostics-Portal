@@ -63,6 +63,7 @@ async function checkSubnetLocksAsync(subnet, siteInfo, diagProvider, flowMgr) {
 }
 
 async function checkSalAsync(vnet, subnet, siteInfo, diagProvider, flowMgr) {
+    var wordings = new SubnetDeletionWordings();
     var vnetResourceGuid = vnet.properties && vnet.properties.resourceGuid;
     if (vnetResourceGuid == null) {
         throw new Error("malformed vnet data");
@@ -70,13 +71,20 @@ async function checkSalAsync(vnet, subnet, siteInfo, diagProvider, flowMgr) {
     var vnetId = vnetResourceGuid + "_" + subnet.name;
     var region = siteInfo.location.replaceAll(" ", "").toLowerCase();
 
-    var sals = subnet.properties.serviceAssociationLinks;
-    var wordings = new SubnetDeletionWordings();
+    var sals = null;
+    try{
+        sals = await getSubnetSalsAsync(subnet.id, diagProvider);
+    }catch(e){
+        flowMgr.addView(wordings.serverError.get());
+        throw e;
+    }
+    
     var views = [];
     var orphanedSal = null;
     var appsConnected = [];
+    var appServiceSals = [];
     if (sals != null) {
-        var appServiceSals = sals.filter(sal => sal.properties.linkedResourceType == "Microsoft.Web/serverfarms");
+        appServiceSals = sals.filter(sal => sal.properties.linkedResourceType == "Microsoft.Web/serverfarms");
         if (appServiceSals.length > 0) {
             // for now, one subnet only can be integrated by apps in one app service plan
             if (appServiceSals.length > 1) {
@@ -86,21 +94,30 @@ async function checkSalAsync(vnet, subnet, siteInfo, diagProvider, flowMgr) {
             views = views.concat(usageResult.views);
             if(usageResult.isContinue){
                 orphanedSal = appServiceSals[0];
+                if(orphanedSal.properties.allowDelete === true){
+                    orphanedSal = null;
+                }
             }
-        } else {
+        }
+    }
+
+    if(orphanedSal == null){
+        if(sals != null && sals.length > appServiceSals.length) {
             views.push(new CheckStepView({
                 title: "Subnet is not used by AppService",
                 level: 0
             }));
             views.push(wordings.subnetIsNotUsedByAppService.get());
         }
-    } else {
-        views.push(new CheckStepView({
-            title: "Subnet is not used by any Azure Service",
-            level: 0
-        }));
-        views.push(wordings.subnetIsNotUsed.get());
+        else {
+            views.push(new CheckStepView({
+                title: "Subnet is not used by any Azure Service",
+                level: 0
+            }));
+            views.push(wordings.subnetIsNotUsed.get());
+        }
     }
+   
     return { views, orphanedSal };
 }
 
@@ -128,12 +145,17 @@ async function checkSubnetIntegrationUsageAsync(vnetId, region, siteInfo, diagPr
             }
         }
     } else {
-        views.push(new CheckStepView({
-            title: "Server error, please retry",
-            level: 2,
-            subChecks: null
-        }));
+        views.push(wordings.serverError);
         throw new Error(`unexpected response from detector: ${JSON.stringify(result)}`);
     }
     return { views, isContinue };
+}
+
+async function getSubnetSalsAsync(subnetId, diagProvider){
+    var result = await diagProvider.getArmResourceAsync(`${subnetId}/ServiceAssociationLinks`, "2021-02-01");
+    if(result.status == 200){
+        return result.value;
+    }else{
+        throw new Error(`unexpected response from ARM api: ${JSON.stringify(result)}`);
+    }
 }
