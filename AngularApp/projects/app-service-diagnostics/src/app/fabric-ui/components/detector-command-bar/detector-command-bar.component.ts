@@ -31,7 +31,10 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   @Input() disableGenie: boolean = false;
   time: string;
   detector: DetectorMetaData;
-  fullReportPath: string;
+  fullReportPath: string;  
+  gRPDFButton: Element;
+  gRPDFButtonChild: Element;
+  gRPDFButtonId:string=null; 
    
 
   constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private http: HttpClient) { }
@@ -39,13 +42,13 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     this.telemetryService.logEvent(TelemetryEventNames.OpenGenie, {
       'Location': TelemetrySource.CategoryPage
     })
-    this.globals.openGeniePanel = !this.globals.openGeniePanel;
+    this.globals.openGeniePanel = !this.globals.openGeniePanel;    
   }
   
   sendFeedback() {
     this.telemetryService.logEvent(TelemetryEventNames.OpenFeedbackPanel, {
       'Location': TelemetrySource.CategoryPage
-    });
+    });    
     this.globals.openFeedback = !this.globals.openFeedback;
   }
 
@@ -138,6 +141,13 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     if (btns && btns.length > 0) {
       const dropdown = btns[btns.length - 1];
       dropdown.setAttribute("aria-expanded", `${this.globals.openTimePicker}`);
+      const PDFButton = btns[btns.length - 2];
+      PDFButton.setAttribute("id","generatePDF");
     }
+    document.querySelectorAll("#fab-command-bar button")[3].setAttribute("id","generatePDF");
+    //this.gRPDFButtonChild = !!this.gRPDFButton?this.gRPDFButton.querySelectorAll("div > div")[1]:null;
+    this.gRPDFButtonId = "generatePDF";
+    //this.gRPDFButtonId = !!this.gRPDFButton?this.gRPDFButton.id:""; 
+    console.log("gRPDFButtonId: ", this.gRPDFButton, this.gRPDFButtonId);
   }
 }
