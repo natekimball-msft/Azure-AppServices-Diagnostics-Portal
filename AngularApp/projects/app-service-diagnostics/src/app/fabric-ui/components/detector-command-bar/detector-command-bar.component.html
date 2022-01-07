@@ -1,4 +1,5 @@
-<fab-command-bar [attr.id]="'fab-command-bar'"  contentStyle="border-bottom:1px solid gray;font-weight:12px" contentClass="fab-command-bar-class" >
+<fab-command-bar [attr.id]="'fab-command-bar'" contentStyle="border-bottom:1px solid gray;font-weight:12px"
+  contentClass="fab-command-bar-class">
   <items>
     <fab-command-bar-item key="custom1" text="custom text">
       <render>
@@ -15,37 +16,17 @@
       </render-icon>
 
     </fab-command-bar-item>
-    <fab-command-bar-item *ngIf="disableGenie==false" key="askGenie" text="Ask Genie" [iconProps]="{ iconName: 'ChatInviteFriend' }"
-      (click)="toggleOpenState()" data-track-type="run"></fab-command-bar-item>
+    <fab-command-bar-item *ngIf="disableGenie==false" key="askGenie" text="Ask Genie"
+      [iconProps]="{ iconName: 'ChatInviteFriend' }" (click)="toggleOpenState()" data-track-type="run">
+    </fab-command-bar-item>
     <fab-command-bar-item key="refresh1" text="Refresh" [iconProps]="{ iconName: 'Refresh' }" (click)="refreshPage()">
     </fab-command-bar-item>
     <fab-command-bar-item key="sendFeedback" text="Feedback" [iconProps]="{ iconName: 'Emoji2' }"
-      (click)="sendFeedback()"></fab-command-bar-item>   
-    <fab-command-bar-item [attr.id]="'generateResiliencyPDF'" key="generateResiliencyPDF" text="Get Resiliency Score Report" [iconProps]="{ iconName: 'Download' }"
-        (click)="generateResiliencyPDF()">          
-      </fab-command-bar-item>     
+      (click)="sendFeedback()"></fab-command-bar-item>
+    <fab-command-bar-item [id]="'generateResiliencyPDF'" key="generateResiliencyPDF" text="Get Resiliency Score Report"
+      [iconProps]="{ iconName: 'Download' }" (click)="generateResiliencyPDF()">
+    </fab-command-bar-item>
   </items>
-        <!-- <ng-container *ngIf="gRPDFButtonId!==null"> -->
-  <fab-coachmark     
-  target="generatePDF"  
-  positioningContainerProps="7"
-  ariaAlertText="A coachmark has appeared"
-  ariaDescribedBy="coachmark-desc1"
-  ariaLabelledBy="coachmark-label1"
-  ariaDescribedByText="Press enter or alt + C to open the coachmark notification"
-  ariaLabelledByText="Coachmark notification"
->   
-  <fab-teachingbubble      
-    headline="Example title"  
-    target="generatePDF"  
-    hasCloseButton
-    closeButtonAriaLabel="Close"
-    ariaDescribedBy="example-description1"
-    ariaLabelledBy="example-label1"
-    >
-  </fab-teachingbubble>
-</fab-coachmark>  
-    <!-- </ng-container> -->   
 
   <far-items>
     <fab-command-bar-item key="timepicker" [text]="time" [iconProps]="{ iconName: 'ChevronDown' }"
@@ -55,5 +36,12 @@
 </fab-command-bar>
 <detector-time-picker (updateTimerMessage)="updateMessage($event)"></detector-time-picker>
 
-       
+<fab-coachmark [attr.id]="'fab-coachmark'" [target]="gRPDFButtonId" (onAnimationOpenEnd)="showTeachingBubble=true" positioningContainerProps="7" ariaAlertText="A coachmark has appeared"
+  ariaDescribedBy="coachmark-desc1" ariaLabelledBy="coachmark-label1"
+  ariaDescribedByText="Press enter or alt + C to open the coachmark notification"
+  ariaLabelledByText="Coachmark notification">
+  <fab-teachingbubble *ngIf="showTeachingBubble==true" headline="Example title" (onDismiss)="showTeachingBubble=false" [target]="gRPDFButtonId" [hasCloseButton]="true" [closeButtonAriaLabel]="Close"
+    ariaDescribedBy="example-description1" ariaLabelledBy="example-label1">
+  </fab-teachingbubble>
+</fab-coachmark>
 

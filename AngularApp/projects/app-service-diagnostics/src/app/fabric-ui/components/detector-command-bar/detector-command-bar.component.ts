@@ -1,5 +1,5 @@
 import {
-  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource, 
+  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource,
 } from 'diagnostic-data';
 import { forkJoin, Observable, of } from 'rxjs';
 import { Component, AfterViewInit, EventEmitter, Output, Injectable, Input } from '@angular/core';
@@ -31,35 +31,36 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   @Input() disableGenie: boolean = false;
   time: string;
   detector: DetectorMetaData;
-  fullReportPath: string;  
+  fullReportPath: string;
   gRPDFButton: Element;
   gRPDFButtonChild: Element;
-  gRPDFButtonId:string=null; 
-   
+  gRPDFButtonId:string=undefined;
+  showTeachingBubble:boolean=false;
+
 
   constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private http: HttpClient) { }
   toggleOpenState() {
     this.telemetryService.logEvent(TelemetryEventNames.OpenGenie, {
       'Location': TelemetrySource.CategoryPage
     })
-    this.globals.openGeniePanel = !this.globals.openGeniePanel;    
+    this.globals.openGeniePanel = !this.globals.openGeniePanel;
   }
-  
+
   sendFeedback() {
     this.telemetryService.logEvent(TelemetryEventNames.OpenFeedbackPanel, {
       'Location': TelemetrySource.CategoryPage
-    });    
+    });
     this.globals.openFeedback = !this.globals.openFeedback;
   }
 
   generateResiliencyPDF() {
   var localResponse = '../assets/response.temp.json';
   var response = {
-  };    
-  var customerName: string;  
+  };
+  var customerName: string;
 
   console.log("Calling ResiliencyScore detector");
-    
+
   //this.http.get<DetectorResponse>(localResponse)
   this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString)
   .subscribe((httpResponse: DetectorResponse) => {
@@ -68,13 +69,13 @@ export class DetectorCommandBarComponent implements AfterViewInit {
         dataset: httpResponse.dataset,
         status: httpResponse.status,
         dataProvidersMetadata: httpResponse.dataProvidersMetadata,
-        suggestedUtterances: httpResponse.suggestedUtterances,        
+        suggestedUtterances: httpResponse.suggestedUtterances,
       };
       console.log("ResiliencyScore detector call finished");
       console.log(response);
       ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table);
     },error => {
-      console.error(error); 
+      console.error(error);
     });
 
   }
@@ -138,16 +139,14 @@ export class DetectorCommandBarComponent implements AfterViewInit {
 
   updateAriaExpanded() {
     const btns = document.querySelectorAll("#fab-command-bar button");
+    const pdfButtonId = "generatePDFButton";
     if (btns && btns.length > 0) {
       const dropdown = btns[btns.length - 1];
       dropdown.setAttribute("aria-expanded", `${this.globals.openTimePicker}`);
       const PDFButton = btns[btns.length - 2];
-      PDFButton.setAttribute("id","generatePDF");
+      PDFButton.setAttribute("id", pdfButtonId);
     }
-    document.querySelectorAll("#fab-command-bar button")[3].setAttribute("id","generatePDF");
-    //this.gRPDFButtonChild = !!this.gRPDFButton?this.gRPDFButton.querySelectorAll("div > div")[1]:null;
-    this.gRPDFButtonId = "generatePDF";
-    //this.gRPDFButtonId = !!this.gRPDFButton?this.gRPDFButton.id:""; 
-    console.log("gRPDFButtonId: ", this.gRPDFButton, this.gRPDFButtonId);
+
+    this.gRPDFButtonId = `#${pdfButtonId}`;
   }
 }

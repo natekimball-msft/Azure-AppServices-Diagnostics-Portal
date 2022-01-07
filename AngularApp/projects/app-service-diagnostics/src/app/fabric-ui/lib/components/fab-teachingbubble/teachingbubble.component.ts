@@ -11,7 +11,7 @@ import {
   Input,
   Output,
   Renderer2,
-  ViewChild,  
+  ViewChild,
 } from '@angular/core';
 import { ITeachingBubbleProps } from 'office-ui-fabric-react/lib/TeachingBubble';
 
@@ -24,19 +24,19 @@ import { ITeachingBubbleProps } from 'office-ui-fabric-react/lib/TeachingBubble'
     <TeachingBubble
       #reactNode
       [target]="target"
-      [ariaDescribedBy]="ariaDescribedBy"            
+      [ariaDescribedBy]="ariaDescribedBy"
       [ariaLabelledBy]="ariaLabelledBy"
-      [calloutProps]="calloutProps"  
-      [componentRef]="componentRef" 
-      [footerContent]="footerContent"  
-      [closeButtonAriaLabel]="closeButtonAriaLabel"           
-      [hasCloseButton]="hasCloseButton"            
-      [headline]="headline"      
-      (onDismiss)="onDismiss.emit($event)"            
+      [calloutProps]="calloutProps"
+      [componentRef]="componentRef"
+      [footerContent]="footerContent"
+      [closeButtonAriaLabel]="closeButtonAriaLabel"
+      [hasCloseButton]="hasCloseButton"
+      [headline]="headline"
+      (onDismiss)="onDismiss.emit($event)"
       [primaryButtonProps]="primaryButtonProps"
-      [secondaryButtonProps]="secondaryButtonProps"      
-      [styles]="styles"      
-      [theme]="theme"      
+      [secondaryButtonProps]="secondaryButtonProps"
+      [styles]="styles"
+      [theme]="theme"
     >
       <ReactContent><ng-content></ng-content></ReactContent>
     </TeachingBubble>
@@ -51,18 +51,18 @@ export class FabTeachingBubbleComponent extends ReactWrapperComponent<ITeachingB
   @Input() ariaDescribedBy?: ITeachingBubbleProps['ariaDescribedBy'];
   @Input() ariaLabelledBy?: ITeachingBubbleProps['ariaLabelledBy'];
   @Input() calloutProps?: ITeachingBubbleProps['calloutProps'];
-  @Input() componentRef?: ITeachingBubbleProps['componentRef'];  
+  @Input() componentRef?: ITeachingBubbleProps['componentRef'];
   @Input() footerContent?: ITeachingBubbleProps['footerContent'];
   @Input() closeButtonAriaLabel?: ITeachingBubbleProps['closeButtonAriaLabel'];
-  @Input() hasCloseButton?: boolean;  
+  @Input() hasCloseButton?: ITeachingBubbleProps['hasCloseIcon'];
   @Input() headline?: ITeachingBubbleProps['headline'];
   @Input() primaryButtonProps?: ITeachingBubbleProps['primaryButtonProps'];
-  @Input() secondaryButtonProps?: ITeachingBubbleProps['secondaryButtonProps']; 
+  @Input() secondaryButtonProps?: ITeachingBubbleProps['secondaryButtonProps'];
   @Input() styles?: ITeachingBubbleProps['styles'];
-  @Input() theme?: ITeachingBubbleProps['theme'];  
+  @Input() theme?: ITeachingBubbleProps['theme'];
 
   @Output() readonly onDismiss = new EventEmitter<{ ev?: any }>();
-  
+
 
   constructor(elementRef: ElementRef, changeDetectorRef: ChangeDetectorRef, renderer: Renderer2) {
     super(elementRef, changeDetectorRef, renderer);
