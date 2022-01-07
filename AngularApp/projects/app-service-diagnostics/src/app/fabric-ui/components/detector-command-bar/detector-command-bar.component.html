@@ -36,11 +36,11 @@
 </fab-command-bar>
 <detector-time-picker (updateTimerMessage)="updateMessage($event)"></detector-time-picker>
 
-<fab-coachmark [attr.id]="'fab-coachmark'" [target]="gRPDFButtonId" (onAnimationOpenEnd)="showTeachingBubble=true" positioningContainerProps="7" ariaAlertText="A coachmark has appeared"
+<fab-coachmark [attr.id]="'fab-coachmark'" [target]="gRPDFButtonId" (onAnimationOpenEnd)="showTeachingBubble=true" positioningContainerProps=10 ariaAlertText="A coachmark has appeared"
   ariaDescribedBy="coachmark-desc1" ariaLabelledBy="coachmark-label1"
   ariaDescribedByText="Press enter or alt + C to open the coachmark notification"
   ariaLabelledByText="Coachmark notification">
-  <fab-teachingbubble *ngIf="showTeachingBubble==true" headline="Example title" (onDismiss)="showTeachingBubble=false" [target]="gRPDFButtonId" [hasCloseButton]="true" [closeButtonAriaLabel]="Close"
+  <fab-teachingbubble *ngIf="showTeachingBubble==true" headline="Example title" (onDismiss)="showTeachingBubble=false" [target]="gRPDFButtonId" [hasCloseIcon]="true" [closeButtonAriaLabel]="Close"
     ariaDescribedBy="example-description1" ariaLabelledBy="example-label1">
   </fab-teachingbubble>
 </fab-coachmark>

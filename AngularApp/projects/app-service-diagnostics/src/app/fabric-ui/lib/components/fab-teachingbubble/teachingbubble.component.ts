@@ -13,7 +13,7 @@ import {
   Renderer2,
   ViewChild,
 } from '@angular/core';
-import { ITeachingBubbleProps } from 'office-ui-fabric-react/lib/TeachingBubble';
+import { ITeachingBubbleProps, ITeachingBubbleStyles  } from 'office-ui-fabric-react/lib/TeachingBubble';
 
 
 
@@ -31,6 +31,7 @@ import { ITeachingBubbleProps } from 'office-ui-fabric-react/lib/TeachingBubble'
       [footerContent]="footerContent"
       [closeButtonAriaLabel]="closeButtonAriaLabel"
       [hasCloseButton]="hasCloseButton"
+      [hasCloseIcon]="hasCloseIcon"
       [headline]="headline"
       (onDismiss)="onDismiss.emit($event)"
       [primaryButtonProps]="primaryButtonProps"
@@ -54,7 +55,8 @@ export class FabTeachingBubbleComponent extends ReactWrapperComponent<ITeachingB
   @Input() componentRef?: ITeachingBubbleProps['componentRef'];
   @Input() footerContent?: ITeachingBubbleProps['footerContent'];
   @Input() closeButtonAriaLabel?: ITeachingBubbleProps['closeButtonAriaLabel'];
-  @Input() hasCloseButton?: ITeachingBubbleProps['hasCloseIcon'];
+  @Input() hasCloseButton?: ITeachingBubbleStyles ['closeButton'];
+  @Input() hasCloseIcon?: ITeachingBubbleProps ['hasCloseIcon'];
   @Input() headline?: ITeachingBubbleProps['headline'];
   @Input() primaryButtonProps?: ITeachingBubbleProps['primaryButtonProps'];
   @Input() secondaryButtonProps?: ITeachingBubbleProps['secondaryButtonProps'];
