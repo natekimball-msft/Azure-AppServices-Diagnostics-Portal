@@ -32,6 +32,7 @@ import { ITeachingBubbleProps, ITeachingBubbleStyles  } from 'office-ui-fabric-r
       [closeButtonAriaLabel]="closeButtonAriaLabel"
       [hasCloseButton]="hasCloseButton"
       [hasCloseIcon]="hasCloseIcon"
+      [hasCondensedHeadline]="hasCondensedHeadline"
       [headline]="headline"
       (onDismiss)="onDismiss.emit($event)"
       [primaryButtonProps]="primaryButtonProps"
@@ -57,6 +58,7 @@ export class FabTeachingBubbleComponent extends ReactWrapperComponent<ITeachingB
   @Input() closeButtonAriaLabel?: ITeachingBubbleProps['closeButtonAriaLabel'];
   @Input() hasCloseButton?: ITeachingBubbleStyles ['closeButton'];
   @Input() hasCloseIcon?: ITeachingBubbleProps ['hasCloseIcon'];
+  @Input() hasCondensedHeadline?: ITeachingBubbleProps ['hasCondensedHeadline'];
   @Input() headline?: ITeachingBubbleProps['headline'];
   @Input() primaryButtonProps?: ITeachingBubbleProps['primaryButtonProps'];
   @Input() secondaryButtonProps?: ITeachingBubbleProps['secondaryButtonProps'];

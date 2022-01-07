@@ -13,6 +13,8 @@ import * as React from 'react';
 import { FabCoachmarkComponent } from '../../lib/components/fab-coachmark/coachmark.component';
 import { Event as NavigationEvent } from '@angular/router';
 import { IButtonProps } from 'office-ui-fabric-react/lib/Button'
+import { IPositioningContainerProps  } from 'office-ui-fabric-react/lib/PositioningContainer';
+import { DirectionalHint } from 'office-ui-fabric-react';
 
 
 
@@ -29,16 +31,38 @@ export class ConfigService {
 })
 export class DetectorCommandBarComponent implements AfterViewInit {
   @Input() disableGenie: boolean = false;
+
   time: string;
   detector: DetectorMetaData;
   fullReportPath: string;
+
   gRPDFButton: Element;
   gRPDFButtonChild: Element;
   gRPDFButtonId:string=undefined;
+  gRPDFCoachmarkId:string=undefined;
+  showCoachmark:boolean=true;
   showTeachingBubble:boolean=false;
+  coachmarkPositioningContainerProps = {
+    directionalHint: DirectionalHint.bottomCenter,
+    doNotLayer: true
+  }
+  teachingBubbleCalloutProps ={
+    directionalHint: DirectionalHint.bottomCenter
+  };
 
 
-  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private http: HttpClient) { }
+
+  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private http: HttpClient) { 
+    //Get showCoachMark value(string) from local storage (if exists), then convert to boolean
+   
+    if (localStorage.getItem("showCoachmark")!=undefined){
+      this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
+    }
+    else{
+      this.showCoachmark=true;
+    }
+
+  }
   toggleOpenState() {
     this.telemetryService.logEvent(TelemetryEventNames.OpenGenie, {
       'Location': TelemetrySource.CategoryPage
@@ -140,6 +164,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   updateAriaExpanded() {
     const btns = document.querySelectorAll("#fab-command-bar button");
     const pdfButtonId = "generatePDFButton";
+    const coachMarkId = "fab-coachmark";
     if (btns && btns.length > 0) {
       const dropdown = btns[btns.length - 1];
       dropdown.setAttribute("aria-expanded", `${this.globals.openTimePicker}`);
@@ -148,5 +173,14 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     }
 
     this.gRPDFButtonId = `#${pdfButtonId}`;
+    this.gRPDFCoachmarkId = `#${coachMarkId}`;
+  }
+
+  coachMarkViewed(){
+    // Stop showing TeachingBubble
+    this.showTeachingBubble=false;
+    
+    //Once Coachmark has been seen, disable it by setting boolean value to local storage
+    localStorage.setItem("showCoachmark","false");
   }
 }

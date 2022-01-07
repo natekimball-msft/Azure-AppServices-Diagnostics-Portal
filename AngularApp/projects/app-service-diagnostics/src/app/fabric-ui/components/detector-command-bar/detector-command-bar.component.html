@@ -36,12 +36,31 @@
 </fab-command-bar>
 <detector-time-picker (updateTimerMessage)="updateMessage($event)"></detector-time-picker>
 
-<fab-coachmark [attr.id]="'fab-coachmark'" [target]="gRPDFButtonId" (onAnimationOpenEnd)="showTeachingBubble=true" positioningContainerProps=10 ariaAlertText="A coachmark has appeared"
-  ariaDescribedBy="coachmark-desc1" ariaLabelledBy="coachmark-label1"
+
+<fab-coachmark 
+   *ngIf="showCoachmark==true"
+  [attr.id]="'fab-coachmark'" 
+  [target]="gRPDFButtonId" 
+  (onAnimationOpenEnd)="showTeachingBubble=true" 
+  [positioningContainerProps]="coachmarkPositioningContainerProps"
+  delayBeforeCoachmarkAnimation="4000"
+  ariaAlertText="A coachmark has appeared"
+  ariaDescribedBy="coachmark-desc1" 
+  ariaLabelledBy="coachmark-label1"
   ariaDescribedByText="Press enter or alt + C to open the coachmark notification"
   ariaLabelledByText="Coachmark notification">
-  <fab-teachingbubble *ngIf="showTeachingBubble==true" headline="Example title" (onDismiss)="showTeachingBubble=false" [target]="gRPDFButtonId" [hasCloseIcon]="true" [closeButtonAriaLabel]="Close"
-    ariaDescribedBy="example-description1" ariaLabelledBy="example-label1">
+  <fab-teachingbubble 
+    *ngIf="showTeachingBubble==true" 
+    headline="New Resiliency Score report!" 
+    (onDismiss)="coachMarkViewed()" 
+    [target]="gRPDFButtonId"    
+    [hasCloseIcon]="true" 
+    [calloutProps]="teachingBubbleCalloutProps"
+    closeButtonAriaLabel="Close"
+    hasCondensedHeadline="true"
+    ariaDescribedBy="fab-coachmark" 
+    ariaLabelledBy="example-label1">
+    Download a report to check how well your Web App scores against our recommended resiliency best practices.
   </fab-teachingbubble>
 </fab-coachmark>
 
