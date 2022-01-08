@@ -52,33 +52,35 @@ export class SupportTopicService {
         this.supportTopicId = supportTopicId;
         var svcName = this._resourceService.azureServiceName
         return this._resourceService.getPesId().pipe(flatMap(pesId => {
+            const redirectFrom = "supportTopic";
+            var supportTopic:string = null;
             if (supportTopicId == "32542212" || supportTopicId == "32630473") {
                 // WebApp/VNET integration with App Service or FunctionApp/Configuring VNET integration with AppService
+                supportTopic = "VNet Integration";
                 var kind = this._resourceService.resource.kind;
-                if (kind.includes("container")) {
-                    // container based WebApp, not supported yet
-                } else {
-                    if (kind.includes("linux")) {
-                        // linux app, not supported yet
-
-                    } else {
-                        // non-container windows webapp/function app
-                        return observableOf({ path: 'tools/networkchecks', queryParams: { "redirectFrom": "supportTopic", "supportTopic": "VNet Integration" } });
+                if (kind.includes("linux")) {
+                    // linux app
+                    if(supportTopicId == "32542212"){
+                        // linux function app is not supported yet
+                        return observableOf({ path: 'tools/networkchecks', queryParams: { redirectFrom, supportTopic } });
                     }
+                } else {
+                    // non-container windows webapp/function app
+                    return observableOf({ path: 'tools/networkchecks', queryParams: { redirectFrom, supportTopic } });
                 }
             } else if (supportTopicId == "32820919" || supportTopicId == "32820562") {
-                // WebApp/VNET integration with App Service or FunctionApp/Configuring VNET integration with AppService
+                // WebApp/Outbound Connectivity or FunctionApp/Outbound Connectivity
+                supportTopic = "Outbound Connectivity";
                 var kind = this._resourceService.resource.kind;
-                if (kind.includes("container")) {
-                    // container based WebApp, not supported yet
-                } else {
-                    if (kind.includes("linux")) {
-                        // linux app, not supported yet
-
-                    } else {
-                        // non-container windows webapp/function app
-                        return observableOf({ path: 'tools/networkchecks', queryParams: { "redirectFrom": "supportTopic", "supportTopic": "Outbound Connectivity" } });
+                if (kind.includes("linux")) {
+                    // linux app
+                    if(supportTopicId == "32820919"){
+                        // linux function app is not supported yet
+                        return observableOf({ path: 'tools/networkchecks', queryParams: { redirectFrom, supportTopic } });
                     }
+                } else {
+                    // non-container windows webapp/function app
+                    return observableOf({ path: 'tools/networkchecks', queryParams: { redirectFrom, supportTopic } });
                 }
             }
             

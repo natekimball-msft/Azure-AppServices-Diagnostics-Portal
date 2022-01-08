@@ -2,6 +2,7 @@ import { DropdownStepView, InfoStepView, StepFlow, StepFlowManager, CheckStepVie
 import { checkKuduAvailabilityAsync, checkVnetIntegrationV2Async, checkDnsSettingV2Async, checkAppSettingsAsync, extractHostPortFromConnectionString, extractHostPortFromKeyVaultReference } from './flowMisc.js';
 import { VnetIntegrationConfigChecker } from './vnetIntegrationConfigChecker.js';
 import { VnetDnsWordings } from './vnetDnsWordings.js';
+import { CommonWordings } from './commonWordings.js';
 
 export class ConnectionStringType {
     static get StorageAccount() { return 'StorageAccount' };
@@ -13,7 +14,12 @@ export var functionsFlow = {
     title: "Connectivity issues",
     async func(siteInfo, diagProvider, flowMgr) {
 
-        var isKuduAccessiblePromise = checkKuduAvailabilityAsync(diagProvider, flowMgr);
+        var isKuduAccessiblePromise = null;
+        if (siteInfo.kind.includes("linux") || siteInfo.kind.includes("container")) {
+            isKuduAccessiblePromise = false;
+        }else{
+            isKuduAccessiblePromise = checkKuduAvailabilityAsync(diagProvider, flowMgr);
+        }
         var dnsServers = null;
         var vnetConfigChecker = new VnetIntegrationConfigChecker(siteInfo, diagProvider);
         var vnetIntegrationType = await vnetConfigChecker.getVnetIntegrationTypeAsync();
@@ -37,7 +43,11 @@ export var functionsFlow = {
 
         if (!await isKuduAccessiblePromise)
         {
-            flowMgr.addView(new VnetDnsWordings().cannotCheckWithoutKudu.get("Functions settings"));
+            if (siteInfo.kind.includes("linux") || siteInfo.kind.includes("container")){
+                flowMgr.addView(new CommonWordings().connectivityCheckUnsupported.get());
+            }else{
+                flowMgr.addView(new VnetDnsWordings().cannotCheckWithoutKudu.get("Functions settings"));
+            }
             return;
         }
 

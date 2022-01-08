@@ -97,7 +97,7 @@ export class CategoryNavComponent implements OnInit {
     }
 
     getCurrentItemId() {
-        if(this._activatedRoute && this._activatedRoute.snapshot && this._activatedRoute.snapshot.params["category"] && this._route.url.split("?")[0].endsWith("/overview")) {
+        if (this._activatedRoute && this._activatedRoute.snapshot && this._activatedRoute.snapshot.params["category"] && this._route.url.split("?")[0].endsWith("/overview")) {
             this.currentDetectorId = null;
             return;
         }
@@ -140,7 +140,7 @@ export class CategoryNavComponent implements OnInit {
         });
         this.toolCategories.push(<SiteFilteredItem<any>>{
             appType: AppType.WebApp | AppType.FunctionApp,
-            platform: OperatingSystem.windows,
+            platform: OperatingSystem.windows | OperatingSystem.linux | OperatingSystem.HyperV,
             sku: Sku.All,
             hostingEnvironmentKind: HostingEnvironmentKind.All,
             stack: '',
@@ -191,7 +191,7 @@ export class CategoryNavComponent implements OnInit {
         this.toolCategoriesFilteredByStack = this.transform(this.toolCategories);
 
         this.categoryService.categories.subscribe(categories => {
-            let decodedCategoryName  = "";
+            let decodedCategoryName = "";
             this._activatedRoute.params.subscribe(params => {
                 this.detectorList = [];
                 decodedCategoryName = params.category.toLowerCase();
@@ -201,7 +201,7 @@ export class CategoryNavComponent implements OnInit {
                 this.categoryId = this.category.id;
                 this.isDiagnosticTools = this.category.id === "DiagnosticTools";
 
-                this.orphanDetectorList = this._detectorCategorization.detectorlistCategories[this.category.id] ? this._detectorCategorization.detectorlistCategories[this.category.id]: [];
+                this.orphanDetectorList = this._detectorCategorization.detectorlistCategories[this.category.id] ? this._detectorCategorization.detectorlistCategories[this.category.id] : [];
 
                 this._authService.getStartupInfo().subscribe(startupInfo => {
                     this.resourceId = startupInfo.resourceId;
@@ -286,7 +286,7 @@ export class CategoryNavComponent implements OnInit {
             (!this.toolsAlreadyAdded(item.item));
     }
 
-    private checkIsSelected(id:string) {
+    private checkIsSelected(id: string) {
         //check if base url is ends with id
         const url = this._route.url;
         const baseUrl = url.split('?')[0];
