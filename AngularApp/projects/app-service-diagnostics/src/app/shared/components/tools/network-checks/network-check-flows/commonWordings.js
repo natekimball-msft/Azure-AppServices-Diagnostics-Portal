@@ -46,5 +46,14 @@ export class CommonWordings{
                 });
             }
         }
+
+        this.connectivityCheckUnsupported = {
+            get(){
+                return new CheckStepView({
+                    title: "Connectivity checks don't support Linux or Container based App yet.",
+                    level: 3
+                });
+            }
+        }
     }
 }
