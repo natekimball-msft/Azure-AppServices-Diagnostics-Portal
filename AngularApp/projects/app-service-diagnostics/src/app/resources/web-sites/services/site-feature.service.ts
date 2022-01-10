@@ -413,7 +413,7 @@ export class SiteFeatureService extends FeatureService {
       },
       {
         appType: AppType.WebApp | AppType.FunctionApp,
-        platform: OperatingSystem.windows,
+        platform: OperatingSystem.any,
         sku: Sku.All,
         hostingEnvironmentKind: HostingEnvironmentKind.All,
         stack: '',

@@ -97,7 +97,7 @@ export class CategoryNavComponent implements OnInit {
     }
 
     getCurrentItemId() {
-        if(this._activatedRoute && this._activatedRoute.snapshot && this._activatedRoute.snapshot.params["category"] && this._route.url.split("?")[0].endsWith("/overview")) {
+        if (this._activatedRoute && this._activatedRoute.snapshot && this._activatedRoute.snapshot.params["category"] && this._route.url.split("?")[0].endsWith("/overview")) {
             this.currentDetectorId = null;
             return;
         }
@@ -140,7 +140,7 @@ export class CategoryNavComponent implements OnInit {
         });
         this.toolCategories.push(<SiteFilteredItem<any>>{
             appType: AppType.WebApp | AppType.FunctionApp,
-            platform: OperatingSystem.windows,
+            platform: OperatingSystem.windows | OperatingSystem.linux | OperatingSystem.HyperV,
             sku: Sku.All,
             hostingEnvironmentKind: HostingEnvironmentKind.All,
             stack: '',

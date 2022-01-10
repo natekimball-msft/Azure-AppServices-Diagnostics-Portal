@@ -7,7 +7,12 @@ import { VnetAppSettingChecker } from './vnetAppSettingChecker.js';
 export var connectionFailureFlow = {
     title: "Connection issues",
     async func(siteInfo, diagProvider, flowMgr) {
-        var isKuduAccessiblePromise = checkKuduAvailabilityAsync(diagProvider, flowMgr);
+        var isKuduAccessiblePromise = null;
+        if (siteInfo.kind.includes("linux") || siteInfo.kind.includes("container")) {
+            isKuduAccessiblePromise = false;
+        } else {
+            isKuduAccessiblePromise = checkKuduAvailabilityAsync(diagProvider, flowMgr);
+        }
 
         var isContinue = await checkVnetIntegrationV2Async(siteInfo, diagProvider, flowMgr, isKuduAccessiblePromise);
         if (!isContinue) {
@@ -20,6 +25,11 @@ export var connectionFailureFlow = {
             return;
         }
         await checkAppSettingsAsync(siteInfo, diagProvider, flowMgr);
+        if (siteInfo.kind.includes("linux") || siteInfo.kind.includes("container")) {
+            // linux and container based app is not supported by connectivity check yet
+            flowMgr.addView(new CommonWordings().connectivityCheckUnsupported.get());
+            return;
+        }
         checkNetworkConfigAndConnectivity(siteInfo, diagProvider, flowMgr, isKuduAccessiblePromise, dnsSettings);
 
     }
