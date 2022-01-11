@@ -43,11 +43,11 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   showCoachmark:boolean=true;
   showTeachingBubble:boolean=false;
   coachmarkPositioningContainerProps = {
-    directionalHint: DirectionalHint.bottomCenter,
+    directionalHint: DirectionalHint.bottomLeftEdge,
     doNotLayer: true
   }
   teachingBubbleCalloutProps ={
-    directionalHint: DirectionalHint.bottomCenter
+    directionalHint: DirectionalHint.bottomLeftEdge
   };
 
 

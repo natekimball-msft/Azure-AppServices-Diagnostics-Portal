@@ -54,6 +54,86 @@ export class ResiliencyScoreReportHelper {
     }
 
     //
+    // Creates the Score Canvas with the gauge
+    // 80 to 100 = Green
+    // 60 to 80  = Yellow
+    //  0 to 60  = Red
+    //
+    static ScoreCanvas(score: number) {
+        let finalStr:string=`canvas: [
+            {
+                type: 'ellipse',
+                color: 'black',
+                x: 260, y: 100,
+                r1: 100, r2: 100,
+                linearGradient: ['red', 'yellow', 'yellow', 'green'],
+            }
+         ]`;
+        // let headers = `[{ text: 'Feature/Site name', style: 'rspfTableheader', margin: [0, 10] }, { text: '${resiliencyReportData.ResiliencyResourceList[0].Name}', style: 'rspfTableheader', margin: [0, 10] }, `;
+        // //`{ text: ${resiliencyReportData.ResiliencyResourceList[1].Name}, style: 'rspfTableheader', margin: [0, 10] }, { text: ${resiliencyReportData.ResiliencyResourceList[2].Name}, style: 'rspfTableheader', margin: [0, 10] }],`         
+        // let resiliencyStatusPerFeatureTable: string = "";
+
+        // //Generating headers
+        // for (let i: number = 1; i < resiliencyReportData.ResiliencyResourceList.length; i++) {
+        //     headers = `${headers}{ text: '${resiliencyReportData.ResiliencyResourceList[i].Name}', style: 'rspfTableheader', margin: [0, 10] }`;
+        //     if (i + 1 < resiliencyReportData.ResiliencyResourceList.length) {
+        //         headers = `${headers},`
+        //     }
+        //     else {
+        //         headers = `${headers}],`
+        //     }
+        // };
+
+        // //Adding rows for each feature
+        // let rows = "";
+        // for (let i: number = 0; i < resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList.length; i++) {
+        //     rows = `${rows}[{ text: '${resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[i].Name}', style: 'rspfTableheader', }, `;
+        //     for (let j: number = 0; j < resiliencyReportData.ResiliencyResourceList.length; j++) {
+        //         rows = `${rows}{ margin: [50, 2], image: ${ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[j].ResiliencyFeaturesList[i].ImplementationGrade)}, fit: [20, 20] }`;
+        //         if (j + 1 < resiliencyReportData.ResiliencyResourceList.length) {
+        //             rows = `${rows},`
+        //         }
+        //         else {
+        //             rows = `${rows}],`
+        //         }
+        //     }
+        // }
+        // let finalStr = `${headers}${rows}`;        
+        // if (arguments[0] < 60) {
+        //     return '#f50f2f'; //red
+        //     console.log('Red color');
+        // } else if (arguments[0] < 80) {
+        //     return '#f5d00f'; //yellow
+        //     console.log('yellow color');
+        // } else if (arguments[0] < 100) {
+        //     return '#06a11a'; //green
+        //     console.log('green color');
+        // } else {
+        //     return 'white'; //if undefined or more than 100 set to white
+        //     console.log('white color');
+        // }
+        return finalStr.replace(/^"|"$/g, '');
+    }
+
+
+    // Returns an adjective based on the score:
+    // 90-100: Excellent
+    // 80-89: Very good
+    // 70-79: Good
+    // 60-69: Fair
+    // 0-59: Poor
+    static ScoreAdjective(score:number){
+        switch(true) {
+            case (score >= 90): return "Excellent"                                
+            case (score >= 80 && score < 90): return "Very good"
+            case (score >= 70 && score < 80): return "Good"
+            case (score >= 60 && score < 70): return "Fair"
+            case (score >= 0 && score < 60): return "Poor"
+            default: return "Poor"
+        }
+    }
+
+    //
     // receives a JSON table and returns an array
     //
     static JSONtoArray(jsonObject: any) {
@@ -280,8 +360,10 @@ export class ResiliencyScoreReportHelper {
                         title: { text: 'Table of Contents', style: 'header3' }
                     },
                 },
+                // End of Table of contents page
+                // Resiliency Score table
                 {
-                    text: 'Azure App Service Resiliency score',
+                    text: 'Azure App Service Resiliency Score',
                     style: 'header3',
                     pageOrientation: 'portrait',
                     pageBreak: 'before',
@@ -289,51 +371,134 @@ export class ResiliencyScoreReportHelper {
                     tocStyle: { fontSize: 11 },
                     tocMargin: [0, 20, 0, 0],
                 },
-                '\n\n\n\n',
                 {
+                    canvas: [
+                        {  // Gauge
+                            type: 'ellipse',
+                            color: 'black',
+                            lineColor: 'black',
+                            x: 246, y: 150,
+                            r1: 100, r2: 100,
+                            linearGradient: [ResiliencyScoreReportHelper.ScoreColor(resiliencyReportData.ResiliencyResourceList[0].OverallScore),ResiliencyScoreReportHelper.ScoreColor(resiliencyReportData.ResiliencyResourceList[0].OverallScore)],
+                        },
+                        { //Gauge light
+                            type: 'line',
+                            color: 'white',
+                            lineColor: 'yellow',
+                            x1: 246, y1: 150,
+                            x2: 330, y2: 100,
+                            lineWidth: 10,
+                            lineCap: 'round'
+                        },
+                        { //Gauge indicator
+                            type: 'line',
+                            color: 'white',
+                            lineColor: 'blue',
+                            x1: 246, y1: 150,
+                            x2: 330, y2: 100,
+                            lineWidth: 6,
+                            lineCap: 'round'
+                        },
+                        { //Guage's central circle
+                            type: 'ellipse',
+                            color: 'white',
+                            lineColor: 'black',
+                            x: 246, y: 150,
+                            r1: 80, r2: 80,
+                        },
+                        { //Erasing gauge's bottom 
+                            type: 'rect',
+                            x: 146,
+                            y: 170,
+                            w: 200,
+                            h: 80,
+                            r: 0,
+                            lineColor: 'white',
+                            color: 'white',
+                        },
+                    ]
+                },
+                
+                { // Site name
+                    absolutePosition: {x: 60, y: 245},
                     columns: [
-                        // Resiliency score table
-                        {
-                            text: '\n',
-                            width: 140
-                        },
-                        {
-                            alignment: 'center',                            
-                            table: {
-                               headerRows: 1,
-                                widths: ['auto', 'auto'],
-                                body: [
-                                    [
-                                        { text: 'Site name', style: 'apsrcTableheader' }, { text: 'Score', style: 'apsrcTableheader' }
-                                    ],
-                                    [
-                                        { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'apsrcTableevenrow' },
-                                        { text: resiliencyReportData.ResiliencyResourceList[0].OverallScore, bold: true, fontSize: 18, fillColor: ResiliencyScoreReportHelper.ScoreColor(resiliencyReportData.ResiliencyResourceList[0].OverallScore) }
-                                    ],                                   
-                                ]
-                            },
-                            layout: {
-                                hLineWidth: function (i, node) {
-                                    return (i === 0 || i === node.table.body.length) ? 1 : 1;
-                                },
-                                vLineWidth: function (i, node) {
-                                    return (i === 0 || i === node.table.widths.length) ? 1 : 1;
-                                },
-                                hLineColor: function (i, node) {
-                                    return '#306cb8';
-                                },
-                                vLineColor: function (i, node) {
-                                    return '#306cb8';
-                                },
-                            }
-                        },
-                    ],
+                        { 
+                            alignment: 'center',   
+                            text: [ {text: 'Site: ', margin: [5, 2, 5, 2], width: 160, color: 'black', fontSize:17 }, { text:  resiliencyReportData.ResiliencyResourceList[0].Name, margin: [5, 2, 5, 2], width: 160, color: 'black', fontSize:17 }]
+                        }                    
+                    ]
+                },
+                { // Score adjective
+                    absolutePosition: {x: 60, y: 170},   
+                    columns: [
+                        { 
+                            alignment: 'center',
+                            text: [ { text: ResiliencyScoreReportHelper.ScoreAdjective(resiliencyReportData.ResiliencyResourceList[0].OverallScore), color: 'black', fontSize:15, margin: [5, 2, 5, 2], width: 160 }]
+                        }
+                    ]
+                },
+                {// Score
+                    columns: [
+                        { 
+                            alignment: 'center',
+                            absolutePosition: {x: 60, y: 190},   
+                            text: [ { text: resiliencyReportData.ResiliencyResourceList[0].OverallScore, color: 'black', fontSize:50, margin: [5, 2, 5, 2], width: 160  }]
+                        }                        
+                    ]
                 },
                 {
+                    absolutePosition: {x: 100, y: 310},   
                     alignment: 'justify',
                     text: '\n\n\n\n\n\n\nThis is a weighted calculation based on which best practices were followed.\n\nA score of 80 or above is considered highly resilient and it will be marked as green.\n\nA score of 100% doesn’t mean that the Web App will never be down but rather that it has implemented 100% of our resiliency best practices.\n',
                     fontSize: 11,
-                },
+                },                
+                // {
+                //     columns: [
+                //         // Resiliency score table
+                //         {
+                //             text: '\n',
+                //             width: 140
+                //         },
+                        
+                //         {
+                //             alignment: 'center',                            
+                //             table: {
+                //                headerRows: 1,
+                //                 widths: ['auto', 'auto'],
+                //                 body: [
+                //                     [
+                //                         { text: 'Site name', style: 'apsrcTableheader' }, { text: 'Score', style: 'apsrcTableheader' }
+                //                     ],
+                //                     [
+                //                         { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'apsrcTableevenrow' },
+                //                         { text: resiliencyReportData.ResiliencyResourceList[0].OverallScore, bold: true, fontSize: 18, fillColor: ResiliencyScoreReportHelper.ScoreColor(resiliencyReportData.ResiliencyResourceList[0].OverallScore) }
+                //                     ],                                   
+                //                 ]
+                //             },
+                //             layout: {
+                //                 hLineWidth: function (i, node) {
+                //                     return (i === 0 || i === node.table.body.length) ? 1 : 1;
+                //                 },
+                //                 vLineWidth: function (i, node) {
+                //                     return (i === 0 || i === node.table.widths.length) ? 1 : 1;
+                //                 },
+                //                 hLineColor: function (i, node) {
+                //                     return '#306cb8';
+                //                 },
+                //                 vLineColor: function (i, node) {
+                //                     return '#306cb8';
+                //                 },
+                //             }
+                //         },
+                //     ],
+                // },
+                // {
+                //     alignment: 'justify',
+                //     text: '\n\n\n\n\n\n\nThis is a weighted calculation based on which best practices were followed.\n\nA score of 80 or above is considered highly resilient and it will be marked as green.\n\nA score of 100% doesn’t mean that the Web App will never be down but rather that it has implemented 100% of our resiliency best practices.\n',
+                //     fontSize: 11,
+                // },
+                // end of Resiliency score page
+                // Resiliency status per feature table
                 {
                     text: 'Resiliency status per feature',
                     style: 'header3',
