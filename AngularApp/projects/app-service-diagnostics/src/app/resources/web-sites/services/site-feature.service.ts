@@ -433,6 +433,23 @@ export class SiteFeatureService extends FeatureService {
           })
         }
       },
+      {
+        appType: AppType.WebApp | AppType.FunctionApp,
+        platform: OperatingSystem.linux,
+        sku: Sku.Paid,
+        hostingEnvironmentKind: HostingEnvironmentKind.All,
+        stack: '',
+        item: {
+          id: ToolIds.AdvancedAppRestart,
+          name: ToolNames.AdvancedAppRestart,
+          category: 'Diagnostic Tools',
+          description: '',
+          featureType: FeatureTypes.Tool,
+          clickAction: this._createFeatureAction('AdvancedAppRestart', 'Support Tools', () => {
+            this._portalActionService.openBladeAdvancedAppRestartBladeForCurrentSite();
+          })
+        }
+      }
     ];
 
     this.supportTools = [
@@ -538,7 +555,7 @@ export class SiteFeatureService extends FeatureService {
       },
       {
         appType: AppType.WebApp,
-        platform: OperatingSystem.windows | OperatingSystem.HyperV,
+        platform: OperatingSystem.windows | OperatingSystem.HyperV,   // For Linux, there is no category called Support Tools. So this tool is part of Diagnostics Tools section
         sku: Sku.Paid,
         hostingEnvironmentKind: HostingEnvironmentKind.All,
         stack: '',
