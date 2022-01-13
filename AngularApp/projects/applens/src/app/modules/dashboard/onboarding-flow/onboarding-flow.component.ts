@@ -377,8 +377,8 @@ export class OnboardingFlowComponent implements OnInit {
 
   ngOnInit() {
     this.detectorGraduation = true;
-    this.diagnosticApiService.getDetectorGraduationSetting().subscribe(graduationFlag => {
-      this.detectorGraduation = graduationFlag;
+    this.diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(devopsConfig => {
+      this.detectorGraduation = devopsConfig.graduationEnabled;
       this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
 
       this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
@@ -394,9 +394,7 @@ export class OnboardingFlowComponent implements OnInit {
         this.timePickerButtonStr = s;
       });
 
-      this.diagnosticApiService.getAutoMergeSetting().subscribe(x => {
-        this.autoMerge = x;
-      });
+      this.autoMerge = devopsConfig.autoMerge;
 
       this.getBranchList();
 
