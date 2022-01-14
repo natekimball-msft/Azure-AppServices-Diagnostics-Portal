@@ -53,69 +53,6 @@ export class ResiliencyScoreReportHelper {
         }
     }
 
-    //
-    // Creates the Score Canvas with the gauge
-    // 80 to 100 = Green
-    // 60 to 80  = Yellow
-    //  0 to 60  = Red
-    //
-    static ScoreCanvas(score: number) {
-        let finalStr:string=`canvas: [
-            {
-                type: 'ellipse',
-                color: 'black',
-                x: 260, y: 100,
-                r1: 100, r2: 100,
-                linearGradient: ['red', 'yellow', 'yellow', 'green'],
-            }
-         ]`;
-        // let headers = `[{ text: 'Feature/Site name', style: 'rspfTableheader', margin: [0, 10] }, { text: '${resiliencyReportData.ResiliencyResourceList[0].Name}', style: 'rspfTableheader', margin: [0, 10] }, `;
-        // //`{ text: ${resiliencyReportData.ResiliencyResourceList[1].Name}, style: 'rspfTableheader', margin: [0, 10] }, { text: ${resiliencyReportData.ResiliencyResourceList[2].Name}, style: 'rspfTableheader', margin: [0, 10] }],`         
-        // let resiliencyStatusPerFeatureTable: string = "";
-
-        // //Generating headers
-        // for (let i: number = 1; i < resiliencyReportData.ResiliencyResourceList.length; i++) {
-        //     headers = `${headers}{ text: '${resiliencyReportData.ResiliencyResourceList[i].Name}', style: 'rspfTableheader', margin: [0, 10] }`;
-        //     if (i + 1 < resiliencyReportData.ResiliencyResourceList.length) {
-        //         headers = `${headers},`
-        //     }
-        //     else {
-        //         headers = `${headers}],`
-        //     }
-        // };
-
-        // //Adding rows for each feature
-        // let rows = "";
-        // for (let i: number = 0; i < resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList.length; i++) {
-        //     rows = `${rows}[{ text: '${resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[i].Name}', style: 'rspfTableheader', }, `;
-        //     for (let j: number = 0; j < resiliencyReportData.ResiliencyResourceList.length; j++) {
-        //         rows = `${rows}{ margin: [50, 2], image: ${ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[j].ResiliencyFeaturesList[i].ImplementationGrade)}, fit: [20, 20] }`;
-        //         if (j + 1 < resiliencyReportData.ResiliencyResourceList.length) {
-        //             rows = `${rows},`
-        //         }
-        //         else {
-        //             rows = `${rows}],`
-        //         }
-        //     }
-        // }
-        // let finalStr = `${headers}${rows}`;        
-        // if (arguments[0] < 60) {
-        //     return '#f50f2f'; //red
-        //     console.log('Red color');
-        // } else if (arguments[0] < 80) {
-        //     return '#f5d00f'; //yellow
-        //     console.log('yellow color');
-        // } else if (arguments[0] < 100) {
-        //     return '#06a11a'; //green
-        //     console.log('green color');
-        // } else {
-        //     return 'white'; //if undefined or more than 100 set to white
-        //     console.log('white color');
-        // }
-        return finalStr.replace(/^"|"$/g, '');
-    }
-
-
     // Returns an adjective based on the score:
     // 90-100: Excellent
     // 80-89: Very good
@@ -130,6 +67,66 @@ export class ResiliencyScoreReportHelper {
             case (score >= 60 && score < 70): return "Fair"
             case (score >= 0 && score < 60): return "Poor"
             default: return "Poor"
+        }
+    }
+
+    // Returns X2 coordinates for the Score gauge needle based on the score:
+    static NeedleX2(score:number){
+        switch(true) {
+            case (score == 100): return 339
+            case (score >= 95 && score < 100): return 340
+            case (score >= 90 && score < 95): return 340
+            case (score >= 85 && score < 90): return 338
+            case (score >= 80 && score < 85): return 333
+            case (score >= 75 && score < 80): return 326
+            case (score >= 70 && score < 75): return 317
+            case (score >= 65 && score < 70): return 306
+            case (score >= 60 && score < 65): return 293
+            case (score >= 55 && score < 60): return 278
+            case (score >= 51 && score < 55): return 262
+            case (score == 50): return 246
+            case (score >= 45 && score < 50): return 230
+            case (score >= 40 && score < 45): return 214
+            case (score >= 35 && score < 40): return 199
+            case (score >= 30 && score < 35): return 186
+            case (score >= 25 && score < 30): return 175
+            case (score >= 20 && score < 25): return 166
+            case (score >= 15 && score < 20): return 159
+            case (score >= 10 && score < 15): return 154
+            case (score >= 5 && score < 10): return 152
+            case (score >= 1 && score < 5): return 153
+            case (score == 0): return 153
+            default: return 153
+        }
+    }
+
+    // Returns Y2 coordinates for the Score gauge needle based on the score:
+    static NeedleY2(score:number){
+        switch(true) {
+            case (score == 100): return 165
+            case (score >= 95 && score < 100): return 155
+            case (score >= 90 && score < 100): return 142
+            case (score >= 85 && score < 90): return 128
+            case (score >= 80 && score < 85): return 114
+            case (score >= 75 && score < 80): return 100
+            case (score >= 70 && score < 75): return 88
+            case (score >= 65 && score < 70): return 77
+            case (score >= 60 && score < 65): return 68
+            case (score >= 55 && score < 60): return 61
+            case (score >= 51 && score < 55): return 57
+            case (score == 50): return 55
+            case (score >= 45 && score < 50): return 57
+            case (score >= 40 && score < 45): return 61
+            case (score >= 35 && score < 40): return 68
+            case (score >= 30 && score < 35): return 77
+            case (score >= 25 && score < 30): return 88
+            case (score >= 20 && score < 25): return 100
+            case (score >= 15 && score < 20): return 114
+            case (score >= 10 && score < 15): return 128
+            case (score >= 5 && score < 10): return 142            
+            case (score >= 1 && score < 5): return 155
+            case (score == 0): return 165
+            default: return 165
         }
     }
 
@@ -381,21 +378,25 @@ export class ResiliencyScoreReportHelper {
                             r1: 100, r2: 100,
                             linearGradient: [ResiliencyScoreReportHelper.ScoreColor(resiliencyReportData.ResiliencyResourceList[0].OverallScore),ResiliencyScoreReportHelper.ScoreColor(resiliencyReportData.ResiliencyResourceList[0].OverallScore)],
                         },
-                        { //Gauge light
+                        { //Gauge needle's light
                             type: 'line',
                             color: 'white',
                             lineColor: 'yellow',
-                            x1: 246, y1: 150,
-                            x2: 330, y2: 100,
+                            x1: 246, 
+                            y1: 150,
+                            x2: ResiliencyScoreReportHelper.NeedleX2(resiliencyReportData.ResiliencyResourceList[0].OverallScore), 
+                            y2: ResiliencyScoreReportHelper.NeedleY2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
                             lineWidth: 10,
                             lineCap: 'round'
                         },
-                        { //Gauge indicator
+                        { //Gauge needle
                             type: 'line',
                             color: 'white',
                             lineColor: 'blue',
-                            x1: 246, y1: 150,
-                            x2: 330, y2: 100,
+                            x1: 246, 
+                            y1: 150,
+                            x2: ResiliencyScoreReportHelper.NeedleX2(resiliencyReportData.ResiliencyResourceList[0].OverallScore), 
+                            y2: ResiliencyScoreReportHelper.NeedleY2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
                             lineWidth: 6,
                             lineCap: 'round'
                         },
@@ -411,15 +412,55 @@ export class ResiliencyScoreReportHelper {
                             x: 146,
                             y: 170,
                             w: 200,
-                            h: 80,
+                            h: 90,
                             r: 0,
                             lineColor: 'white',
                             color: 'white',
                         },
                     ]
                 },
-                
-                { // Site name
+                // 0 in gauge
+                {
+                    absolutePosition: {x: 217, y: 244},   
+                    text: [
+                            { text: '0', color: 'red', fontSize:10 },
+                        
+                    ]
+                },
+                // 100 in gauge
+                 {
+                    absolutePosition: {x: 385, y: 244},   
+                    text: [
+                            { text: '100', color: '#538135', fontSize:10 },
+                        
+                    ]
+                },
+                // 60 marker in gauge (red)
+                {
+                    absolutePosition: {x: 355, y: 126},   
+                    text: [
+                            { text: '60', color: 'black', fontSize:10 },
+                        
+                    ]
+                },
+                // 80 marker in gauge (yellow)
+                {
+                    absolutePosition: {x: 399, y: 175},   
+                    text: [
+                            { text: '80', color: 'black', fontSize:10 },
+                        
+                    ]
+                },
+                // 90 marker in gauge (green)
+                {
+                    absolutePosition: {x: 408, y: 207},   
+                    text: [
+                            { text: '90', color: 'black', fontSize:10 },
+                        
+                    ]
+                },
+                // Site name
+                { 
                     absolutePosition: {x: 60, y: 245},
                     columns: [
                         { 
