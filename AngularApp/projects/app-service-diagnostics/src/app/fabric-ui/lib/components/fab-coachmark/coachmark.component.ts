@@ -14,6 +14,8 @@ import {
   ViewChild,  
 } from '@angular/core';
 import { ICoachmarkProps } from 'office-ui-fabric-react/lib/Coachmark';
+import { ITeachingBubble  } from 'office-ui-fabric-react/lib/TeachingBubble';
+
 
 
 
@@ -48,7 +50,7 @@ import { ICoachmarkProps } from 'office-ui-fabric-react/lib/Coachmark';
       [positioningContainerProps]="positioningContainerProps"
       [preventDismissOnLostFocus]="preventDismissOnLostFocus"
       [preventFocusOnMount]="preventFocusOnMount"
-      [styles]="styles"      
+      [styles]="styles"            
       [theme]="theme"      
     >
       <ReactContent><ng-content></ng-content></ReactContent>
@@ -80,7 +82,7 @@ export class FabCoachmarkComponent extends ReactWrapperComponent<ICoachmarkProps
   @Input() preventDismissOnLostFocus?: ICoachmarkProps['preventDismissOnLostFocus'];
   @Input() preventFocusOnMount?: ICoachmarkProps['preventFocusOnMount'];  
   @Input() styles?: ICoachmarkProps['styles'];
-  @Input() theme?: ICoachmarkProps['theme'];
+  @Input() theme?: ICoachmarkProps['theme'];  
   @Input() persistentBeak?: boolean;
 
   @Output() readonly onAnimationOpenEnd = new EventEmitter<void>();
