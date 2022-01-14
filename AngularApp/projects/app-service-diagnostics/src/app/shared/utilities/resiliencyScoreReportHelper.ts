@@ -339,7 +339,7 @@ export class ResiliencyScoreReportHelper {
                 },
                 {
                     text: [
-                        { text: 'Risk & Resiliency Assessment report\nPrepared for: ', style: 'title2', alignment: 'center' },
+                        { text: 'Risk & Resiliency Assessment report\n For: ', style: 'title2', alignment: 'center' },
                         { text: resiliencyReportData.CustomerName, style: 'header', bold: true, alignment: 'center' }
                     ]
                 },
@@ -1169,7 +1169,7 @@ export class ResiliencyScoreReportHelper {
                 },
                 {
                     style: 'paragraph',
-                    ol: [
+                    ul: [
                             { text: [ 'Business continuity and disaster recovery (BCDR): Azure Paired Regions\n', { text: "https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions", color: 'blue', link: "https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions", alignment: 'left' , decoration: 'underline'}] }
                     ]
                 },
@@ -1314,13 +1314,13 @@ export class ResiliencyScoreReportHelper {
                                 { text: 'Worker Size', style: 'maxSiteperWorkerSizeheader' }, { text: 'Max sites', style: 'maxSiteperWorkerSizeheader' }
                             ],
                             [
-                                { text: 'Small', style: 'maxSiteperWorkerSizeevenRow'  }, { text: '8', style: 'maxSiteperWorkerSizeevenrow' }
+                                { text: 'Small', style: 'maxSiteperWorkerSizeevenrow'  }, { text: '8', style: 'maxSiteperWorkerSizeevenrow' }
                             ],
                             [
-                                { text: 'Medium', style: 'maxSiteperWorkerSizeoddRow' }, { text: '16', style: 'maxSiteperWorkerSizeoddrow' }
+                                { text: 'Medium', style: 'maxSiteperWorkerSizeoddrow' }, { text: '16', style: 'maxSiteperWorkerSizeoddrow' }
                             ],
                             [
-                                { text: 'Large', style: 'maxSiteperWorkerSizeevenRow' }, { text: '32', style: 'maxSiteperWorkerSizeevenrow' }
+                                { text: 'Large', style: 'maxSiteperWorkerSizeevenrow' }, { text: '32', style: 'maxSiteperWorkerSizeevenrow' }
                             ]
                         ]
                     },
@@ -1390,11 +1390,12 @@ export class ResiliencyScoreReportHelper {
                 },
                 { 
                     style: 'paragraph',
-                    text: 'How to stop inactive Web Apps:\n',
-                    bold: true 
+                    text: '\nStop non production apps to avoid exhausting system resources.' 
                 },
                 { 
-                    text: 'Stop non production apps to avoid exhausting system resources.' 
+                    style: 'paragraph',
+                    text: '\nTo stop inactive Web Apps:\n',
+                    bold: true 
                 },
                 {
                     style: 'paragraph',
@@ -1539,7 +1540,7 @@ export class ResiliencyScoreReportHelper {
                 // ------------------------------------------
                 // Start of AlwaysOn Check section
                 {
-                    text: 'AlwaysOn Check',
+                    text: 'Always on Check',
                     style: 'header3',
                     pageOrientation: 'portrait',
                     tocItem: ['mainToc'],
@@ -1608,12 +1609,12 @@ export class ResiliencyScoreReportHelper {
                 },
                 {
                     style: 'paragraph',
-                    text: ['Enable ', { text: 'Always on', bold:true }]
+                    text: ['Enable ', { text: 'Always on', bold:true }, ':\n']
                 },
                 {
                     style: 'paragraph',
                     ul: [
-                        { text: ['Using the ', { text: 'Azure Portal', bold: true }, ':'] },
+                        { text: ['Using the ', { text: 'Azure Portal', bold: true }, ':\n'] },
                         {
                             ol: [
                                 'Browse to the Azure Portal (https://portal.azure.com) ',
@@ -1629,16 +1630,17 @@ export class ResiliencyScoreReportHelper {
                         { text: ['Using the ', { text: 'Azure AzPowerShell', bold: true }, ':'] },
                         {
                             ol: [
-                                { text: [ 'Use the ', {text: 'Set-AzWebApp ', bold:true}, 'cmdlet with the ', {text: '-AlwaysOn', bold:true}, 'set to true\nFor example:\n']},
-                                '$app = Get-AzWebApp -ResourceGroupName $ResourceGroupName -Name $ApplicationName',
-                                '$app.SiteConfig.AlwaysOn = $false',
-                                '$app | Set-AzWebApp '
+                                { text: [ 'Use the ', {text: 'Set-AzWebApp ', bold:true}, 'cmdlet with the ', {text: '-AlwaysOn', bold:true}, 'set to true\nFor example:\n',
+                                '\n $app = Get-AzWebApp -ResourceGroupName $ResourceGroupName -Name $ApplicationName',
+                                '\n $app.SiteConfig.AlwaysOn = $false',
+                                '\n $app | Set-AzWebApp ']}
                             ]
                         },
                         { text: ['Using ', { text: 'Azure CLI', bold: true }, ':'] },
                         {
                             ol: [
-                                { text: [ 'Use ', {text: 'az web app config set', bold:true}, ':\nFor example:\n az webapp config set -g MyResourceGroup -n MyUniqueApp --always-on true' ] },
+                                { text: [ 'Use ', {text: 'az web app config set', bold:true}, ':\nFor example:\n', 
+                                ' az webapp config set -g MyResourceGroup -n MyUniqueApp --always-on true\n' ] },
                             ]
                         },
                     ]
@@ -1683,6 +1685,7 @@ export class ResiliencyScoreReportHelper {
 
                 },
                 {
+                    stile: 'paragraph',
                     ul: [
                         'Detection of instances where memory or CPU resources are exhausted by app runtimes, with mitigation options.',
                         'Detection of instances where co-locating resources like web apps and databases can improve performance and reduce cost'
