@@ -204,4 +204,8 @@ export class ApplensDiagnosticService {
   getDevopsConfig(resourceProviderType: string) {
     return this._diagnosticApi.getDevopsConfig(resourceProviderType);
   }
+
+  getDetectorDevelopmentEnv(): Observable<string>{
+    return this._diagnosticApi.getDetectorDevelopmentEnv();
+  }
 }

@@ -1,4 +1,4 @@
-<div class="view-container">
+<div *ngIf="isPPE" class="view-container">
 
   <ngx-smart-modal #publishModal identifier="publishModal" [customClass]="'publish-dialog'">
     <div>
@@ -416,5 +416,12 @@
         </div>
       </split-area>
     </split>
+  </div>
+</div>
+<div *ngIf="!isPPE" style="display: flex;">
+  <status-icon [status]="HealthStatus.Warning" class="mr-3"></status-icon>
+  <div>
+    <p>To streamline the development experience, editing/creating detectors for {{this.resourceService.ArmResource.resourceTypeName}} is now done exclusively in <a [href]="PPELink">AppLens PPE Environment</a>.</p>
+    <p>You will be redirected there in {{PPERedirectTimer}} seconds...</p>
   </div>
 </div>
