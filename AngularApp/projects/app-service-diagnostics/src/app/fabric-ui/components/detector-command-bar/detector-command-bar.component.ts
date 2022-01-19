@@ -14,7 +14,7 @@ import { FabCoachmarkComponent } from '../../lib/components/fab-coachmark/coachm
 import { Event as NavigationEvent } from '@angular/router';
 import { IButtonProps } from 'office-ui-fabric-react/lib/Button'
 import { IPositioningContainerProps  } from 'office-ui-fabric-react/lib/PositioningContainer';
-import { DirectionalHint } from 'office-ui-fabric-react';
+import { ColorPickerGridCellBase, DirectionalHint } from 'office-ui-fabric-react';
 
 
 
@@ -40,6 +40,8 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   gRPDFButtonChild: Element;
   gRPDFButtonId:string=undefined;
   gRPDFCoachmarkId:string=undefined;
+  gRPDFButtonColor:string='black';
+  gRPDFButtonClicked:boolean=false;
   showCoachmark:boolean=true;
   showTeachingBubble:boolean=false;
   coachmarkPositioningContainerProps = {
@@ -78,8 +80,10 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   }
 
   generateResiliencyPDF() {
-  var localResponse = '../assets/response.temp.json';
-  var response = {
+    this.gRPDFButtonColor = '#d6d6d6';
+    this.gRPDFButtonClicked = true;
+    var localResponse = '../assets/response.temp.json';
+    var response = {
   };
   var customerName: string;
 
@@ -98,6 +102,8 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       console.log("ResiliencyScore detector call finished");
       console.log(response);
       ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table);
+      this.gRPDFButtonColor = 'black';
+      this.gRPDFButtonClicked = true;
     },error => {
       console.error(error);
     });
@@ -154,7 +160,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // Async to get button element after grandchild is renderded
+    // Async to get button element after grandchild is rendered
     setTimeout(() => {
       this.updateAriaExpanded();
     });

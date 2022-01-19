@@ -1685,7 +1685,7 @@ export class ResiliencyScoreReportHelper {
 
                 },
                 {
-                    stile: 'paragraph',
+                    style: 'paragraph',
                     ul: [
                         'Detection of instances where memory or CPU resources are exhausted by app runtimes, with mitigation options.',
                         'Detection of instances where co-locating resources like web apps and databases can improve performance and reduce cost'
