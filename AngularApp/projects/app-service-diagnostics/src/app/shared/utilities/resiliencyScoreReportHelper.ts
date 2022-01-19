@@ -1,5 +1,5 @@
 import * as pdfMake from "pdfmake/build/pdfmake";
-import * as pdfFonts from "pdfmake/build/vfs_fonts";
+import * as pdfFonts from "../../../assets/vfs_fonts";
 import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from "./resiliencyReportData"
 import { DataTableResponseObject } from '../../../../../diagnostic-data/src/lib/models/detector';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -301,6 +301,7 @@ export class ResiliencyScoreReportHelper {
             pageSize: 'LETTER',
             pageOrientation: 'portrait',
             pageMargins: 60,
+            font: '',
             content: [
                 //Cover
                 '\n\n\n\n\n',
