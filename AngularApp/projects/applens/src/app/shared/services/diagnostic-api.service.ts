@@ -470,4 +470,10 @@ export class DiagnosticApiService {
     let path = `devops/devopsConfig?resourceProviderType=${resourceProviderType}`;
     return this.invoke(path, HttpMethod.GET);
   }
+  public getDetectorDevelopmentEnv(): Observable<string> {
+    const path = "api/appsettings/DetectorDevelopmentEnv";
+    return this.get(path).pipe(map((res:string) => {
+      return res;
+    }));
+  }
 }
