@@ -53,6 +53,8 @@ namespace AppLensV3.Configuration
             services.AddSingleton<IDiagnosticClientService, DiagnosticClient>();
             services.AddObserver(configuration);
             services.AddSingleton<IEmailNotificationService, NullableEmailNotificationService>();
+            services.AddSingleton<IResourceConfigService, NullableResourceConfigService>();
+            services.AddSingleton<IAppSvcUxDiagnosticDataService, NullableAppSvcUxDiagnosticDataService>();
             services.AddSingleton<IGithubClientService, GithubClientService>();
             services.AddSingleton<IGraphClientService, NationalCloudGraphClientService>();
             services.AddSingleton<IIncidentAssistanceService, NationalCloudIncidentAssistanceService>();
