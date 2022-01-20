@@ -1264,7 +1264,7 @@ export class OnboardingFlowComponent implements OnInit {
     DetectorObservable.subscribe(_ => {
       if (!this.autoMerge) {
         makePullRequestObservable.subscribe(_ => {
-          this.PRLink = `${_["item2"]["webUrl"]}/pullrequest/${_["item1"]["pullRequestId"]}`
+          this.PRLink = `${_["webUrl"]}/pullrequest/${_["prId"]}`
           this.publishSuccess = true;
           this.postPublish();
           this._applensCommandBarService.refreshPage();
@@ -1311,7 +1311,7 @@ export class OnboardingFlowComponent implements OnInit {
     deleteDetectorFiles.subscribe(_ => {
       if (!this.autoMerge) {
         makePullRequestObservable.subscribe(_ => {
-          this.PRLink = `${_["repository"]["webUrl"]}/pullrequest/${_["pullRequestId"]}`
+          this.PRLink = `${_["webUrl"]}/pullrequest/${_["prId"]}`
           this.publishSuccess = true;
           this.postPublish();
         }, err => {
