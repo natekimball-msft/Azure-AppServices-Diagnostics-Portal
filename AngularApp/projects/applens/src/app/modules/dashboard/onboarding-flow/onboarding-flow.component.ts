@@ -29,6 +29,7 @@ import { BehaviorSubject } from 'rxjs';
 import { Commit } from '../../../shared/models/commit';
 import { ApplensCommandBarService } from '../services/applens-command-bar.service';
 import { Router } from '@angular/router';
+import { ResourceInfo } from '../../../shared/models/resources';
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
 using Diagnostics.DataProviders;
@@ -285,7 +286,8 @@ export class OnboardingFlowComponent implements OnInit {
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService,
     private diagnosticApiService: ApplensDiagnosticService, private _diagnosticApi: DiagnosticApiService, private resourceService: ResourceService,
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
-    public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute, private _applensCommandBarService: ApplensCommandBarService, private _router: Router) {
+    public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute, 
+    private _applensCommandBarService: ApplensCommandBarService, private _router: Router) {
     this.editorOptions = {
       theme: 'vs',
       language: 'csharp',
@@ -380,6 +382,9 @@ export class OnboardingFlowComponent implements OnInit {
   isPPE: boolean = true;
   PPELink: string;
 
+  resourceInfo: ResourceInfo = new ResourceInfo(); 
+  redirectTimer: NodeJS.Timer;
+
   ngOnInit() {
     this.detectorGraduation = true;
     this.diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(devopsConfig => {
@@ -395,16 +400,20 @@ export class OnboardingFlowComponent implements OnInit {
         this._telemetryService.logPageView(TelemetryEventNames.OnboardingFlowLoaded, {});
       }
 
+      if(this._activatedRoute.parent.snapshot.data["info"]) {
+        this.resourceInfo = this._activatedRoute.parent.snapshot.data["info"];
+      }
+
       this.diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
         this.PPELink = `https://applens-ppe.trafficmanager.net/${this._router.url}`
         this.isPPE = env === "PPE";
         if (!this.isPPE && this.detectorGraduation){
-          let redirectTimer = setInterval(() => {
+          this.redirectTimer = setInterval(() => {
             this.PPERedirectTimer = this.PPERedirectTimer - 1;
             if (this.PPERedirectTimer === 0){
               window.location.href = this.PPELink;
               console.log("redirected");
-              clearInterval(redirectTimer);
+              clearInterval(this.redirectTimer);
             }
           }, 1000);
         }
@@ -1545,5 +1554,9 @@ export class OnboardingFlowComponent implements OnInit {
     }
 
     return false;
+  }
+
+  ngOnDestroy(){
+    clearInterval(this.redirectTimer);
   }
 }
