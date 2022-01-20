@@ -15,7 +15,7 @@ import { RecommendedUtterance } from '../../../../../../diagnostic-data/src/publ
 import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.service';
 import {TelemetryEventNames} from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
 import { environment } from '../../../../environments/environment';
-import {ActivatedRoute, Params} from "@angular/router";
+import {ActivatedRoute, Params, Router} from "@angular/router";
 import {DiagnosticApiService} from "../../../shared/services/diagnostic-api.service";
 import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
 import ReconnectingWebSocket from 'reconnecting-websocket';
@@ -116,12 +116,18 @@ export class OnboardingFlowComponent implements OnInit {
   private emailRecipients: string = '';
   private _monacoEditor:monaco.editor.ICodeEditor = null;
   private _oldCodeDecorations:string[] = [];
-  
+
+  detectorGraduation: boolean;
+  PPERedirectTimer: number = 10;
+  redirectTimer: NodeJS.Timer;
+  isPPE: boolean = true;
+  PPELink: string;
+  HealthStatus = HealthStatus;
 
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService,
     private diagnosticApiService: ApplensDiagnosticService, private _diagnosticApi: DiagnosticApiService, private resourceService: ResourceService,
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
-    public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute) {
+    public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute, private _router: Router) {
     this.editorOptions = {
       theme: 'vs',
       language: 'csharp',
@@ -161,6 +167,25 @@ export class OnboardingFlowComponent implements OnInit {
       this.initialized = true;
       this._telemetryService.logPageView(TelemetryEventNames.OnboardingFlowLoaded, {});
     }
+
+    this.detectorGraduation = true;
+    this.diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(devopsConfig => {
+      this.detectorGraduation = devopsConfig.graduationEnabled;
+
+      this.diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
+        this.PPELink = `https://applens-ppe.trafficmanager.net/${this._router.url}`
+        this.isPPE = env === "PPE";
+        if (!this.isPPE && this.detectorGraduation){
+          this.redirectTimer = setInterval(() => {
+            this.PPERedirectTimer = this.PPERedirectTimer - 1;
+            if (this.PPERedirectTimer === 0){
+              window.location.href = this.PPELink;
+              clearInterval(this.redirectTimer);
+            }
+          }, 1000);
+        }
+      });
+    });
   }
 
   addCodePrefix(codeString) {
@@ -886,5 +911,9 @@ createWebSocket(url: string): WebSocket {
     }
 
     return false;
+  }
+
+  ngOnDestroy(){
+    clearInterval(this.redirectTimer);
   }
 }
