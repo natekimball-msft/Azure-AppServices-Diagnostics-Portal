@@ -170,4 +170,8 @@ export class ApplensDiagnosticService {
   getDetectorDevelopmentEnv(): Observable<string>{
     return this._diagnosticApi.getDetectorDevelopmentEnv();
   }
+
+  getPPEHostname(): Observable<string>{
+    return this._diagnosticApi.getPPEHostname();
+  }
 }

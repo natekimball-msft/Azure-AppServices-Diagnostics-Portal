@@ -120,8 +120,9 @@ export class OnboardingFlowComponent implements OnInit {
   detectorGraduation: boolean;
   PPERedirectTimer: number = 10;
   redirectTimer: NodeJS.Timer;
-  isPPE: boolean = true;
+  isProd: boolean = true;
   PPELink: string;
+  PPEHostname: string;
   HealthStatus = HealthStatus;
 
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService,
@@ -172,18 +173,21 @@ export class OnboardingFlowComponent implements OnInit {
     this.diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(devopsConfig => {
       this.detectorGraduation = devopsConfig.graduationEnabled;
 
-      this.diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
-        this.PPELink = `https://applens-ppe.trafficmanager.net/${this._router.url}`
-        this.isPPE = env === "PPE";
-        if (!this.isPPE && this.detectorGraduation){
-          this.redirectTimer = setInterval(() => {
-            this.PPERedirectTimer = this.PPERedirectTimer - 1;
-            if (this.PPERedirectTimer === 0){
-              window.location.href = this.PPELink;
-              clearInterval(this.redirectTimer);
-            }
-          }, 1000);
-        }
+      this.diagnosticApiService.getPPEHostname().subscribe(host => {
+        this.PPEHostname = host;
+        this.diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
+          this.PPELink = `${this.PPEHostname}${this._router.url}`
+          this.isProd = env === "Prod";
+          if (this.isProd && this.detectorGraduation){
+            this.redirectTimer = setInterval(() => {
+              this.PPERedirectTimer = this.PPERedirectTimer - 1;
+              if (this.PPERedirectTimer === 0){
+                window.location.href = this.PPELink;
+                clearInterval(this.redirectTimer);
+              }
+            }, 1000);
+          }
+        });
       });
     });
   }
