@@ -162,4 +162,16 @@ export class ApplensDiagnosticService {
   getKustoMappings() : Observable<any> {
     return this._diagnosticApi.getKustoMappings(this._resourceService.getCurrentResourceId(true));
   }
+
+  getDevopsConfig(resourceProviderType: string) {
+    return this._diagnosticApi.getDevopsConfig(resourceProviderType);
+  }
+
+  getDetectorDevelopmentEnv(): Observable<string>{
+    return this._diagnosticApi.getDetectorDevelopmentEnv();
+  }
+
+  getPPEHostname(): Observable<string>{
+    return this._diagnosticApi.getPPEHostname();
+  }
 }

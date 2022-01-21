@@ -385,4 +385,23 @@ export class DiagnosticApiService {
     return this.invoke<QueryResponse<DetectorResponse>>(path, HttpMethod.POST, body, false, undefined, undefined, undefined,
       additionalParams.getFullResponse, additionalHeaders);
   }
+
+  public getDevopsConfig(resourceProviderType: string): Observable<any>{
+    let path = `devops/devopsConfig?resourceProviderType=${resourceProviderType}`;
+    return this.invoke(path, HttpMethod.GET);
+  }
+  
+  public getDetectorDevelopmentEnv(): Observable<string> {
+    const path = "api/appsettings/DetectorDevelopmentEnv";
+    return this.get(path).pipe(map((res:string) => {
+      return res;
+    }));
+  }
+
+  public getPPEHostname(): Observable<string> {
+    const path = "api/appsettings/PPEHostname";
+    return this.get(path).pipe(map((res:string) => {
+      return res;
+    }));
+  }
 }
