@@ -408,7 +408,7 @@ export class OnboardingFlowComponent implements OnInit {
             this.redirectTimer = setInterval(() => {
               this.PPERedirectTimer = this.PPERedirectTimer - 1;
               if (this.PPERedirectTimer === 0){
-                //window.location.href = this.PPELink;
+                window.location.href = this.PPELink;
                 clearInterval(this.redirectTimer);
               }
             }, 1000);
