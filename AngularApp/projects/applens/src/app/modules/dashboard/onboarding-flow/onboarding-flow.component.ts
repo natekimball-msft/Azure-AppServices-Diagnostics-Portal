@@ -381,7 +381,6 @@ export class OnboardingFlowComponent implements OnInit {
   isProd: boolean = false;
   PPELink: string;
   PPEHostname: string;
- 
   redirectTimer: NodeJS.Timer;
 
   ngOnInit() {
