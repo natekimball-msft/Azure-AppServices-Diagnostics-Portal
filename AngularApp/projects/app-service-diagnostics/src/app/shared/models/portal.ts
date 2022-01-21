@@ -15,6 +15,8 @@ export interface StartupInfo {
     source?: string;
     pesId?: string;
     supportTopicId?: string;
+    sapProductId?: string;
+    sapSupportTopicId?: string;
     workflowId?: string;
     resourceType?: ResourceType;
     additionalParameters?: any;
