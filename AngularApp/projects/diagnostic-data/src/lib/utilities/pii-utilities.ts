@@ -2,11 +2,11 @@ export class PIIUtilities {
     public static removePII(text: string) {
         let res = text;
 
-        res = this.maskPhone(res);
-        res = this.maskEmails(res);
-        res = this.maskIPV4Address(res);
-        res = this.maskPassword(res);
-        res = this.maskQueryString(res);
+        // res = this.maskPhone(res);
+        // res = this.maskEmails(res);
+        // res = this.maskIPV4Address(res);
+        // res = this.maskPassword(res);
+        // res = this.maskQueryString(res);
         return res;
     }
 
@@ -18,7 +18,7 @@ export class PIIUtilities {
             const regex = new RegExp(regexStr,"g");
             res = text.replace(regex, " ********** ");
         } catch (e) {
-            
+
         }
         return res;
     }
