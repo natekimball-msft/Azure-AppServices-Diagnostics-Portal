@@ -246,7 +246,7 @@
 
       <fab-command-bar-item key="download" text="Download" [iconProps]="{ iconName: 'Download' }"
         (click)="getDevOptions()"></fab-command-bar-item>
-      <fab-command-bar-item key="gistVersion" text="Gist version" [iconProps]="{ iconName: 'BackToWindow' }"
+      <fab-command-bar-item [style]="gistVersionVisibilityStyle" key="gistVersion" text="Gist version" [iconProps]="{ iconName: 'BackToWindow' }"
         (click)="showGistDialog()"></fab-command-bar-item>
       
       <fab-command-bar-item [style]="deleteVisibilityStyle" key="delete" text="Delete" [iconProps]="{iconName: 'Delete'}"
