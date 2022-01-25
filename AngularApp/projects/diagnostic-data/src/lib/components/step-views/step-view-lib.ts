@@ -148,7 +148,7 @@ function markdownPreprocess(markdown: string, id: string): string {
         return null;
     }
     // parse markdown links to html <a> tag
-    var result = markdown.replace(/(?<!\!)\[(.*?)]\((.*?)( +\"(.*?)\")?\)/g, `<a target="_blank" href="$2" title="$4" onclick="networkCheckLinkClickEventLogger('${id}','$2', '$1')">$1</a>`);
+    var result = markdown.replace(/[(.*?)]\((.*?)( +\"(.*?)\")?\)/g, `<a target="_blank" href="$2" title="$4" onclick="networkCheckLinkClickEventLogger('${id}','$2', '$1')">$1</a>`);
     return result;
 }
 
@@ -329,8 +329,8 @@ export class StepFlowManager {
 
     private generateLogEventFunc(flow: StepFlow) {
         var telemetryService = this._telemetryService;
-        return (eventName: string, payload: any) => telemetryService.logEvent(`NetworkCheck.Flow.${eventName}`, { 
-            flowId: flow.id, 
+        return (eventName: string, payload: any) => telemetryService.logEvent(`NetworkCheck.Flow.${eventName}`, {
+            flowId: flow.id,
             payload,
             "resourceUri": this._resourceUri,
             "sessionId": this._sessionId,

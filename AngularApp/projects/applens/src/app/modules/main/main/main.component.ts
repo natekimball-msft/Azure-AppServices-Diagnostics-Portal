@@ -230,10 +230,7 @@ export class MainComponent implements OnInit {
       if (enabledResourceTypes) {
         enabledResourceTypes.forEach(enabledResource => {
           allowedResources += `${enabledResource.resourceType}\n`;
-          const resourcePattern = new RegExp(
-            `(?<=${enabledResource.resourceType.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\/).*`, 'i'
-          );
-          const enabledResourceResult = result[3].match(resourcePattern);
+          const enabledResourceResult = true;
 
           if (enabledResourceResult) {
             routeString = `subscriptions/${result[1]}/resourceGroups/${result[2]}/providers/${enabledResource.resourceType}/${enabledResourceResult[0]}`;

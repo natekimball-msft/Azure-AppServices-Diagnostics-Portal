@@ -26,7 +26,7 @@ export class PIIUtilities {
     public static maskEmails(text: string) {
         let res = text;
         try {
-            const regexStr = "(?<=[\\w]{1})[\\w-\\._\\+%]*(?=@([\\w-_]+)[\\.]{0})";
+            const regexStr = "([\\w]{1})[\\w-\\._\\+%]*(@([\\w-_]+)[\\.]{0})";
             const regex = new RegExp(regexStr,"g");
             res = text.replace(regex, s => "*".repeat(s.length));
         } catch (e) {
@@ -52,7 +52,7 @@ export class PIIUtilities {
     public static maskPassword(text: string) {
         let res = text;
         try {
-            const regexStr = "(?<=(\\bpass\\b)|(\\bpwd\\b)|(\\bpassword\\b)|(\\buserpass\\b))[^\\w\\r\\n]+(.+)";
+            const regexStr = "((\\bpass\\b)|(\\bpwd\\b)|(\\bpassword\\b)|(\\buserpass\\b))[^\\w\\r\\n]+(.+)";
             const regex = new RegExp(regexStr,"gi");
             res = text.replace(regex, ":****");
         } catch (e) {
@@ -64,7 +64,7 @@ export class PIIUtilities {
     public static maskQueryString(text: string) {
         let res = text;
         try {
-            const regexStr = "(?<=https?:\\/\\/[\\w\\.-_%]+\\?)([\\w-\\._&%]+=[\\w-\\._%]+)+";
+            const regexStr = "(https?:\\/\\/[\\w\\.-_%]+\\?)([\\w-\\._&%]+=[\\w-\\._%]+)+";
             const regex = new RegExp(regexStr,"g");
             res = text.replace(regex, "****");
         } catch (e) {

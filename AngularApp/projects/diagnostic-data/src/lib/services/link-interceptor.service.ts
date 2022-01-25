@@ -3,7 +3,7 @@ import { TelemetryService } from './telemetry/telemetry.service';
 import { Router, NavigationExtras, ActivatedRoute } from '@angular/router';
 import { TelemetryEventNames } from './telemetry/telemetry.common';
 
-const isAbsolute = new RegExp('(?:^[a-z][a-z0-9+.-]*:|\/\/)', 'i');
+const isAbsolute = new RegExp('([a-z][a-z0-9+.-]*:|\/\/)', 'i');
 
 @Injectable({
   providedIn: 'root'
