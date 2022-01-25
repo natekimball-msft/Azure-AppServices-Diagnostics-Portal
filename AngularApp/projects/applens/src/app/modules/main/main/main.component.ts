@@ -58,7 +58,7 @@ export class MainComponent implements OnInit {
       resourceType: null,
       resourceTypeLabel: 'Virtual Machine Id',
       routeName: (name) => this.getFakeArmResource('Microsoft.Compute', 'virtualMachines', name),
-      displayName: 'Azure Virutal Machine',
+      displayName: 'Azure Virtual Machine',
       enabled: true,
       caseId: false
     },
