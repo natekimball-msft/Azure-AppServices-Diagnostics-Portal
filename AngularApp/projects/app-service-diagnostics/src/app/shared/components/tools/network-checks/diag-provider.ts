@@ -341,7 +341,7 @@ export class DiagProvider {
         if (s.match(/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/)) {
             // ipv4
             return true;
-        } else if (!ipV4Only) {
+        } else if (!ipV4Only && s.match(/^(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}$/)) {
             // ipv6
             return true;
         }
