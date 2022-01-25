@@ -515,6 +515,16 @@
             "searchSuffix": "AZURE SQL SERVER",
             "displayName": "Azure SQL Server"
         },
+        {
+            "service": "ResourceService",
+            "resourceType": "Microsoft.cache",
+            "templateFileName": "RedisCache",
+            "imgSrc": "assets/img/azure-icons/AzureCacheRedis.png",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "",
+            "searchSuffix": "AZURE CACHE FOR REDIS",
+            "displayName": "Azure Cache for Redis"
+        },
         { 
              "service": "ResourceService",  
              "resourceType": "Microsoft.Insights/scheduledQueryRules",  
