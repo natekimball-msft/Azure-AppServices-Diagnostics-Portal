@@ -97,6 +97,8 @@ async function checkSalAsync(vnet, subnet, siteInfo, diagProvider, flowMgr) {
                 if(orphanedSal.properties.allowDelete === true){
                     orphanedSal = null;
                 }
+            }else{
+                return { views, orphanedSal };
             }
         }
     }
