@@ -150,8 +150,8 @@ function markdownPreprocess(markdown: string, id: string): string {
     // parse markdown links to html <a> tag
     var result = markdown;
     try {
-        const regex = new RegExp("(?<!\!)\[(.*?)]\((.*?)( +\"(.*?)\")?\)", "g");
-        result = markdown.replace(regex, `<a target="_blank" href="$2" title="$4" onclick="networkCheckLinkClickEventLogger('${id}','$2', '$1')">$1</a>`);
+        const regex = new RegExp('\\[(.*?)]\\((.*?)( +"(.*?)")?\\)', "g");
+        var result = markdown.split("![").map(s => s.replace(regex, `<a target="_blank" href="$2" title="$4" onclick="networkCheckLinkClickEventLogger('${id}','$2', '$1')">$1</a>`)).join("![");
     }
     catch (e) {
         result = markdown;
