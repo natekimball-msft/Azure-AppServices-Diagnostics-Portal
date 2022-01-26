@@ -163,6 +163,7 @@ export class OnboardingFlowComponent implements OnInit {
   showTimePicker: boolean = false;
   gistDialogHidden: boolean = true;
   gistVersion: string;
+  latestGistVersion: string = "";
   gistName: string;
   gistsDropdownOptions: IDropdownOption[] = [];
   gistVersionOptions: IDropdownOption[] = [];
@@ -469,6 +470,8 @@ export class OnboardingFlowComponent implements OnInit {
         var targetBranch = `dev/${this.userName.split("@")[0]}/detector/${this.id}`
         this.Branch = this.targetInShowBranches(targetBranch) ? targetBranch : this.showBranches[0].key;
         this.displayBranch = this.Branch;
+        this.tempBranch = this.Branch;
+        this.updateBranch();
       }
     });
   }
@@ -588,6 +591,7 @@ export class OnboardingFlowComponent implements OnInit {
   updateGistVersionOptions(event: string) {
     this.gistName = event["option"].text;
     this.gistVersionOptions = [];
+    this.latestGistVersion = "";
     var tempList = [];
     this.githubService.getChangelist(this.gistName)
       .subscribe((version: Commit[]) => {
@@ -597,9 +601,9 @@ export class OnboardingFlowComponent implements OnInit {
           title: String(`${this.gistName}`)
         }));
         this.gistVersionOptions = tempList.reverse();
+        this.latestGistVersion = this.gistVersionOptions[0]["text"];
         if (this.gistVersionOptions.length > 10) { this.gistVersionOptions = this.gistVersionOptions.slice(0, 10); }
       });
-
   }
 
   gistVersionOnChange(event: string) {
