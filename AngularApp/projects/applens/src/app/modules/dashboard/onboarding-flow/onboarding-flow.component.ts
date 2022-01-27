@@ -599,7 +599,10 @@ export class OnboardingFlowComponent implements OnInit {
           title: String(`${this.gistName}`)
         }));
         this.gistVersionOptions = tempList.reverse();
-        this.latestGistVersion = this.gistVersionOptions[0]["text"];
+        this.diagnosticApiService.getDetectorCode(`${this.gistVersionOptions[0]["title"]}/${this.gistVersionOptions[0]["title"]}.csx`, this.defaultBranch, this.resourceId).subscribe(gistCode => {
+          this.latestGistVersion = gistCode;
+        });
+        //this.latestGistVersion = this.gistVersionOptions[0]["text"];
         if (this.gistVersionOptions.length > 10) { this.gistVersionOptions = this.gistVersionOptions.slice(0, 10); }
       });
   }
@@ -1523,6 +1526,7 @@ export class OnboardingFlowComponent implements OnInit {
 
     forkJoin(detectorFile, configuration, this.diagnosticApiService.getGists()).subscribe(res => {
       this.codeLoaded = true;
+      if (!this.code)
       this.code = this.addCodePrefix(res[0]);
       this.originalCode = this.code;
       if (res[1] !== null) {
