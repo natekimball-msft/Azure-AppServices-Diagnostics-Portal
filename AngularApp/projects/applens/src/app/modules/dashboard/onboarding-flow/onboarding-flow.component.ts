@@ -600,7 +600,6 @@ export class OnboardingFlowComponent implements OnInit {
             title: String(`${this.gistName}`)
           }));
           this.gistVersionOptions = tempList.reverse();
-          //this.latestGistVersion = this.gistVersionOptions[0]["text"];
           if (this.gistVersionOptions.length > 10) { this.gistVersionOptions = this.gistVersionOptions.slice(0, 10); }
         });
     }
