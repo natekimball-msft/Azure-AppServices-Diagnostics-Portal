@@ -591,20 +591,24 @@ export class OnboardingFlowComponent implements OnInit {
     this.gistVersionOptions = [];
     this.latestGistVersion = "";
     var tempList = [];
-    this.githubService.getChangelist(this.gistName)
-      .subscribe((version: Commit[]) => {
-        version.forEach(v => tempList.push({
-          key: String(`${v["sha"]}`),
-          text: String(`${v["author"]}: ${v["dateTime"]}`),
-          title: String(`${this.gistName}`)
-        }));
-        this.gistVersionOptions = tempList.reverse();
-        this.diagnosticApiService.getDetectorCode(`${this.gistVersionOptions[0]["title"]}/${this.gistVersionOptions[0]["title"]}.csx`, this.defaultBranch, this.resourceId).subscribe(gistCode => {
-          this.latestGistVersion = gistCode;
+    if (!this.detectorGraduation) {
+      this.githubService.getChangelist(this.gistName)
+        .subscribe((version: Commit[]) => {
+          version.forEach(v => tempList.push({
+            key: String(`${v["sha"]}`),
+            text: String(`${v["author"]}: ${v["dateTime"]}`),
+            title: String(`${this.gistName}`)
+          }));
+          this.gistVersionOptions = tempList.reverse();
+          //this.latestGistVersion = this.gistVersionOptions[0]["text"];
+          if (this.gistVersionOptions.length > 10) { this.gistVersionOptions = this.gistVersionOptions.slice(0, 10); }
         });
-        //this.latestGistVersion = this.gistVersionOptions[0]["text"];
-        if (this.gistVersionOptions.length > 10) { this.gistVersionOptions = this.gistVersionOptions.slice(0, 10); }
+    }
+    else {
+      this.diagnosticApiService.getDetectorCode(`${this.gistName}/${this.gistName}.csx`, this.defaultBranch, this.resourceId).subscribe(gistCode => {
+        this.latestGistVersion = gistCode;
       });
+    }
   }
 
   gistVersionOnChange(event: string) {
