@@ -1536,9 +1536,6 @@ export class OnboardingFlowComponent implements OnInit {
         configuration = branchObservable.pipe(switchMap((branch: string) => {
           return this.diagnosticApiService.getDetectorCode(`${this.id}/package.json`, branch, this.resourceId).pipe(map(config => {
             let c: object = JSON.parse(config)
-            // if (!(c['dependencies'] !== undefined)) {
-            //   config['dependencies'] = {};
-            // }
             c['dependencies'] = c['dependencies'] || {};
 
             this.configuration = c;
