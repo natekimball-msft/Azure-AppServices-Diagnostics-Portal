@@ -455,7 +455,7 @@ export class DiagnosticApiService {
     return this.invoke(path, HttpMethod.POST, body);
   }
 
-  public getBranches(resourceId: string): Observable<string []>{
+  public getBranches(resourceId: string): Observable<{branchName:string,isMainBranch:string}[]>{
     let path = "devops/getBranches?resourceURI=" + resourceId;
     return this.invoke(path, HttpMethod.GET);
   }
