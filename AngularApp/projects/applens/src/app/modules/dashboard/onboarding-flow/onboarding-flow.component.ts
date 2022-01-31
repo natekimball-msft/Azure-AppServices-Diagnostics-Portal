@@ -120,7 +120,7 @@ export class OnboardingFlowComponent implements OnInit {
   detectorGraduation: boolean;
   PPERedirectTimer: number = 10;
   redirectTimer: NodeJS.Timer;
-  isProd: boolean = true;
+  isProd: boolean = false;
   PPELink: string;
   PPEHostname: string;
   HealthStatus = HealthStatus;
