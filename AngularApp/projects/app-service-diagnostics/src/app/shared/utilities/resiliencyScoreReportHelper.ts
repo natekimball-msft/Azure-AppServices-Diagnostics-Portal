@@ -290,6 +290,8 @@ export class ResiliencyScoreReportHelper {
             }
         };
         resiliencyReportData.ResiliencyResourceList[0].Name
+        var template = '../assets/rr-appservice-tmpl.txt';
+        //var docDefinition = template;
         var docDefinition = {
             footer: function(currentPage, pageCount, pageSize) {
                  return [

@@ -83,6 +83,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     this.gRPDFButtonColor = '#d6d6d6';
     this.gRPDFButtonClicked = true;
     var localResponse = '../assets/response.temp.json';
+    
     var response = {
   };
   var customerName: string;
