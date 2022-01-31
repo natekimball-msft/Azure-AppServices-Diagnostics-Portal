@@ -38,12 +38,13 @@ export class DetectorCommandBarComponent implements AfterViewInit {
 
   gRPDFButton: Element;
   gRPDFButtonChild: Element;
-  gRPDFButtonId:string=undefined;
-  gRPDFCoachmarkId:string=undefined;
-  gRPDFButtonColor:string='black';
-  gRPDFButtonClicked:boolean=false;
-  showCoachmark:boolean=true;
-  showTeachingBubble:boolean=false;
+  gRPDFButtonId: string = undefined;
+  gRPDFCoachmarkId: string = undefined;  
+  gRPDFButtonText: string = "Get Resiliency Score Report";
+  gRPDFButtonIcon: any = { iconName: 'Download' };
+  gRPDFButtonDisabled: boolean;
+  showCoachmark: boolean = true;
+  showTeachingBubble: boolean = false;
   coachmarkPositioningContainerProps = {
     directionalHint: DirectionalHint.bottomLeftEdge,
     doNotLayer: true
@@ -55,6 +56,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
 
 
   constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private http: HttpClient) { 
+    this.gRPDFButtonDisabled = false;
     //Get showCoachMark value(string) from local storage (if exists), then convert to boolean
    
     if (localStorage.getItem("showCoachmark")!=undefined){
@@ -80,9 +82,17 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   }
 
   generateResiliencyPDF() {
-    this.gRPDFButtonColor = '#d6d6d6';
-    this.gRPDFButtonClicked = true;
-    var localResponse = '../assets/response.temp.json';
+    this.gRPDFButtonText = "Getting Resiliency Score Report";
+    this.gRPDFButtonIcon = {
+      iconName: 'Download',
+      styles: {
+        root:{
+          color: 'grey'
+        }
+      }
+     };
+    this.gRPDFButtonDisabled = true;
+    //var localResponse = '../assets/response.temp.json';
     
     var response = {
   };
@@ -103,8 +113,9 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       console.log("ResiliencyScore detector call finished");
       console.log(response);
       ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table);
-      this.gRPDFButtonColor = 'black';
-      this.gRPDFButtonClicked = true;
+      this.gRPDFButtonText = "Get Resiliency Score Report";
+      this.gRPDFButtonIcon = { iconName: 'Download' };
+      this.gRPDFButtonDisabled = false;
     },error => {
       console.error(error);
     });
