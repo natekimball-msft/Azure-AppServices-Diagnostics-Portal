@@ -415,7 +415,7 @@ export class DiagnosticApiService {
 
   public getDetectorCode(detectorPath: string, branch: string, resourceUri: string): Observable<string>{
     let path = `devops/getCode?filePathInRepo=${detectorPath}&branch=${branch}&resourceUri=${resourceUri}`;
-    return this.invoke(path, HttpMethod.GET, false);
+    return this.invoke(path, HttpMethod.GET, null, false);
   }
 
   public pushDetectorChanges(branch: string, files: string[], repoPaths: string[], comment: string, changeType: string, resourceUri: string){
@@ -457,7 +457,7 @@ export class DiagnosticApiService {
 
   public getBranches(resourceId: string): Observable<{branchName:string,isMainBranch:string}[]>{
     let path = "devops/getBranches?resourceURI=" + resourceId;
-    return this.invoke(path, HttpMethod.GET, false);
+    return this.invoke(path, HttpMethod.GET, null, false);
   }
 
   public getEnableDetectorDevelopment(): Observable<boolean> {
@@ -468,7 +468,7 @@ export class DiagnosticApiService {
   }
   public getDevopsConfig(resourceProviderType: string): Observable<any>{
     let path = `devops/devopsConfig?resourceProviderType=${resourceProviderType}`;
-    return this.invoke(path, HttpMethod.GET, false);
+    return this.invoke(path, HttpMethod.GET, null, false);
   }
   public getDetectorDevelopmentEnv(): Observable<string> {
     const path = "api/appsettings/DetectorDevelopmentEnv";

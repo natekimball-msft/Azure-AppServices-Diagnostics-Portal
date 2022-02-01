@@ -1540,12 +1540,7 @@ export class OnboardingFlowComponent implements OnInit {
 
             this.configuration = c;
             return this.configuration['dependencies'];
-          }),
-            flatMap(dep => {
-              let keys = Object.keys(dep);
-              if (keys.length === 0) return of([]);
-              return forkJoin(Object.keys(dep).map(key => this.githubService.getSourceReference(key, dep[key])));
-            }));
+          }));
         }));
       }
     } 
