@@ -46,6 +46,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   gRPDFButtonDisabled: boolean;
   showCoachmark: boolean = true;
   showTeachingBubble: boolean = false;
+  generatedOn: string = undefined;
   coachmarkPositioningContainerProps = {
     directionalHint: DirectionalHint.bottomLeftEdge,
     doNotLayer: true
@@ -82,8 +83,17 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     this.globals.openFeedback = !this.globals.openFeedback;
   }
 
-  generateResiliencyPDF() {
-    let generatedOn:string=undefined;
+  generateResiliencyPDF() {    
+    // Once the button is clicked no need to show Coachmark anymore:
+    if (localStorage.getItem("showCoachmark")!=undefined)
+    {
+      this.showCoachmark = localStorage.getItem("showCoachmark") === "false";
+    }
+    else
+    {
+      this.showCoachmark=false;
+      localStorage.setItem("showCoachmark","false");      
+    }
     this.gRPDFButtonText = "Getting Resiliency Score Report...";
     this.gRPDFButtonIcon = {
       iconName: 'Download',
@@ -117,14 +127,14 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       //If the page hasn't been refreshed this will use a cached request, so changing File Name to use the same name + "(cached)" to let them know they are seeing a cached version.
       if (this.gRPDFFileName == undefined)
       {
-        generatedOn = ResiliencyScoreReportHelper.generatedOn();
-        this.gRPDFFileName = `ResiliencyReport-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${generatedOn.replace(":","-")}`;
-        ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}`, generatedOn);
+        this.generatedOn = ResiliencyScoreReportHelper.generatedOn();
+        this.gRPDFFileName = `ResiliencyReport-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":","-")}`;
+        ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}`, this.generatedOn);
       }
       else
       {
           this.gRPDFFileName = `${this.gRPDFFileName}`;
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}_(cached)`, generatedOn);
+          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}_(cached)`, this.generatedOn);
       }
       
       this.gRPDFButtonText = "Get Resiliency Score Report";
