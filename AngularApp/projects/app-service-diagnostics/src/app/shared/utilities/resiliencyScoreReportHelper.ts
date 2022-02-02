@@ -7,12 +7,13 @@ pdfMake.vfs = pdfFonts.pdfMake.vfs;
 export class ResiliencyScoreReportHelper {
 
     // Creates the ResiliencyResource object from a DataTableResponseObject and calls PDFMake to generate the PDF using the provided file name
-    static generateResiliencyReport(table: DataTableResponseObject, fileName: string) {
+    static generateResiliencyReport(table: DataTableResponseObject, fileName: string, generatedOn: string) {
 
         const customerNameRow = 0;
         const resiliencyResourceListRow = 1;
         const resiliencyFeaturesListRow = 2;
         let _fileName:string=fileName;
+        let _generatedOn:string=generatedOn;
         let customerName: string;        
 
 
@@ -27,7 +28,7 @@ export class ResiliencyScoreReportHelper {
             i++;
         }
         let resiliencyReportData = new ResiliencyReportData(customerName, resiliencyResourceList);
-        ResiliencyScoreReportHelper.PDFMake(resiliencyReportData, _fileName);
+        ResiliencyScoreReportHelper.PDFMake(resiliencyReportData, _fileName, _generatedOn);
     }
 
 
@@ -229,11 +230,7 @@ export class ResiliencyScoreReportHelper {
         return d.toISOString();
     }
 
-    static PDFMake(resiliencyReportData: ResiliencyReportData, fileName: string) {
-        console.log(resiliencyReportData.CustomerName);
-        console.log('Sitename1: ', resiliencyReportData.ResiliencyResourceList[0].Name, 'SiteScore1: ', resiliencyReportData.ResiliencyResourceList[0].OverallScore);
-        //console.log('Sitename2: ', resiliencyReportData.ResiliencyResourceList[1].Name, 'SiteScore2: ', resiliencyReportData.ResiliencyResourceList[1].OverallScore);
-        //console.log('Sitename3: ', resiliencyReportData.ResiliencyResourceList[2].Name, 'SiteScore3: ', resiliencyReportData.ResiliencyResourceList[2].OverallScore);
+    static PDFMake(resiliencyReportData: ResiliencyReportData, fileName: string, generatedOn: string) {        
         pdfMake.fonts = {
             Roboto: {
                 normal: 'Roboto-Regular.ttf',
@@ -250,14 +247,14 @@ export class ResiliencyScoreReportHelper {
                 lightitalics: 'Calibri-Light-Italic.ttf'
             }
         };
-        resiliencyReportData.ResiliencyResourceList[0].Name
-        var template = '../assets/rr-appservice-tmpl.txt';
+        //resiliencyReportData.ResiliencyResourceList[0].Name
+        //var template = '../assets/rr-appservice-tmpl.txt';
         //var docDefinition = template;
         var docDefinition = {
             footer: function(currentPage, pageCount, pageSize) {
                  return [
                      { text: `${currentPage.toString()} of ${pageCount}`, alignment: 'center', fontsize: 6 },
-                     { text: `Report generated on: ${ResiliencyScoreReportHelper.generatedOn()}`, alignment: 'right', fontSize: 6, margin: 15   },
+                     { text: `Report generated on: ${generatedOn}`, alignment: 'right', fontSize: 6, margin: 15   },
                      { canvas: [ { type: 'rect', x: 170, y: 32, w: pageSize.width - 170, h: 40 } ] }
                     ]
                 },
