@@ -8,21 +8,15 @@ import { ActivatedRoute, ChildActivationEnd, Router } from '@angular/router';
 import * as pdfMake from "pdfmake/build/pdfmake";
 import * as pdfFonts from  "pdfmake/build/vfs_fonts";
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { ResiliencyScoreReportHelper } from '../../../shared/utilities/resiliencyScoreReportHelper';
+import { ResiliencyScoreReportHelper } from '../../../../../../diagnostic-data/src/lib/utilities/resiliencyScoreReportHelper';
 import * as React from 'react';
 import { FabCoachmarkComponent } from '../../lib/components/fab-coachmark/coachmark.component';
 import { Event as NavigationEvent } from '@angular/router';
 import { IButtonProps } from 'office-ui-fabric-react/lib/Button'
 import { IPositioningContainerProps  } from 'office-ui-fabric-react/lib/PositioningContainer';
-import { ColorPickerGridCellBase, DirectionalHint } from 'office-ui-fabric-react';
+import { DirectionalHint } from 'office-ui-fabric-react';
 
 
-
-
-@Injectable()
-export class ConfigService {
-  constructor(private http: HttpClient) { }
-}
 
 @Component({
   selector: 'detector-command-bar',
@@ -36,17 +30,16 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   detector: DetectorMetaData;
   fullReportPath: string;
 
-  gRPDFButton: Element;
   gRPDFButtonChild: Element;
-  gRPDFButtonId: string = undefined;
-  gRPDFCoachmarkId: string = undefined;  
+  gRPDFButtonId: string;
+  gRPDFCoachmarkId: string;  
   gRPDFButtonText: string = "Get Resiliency Score Report";
   gRPDFButtonIcon: any = { iconName: 'Download' };
-  gRPDFFileName: string = undefined;  
+  gRPDFFileName: string;  
   gRPDFButtonDisabled: boolean;
   showCoachmark: boolean = true;
   showTeachingBubble: boolean = false;
-  generatedOn: string = undefined;
+  generatedOn: string;
   coachmarkPositioningContainerProps = {
     directionalHint: DirectionalHint.bottomLeftEdge,
     doNotLayer: true
@@ -57,18 +50,24 @@ export class DetectorCommandBarComponent implements AfterViewInit {
 
 
 
-  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private http: HttpClient) { 
+  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService) { 
     this.gRPDFButtonDisabled = false;
-    //Get showCoachMark value(string) from local storage (if exists), then convert to boolean
-   
-    if (localStorage.getItem("showCoachmark")!=undefined){
-      this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
+    var st
+    //Get showCoachMark value(string) from local storage (if exists), then convert to boolean   
+    try {
+      if (localStorage.getItem("showCoachmark")!=undefined)
+      {
+        this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
+      }    
+      else
+      {
+        this.showCoachmark=true;
+      }  
     }
-    else{
-      this.showCoachmark=true;
+    catch(e) {      
+      }             
     }
 
-  }
   toggleOpenState() {
     this.telemetryService.logEvent(TelemetryEventNames.OpenGenie, {
       'Location': TelemetrySource.CategoryPage
@@ -84,15 +83,21 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   }
 
   generateResiliencyPDF() {    
+    // log telemetry for interaction
+
     // Once the button is clicked no need to show Coachmark anymore:
-    if (localStorage.getItem("showCoachmark")!=undefined)
-    {
-      this.showCoachmark = localStorage.getItem("showCoachmark") === "false";
+    try{      
+      if (localStorage.getItem("showCoachmark")!=undefined)
+      {
+        this.showCoachmark = localStorage.getItem("showCoachmark") === "false";
+      }
+      else
+      {
+        this.showCoachmark=false;
+        localStorage.setItem("showCoachmark","false");      
+      }
     }
-    else
-    {
-      this.showCoachmark=false;
-      localStorage.setItem("showCoachmark","false");      
+    catch(e) {      
     }
     this.gRPDFButtonText = "Getting Resiliency Score Report...";
     this.gRPDFButtonIcon = {
@@ -103,16 +108,13 @@ export class DetectorCommandBarComponent implements AfterViewInit {
         }
       }
      };
-    this.gRPDFButtonDisabled = true;
-    //var localResponse = '../assets/response.temp.json';
+    this.gRPDFButtonDisabled = true;    
     
     var response = {
   };
   var customerName: string;
 
-  console.log("Calling ResiliencyScore detector");
-
-  //this.http.get<DetectorResponse>(localResponse)
+  
   this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString)
   .subscribe((httpResponse: DetectorResponse) => {
         response = {
@@ -122,8 +124,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
         dataProvidersMetadata: httpResponse.dataProvidersMetadata,
         suggestedUtterances: httpResponse.suggestedUtterances,
       };
-      console.log("ResiliencyScore detector call finished");
-      console.log(response);
+      
       //If the page hasn't been refreshed this will use a cached request, so changing File Name to use the same name + "(cached)" to let them know they are seeing a cached version.
       if (this.gRPDFFileName == undefined)
       {
@@ -141,6 +142,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       this.gRPDFButtonIcon = { iconName: 'Download' };
       this.gRPDFButtonDisabled = false;
     },error => {
+      //Use TelemetryService logException
       console.error(error);
     });
 
@@ -223,6 +225,11 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     this.showTeachingBubble=false;
     
     //Once Coachmark has been seen, disable it by setting boolean value to local storage
-    localStorage.setItem("showCoachmark","false");
+    try{
+      localStorage.setItem("showCoachmark","false");
+    }
+    catch(e){      
+    }
+    
   }
 }

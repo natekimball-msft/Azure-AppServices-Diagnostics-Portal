@@ -19,13 +19,6 @@ export class ResiliencyReportData {
     }
     
     
-    // get resiliencyResourceList(){
-    //     return Object.assign([], this._resiliencyResourceList);
-    // }
-
-    // set resiliencyResourceList(resiliencyResourceList: ResiliencyResource[]){
-    //     this._resiliencyResourceList = resiliencyResourceList;
-    // }
 }
 
 export class ResiliencyResource {
@@ -40,13 +33,6 @@ export class ResiliencyResource {
     OverallScore: number;
     ResiliencyFeaturesList: ResiliencyFeature[];
 
-    // get ResiliencyFeaturesList(){
-    //     return this.ResiliencyFeaturesList;
-    // }
-
-    // set ResiliencyFeaturesList(ResiliencyFeaturesList: ResiliencyFeature[]){
-    //     this._resiliencyFeaturesList = ResiliencyFeaturesList;
-    // }
 }
 
 export class ResiliencyFeature {

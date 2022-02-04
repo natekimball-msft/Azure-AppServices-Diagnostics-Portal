@@ -43,6 +43,7 @@ export * from './lib/models/documents-search-models';
 export * from './lib/models/search';
 export * from './lib/models/documents-search-config';
 export * from './lib/models/styles';
+export * from './lib/models/resiliencyReportData';
 
 export * from './lib/components/detector-list-analysis/detector-list-analysis.component'
 
@@ -50,5 +51,6 @@ export * from './lib/utilities/pii-utilities';
 export * from './lib/utilities/icons-constants';
 export * from './lib/utilities/uri-utilities';
 export * from './lib/utilities/string-utilities';
+export * from './lib/utilities/resiliencyScoreReportHelper';
 export * from './lib/components/step-views/step-view-lib';
 export * from "./lib/components/solution-orchestrator/solution-orchestrator.component";

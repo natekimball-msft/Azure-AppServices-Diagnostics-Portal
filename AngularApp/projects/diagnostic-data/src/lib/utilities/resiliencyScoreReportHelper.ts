@@ -1,7 +1,7 @@
 import * as pdfMake from "pdfmake/build/pdfmake";
-import * as pdfFonts from "../../../assets/vfs_fonts";
-import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from "./resiliencyReportData"
-import { DataTableResponseObject } from '../../../../../diagnostic-data/src/lib/models/detector';
+import * as pdfFonts from "../assets/vfs_fonts";
+import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from "../models/resiliencyReportData"
+import { DataTableResponseObject } from '../models/detector';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 export class ResiliencyScoreReportHelper {
@@ -169,7 +169,7 @@ export class ResiliencyScoreReportHelper {
         }
     }
 
-    //
+    // 
     // Calculates the font color for the grade
     // 2 = Green
     // 1  = Yellow
@@ -188,7 +188,7 @@ export class ResiliencyScoreReportHelper {
     }
 
 
-    // Creating Resiliency status per feature table
+    // // Creating Resiliency status per feature table
 
     static ResiliencyStatusPerFeatureTable(resiliencyReportData: ResiliencyReportData) {
         let headers = `[{ text: 'Feature/Site name', style: 'rspfTableheader', margin: [0, 10] }, { text: '${resiliencyReportData.ResiliencyResourceList[0].Name}', style: 'rspfTableheader', margin: [0, 10] }, `;
@@ -264,8 +264,8 @@ export class ResiliencyScoreReportHelper {
             font: '',
             content: [
                 //Cover
-                '\n\n\n\n\n',
-                {
+                '\n\n\n\n\n',                
+                { 
                     alignment: 'justify',
                     columns: [
                         {
@@ -321,7 +321,7 @@ export class ResiliencyScoreReportHelper {
                 // End of Table of contents page
                 // Resiliency Score table
                 {
-                    text: 'Azure App Service Resiliency Score',
+                    text: "Your Web App's Resiliency Score",
                     style: 'header3',
                     pageOrientation: 'portrait',
                     pageBreak: 'before',
@@ -503,6 +503,7 @@ export class ResiliencyScoreReportHelper {
                     text: 'The following table shows the resiliency features verified and their status:\n\n',
                 },
                 {
+                    //columns: Helper.getColumns()
                     columns: [
                         // Resiliency features table description
                         {
@@ -2053,8 +2054,7 @@ export class ResiliencyScoreReportHelper {
                 },
             }
         }   
-        pdfMake.createPdf(docDefinition).download(`ResiliencyReport-${fileName}.pdf`);
-        console.log("Resiliency Score Report");
+        pdfMake.createPdf(docDefinition).download(`ResiliencyReport-${fileName}.pdf`);        
     }
 
 }
