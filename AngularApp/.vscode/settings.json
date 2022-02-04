@@ -1,6 +1,3 @@
 {
-    "typescript.tsdk": "node_modules\\typescript\\lib",
-    "cSpell.words": [
-        "resiliencyreportdata"
-    ]
+    "typescript.tsdk": "node_modules\\typescript\\lib"
 }
