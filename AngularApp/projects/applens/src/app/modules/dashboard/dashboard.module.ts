@@ -67,6 +67,7 @@ import { ApplensDocsComponent } from '../../shared/components/applens-docs/apple
 import { TabKey } from './tabs/tab-key';
 import { UserActivePullrequestsComponent } from './user-active-pullrequests/user-active-pullrequests.component';
 
+
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
     constructor(private _resourceService: ResourceService, private _detectorControlService: DetectorControlService,private _userInfoService:UserSettingService) { }
@@ -419,5 +420,6 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
         TabMonitoringDevelopComponent, TabAnalyticsDevelopComponent, TabAnalyticsDashboardComponent, GistComponent, TabGistCommonComponent,
         TabGistDevelopComponent, TabChangelistComponent, GistChangelistComponent, TabAnalysisComponent, CategoryPageComponent, SupportTopicPageComponent,
         SelfHelpContentComponent, UserDetectorsComponent, FormatResourceNamePipe, Sort, SearchResultsComponent, ConfigurationComponent, DashboardContainerComponent, L2SideNavComponent, UserActivePullrequestsComponent]
+
 })
 export class DashboardModule { }

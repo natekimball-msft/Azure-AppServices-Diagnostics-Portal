@@ -46,6 +46,7 @@ export class SideNavComponent implements OnInit {
 
   isGraduation:boolean = false;
   isProd:boolean = false;
+
   searchBoxIcon: ITextFieldProps["iconProps"] = {
     iconName: "Zoom",
   }
@@ -172,6 +173,11 @@ export class SideNavComponent implements OnInit {
       this.getCurrentRoutePath();
     });
 
+  }
+
+  focusSearchBox() {
+    const input = this.fabSearchBox.elementRef.nativeElement.firstChild.lastElementChild;
+    input.autocomplete = "off";
   }
 
   focusSearchBox() {
@@ -333,7 +339,6 @@ export class SideNavComponent implements OnInit {
           if (a.label === 'Analysis') return -1;
           if (a.label === 'Uncategorized') return 1;
           return a.label > b.label ? 1 : -1;
-        });
 
         this.initialGroupList(this.categories);
 
@@ -400,6 +405,7 @@ export class SideNavComponent implements OnInit {
     } else {
       this.topList =  [createNewDetector, yourDetectors];
     }
+
   }
 
   doesMatchCurrentRoute(expectedRoute: string) {
