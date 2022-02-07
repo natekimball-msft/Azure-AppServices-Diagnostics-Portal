@@ -23,7 +23,7 @@
     </fab-command-bar-item>
     <fab-command-bar-item key="sendFeedback" text="Feedback" [iconProps]="{ iconName: 'Emoji2' }"
       (click)="sendFeedback()"></fab-command-bar-item>
-    <fab-command-bar-item [id]="'generateResiliencyPDF'" key="generateResiliencyPDF" [text]="gRPDFButtonText"
+    <fab-command-bar-item *ngIf="displayRPDFButton" [id]="'generateResiliencyPDF'" key="generateResiliencyPDF" [text]="gRPDFButtonText"
       [iconProps]="gRPDFButtonIcon" (click)="generateResiliencyPDF()" [disabled]="gRPDFButtonDisabled" >
     </fab-command-bar-item>
   </items>

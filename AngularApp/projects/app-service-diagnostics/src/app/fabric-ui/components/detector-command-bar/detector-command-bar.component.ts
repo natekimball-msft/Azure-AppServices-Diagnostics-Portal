@@ -1,20 +1,12 @@
 import {
   DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource,
 } from 'diagnostic-data';
-import { forkJoin, Observable, of } from 'rxjs';
-import { Component, AfterViewInit, EventEmitter, Output, Injectable, Input } from '@angular/core';
+import { Component, AfterViewInit, Input, OnInit } from '@angular/core';
 import { Globals } from '../../../globals';
-import { ActivatedRoute, ChildActivationEnd, Router } from '@angular/router';
-import * as pdfMake from "pdfmake/build/pdfmake";
-import * as pdfFonts from  "pdfmake/build/vfs_fonts";
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ResiliencyScoreReportHelper } from '../../../../../../diagnostic-data/src/lib/utilities/resiliencyScoreReportHelper';
-import * as React from 'react';
-import { FabCoachmarkComponent } from '../../lib/components/fab-coachmark/coachmark.component';
-import { Event as NavigationEvent } from '@angular/router';
-import { IButtonProps } from 'office-ui-fabric-react/lib/Button'
-import { IPositioningContainerProps  } from 'office-ui-fabric-react/lib/PositioningContainer';
 import { DirectionalHint } from 'office-ui-fabric-react';
+
 
 
 
@@ -23,13 +15,14 @@ import { DirectionalHint } from 'office-ui-fabric-react';
   templateUrl: './detector-command-bar.component.html',
   styleUrls: ['./detector-command-bar.component.scss']
 })
-export class DetectorCommandBarComponent implements AfterViewInit {
+export class DetectorCommandBarComponent implements AfterViewInit, OnInit {
   @Input() disableGenie: boolean = false;
 
   time: string;
   detector: DetectorMetaData;
   fullReportPath: string;
 
+  displayRPDFButton: boolean = false;
   gRPDFButtonChild: Element;
   gRPDFButtonId: string;
   gRPDFCoachmarkId: string;  
@@ -48,11 +41,19 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     directionalHint: DirectionalHint.bottomLeftEdge
   };
 
-
+ngOnInit(): void {
+  let subscriptionId = this._route.parent.snapshot.params['subscriptionid'];
+  // add logic for SubscriptionId 1% (1=100%)
+  let percentageToRelease = 1;
+  // roughly split of percentageToRelease of subscriptions to use new feature.
+  let firstDigit = "0x" + subscriptionId.substr(0, 1);
+  this.displayRPDFButton = (16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease;  
+  this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonDisplayed, {'ResiliencyScoreButtonDisplayed':this.displayRPDFButton.toString(),'SubscriptionId':this._route.parent.snapshot.params['subscriptionid']} );
+}
 
   constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService) { 
-    this.gRPDFButtonDisabled = false;
-    var st
+    const loggingError = new Error();
+    this.gRPDFButtonDisabled = false;    
     //Get showCoachMark value(string) from local storage (if exists), then convert to boolean   
     try {
       if (localStorage.getItem("showCoachmark")!=undefined)
@@ -64,7 +65,10 @@ export class DetectorCommandBarComponent implements AfterViewInit {
         this.showCoachmark=true;
       }  
     }
-    catch(e) {      
+    catch(error) {    
+        loggingError.message = 'Error trying to retrieve showCoachmark from localStorage';
+        loggingError.stack = error;
+        this.telemetryService.logException(loggingError);    
       }             
     }
 
@@ -83,9 +87,8 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   }
 
   generateResiliencyPDF() {    
-    // log telemetry for interaction
-
     // Once the button is clicked no need to show Coachmark anymore:
+    const loggingError = new Error();
     try{      
       if (localStorage.getItem("showCoachmark")!=undefined)
       {
@@ -97,8 +100,14 @@ export class DetectorCommandBarComponent implements AfterViewInit {
         localStorage.setItem("showCoachmark","false");      
       }
     }
-    catch(e) {      
+    catch(error) {      
+      //Use TelemetryService logException
+      loggingError.message = 'Error accessing localStorage. Most likely accessed via in InPrivate or Incognito mode';
+      loggingError.stack = error;
+      this.telemetryService.logException(loggingError);  
     }
+    // Taking starting time
+    let sT = new Date();    
     this.gRPDFButtonText = "Getting Resiliency Score Report...";
     this.gRPDFButtonIcon = {
       iconName: 'Download',
@@ -111,8 +120,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     this.gRPDFButtonDisabled = true;    
     
     var response = {
-  };
-  var customerName: string;
+  };  
 
   
   this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString)
@@ -137,13 +145,26 @@ export class DetectorCommandBarComponent implements AfterViewInit {
           this.gRPDFFileName = `${this.gRPDFFileName}`;
           ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}_(cached)`, this.generatedOn);
       }
-      
+      // Time after downloading report
+      let eT = new Date();
+      // Estimate total time it took to download report
+      let timeTaken =  eT.getTime() - sT.getTime();
+       // log telemetry for interaction
+      const eventProperties = {   
+        'Subscription':  this._route.parent.snapshot.params['subscriptionid'],
+        'CustomerName':  JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName, 
+        'NameSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].Name,
+        'ScoreSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].OverallScore,               
+        'TimeTaken': timeTaken.toString()
+      };
+      this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonClicked, eventProperties);
       this.gRPDFButtonText = "Get Resiliency Score Report";
       this.gRPDFButtonIcon = { iconName: 'Download' };
       this.gRPDFButtonDisabled = false;
     },error => {
-      //Use TelemetryService logException
-      console.error(error);
+      loggingError.message = 'Error calling ResiliencyScore detector';
+      loggingError.stack = error;
+      this.telemetryService.logException(loggingError);      
     });
 
   }
@@ -159,7 +180,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
 
     const eventProperties = {
       'Category': this._route.snapshot.params['category'],
-      'Location': TelemetrySource.CategoryPage
+      'Location': TelemetrySource.CategoryPage      
     };
     if (childRouteType === "detectors") {
       eventProperties['Detector'] = childRouteSnapshot.params['detectorName'];
