@@ -351,8 +351,8 @@ export class ResiliencyScoreReportHelper {
             			// 0 Red marker
                         { 
                             type: 'line',
-                            color: 'DarkRed',
-                            lineColor: 'DarkRed',
+                            color: 'darkred',
+                            lineColor: 'darkred',
                             x1: 246, y1: 150,
                             x2: 148, y2: 167,
                             lineWidth: 2,
