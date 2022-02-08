@@ -351,8 +351,8 @@ export class ResiliencyScoreReportHelper {
             			// 0 Red marker
                         { 
                             type: 'line',
-                            color: 'red',
-                            lineColor: 'red',
+                            color: 'DarkRed',
+                            lineColor: 'DarkRed',
                             x1: 246, y1: 150,
                             x2: 148, y2: 167,
                             lineWidth: 2,
@@ -423,7 +423,7 @@ export class ResiliencyScoreReportHelper {
                 },
                 // 60 marker in gauge (yellow)
                 {
-                    absolutePosition: {x: 355, y: 125},   
+                    absolutePosition: {x: 355, y: 126},   
                     text: [
                             { text: '60', color: 'black', fontSize:10 },
                         
