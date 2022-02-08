@@ -348,33 +348,33 @@ export class ResiliencyScoreReportHelper {
                             lineWidth: 6,
                             lineCap: 'round'
                         },
-            			// 60 Red
+            			// 0 Red marker
                         { 
                             type: 'line',
                             color: 'red',
                             lineColor: 'red',
                             x1: 246, y1: 150,
-                            x2: 295, y2: 65,
+                            x2: 148, y2: 167,
                             lineWidth: 2,
                             lineCap: 'round'
                         },
-                        // 80 Yellow
-                        { //
+                        // 60 Yellow marker
+                        { 
                             type: 'line',
                             color: 'yellow',
                             lineColor: 'yellow',
                             x1: 246, y1: 150,
-                            x2: 337, y2: 111,
+                            x2: 295, y2: 65,
                             lineWidth: 2,
                             lineCap: 'round'
                         },
-                        // 90 Green
-                        { //
+                        // 80 Green marker
+                        { 
                             type: 'line',
-                            color: 'green',
-                            lineColor: 'green',
+                            color: 'darkgreen',
+                            lineColor: 'darkgreen',
                             x1: 246, y1: 150,
-                            x2: 344, y2: 144,
+                            x2: 337, y2: 111,
                             lineWidth: 2,
                             lineCap: 'round'
                         },            
@@ -413,27 +413,27 @@ export class ResiliencyScoreReportHelper {
                         
                     ]
                 },
-                // 60 marker in gauge (red)
+                // 0 marker in gauge (red)
                 {
-                    absolutePosition: {x: 355, y: 126},   
+                    absolutePosition: {x: 198, y: 231},      
+                    text: [
+                            { text: '0', color: 'black', fontSize:10 },
+                        
+                    ]
+                },
+                // 60 marker in gauge (yellow)
+                {
+                    absolutePosition: {x: 355, y: 125},   
                     text: [
                             { text: '60', color: 'black', fontSize:10 },
                         
                     ]
                 },
-                // 80 marker in gauge (yellow)
+                // 80 marker in gauge (green)
                 {
-                    absolutePosition: {x: 399, y: 175},   
+                    absolutePosition: {x: 399, y: 174},   
                     text: [
                             { text: '80', color: 'black', fontSize:10 },
-                        
-                    ]
-                },
-                // 90 marker in gauge (green)
-                {
-                    absolutePosition: {x: 408, y: 207},   
-                    text: [
-                            { text: '90', color: 'black', fontSize:10 },
                         
                     ]
                 },
