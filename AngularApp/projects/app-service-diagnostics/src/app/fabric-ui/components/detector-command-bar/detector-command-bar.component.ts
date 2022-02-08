@@ -6,6 +6,9 @@ import { Globals } from '../../../globals';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ResiliencyScoreReportHelper } from '../../../../../../diagnostic-data/src/lib/utilities/resiliencyScoreReportHelper';
 import { DirectionalHint } from 'office-ui-fabric-react';
+import { ResourceService } from '../../../shared-v2/services/resource.service';
+import { WebSitesService } from '../../../resources/web-sites/services/web-sites.service';
+import { OperatingSystem } from '../../../shared/models/site';
 
 
 
@@ -41,17 +44,23 @@ export class DetectorCommandBarComponent implements AfterViewInit, OnInit {
     directionalHint: DirectionalHint.bottomLeftEdge
   };
 
+  public _checkIsWindowsApp(): boolean {
+    let webSiteService = this._resourceService as WebSitesService;
+    return this._resourceService && this._resourceService instanceof WebSitesService
+    && (webSiteService.platform === OperatingSystem.windows)
+}
+
 ngOnInit(): void {
   let subscriptionId = this._route.parent.snapshot.params['subscriptionid'];
   // add logic for SubscriptionId 1% (1=100%)
-  let percentageToRelease = 1;
+  let percentageToRelease = 0.01;
   // roughly split of percentageToRelease of subscriptions to use new feature.
   let firstDigit = "0x" + subscriptionId.substr(0, 1);
-  this.displayRPDFButton = (16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease;  
+  this.displayRPDFButton = (16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease && this._checkIsWindowsApp();  
   this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonDisplayed, {'ResiliencyScoreButtonDisplayed':this.displayRPDFButton.toString(),'SubscriptionId':this._route.parent.snapshot.params['subscriptionid']} );
 }
 
-  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService) { 
+  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private _resourceService:ResourceService) { 
     const loggingError = new Error();
     this.gRPDFButtonDisabled = false;    
     //Get showCoachMark value(string) from local storage (if exists), then convert to boolean   
