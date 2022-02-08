@@ -180,11 +180,6 @@ export class SideNavComponent implements OnInit {
     input.autocomplete = "off";
   }
 
-  focusSearchBox() {
-    const input = this.fabSearchBox.elementRef.nativeElement.firstChild.lastElementChild;
-    input.autocomplete = "off";
-  }
-
   private getCurrentRoutePath() {
     this.currentRoutePath = this._activatedRoute.firstChild.snapshot.url.map(urlSegment => urlSegment.path);
   }
@@ -339,6 +334,7 @@ export class SideNavComponent implements OnInit {
           if (a.label === 'Analysis') return -1;
           if (a.label === 'Uncategorized') return 1;
           return a.label > b.label ? 1 : -1;
+        });
 
         this.initialGroupList(this.categories);
 
