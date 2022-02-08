@@ -340,7 +340,7 @@ export class ResiliencyScoreReportHelper {
                         { //Gauge needle
                             type: 'line',
                             color: 'white',
-                            lineColor: 'blue',
+                            lineColor: 'black',
                             x1: 246, 
                             y1: 150,
                             x2: ResiliencyScoreReportHelper.NeedleX2(resiliencyReportData.ResiliencyResourceList[0].OverallScore), 
