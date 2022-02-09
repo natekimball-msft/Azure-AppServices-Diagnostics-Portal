@@ -4,12 +4,11 @@ import {
 import { Component, AfterViewInit, Input, OnInit } from '@angular/core';
 import { Globals } from '../../../globals';
 import { ActivatedRoute, Router } from '@angular/router';
-import {  } from 'diagnostic-data';
 import { DirectionalHint } from 'office-ui-fabric-react';
 import { ResourceService } from '../../../shared-v2/services/resource.service';
 import { WebSitesService } from '../../../resources/web-sites/services/web-sites.service';
 import { OperatingSystem } from '../../../shared/models/site';
-import { SeverityLevel } from '@microsoft/applicationinsights-web'
+import { SeverityLevel } from '@microsoft/applicationinsights-web';
 
 @Component({
   selector: 'detector-command-bar',
@@ -26,10 +25,10 @@ export class DetectorCommandBarComponent implements AfterViewInit, OnInit {
   displayRPDFButton: boolean = false;
   gRPDFButtonChild: Element;
   gRPDFButtonId: string;
-  gRPDFCoachmarkId: string;  
+  gRPDFCoachmarkId: string;
   gRPDFButtonText: string = "Get Resiliency Score Report";
   gRPDFButtonIcon: any = { iconName: 'Download' };
-  gRPDFFileName: string;  
+  gRPDFFileName: string;
   gRPDFButtonDisabled: boolean;
   showCoachmark: boolean = true;
   showTeachingBubble: boolean = false;
@@ -37,48 +36,46 @@ export class DetectorCommandBarComponent implements AfterViewInit, OnInit {
   coachmarkPositioningContainerProps = {
     directionalHint: DirectionalHint.bottomLeftEdge,
     doNotLayer: true
-  }
-  teachingBubbleCalloutProps ={
+  };
+  teachingBubbleCalloutProps = {
     directionalHint: DirectionalHint.bottomLeftEdge
   };
 
   public _checkIsWindowsApp(): boolean {
     let webSiteService = this._resourceService as WebSitesService;
     return this._resourceService && this._resourceService instanceof WebSitesService
-    && (webSiteService.platform === OperatingSystem.windows)
-}
+      && (webSiteService.platform === OperatingSystem.windows);
+  }
 
-ngOnInit(): void {
-  let subscriptionId = this._route.parent.snapshot.params['subscriptionid'];
-  // add logic for SubscriptionId 1% (1=100%)
-  let percentageToRelease = 0.01;
-  // roughly split of percentageToRelease of subscriptions to use new feature.
-  let firstDigit = "0x" + subscriptionId.substr(0, 1);
-  this.displayRPDFButton = (16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease && this._checkIsWindowsApp();  
-  this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonDisplayed, {'ResiliencyScoreButtonDisplayed':this.displayRPDFButton.toString(),'SubscriptionId':this._route.parent.snapshot.params['subscriptionid']} );
-}
+  ngOnInit(): void {
+    let subscriptionId = this._route.parent.snapshot.params['subscriptionid'];
+    // add logic for SubscriptionId 1% (1=100%)
+    let percentageToRelease = 1;
+    // roughly split of percentageToRelease of subscriptions to use new feature.
+    let firstDigit = "0x" + subscriptionId.substr(0, 1);
+    this.displayRPDFButton = (16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease && this._checkIsWindowsApp();
+    this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonDisplayed, { 'ResiliencyScoreButtonDisplayed': this.displayRPDFButton.toString(), 'SubscriptionId': this._route.parent.snapshot.params['subscriptionid'] });
+  }
 
-  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private _resourceService:ResourceService) { 
+  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private _resourceService: ResourceService) {
     const loggingError = new Error();
-    this.gRPDFButtonDisabled = false;    
+    this.gRPDFButtonDisabled = false;
     //Get showCoachMark value(string) from local storage (if exists), then convert to boolean   
     try {
-      if (localStorage.getItem("showCoachmark")!=undefined)
-      {
+      if (localStorage.getItem("showCoachmark") != undefined) {
         this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
-      }    
-      else
-      {
-        this.showCoachmark=true;
-      }  
+      }
+      else {
+        this.showCoachmark = true;
+      }
     }
-    catch(error) {    
-        loggingError.message = 'Error trying to retrieve showCoachmark from localStorage';
-        loggingError.stack = error;
-        let _severityLevel: SeverityLevel = SeverityLevel.Warning;
-        this.telemetryService.logException(loggingError, null, null, _severityLevel);    
-      }             
+    catch (error) {
+      loggingError.message = 'Error trying to retrieve showCoachmark from localStorage';
+      loggingError.stack = error;
+      let _severityLevel: SeverityLevel = SeverityLevel.Warning;
+      this.telemetryService.logException(loggingError, null, null, _severityLevel);
     }
+  }
 
   toggleOpenState() {
     this.telemetryService.logEvent(TelemetryEventNames.OpenGenie, {
@@ -94,80 +91,70 @@ ngOnInit(): void {
     this.globals.openFeedback = !this.globals.openFeedback;
   }
 
-  generateResiliencyPDF() {    
+  generateResiliencyPDF() {
     // Once the button is clicked no need to show Coachmark anymore:
     const loggingError = new Error();
-    try{      
-      if (localStorage.getItem("showCoachmark")!=undefined)
-      {
-        this.showCoachmark = localStorage.getItem("showCoachmark") === "false";
+    try {
+      if (localStorage.getItem("showCoachmark") != undefined) {
+        this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
       }
-      else
-      {
-        this.showCoachmark=false;
-        localStorage.setItem("showCoachmark","false");      
+      else {
+        this.showCoachmark = false;
+        localStorage.setItem("showCoachmark", "false");
       }
     }
-    catch(error) {      
+    catch (error) {
       //Use TelemetryService logException
       loggingError.message = 'Error accessing localStorage. Most likely accessed via in InPrivate or Incognito mode';
       loggingError.stack = error;
       let _severityLevel: SeverityLevel = SeverityLevel.Warning;
-      this.telemetryService.logException(loggingError, null, null, _severityLevel);  
+      this.telemetryService.logException(loggingError, null, null, _severityLevel);
     }
     // Taking starting time
-    let sT = new Date();    
+    let sT = new Date();
     this.gRPDFButtonText = "Getting Resiliency Score Report...";
     this.gRPDFButtonIcon = {
       iconName: 'Download',
       styles: {
-        root:{
+        root: {
           color: 'grey'
         }
       }
-     };
-    this.gRPDFButtonDisabled = true;    
-    
-    var response = {
-  };  
-
-  
-  this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString)
-  .subscribe((httpResponse: DetectorResponse) => {
-      //If the page hasn't been refreshed this will use a cached request, so changing File Name to use the same name + "(cached)" to let them know they are seeing a cached version.
-      if (this.gRPDFFileName == undefined)
-      {
-        this.generatedOn = ResiliencyScoreReportHelper.generatedOn();
-        this.gRPDFFileName = `ResiliencyReport-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":","-")}`;
-        ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}`, this.generatedOn);
-      }
-      else
-      {
+    };
+    this.gRPDFButtonDisabled = true;
+    this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString)
+      .subscribe((httpResponse: DetectorResponse) => {
+        //If the page hasn't been refreshed this will use a cached request, so changing File Name to use the same name + "(cached)" to let them know they are seeing a cached version.
+        if (this.gRPDFFileName == undefined) {
+          this.generatedOn = ResiliencyScoreReportHelper.generatedOn();
+          this.gRPDFFileName = `ResiliencyReport-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":", "-")}`;
+          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}`, this.generatedOn);
+        }
+        else {
           this.gRPDFFileName = `${this.gRPDFFileName}`;
           ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}_(cached)`, this.generatedOn);
-      }
-      // Time after downloading report
-      let eT = new Date();
-      // Estimate total time it took to download report
-      let timeTaken =  eT.getTime() - sT.getTime();
-       // log telemetry for interaction
-      const eventProperties = {   
-        'Subscription':  this._route.parent.snapshot.params['subscriptionid'],
-        'CustomerName':  JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName, 
-        'NameSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].Name,
-        'ScoreSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].OverallScore,               
-        'TimeTaken': timeTaken.toString()
-      };
-      this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonClicked, eventProperties);
-      this.gRPDFButtonText = "Get Resiliency Score Report";
-      this.gRPDFButtonIcon = { iconName: 'Download' };
-      this.gRPDFButtonDisabled = false;
-    },error => {
-      loggingError.message = 'Error calling ResiliencyScore detector';
-      loggingError.stack = error;
-      this.telemetryService.logException(loggingError);      
-    });
-
+        }
+        // Time after downloading report
+        let eT = new Date();
+        // Estimate total time it took to download report
+        let timeTaken = eT.getTime() - sT.getTime();
+        // log telemetry for interaction
+        const eventProperties = {
+          'Subscription': this._route.parent.snapshot.params['subscriptionid'],
+          'CustomerName': JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName,
+          'NameSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].Name,
+          'ScoreSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].OverallScore,
+          'TimeTaken': timeTaken.toString()
+        };
+        this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonClicked, eventProperties);
+        this.gRPDFButtonText = "Get Resiliency Score Report";
+        this.gRPDFButtonIcon = { iconName: 'Download' };
+        this.gRPDFButtonDisabled = false;
+      }, error => {
+        loggingError.message = 'Error calling ResiliencyScore detector';
+        loggingError.stack = error;
+        this.telemetryService.logException(loggingError);
+      });
   }
 
 
@@ -181,7 +168,7 @@ ngOnInit(): void {
 
     const eventProperties = {
       'Category': this._route.snapshot.params['category'],
-      'Location': TelemetrySource.CategoryPage      
+      'Location': TelemetrySource.CategoryPage
     };
     if (childRouteType === "detectors") {
       eventProperties['Detector'] = childRouteSnapshot.params['detectorName'];
@@ -242,16 +229,21 @@ ngOnInit(): void {
     this.gRPDFCoachmarkId = `#${coachMarkId}`;
   }
 
-  coachMarkViewed(){
+  coachMarkViewed() {
+    const loggingError = new Error();
     // Stop showing TeachingBubble
-    this.showTeachingBubble=false;
-    
+    this.showTeachingBubble = false;
+
     //Once Coachmark has been seen, disable it by setting boolean value to local storage
-    try{
-      localStorage.setItem("showCoachmark","false");
+    try {
+      localStorage.setItem("showCoachmark", "false");
     }
-    catch(e){      
+    catch (error) {
+      //Use TelemetryService logException
+      loggingError.message = 'Error accessing localStorage. Most likely accessed via in InPrivate or Incognito mode';
+      loggingError.stack = error;
+      let _severityLevel: SeverityLevel = SeverityLevel.Warning;
+      this.telemetryService.logException(loggingError, null, null, _severityLevel);
     }
-    
   }
 }

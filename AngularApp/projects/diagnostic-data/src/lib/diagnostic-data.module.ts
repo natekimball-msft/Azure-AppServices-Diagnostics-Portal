@@ -240,7 +240,9 @@ import { FabTeachingBubbleModule } from './modules/fab-teachingbubble/teachingbu
     CheckComponent,
     ConvertLevelToHealthStatusPipe,
     GetDropdownOptionsPipe,
-    SolutionOrchestratorComponent
+    SolutionOrchestratorComponent,
+    FabCoachmarkModule,
+    FabTeachingBubbleModule,
   ],
 })
 export class DiagnosticDataModule {

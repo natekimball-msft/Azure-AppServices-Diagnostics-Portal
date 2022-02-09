@@ -15,8 +15,6 @@ import {
 } from '@angular/core';
 import { ITeachingBubbleProps, ITeachingBubbleStyles  } from 'office-ui-fabric-react/lib/TeachingBubble';
 
-
-
 @Component({
   selector: 'fab-teachingbubble',
   exportAs: 'fabTeachingbubble',

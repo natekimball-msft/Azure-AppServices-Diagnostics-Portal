@@ -1,6 +1,6 @@
 import * as pdfMake from "pdfmake/build/pdfmake";
 import * as pdfFonts from "../assets/vfs_fonts";
-import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from "../models/resiliencyReportData"
+import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from "../models/resiliencyReportData";
 import { DataTableResponseObject } from '../models/detector';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -205,8 +205,8 @@ export class ResiliencyScoreReportHelper {
                 else {
                     rows = `${rows}],`
                 }
-            }
-        }
+            };
+        };
         let finalStr = `${headers}${rows}`;
         return finalStr.replace(/^"|"$/g, '');
     }
@@ -2040,5 +2040,4 @@ export class ResiliencyScoreReportHelper {
         };   
         pdfMake.createPdf(docDefinition).download(`ResiliencyReport-${fileName}.pdf`);        
     }
-
 }

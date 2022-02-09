@@ -14,11 +14,6 @@ import {
   ViewChild,  
 } from '@angular/core';
 import { ICoachmarkProps } from 'office-ui-fabric-react/lib/Coachmark';
-import { ITeachingBubble  } from 'office-ui-fabric-react/lib/TeachingBubble';
-
-
-
-
 
 @Component({
   selector: 'fab-coachmark',
