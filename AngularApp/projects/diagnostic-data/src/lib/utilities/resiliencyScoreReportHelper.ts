@@ -234,9 +234,6 @@ export class ResiliencyScoreReportHelper {
                 lightitalics: 'Calibri-Light-Italic.ttf'
             }
         };
-        //resiliencyReportData.ResiliencyResourceList[0].Name
-        //var template = '../assets/rr-appservice-tmpl.txt';
-        //var docDefinition = template;
         var docDefinition = {
             footer: function(currentPage, pageCount, pageSize) {
                  return [
