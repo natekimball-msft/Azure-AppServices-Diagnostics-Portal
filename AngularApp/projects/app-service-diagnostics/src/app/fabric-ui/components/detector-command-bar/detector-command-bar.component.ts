@@ -9,9 +9,7 @@ import { DirectionalHint } from 'office-ui-fabric-react';
 import { ResourceService } from '../../../shared-v2/services/resource.service';
 import { WebSitesService } from '../../../resources/web-sites/services/web-sites.service';
 import { OperatingSystem } from '../../../shared/models/site';
-
-
-
+import { SeverityLevel } from '@microsoft/applicationinsights-web'
 
 @Component({
   selector: 'detector-command-bar',
@@ -77,7 +75,8 @@ ngOnInit(): void {
     catch(error) {    
         loggingError.message = 'Error trying to retrieve showCoachmark from localStorage';
         loggingError.stack = error;
-        this.telemetryService.logException(loggingError);    
+        let _severityLevel: SeverityLevel = SeverityLevel.Warning;
+        this.telemetryService.logException(loggingError, null, null, _severityLevel);    
       }             
     }
 
@@ -113,7 +112,8 @@ ngOnInit(): void {
       //Use TelemetryService logException
       loggingError.message = 'Error accessing localStorage. Most likely accessed via in InPrivate or Incognito mode';
       loggingError.stack = error;
-      this.telemetryService.logException(loggingError);  
+      let _severityLevel: SeverityLevel = SeverityLevel.Warning;
+      this.telemetryService.logException(loggingError, null, null, _severityLevel);  
     }
     // Taking starting time
     let sT = new Date();    
@@ -134,14 +134,6 @@ ngOnInit(): void {
   
   this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString)
   .subscribe((httpResponse: DetectorResponse) => {
-        response = {
-        metadata: httpResponse.metadata,
-        dataset: httpResponse.dataset,
-        status: httpResponse.status,
-        dataProvidersMetadata: httpResponse.dataProvidersMetadata,
-        suggestedUtterances: httpResponse.suggestedUtterances,
-      };
-      
       //If the page hasn't been refreshed this will use a cached request, so changing File Name to use the same name + "(cached)" to let them know they are seeing a cached version.
       if (this.gRPDFFileName == undefined)
       {
