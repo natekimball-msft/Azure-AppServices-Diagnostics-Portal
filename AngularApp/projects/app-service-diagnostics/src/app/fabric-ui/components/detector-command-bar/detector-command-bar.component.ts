@@ -1,10 +1,10 @@
 import {
-  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource,
+  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource, ResiliencyScoreReportHelper
 } from 'diagnostic-data';
 import { Component, AfterViewInit, Input, OnInit } from '@angular/core';
 import { Globals } from '../../../globals';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ResiliencyScoreReportHelper } from '../../../../../../diagnostic-data/src/lib/utilities/resiliencyScoreReportHelper';
+import {  } from 'diagnostic-data';
 import { DirectionalHint } from 'office-ui-fabric-react';
 import { ResourceService } from '../../../shared-v2/services/resource.service';
 import { WebSitesService } from '../../../resources/web-sites/services/web-sites.service';
