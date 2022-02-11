@@ -128,7 +128,8 @@ export class DashboardComponent implements OnDestroy {
                 this.resourceService.imgSrc = this.resourceService.altIcons['Xenon'];
             }
         }
-        else if (serviceInputs.resourceType.toString().toLowerCase() === 'microsoft.web/containerapps')
+        else if (serviceInputs.resourceType.toString().toLowerCase() === 'microsoft.web/containerapps' ||
+                 serviceInputs.resourceType.toString().toLowerCase() === 'microsoft.app/containerapps')
         {
           this._diagnosticApiService.GeomasterServiceAddress = this.resource.ServiceAddress;
           this._diagnosticApiService.GeomasterName = this.resource.GeoMasterName;
