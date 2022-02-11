@@ -424,7 +424,8 @@ export class OnboardingFlowComponent implements OnInit {
 
       this.autoMerge = devopsConfig.autoMerge;
 
-      this.getBranchList();
+      if (this.detectorGraduation)
+        this.getBranchList();
 
       if (this._detectorControlService.isInternalView) {
         this.internalExternalText = this.internalViewText;
