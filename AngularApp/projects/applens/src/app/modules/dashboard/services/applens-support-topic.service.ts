@@ -161,6 +161,7 @@ export class ApplensSupportTopicService {
     }
 
     public supportTopicId: string;
+    public sapSupportTopicId: string;
 
     public getSupportTopics(): Observable<any> {
         let pesId = this._resourceService.pesId;
@@ -238,7 +239,9 @@ export class ApplensSupportTopicService {
                         detector.supportTopicList &&
                         detector.supportTopicList.findIndex(supportTopic => supportTopic.sapSupportTopicId === sapSupportTopicId) >= 0);
                 }
-                else{
+
+                if (matchingDetector == null)
+                {
                     matchingDetector = detectors.find(detector =>
                         detector.supportTopicList &&
                         detector.supportTopicList.findIndex(supportTopic => supportTopic.id === supportTopicId) >= 0);
