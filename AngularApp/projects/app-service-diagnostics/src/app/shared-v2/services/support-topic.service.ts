@@ -1,5 +1,5 @@
 
-import { of as observableOf, Observable } from 'rxjs';
+import { of as observableOf, Observable, of } from 'rxjs';
 import { map, flatMap, catchError } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -16,6 +16,8 @@ export class SupportTopicService {
     protected detectorTask: Observable<DetectorMetaData[]>;
     public supportTopicId: string = "";
     public pesId: string = "";
+    public pesSupportTopicId: string = "";
+    public sapProductId: string = "";
     private selfHelpContentUrl = "https://mpac.support.ext.azure.com/api/v1/selfHelpArticles?articleTypes=Generic&articleTypes=Resource";
     private supportTopicConfig = {
         "14748": ["32444077", "32444080", "32444081", "32444082", "32444083", "32444084", "32550703", "32581614", "32542209", "32629421", "32581628", "32542213", "32581612", "32581611", "32608648", "32748875", "32581617", "32784809", "32581620"],
@@ -48,7 +50,11 @@ export class SupportTopicService {
         return observableOf(null);
     }
 
-    getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string): Observable<any> {
+    getPathForSapSupportTopic(sapSupportTopicId: string, sapPesId: string, searchTerm: string): Observable<any> {
+        return of();
+    }
+
+    getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string, sapSupportTopicId: string = "", sapProductId: string = ""): Observable<any> {
         this.supportTopicId = supportTopicId;
         var svcName = this._resourceService.azureServiceName
         return this._resourceService.getPesId().pipe(flatMap(pesId => {
@@ -69,17 +75,28 @@ export class SupportTopicService {
                     return observableOf({ path: 'tools/networkchecks', queryParams: { redirectFrom, supportTopic } });
                 }
             }
-            
+
             this.pesId = pesId;
+            this.sapProductId = sapProductId;
             this.detectorTask = this._diagnosticService.getDetectors();
             return this.detectorTask.pipe(flatMap(detectors => {
                 let detectorPath = '';
                 let queryParamsDic = { "searchTerm": searchTerm };
 
                 if (detectors) {
-                    const matchingDetector = detectors.find(detector =>
-                        detector.supportTopicList &&
-                        detector.supportTopicList.findIndex(supportTopic => supportTopic.id === supportTopicId) >= 0);
+
+                    var matchingDetector = null;
+                    if (sapSupportTopicId != "")
+                    {
+                        matchingDetector = detectors.find(detector =>
+                            detector.supportTopicList &&
+                            detector.supportTopicList.findIndex(supportTopic => supportTopic.sapSupportTopicId === sapSupportTopicId) >= 0);
+                    }
+                    else{
+                        matchingDetector = detectors.find(detector =>
+                            detector.supportTopicList &&
+                            detector.supportTopicList.findIndex(supportTopic => supportTopic.id === supportTopicId) >= 0);
+                    }
 
                     if (matchingDetector) {
                         if (matchingDetector.type === DetectorType.Analysis) {

@@ -226,15 +226,23 @@ export class ApplensSupportTopicService {
         return of(null);
     }
 
-
-    getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string): Observable<string> {
+    getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string, sapSupportTopicId: string = "", sapProductId: string = ""): Observable<string> {
         return this._diagnosticApiService.getDetectors().pipe(map(detectors => {
             let detectorPath = '';
 
             if (detectors) {
-                const matchingDetector = detectors.find(detector =>
-                    detector.supportTopicList &&
-                    detector.supportTopicList.findIndex(supportTopic => supportTopic.id === supportTopicId) >= 0);
+                var matchingDetector = null;
+                if (sapSupportTopicId != "")
+                {
+                    matchingDetector = detectors.find(detector =>
+                        detector.supportTopicList &&
+                        detector.supportTopicList.findIndex(supportTopic => supportTopic.sapSupportTopicId === sapSupportTopicId) >= 0);
+                }
+                else{
+                    matchingDetector = detectors.find(detector =>
+                        detector.supportTopicList &&
+                        detector.supportTopicList.findIndex(supportTopic => supportTopic.id === supportTopicId) >= 0);
+                }
 
                 if (matchingDetector) {
                     detectorPath = `/detectors/${matchingDetector.id}`;
