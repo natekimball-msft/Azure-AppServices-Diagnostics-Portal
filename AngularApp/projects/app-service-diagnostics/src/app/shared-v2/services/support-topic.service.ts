@@ -16,7 +16,7 @@ export class SupportTopicService {
     protected detectorTask: Observable<DetectorMetaData[]>;
     public supportTopicId: string = "";
     public pesId: string = "";
-    public pesSupportTopicId: string = "";
+    public sapSupportTopicId: string = "";
     public sapProductId: string = "";
     private selfHelpContentUrl = "https://mpac.support.ext.azure.com/api/v1/selfHelpArticles?articleTypes=Generic&articleTypes=Resource";
     private supportTopicConfig = {
@@ -50,21 +50,26 @@ export class SupportTopicService {
         return observableOf(null);
     }
 
-    getPathForSapSupportTopic(sapSupportTopicId: string, sapPesId: string, searchTerm: string): Observable<any> {
-        return of();
-    }
 
     getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string, sapSupportTopicId: string = "", sapProductId: string = ""): Observable<any> {
+
         this.supportTopicId = supportTopicId;
-        var svcName = this._resourceService.azureServiceName
+        this.sapSupportTopicId = sapSupportTopicId;
+        this.sapProductId = sapProductId;
         return this._resourceService.getPesId().pipe(flatMap(pesId => {
             const redirectFrom = "supportTopic";
             var supportTopic:string = null;
-            if (supportTopicId == "32542212" || supportTopicId == "32630473") {
+            // Web App (Linux)\Networking\Configuring VNET integration with App Service: supportTopicId == "32542212" , sapSupportTopicId == "e46a61a3-caeb-38aa-89ea-f851e9d63652"
+            // Web App (Windows)\Networking\Configuring VNET integration with App Service:  supportTopicId == "32542212" , sapSupportTopicId == "f9793673-0fe9-0109-52fa-8b166b645087"
+            // Web App for Containers\Networking\Configuring VNET integration with App Service: supportTopicId == "32542212", sapSupportTopicId == "2b508ce1-e160-1a35-6355-71172d0af5b0"
+            // Function App\Networking\Configuring VNET integration with Functions:  supportTopicId == "32630473", sapSupportTopicId == "2f550394-351c-4add-5807-eba6428dac71"
+            if (supportTopicId == "32542212" || sapSupportTopicId == "e46a61a3-caeb-38aa-89ea-f851e9d63652" ||  sapSupportTopicId == "f9793673-0fe9-0109-52fa-8b166b645087" || sapSupportTopicId == "2b508ce1-e160-1a35-6355-71172d0af5b0"
+            || supportTopicId == "32630473" || sapSupportTopicId == "2f550394-351c-4add-5807-eba6428dac71") {
                 // WebApp/VNET integration with App Service or FunctionApp/Configuring VNET integration with AppService
                 supportTopic = "VNet Integration";
                 return observableOf({ path: 'tools/networkchecks', queryParams: { redirectFrom, supportTopic } });
-            } else if (supportTopicId == "32820919" || supportTopicId == "32820562") {
+            } else if (supportTopicId == "32820919" || sapSupportTopicId == "6baa322b-ef6b-f235-c0c0-82ff512602c4" || sapSupportTopicId == "1653e0e2-8249-fb67-6d0e-767fa14d79b2" || sapSupportTopicId == "bafd9de9-bbe7-5366-efbd-3e845db6e1ae"
+            || supportTopicId == "32820562" || sapSupportTopicId == "8856038e-a071-236e-9823-41313ee4cb85") {
                 // WebApp/Outbound Connectivity or FunctionApp/Outbound Connectivity
                 supportTopic = "Outbound Connectivity";
                 var kind = this._resourceService.resource.kind;
@@ -77,25 +82,42 @@ export class SupportTopicService {
             }
 
             this.pesId = pesId;
-            this.sapProductId = sapProductId;
             this.detectorTask = this._diagnosticService.getDetectors();
             return this.detectorTask.pipe(flatMap(detectors => {
                 let detectorPath = '';
                 let queryParamsDic = { "searchTerm": searchTerm };
 
                 if (detectors) {
-
                     var matchingDetector = null;
                     if (sapSupportTopicId != "")
                     {
                         matchingDetector = detectors.find(detector =>
                             detector.supportTopicList &&
                             detector.supportTopicList.findIndex(supportTopic => supportTopic.sapSupportTopicId === sapSupportTopicId) >= 0);
+
+                        this._telemetryService.logEvent("GetDetectorWithSuppotTopic", {
+                            "UseSapId": "1",
+                            "SapSupportTopicId": sapSupportTopicId,
+                            "SupportTopicId": supportTopicId,
+                            "PesId": pesId,
+                            "SapProductId": sapProductId,
+                            "CaseSubject": searchTerm
+                        });
                     }
-                    else{
+
+                    if (matchingDetector == null){
                         matchingDetector = detectors.find(detector =>
                             detector.supportTopicList &&
                             detector.supportTopicList.findIndex(supportTopic => supportTopic.id === supportTopicId) >= 0);
+
+                        this._telemetryService.logEvent("GetDetectorWithSuppotTopic", {
+                            "UseSapId": "0",
+                            "SapSupportTopicId": sapSupportTopicId,
+                            "SupportTopicId": supportTopicId,
+                            "PesId": pesId,
+                            "SapProductId": sapProductId,
+                            "CaseSubject": searchTerm
+                        });
                     }
 
                     if (matchingDetector) {

@@ -95,13 +95,16 @@ export class ResourceRedirectComponent implements OnInit {
               );
             }
           }
-          if (info.supportTopicId) {
+
+          if (info.supportTopicId || info.sapSupportTopicId) {
             path += `/supportTopicId`;
             navigationExtras.queryParams = {
               ...navigationExtras.queryParams,
               supportTopicId: info.supportTopicId,
               caseSubject: caseSubject,
-              pesId: info.pesId
+              pesId: info.pesId,
+              sapSupportTopicId: info.sapSupportTopicId,
+              sapProductId: info.sapProductId,
             };
           }
 
