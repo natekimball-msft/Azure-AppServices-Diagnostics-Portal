@@ -31,6 +31,7 @@ export class DocumentsSearchComponent extends DataRenderBaseComponent  implement
   viewRemainingDocuments : boolean = false;
   isPublic : boolean = true;
   pesId : string = "";
+  sapProductId: string = "";
   supportTopicId : string = "";
   searchTermDisplay = ""
   preLoadingErrorMessage: string = "Some error occurred while fetching Deep Search results. "
@@ -59,6 +60,7 @@ export class DocumentsSearchComponent extends DataRenderBaseComponent  implement
     const subscription = this._activatedRoute.queryParamMap.subscribe(qParams => {
       this.searchTerm = qParams.get('searchTerm') === null ? "" || this.searchTerm : qParams.get('searchTerm');
       this.getPesId();
+      this.getSapProductId();
       this.checkIfEnabled();
   });
 
@@ -77,8 +79,13 @@ export class DocumentsSearchComponent extends DataRenderBaseComponent  implement
   getPesId(){
     this._resourceService.getPesId().subscribe(pesId => {
       this.pesId = pesId;
+    });    
+  }
+
+  getSapProductId(){
+    this._resourceService.getSapProductId().subscribe(sapProductId => {
+      this.sapProductId = sapProductId;
     });
-    
   }
 
   checkIfEnabled () {

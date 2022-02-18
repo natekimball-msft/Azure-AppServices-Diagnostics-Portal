@@ -50,6 +50,13 @@ export class ResourceService {
     return of(null);
   }
 
+  public getSapProductId(): Observable<string>{
+    if (this.armResourceConfig){
+      return of(this.armResourceConfig.sapProductId);
+    }
+    return of(null);
+  }
+
   public getKeystoneDetectorId(): Observable<string>{
       if (this.armResourceConfig) {
           return of(this.armResourceConfig.keystoneDetectorId);

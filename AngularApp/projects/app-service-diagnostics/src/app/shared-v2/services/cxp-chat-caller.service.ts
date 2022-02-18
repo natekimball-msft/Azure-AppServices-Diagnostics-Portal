@@ -13,6 +13,7 @@ export class CXPChatCallerService {
   public isChatSupported: boolean;
   private supportedSupportTopicIds: string[];
   public pesId: string = '';
+  public sapProductId:string = '';
   public readonly cxpChatTagName: string = 'webapps';
   public readonly applensUserAgentForCXPChat: string = 'applensDiagnostics';
   public supportPlanType: string = '';
@@ -54,6 +55,10 @@ export class CXPChatCallerService {
     this._resourceService.getPesId().subscribe(pesId => {
       this.pesId = pesId;
     });
+    
+    this._resourceService.getSapProductId().subscribe(sapProductId => {
+      this.sapProductId = sapProductId;
+    });    
   }
 
   public isSupportTopicEnabledForLiveChat(supportTopicIdToCheck: string): boolean {

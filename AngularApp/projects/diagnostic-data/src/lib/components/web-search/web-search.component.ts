@@ -34,6 +34,7 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
     @Input() numArticlesExpanded : number = 5;
     @Output() searchResultsChange: EventEmitter<any[]> = new EventEmitter<any[]>();
     pesId : string = "";
+    sapProductId: string = "";
 
     supportTopicId : string = "";    
 
@@ -59,6 +60,7 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
         const subscription = this._activatedRoute.queryParamMap.subscribe(qParams => {
             this.searchTerm = qParams.get('searchTerm') === null ? "" || this.searchTerm : qParams.get('searchTerm');
             this.getPesId();
+            this.getSapProductId();
             this.checkIfDeepSearchIsEnabled();
             this.refresh();
         });
@@ -354,6 +356,12 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
         this._resourceService.getPesId().subscribe(pesId => {
             this.pesId = pesId;
         });    
+    }
+
+    getSapProductId(){
+        this._resourceService.getSapProductId().subscribe(sapProductId => {
+            this.sapProductId = sapProductId;
+        });
     }
     
     checkIfDeepSearchIsEnabled () {
