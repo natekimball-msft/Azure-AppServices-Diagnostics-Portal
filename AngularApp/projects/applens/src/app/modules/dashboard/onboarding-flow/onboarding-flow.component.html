@@ -265,16 +265,6 @@
         (click)="showDeleteDialog()"></fab-command-bar-item>
       <!-- <fab-command-bar-item key="internal" [text]="internalExternalText" [iconProps]="{ iconName: 'View' }"
         (click)="internalExternalToggle()"></fab-command-bar-item> -->
-      <fab-command-bar-item>
-        <render>
-          <ng-template>
-            <div>
-              <fab-dropdown placeholder="Data Source"
-                  [options]="dataSources" (onChange)="updateDataSources($event)"></fab-dropdown>
-            </div>
-          </ng-template>
-        </render>
-      </fab-command-bar-item>
       <far-items>
         <fab-command-bar-item *ngIf="detectorGraduation" key="brachSelectorPill" text="custom text">
           <render>
