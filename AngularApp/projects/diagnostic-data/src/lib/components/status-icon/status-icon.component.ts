@@ -11,19 +11,17 @@ import { LoadingStatus } from '../../models/loading';
 export class StatusIconComponent implements OnChanges {
 
   @Input() status: HealthStatus;
-  @Input() loading: LoadingStatus;
+  @Input() loading: LoadingStatus = LoadingStatus.Success;
   @Input() size: number = 16;
 
   LoadingStatus = LoadingStatus;
 
-  statusColor: string;
   statusIcon: string;
 
   constructor() { }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes && changes['status'] && this.status !== null) {
-      this.statusColor = StatusStyles.getColorByStatus(this.status);
       this.statusIcon = StatusStyles.getIconByStatus(this.status);
     }
   }

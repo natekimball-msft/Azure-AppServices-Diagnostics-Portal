@@ -1,14 +1,16 @@
 <div class="app">
-  <div class="body-content" style="border:bold; color:black">
+  <div class="body-content">
     <section *ngIf="category" class="sidebar" id="sidebar">
       <category-nav></category-nav>
     </section>
     <section [ngClass]="{'content' : category,'content-hide-nav' : !category}" class="mainContentSection">
       <div class="col-md col-ms col-lg" style="width:98%; display: inline-block;">
         <detector-command-bar [disableGenie]="disableGenie"></detector-command-bar>
-        <router-outlet></router-outlet>
+        <div style="padding-left: 20px;">
+          <router-outlet></router-outlet>
+        </div>
       </div>
-      <div *ngIf="!disableGenie" id="collapse-genie-button button-container" class="col-md col-sm col-lg" class="collapsible-button"
+      <div *ngIf="!disableGenie" role="button" class="col-md col-sm col-lg collapsible-button"
         style=" float: right; height: 100vh; border-left:1px solid #cccccc; " (click)="openGeniePanel()" tabindex="0"
         aria-label="Open Genie Panel" (keydown.enter)="openGeniePanel()">
         <i class="fa fa-angle-double-left" style="margin: 5px;font-size:13px;"></i>

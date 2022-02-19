@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { DataTableDataType, DiagnosticData, TimeSeriesRendering, DataTableResponseObject, RenderingType } from '../../models/detector';
-import { GraphSeries, GraphPoint } from '../nvd3-graph/nvd3-graph.component';
 import { HighchartsData, HighchartGraphSeries } from '../highcharts-graph/highcharts-graph.component';
 import { DataRenderBaseComponent, DataRenderer } from '../data-render-base/data-render-base.component';
-import { TimeSeries, TablePoint, HighChartTimeSeries } from '../../models/time-series';
+import { TimeSeries, TablePoint, HighChartTimeSeries, MetricType,GraphSeries, GraphPoint } from '../../models/time-series';
 import * as momentNs from 'moment';
 import { TimeUtilities } from '../../utilities/time-utilities';
 import { TelemetryService } from '../../services/telemetry/telemetry.service';
@@ -38,10 +37,10 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
     defaultValue: number = 0;
     graphOptions: any;
     customizeXAxis: boolean;
-    useHighchart: boolean = true;
 
     timeGrain: momentNs.Duration;
-
+    metricType: MetricType = MetricType.Avg;
+    originalDataPoints:{ [key:string]:number[] } = {};
     processData(data: DiagnosticData) {
         super.processData(data);
 
@@ -49,8 +48,9 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
             this.renderingProperties = <TimeSeriesRendering>data.renderingProperties;
             this.defaultValue = this.renderingProperties.defaultValue !== null ? this.renderingProperties.defaultValue : this.defaultValue;
             this.graphOptions = this.renderingProperties.graphOptions;
-            if (this.graphOptions != undefined && this.graphOptions.useHighchart != undefined) {
-                this.useHighchart = this.graphOptions && this.graphOptions.useHighchart && this.graphOptions.useHighchart === "true";
+
+            if(this.renderingProperties.metricType != undefined) {
+                this.metricType = this.renderingProperties.metricType;
             }
 
             this.customizeXAxis = this.graphOptions && this.graphOptions.customizeX && this.graphOptions.customizeX === 'true';
@@ -158,6 +158,9 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
                 tablePoints
                     .filter(point => this._getSeriesName(point.column, point.counterName) === key)
                     .sort((b, a) => !this.customizeXAxis ? a.timestamp.diff(b.timestamp) : b.timestamp.diff(a.timestamp));
+            
+            this.originalDataPoints[key] = this._getOriginalDataPoints(pointsForThisSeries,this.customizeXAxis);
+            
 
             if (!this.customizeXAxis) {
                 let pointToAdd = pointsForThisSeries.pop();
@@ -298,6 +301,21 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
             this.dataTable.columns.filter(column => DataTableDataType.NumberTypes.indexOf(column.dataType) >= 0);
 
         return columns;
+    }
+
+    private _getOriginalDataPoints(pointsForThisSeries:TablePoint[], customizeXAxis:boolean):number[] {
+        //If no data, return a default value
+        if(!Array.isArray(pointsForThisSeries) || pointsForThisSeries.length === 0) return [this.defaultValue];
+        const copiedPoints = [...pointsForThisSeries];
+
+        //Remove all data points before startTime
+        if(!customizeXAxis) {
+            while (copiedPoints.length > 0 && copiedPoints[copiedPoints.length - 1].timestamp.isBefore(this.startTime)) {
+                copiedPoints.pop();
+            }
+        }
+
+        return copiedPoints.map(p => p.value);
     }
 
 }

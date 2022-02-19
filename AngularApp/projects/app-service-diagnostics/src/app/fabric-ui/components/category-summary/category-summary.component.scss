@@ -14,6 +14,8 @@
 
   .body-content {
     display: flex!important;
+    color: var(--bodyText);
+    border:bold;
   }
 
   //display side nav for 100% zooming
@@ -31,8 +33,7 @@
 
     section.content {
       position: fixed;
-      min-width: calc(100% - 265px);
-      width: 80%;
+      width: calc(100% - 265px);
       top: 0px;
       bottom: 0px;
       left: 265px;

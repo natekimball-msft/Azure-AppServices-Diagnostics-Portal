@@ -3,51 +3,27 @@
 @import "~@ng-select/ng-select/themes/default.theme.css";
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 @import "styles/vendor/bootstrap-4-utilities.min.css";
-// @import 'office-ui-fabric-core/dist/sass/Fabric.scss';
-.ngx-datatable.bootstrap {
-  border: 1px solid #dddddd;
-}
-
-.ngx-datatable.bootstrap .datatable-body .datatable-body-row .datatable-body-cell {
-  padding-right: 15px;
-}
-
-.ngx-datatable.bootstrap .datatable-body .datatable-body-row.datatable-row-even {
-  background-color: rgba(0, 0, 0, 0);
-}
-
-.ngx-datatable.bootstrap .datatable-body .datatable-body-row:hover {
-  background-color: rgba(182, 235, 255, 0.22);
-}
-
-.ngx-datatable.bootstrap .datatable-footer {
-  border-top: 1px solid #d0d0d0;
-}
-
-.ngx-datatable.bootstrap .datatable-footer .datatable-pager ul li:not(.disabled).active a {
-  background-color: #aeaeae;
-}
-
-.ngx-datatable.bootstrap .datatable-header .datatable-header-cell {
-  padding: 0.15rem 0.75rem;
-  border-bottom: none;
-}
-
-.ngx-datatable.bootstrap .datatable-header,
-.ngx-datatable.bootstrap .datatable-footer {
-  background-color: #eaeaea;
-  font-weight: 600;
-}
-
-.ngx-datatable.bootstrap .datatable-footer,
-.ngx-datatable.bootstrap .datatable-footer .datatable-pager a,
-.ngx-datatable.bootstrap .datatable-header .datatable-header-cell .datatable-header-cell-label {
-  color: #3a3a3a;
-}
+@import "styles/icons.scss";
 
 /* You can add global styles to this file, and also import other style files */
 body {
   margin: 0px;
+  color: #323130;
+  //Use segoe UI in all components
+  font-family: 'Segoe UI' !important;
+}
+
+a {
+  color: var(--link);
+}
+
+a:hover {
+  color: var(--linkHovered);
+  background-color: (--linkBackgroundHovered);
+}
+
+.sub-title {
+  color: #605E5C;
 }
 
 .skin-purple-light .sidebar-menu > li:hover > a,
@@ -106,6 +82,19 @@ body {
 
 .nav > li > a {
   padding: 5px 15px;
+}
+
+/********************************************************************/
+/*** BOOTSTRAP PRIMARY BUTTON ***/
+.btn-primary {
+  color: var(--primaryButtonText);
+  background-color: var(--primaryButtonBackground);
+  border-color: var(--primaryButtonBorder);
+}
+
+.btn-primary:hover {
+  color: var(-primaryButtonTextHovered);
+  background-color: var(--primaryButtonBackgroundHovered);
 }
 
 /********************************************************************/
@@ -186,13 +175,39 @@ fab-command-bar .ms-SearchBox {
     border-width: 0px!important;
 }
 
-.fab-command-bar-class {
-  border-bottom: 1px solid rgb(204, 204, 204)!important;
-  font-size: 12px!important;
-  height: 34px;
+.ms-CommandBar{
+  padding: 0px !important;
+}
+.ms-CommandBar, .ms-Button--commandBar{
+  background-color: white!important;
 }
 
+.ms-Button--commandBar:hover {
+  background-color: rgba(85, 179, 255, 0.1)!important;
+}
+
+.ms-CommandBar, .ms-Button--commandBar{
+  background-color: white!important;
+}
+
+.fab-command-bar-class {
+  // border-bottom: 1px solid #D6D6D6 !important;
+  // font-size: 12px !important;
+  // padding: 0px !important;
+  // margin-top: 16px;
+  // height: 34px;
+  border-bottom: 1px solid rgb(204, 204, 204)!important;
+  font-size: 12px!important;
+  height: 40px;
+  background-color: var(--bodyBackground)!important;
+}
 
 .fab-command-bar-class .ms-CommandBar {
   height: 33px;
+}
+
+.content-under-header {
+  position: relative;
+  top: 50px;
+  height: calc(100% - 50px);
 }

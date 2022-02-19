@@ -1,9 +1,9 @@
 import { AdalService } from 'adal-angular4';
-import { DetectorMetaData, DetectorResponse, QueryResponse, TelemetryService } from 'diagnostic-data';
+import { DetectorMetaData, DetectorResponse, ExtendDetectorMetaData, QueryResponse, TelemetryService } from 'diagnostic-data';
 import { map, retry, catchError, tap } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { Observable, throwError as observableThrowError } from 'rxjs';
+import { Observable, of, throwError as observableThrowError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { HttpMethod } from '../models/http';
 import { Package } from '../models/package';
@@ -11,6 +11,9 @@ import { CacheService } from './cache.service';
 import { Guid } from 'projects/app-service-diagnostics/src/app/shared/utilities/guid';
 import { Router } from '@angular/router';
 import { TelemetryPayload } from 'diagnostic-data';
+import { RecentResource, UserSetting } from '../models/user-setting';
+import { List } from 'office-ui-fabric-react';
+
 
 @Injectable()
 export class DiagnosticApiService {
@@ -54,6 +57,12 @@ export class DiagnosticApiService {
       path = path + "?" + queryParams.map(qp => qp.key + "=" + qp.value).join("&");
     }
     return this.invoke<DetectorResponse[]>(path, HttpMethod.POST, body, true, false, internalClient).pipe(retry(1), map(response => response.map(detector => detector.metadata)));
+  }
+
+  public getDetectorsWithExtendDefinition(version: string, resourceId: string, body?: any, internalClient: boolean = true): Observable<ExtendDetectorMetaData[]> {
+    // let path = `${version}${resourceId}/detectorsWithExtendDefinition`;
+    let path = `${version}${resourceId}/internal/detectors`;
+    return this.invoke<ExtendDetectorMetaData[]>(path, HttpMethod.POST, body, true, false, internalClient);
   }
 
   public getUserPhoto(userId: string, useCache: boolean = true, invalidateCache: boolean = false): Observable<any> {
@@ -386,14 +395,84 @@ export class DiagnosticApiService {
       additionalParams.getFullResponse, additionalHeaders);
   }
 
-  public getDevopsConfig(resourceProviderType: string): Observable<any>{
-    let path = `devops/devopsConfig?resourceProviderType=${resourceProviderType}`;
-    return this.invoke(path, HttpMethod.GET);
+  public getUserSetting(userId: string): Observable<UserSetting> {
+    let url: string = `${this.diagnosticApi}api/usersetting/${userId}`;
+    let request = this._httpClient.get<UserSetting>(url, {
+      headers: this._getHeaders()
+    });
+    return request;
+    // return this.get(`api/recent/${userId}`);
   }
   
+  public updateUserSetting(userSettings: UserSetting):Observable<UserSetting> {
+    let url = `${this.diagnosticApi}api/usersetting`;
+    let request = this._httpClient.post<UserSetting>(url,userSettings, {
+      headers: this._getHeaders()
+    });
+    // return this._cacheService.get(this.getCacheKey(HttpMethod.POST, url), request, false);
+    return request;
+  }
+
+  public getDetectorCode(detectorPath: string, branch: string, resourceUri: string): Observable<string>{
+    let path = `devops/getCode?filePathInRepo=${detectorPath}&branch=${branch}&resourceUri=${resourceUri}`;
+    return this.invoke(path, HttpMethod.GET, null, false);
+  }
+
+  public pushDetectorChanges(branch: string, files: string[], repoPaths: string[], comment: string, changeType: string, resourceUri: string){
+
+    var body = {};
+    body['branch'] = branch;
+    body['files'] = files;
+    body['repoPaths'] = repoPaths;
+    body['comment'] = comment;
+    body['changeType'] = changeType;
+    body['resourceUri'] = resourceUri;
+
+    let path = "devops/push";
+    return this.invoke<any>(path, HttpMethod.POST, body, false, true, true, true, false);
+  }
+
+  public makePullRequest(sourceBranch: string, targetBranch: string, title: string, resourceUri: string){
+
+    var body = {};
+    body['sourceBranch'] = sourceBranch;
+    body['targetBranch'] = targetBranch;
+    body['title'] = title;
+    body['resourceUri'] = resourceUri;
+
+    let path = `devops/makePR`;
+    return this.invoke(path, HttpMethod.POST, body, false);
+  }
+
+  public merge(branch: string, detectorName: string, resourceUri: string){
+
+    var body = {};
+    body['branch'] = branch;
+    body['detectorName'] = detectorName;
+    body['resourceUri'] = resourceUri;
+
+    let path = `devops/merge`;
+    return this.invoke(path, HttpMethod.POST, body, false);
+  }
+
+  public getBranches(resourceId: string): Observable<{branchName:string,isMainBranch:string}[]>{
+    let path = "devops/getBranches?resourceURI=" + resourceId;
+    return this.invoke(path, HttpMethod.GET, null, false);
+  }
+
+  public getEnableDetectorDevelopment(): Observable<boolean> {
+    const path = "api/appsettings/DetectorDevelopmentEnabled";
+    return this.get<boolean>(path).pipe(map((res:string) => {
+      return res.toLowerCase() === "true";
+    }));
+  }
+  public getDevopsConfig(resourceProviderType: string): Observable<any>{
+    let path = `devops/devopsConfig?resourceProviderType=${resourceProviderType}`;
+    return this.invoke(path, HttpMethod.GET, null, false);
+  }
   public getDetectorDevelopmentEnv(): Observable<string> {
     const path = "api/appsettings/DetectorDevelopmentEnv";
-    return this.get(path).pipe(map((res:string) => {
+    return this.get(path, true).pipe(map((res:string) => {
       return res;
     }));
   }
@@ -403,5 +482,10 @@ export class DiagnosticApiService {
     return this.get(path).pipe(map((res:string) => {
       return res;
     }));
+  }
+
+  public getDevopsPullRequest(resourceProviderType: string):Observable<any> {
+    let path = `devops/devopsPullRequests?resourceProviderType=${resourceProviderType}`;
+    return this.invoke(path, HttpMethod.GET, null, false);
   }
 }

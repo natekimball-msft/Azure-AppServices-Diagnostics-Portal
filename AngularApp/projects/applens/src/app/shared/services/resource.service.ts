@@ -1,7 +1,7 @@
 
 import {of as observableOf,  Observable } from 'rxjs';
-import { Injectable, Inject } from '@angular/core';
-import { ArmResource, ResourceServiceInputs, RESOURCE_SERVICE_INPUTS } from '../models/resources';
+import { Injectable, Inject, Optional } from '@angular/core';
+import { ArmResource, ResourceInfo, ResourceServiceInputs, RESOURCE_SERVICE_INPUTS } from '../models/resources';
 
 @Injectable()
 export class ResourceService {
@@ -14,12 +14,13 @@ export class ResourceService {
   public sapProductId:string;
   public staticSelfHelpContent: string;
   public altIcons: { [path: string]: string };
+  public displayName: string;
   public searchSuffix: string;
   public emergingIssuesICMLookupEnabled: boolean;
 
   protected _observerResource: any = null;
   protected _armResource: ArmResource;
-  protected _initialized: Observable<boolean>;
+  protected _initialized: Observable<ResourceInfo>;
 
   constructor(@Inject(RESOURCE_SERVICE_INPUTS) inputs: ResourceServiceInputs) {
     this._armResource = inputs.armResource;
@@ -31,15 +32,16 @@ export class ResourceService {
     this.sapProductId = inputs.sapProductId;
     this.staticSelfHelpContent = inputs.staticSelfHelpContent;
     this.altIcons = inputs.altIcons;
+    this.displayName = inputs.displayName;
     this.searchSuffix = inputs.searchSuffix;
     this.emergingIssuesICMLookupEnabled = (inputs.emergingIssuesICMLookupEnabled !== undefined && inputs.emergingIssuesICMLookupEnabled);
   }
 
   public startInitializationObservable() {
-    this._initialized = observableOf(true);
+    this._initialized = observableOf(new ResourceInfo(this.getResourceName(),this.imgSrc,this.displayName,this.getCurrentResourceId()));
   }
 
-  public waitForInitialization(): Observable<boolean> {
+  public waitForInitialization(): Observable<ResourceInfo> {
     return this._initialized;
   }
 

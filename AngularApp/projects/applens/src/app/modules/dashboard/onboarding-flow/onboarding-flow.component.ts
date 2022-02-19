@@ -1,30 +1,34 @@
 import { AdalService } from 'adal-angular4';
 import {
-    CompilationProperties, DetectorControlService, DetectorResponse, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, HealthStatus
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
-import { forkJoin, Observable, of } from 'rxjs';
-import { flatMap, map } from 'rxjs/operators';
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {concat, 
+  forkJoin
+  , Observable, of
+} from 'rxjs';
+import { flatMap, map, tap,switchMap } from 'rxjs/operators'
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Package } from '../../../shared/models/package';
 import { GithubApiService } from '../../../shared/services/github-api.service';
 import { ResourceService } from '../../../shared/services/resource.service';
 import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
 import { RecommendedUtterance } from '../../../../../../diagnostic-data/src/public_api';
 import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.service';
-import {TelemetryEventNames} from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
-import { environment } from '../../../../environments/environment';
-import {ActivatedRoute, Params, Router} from "@angular/router";
-import {DiagnosticApiService} from "../../../shared/services/diagnostic-api.service";
+import { TelemetryEventNames } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
+import { ActivatedRoute, Params, Router } from "@angular/router";
+import { DiagnosticApiService } from "../../../shared/services/diagnostic-api.service";
 import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import {WebSocket} from "ws";
-import {
-  MonacoLanguageClient, CloseAction, ErrorAction,
-  MonacoServices, createConnection
-} from 'monaco-languageclient';
+import { WebSocket } from "ws";
+import { MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection } from 'monaco-languageclient';
 import { v4 as uuid } from 'uuid';
+import { IButtonStyles, IChoiceGroupOption, IDialogContentProps, IDropdownOption, IDropdownProps, IPanelProps, IPivotProps, PanelType, TagItemSuggestion } from 'office-ui-fabric-react';
+import { BehaviorSubject } from 'rxjs';
+import { Commit } from '../../../shared/models/commit';
+import { ApplensCommandBarService } from '../services/applens-command-bar.service';
+
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
 using Diagnostics.DataProviders;
@@ -38,7 +42,49 @@ using Kusto.Data;
 `;
 
 const moment = momentNs;
-const newDetectorId:string = "NEW_DETECTOR";
+const newDetectorId: string = "NEW_DETECTOR";
+
+// const commandbaritems: ICommandBarItemProps[] = [
+//   {
+//     key: 'newItem',
+//     text: 'New',
+//     cacheKey: 'myCacheKey', // changing this key will invalidate this item's cache
+//     iconProps: { iconName: 'Add' },
+//     subMenuProps: {
+//       items: [
+//         {
+//           key: 'emailMessage',
+//           text: 'Email message',
+//           iconProps: { iconName: 'Mail' },
+//           ['data-automation-id']: 'newEmailButton', // optional
+//         },
+//         {
+//           key: 'calendarEvent',
+//           text: 'Calendar event',
+//           iconProps: { iconName: 'Calendar' },
+//         },
+//       ],
+//     },
+//   },
+//   {
+//     key: 'upload',
+//     text: 'Upload',
+//     iconProps: { iconName: 'Upload' },
+//     href: 'https://developer.microsoft.com/en-us/fluentui',
+//   },
+//   {
+//     key: 'share',
+//     text: 'Share',
+//     iconProps: { iconName: 'Share' },
+//     onClick: () => console.log('Share'),
+//   },
+//   {
+//     key: 'download',
+//     text: 'Download',
+//     iconProps: { iconName: 'Download' },
+//     onClick: () => console.log('Download'),
+//   },
+// ];
 
 export enum DevelopMode {
   Create,
@@ -62,6 +108,8 @@ export class OnboardingFlowComponent implements OnInit {
   @Input() gistMode: boolean = false;
 
   DevelopMode = DevelopMode;
+  HealthStatus = HealthStatus;
+  PanelType = PanelType;
 
   hideModal: boolean = true;
   fileName: string;
@@ -75,7 +123,7 @@ export class OnboardingFlowComponent implements OnInit {
   errorState: any;
   buildOutput: string[];
   detailedCompilationTraces: CompilationTraceOutputDetails[];
-  public showDetailedCompilationTraces:boolean = true;
+  public showDetailedCompilationTraces: boolean = true;
   runButtonDisabled: boolean;
   publishButtonDisabled: boolean;
   localDevButtonDisabled: boolean;
@@ -93,6 +141,123 @@ export class OnboardingFlowComponent implements OnInit {
   allUtterances: any[] = [];
   recommendedUtterances: RecommendedUtterance[] = [];
   utteranceInput: string = "";
+  dialogTitle: string = "Send for review";
+  dialogSubText: string = "Changes will be reviewed by team before getting merged. Once published, you will have a link to the PR.";
+  branchName: string = "Branch Name";
+  branchPlaceholder: string = "Enter Branch name";
+  PRName: string = "Pull Request Name";
+  PRPlaceholder: string = "Enter PR Name";
+  PRDescription: string = "Pull Request description";
+  PRDescriptionPlaceholder: string = "Enter description about the changes";
+  cancelButtonText: string = "Cancel";
+  publishDialogHidden: boolean = true;
+  PRTitle: string = "";
+  PRDesc: string = "";
+  Branch: string = "";
+  tempBranch: string = "";
+  showBranches: IChoiceGroupOption[] = [];
+  displayBranch: string = "";
+  optionsForSingleChoice: IChoiceGroupOption[] = [];
+  openTimePickerCallout: boolean = false;
+  timePickerButtonStr: string = "";
+  showCalendar: boolean = false;
+  showTimePicker: boolean = false;
+  gistDialogHidden: boolean = true;
+  gistVersion: string;
+  latestGistVersion: string = "";
+  gistName: string;
+  gistsDropdownOptions: IDropdownOption[] = [];
+  gistVersionOptions: IDropdownOption[] = [];
+  gistUpdateTitle
+  internalExternalText: string = "";
+  internalViewText: string = "Internal view";
+  externalViewText: string = "Customer view";
+  defaultSelectedKey: string;
+  currentTime: string = "";
+  publishSuccess: boolean = false;
+  publishFailed: boolean = false;
+  detectorName: string = "";
+  submittedPanelTimer: any = null;
+  deleteButtonText: string = "Delete";
+  deleteDialogTitle: string = "Delete Detector";
+  deleteDialogHidden: boolean = true;
+  deleteAvailable: boolean = false;
+  deletingDetector: boolean = false;
+  openTimePickerSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  failureMessage: string = "";
+  PPERedirectTimer: number = 10;
+  runButtonStyle: any = {
+    root: { cursor: "default" }
+  };
+  publishButtonStyle: any = {
+    root: {
+      cursor: "not-allowed",
+      color: "grey"
+    }
+  };
+  PRLink: string = "";
+
+  detectorGraduation: boolean = false;
+  autoMerge: boolean = false;
+  disableDelete: boolean = false;
+
+  buttonStyle: IButtonStyles = {
+    root: {
+      color: "#323130",
+      borderRadius: "12px",
+      marginTop: "8px",
+      background: "rgba(0, 120, 212, 0.1)",
+      fontSize: "13",
+      fontWeight: "600",
+      height: "80%"
+    }
+  }
+  branchButtonDisabled = false;
+  branchButtonStyle: IButtonStyles = {
+    root: {
+      color: "#323130",
+      borderRadius: "12px",
+      marginTop: "8px",
+      background: "rgba(0, 120, 212, 0.1)",
+      fontSize: "10",
+      fontWeight: "600",
+      height: "80%"
+    }
+  }
+  pivotStyle: IPivotProps['styles'] = {
+    root: {
+    }
+  }
+
+  runIcon: any = { iconName: 'Play' };
+
+  publishIcon: any = {
+    iconName: 'Upload',
+    styles: {
+      root: { color: "grey" }
+    }
+  };
+
+  submittedPanelStyles: IPanelProps["styles"] = {
+    root: {
+      height: "100px",
+    },
+    content: {
+      padding: "0px"
+    },
+    navigation: {
+      height: "18px"
+    }
+  }
+
+  publishDialogStyles: IDialogContentProps['styles'] = {
+    inner: {
+      padding: "0px"
+    },
+    innerContent: {
+      padding: "0px"
+    }
+  }
 
   modalPublishingButtonText: string;
   modalPublishingButtonDisabled: boolean;
@@ -114,21 +279,15 @@ export class OnboardingFlowComponent implements OnInit {
   private userName: string;
 
   private emailRecipients: string = '';
-  private _monacoEditor:monaco.editor.ICodeEditor = null;
-  private _oldCodeDecorations:string[] = [];
+  private _monacoEditor: monaco.editor.ICodeEditor = null;
+  private _oldCodeDecorations: string[] = [];
 
-  detectorGraduation: boolean;
-  PPERedirectTimer: number = 10;
-  redirectTimer: NodeJS.Timer;
-  isProd: boolean = false;
-  PPELink: string;
-  PPEHostname: string;
-  HealthStatus = HealthStatus;
 
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService,
     private diagnosticApiService: ApplensDiagnosticService, private _diagnosticApi: DiagnosticApiService, private resourceService: ResourceService,
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
-    public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute, private _router: Router) {
+    public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute, 
+    private _applensCommandBarService: ApplensCommandBarService, private _router: Router) {
     this.editorOptions = {
       theme: 'vs',
       language: 'csharp',
@@ -152,8 +311,8 @@ export class OnboardingFlowComponent implements OnInit {
     this.devOptionsIcon = "fa fa-download";
     this.runButtonText = "Run";
     this.runButtonIcon = "fa fa-play";
-    this.publishButtonText = "Publish";
-    this.modalPublishingButtonText = "Publish";
+    this.publishButtonText = "Create";
+    this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
     this.modalPublishingButtonDisabled = false;
     this.showAlert = false;
 
@@ -162,16 +321,85 @@ export class OnboardingFlowComponent implements OnInit {
     this.publishAccessControlResponse = {};
   }
 
-  ngOnInit() {
-    if (!this.initialized) {
-      this.initialize();
-      this.initialized = true;
-      this._telemetryService.logPageView(TelemetryEventNames.OnboardingFlowLoaded, {});
-    }
+  showDeleteDialog() {
+    this.deleteDialogHidden = false;
+    this.setTargetBranch();
+  }
 
+  dismissDeleteDialog() {
+    this.deleteDialogHidden = true;
+  }
+
+  updateTempBranch(event: any) {
+    this.tempBranch = event.option.key;
+  }
+
+  updateBranch() {
+    this.Branch = this.tempBranch;
+    this.displayBranch = this.Branch;
+    this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId).subscribe(x => {
+      this.code = x;
+    });
+    this.closeCallout();
+  }
+
+  noBranchesAvailable() {
+    this.displayBranch = "NA (not published)";
+    this.disableBranchButton();
+  }
+
+  disableBranchButton() {
+    this.branchButtonDisabled = true;
+    this.branchButtonStyle = {
+      root: {
+        cursor: "not-allowed",
+        color: "#323130",
+        borderRadius: "12px",
+        marginTop: "8px",
+        background: "#eaeaea",
+        fontSize: "13",
+        fontWeight: "600",
+        height: "80%"
+      }
+    };
+  }
+
+  branchChoiceCharLimit: number = 25;
+  defaultBranch: string;
+
+  publishButtonOnClick() {
+    if (this.detectorGraduation) {
+      this.showPublishDialog();
+    }
+    else {
+      this.publish()
+    }
+  }
+
+  ableToDelete: boolean = false;
+  deleteVisibilityStyle = {};
+
+  isProd: boolean = false;
+  PPELink: string;
+  PPEHostname: string;
+  redirectTimer: NodeJS.Timer;
+
+  ngOnInit() {
     this.detectorGraduation = true;
     this.diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(devopsConfig => {
       this.detectorGraduation = devopsConfig.graduationEnabled;
+      this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
+
+      this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
+
+      this.defaultBranch = "MainMVP";
+
+
+      if (!this.initialized) {
+        this.initialize();
+        this.initialized = true;
+        this._telemetryService.logPageView(TelemetryEventNames.OnboardingFlowLoaded, {});
+      }
 
       this.diagnosticApiService.getPPEHostname().subscribe(host => {
         this.PPEHostname = host;
@@ -189,20 +417,89 @@ export class OnboardingFlowComponent implements OnInit {
           }
         });
       });
+
+      this._detectorControlService.timePickerStrSub.subscribe(s => {
+        this.timePickerButtonStr = s;
+      });
+
+      this.autoMerge = devopsConfig.autoMerge;
+
+      if (this.detectorGraduation)
+        this.getBranchList();
+
+      if (this._detectorControlService.isInternalView) {
+        this.internalExternalText = this.internalViewText;
+      }
+      else {
+        this.internalExternalText = this.externalViewText;
+      }
     });
+  }
+
+  getBranchList() {
+    this.optionsForSingleChoice = [];
+    this.showBranches = [];
+
+    this.diagnosticApiService.getBranches(this.resourceId).subscribe(branches => {
+      var branchRegEx = new RegExp(`^dev\/.*\/detector\/${this.id}$`, "i");
+      branches.forEach(option => {
+        this.optionsForSingleChoice.push({
+          key: String(option["branchName"]),
+          text: String(option["branchName"])
+        });
+        if (option["isMainBranch"].toLowerCase() === "true") {
+          this.defaultBranch = String(option["branchName"]);
+        }
+        if ((option["isMainBranch"].toLowerCase() === "true") && !(this.mode == DevelopMode.Create)) {// if main branch and in edit mode
+          this.showBranches.push({
+            key: String(option["branchName"]),
+            text: String(option["branchName"])
+          });
+        }
+      })
+      this.optionsForSingleChoice.forEach(branch => {
+        if (branchRegEx.test(branch.text) && this.id.toLowerCase() != "") {
+          this.showBranches.push({
+            key: String(branch.key),
+            text: String(`${branch.text.split("/")[1]} : ${branch.text.split("/")[3]}`)
+          });
+        }
+      });
+      if (this.showBranches.length < 1) {
+        this.noBranchesAvailable();
+      }
+      else {
+        var targetBranch = `dev/${this.userName.split("@")[0]}/detector/${this.id.toLowerCase()}`
+        this.Branch = this.targetInShowBranches(targetBranch) ? targetBranch : this.showBranches[0].key;
+        this.displayBranch = this.Branch;
+        this.tempBranch = this.Branch;
+        this.updateBranch();
+      }
+    });
+  }
+
+  internalExternalToggle() {
+    if (this.internalExternalText === this.externalViewText) {
+      this.internalExternalText = this.internalViewText;
+    }
+    else {
+      this.internalExternalText = this.externalViewText;
+    }
+
+    this._detectorControlService.toggleInternalExternal();
   }
 
   addCodePrefix(codeString) {
     if (this.codeCompletionEnabled) {
       var isLoadIndex = codeString.indexOf("#load");
       // If gist is being loaded in the code
-      if (isLoadIndex>=0) {
+      if (isLoadIndex >= 0) {
         codeString = codeString.replace(codePrefix, "");
         var splitted = codeString.split("\n");
         var lastIndex = splitted.slice().reverse().findIndex(x => x.startsWith("#load"));
-        lastIndex = lastIndex>0? splitted.length-1-lastIndex: lastIndex;
-        if (lastIndex>=0) {
-          var finalJoin = [...splitted.slice(0, lastIndex+1), codePrefix, ...splitted.slice(lastIndex+1,)].join("\n");
+        lastIndex = lastIndex > 0 ? splitted.length - 1 - lastIndex : lastIndex;
+        if (lastIndex >= 0) {
+          var finalJoin = [...splitted.slice(0, lastIndex + 1), codePrefix, ...splitted.slice(lastIndex + 1,)].join("\n");
           return finalJoin;
         }
       }
@@ -226,53 +523,53 @@ export class OnboardingFlowComponent implements OnInit {
         let fileName = uuid();
         let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse(`file:///workspace/${fileName}.cs`));
         editor.setModel(editorModel);
-        MonacoServices.install(editor, {rootUri: "file:///workspace"});
+        MonacoServices.install(editor, { rootUri: "file:///workspace" });
         const webSocket = this.createWebSocket(this.languageServerUrl);
         listen({
           webSocket,
           onConnection: connection => {
-              // create and start the language client
-              const languageClient = this.createLanguageClient(connection);
-              const disposable = languageClient.start();
-              connection.onClose(() => disposable.dispose());
+            // create and start the language client
+            const languageClient = this.createLanguageClient(connection);
+            const disposable = languageClient.start();
+            connection.onClose(() => disposable.dispose());
           }
         });
       }
     });
- }
+  }
 
- createLanguageClient(connection: MessageConnection): MonacoLanguageClient {
-  return new MonacoLanguageClient({
+  createLanguageClient(connection: MessageConnection): MonacoLanguageClient {
+    return new MonacoLanguageClient({
       name: "AppLens Language Client",
       clientOptions: {
-          // use a language id as a document selector
-          documentSelector: ['csharp'],
-          // disable the default error handler
-          errorHandler: {
-              error: () => ErrorAction.Continue,
-              closed: () => CloseAction.DoNotRestart
-          }
+        // use a language id as a document selector
+        documentSelector: ['csharp'],
+        // disable the default error handler
+        errorHandler: {
+          error: () => ErrorAction.Continue,
+          closed: () => CloseAction.DoNotRestart
+        }
       },
       // create a language client connection from the JSON RPC connection on demand
       connectionProvider: {
-          get: (errorHandler, closeHandler) => {
-              return Promise.resolve(createConnection(connection, errorHandler, closeHandler))
-          }
+        get: (errorHandler, closeHandler) => {
+          return Promise.resolve(createConnection(connection, errorHandler, closeHandler))
+        }
       }
-  });
-}
+    });
+  }
 
-createWebSocket(url: string): WebSocket {
-  const socketOptions = {
+  createWebSocket(url: string): WebSocket {
+    const socketOptions = {
       maxReconnectionDelay: 10000,
       minReconnectionDelay: 1000,
       reconnectionDelayGrowFactor: 1.3,
       connectionTimeout: 10000,
       maxRetries: 3,
       debug: false
-  };
-  return new ReconnectingWebSocket(url, undefined, socketOptions);
-}
+    };
+    return new ReconnectingWebSocket(url, undefined, socketOptions);
+  }
 
   ngOnChanges() {
     if (this.initialized) {
@@ -280,76 +577,189 @@ createWebSocket(url: string): WebSocket {
     }
   }
 
-  isCompilationTraceClickable(item:CompilationTraceOutputDetails): boolean {
-    return (!!item.location && 
-      item.location.start.linePos > -1 && item.location.start.colPos > -1 && item.location.end.linePos > -1 && item.location.end.colPos > -1 &&
-      (item.location.start.linePos > 0 || item.location.start.colPos > 0 || item.location.end.linePos > 0 || item.location.end.colPos > 0) 
-      )
+  gistVersionChange() {
+    var newGist;
+
+    Object.keys(this.temporarySelection).forEach(id => {
+      if (this.temporarySelection[id]['version'] !== this.configuration['dependencies'][id]) {
+        this.configuration['dependencies'][id] = this.temporarySelection[id]['version'];
+        this.reference[id] = this.temporarySelection[id]['code'];
+      }
+    });
+
+    this.gistDialogHidden = true;
   }
 
-  markCodeLinesInEditor(compilerTraces:CompilationTraceOutputDetails[]) {
-    if(!!this._monacoEditor) {
-      if(compilerTraces == null) {
+  updateGistVersionOptions(event: string) {
+    this.gistName = event["option"].text;
+    this.gistVersionOptions = [];
+    this.latestGistVersion = "";
+    var tempList = [];
+    if (!this.detectorGraduation) {
+      this.githubService.getChangelist(this.gistName)
+        .subscribe((version: Commit[]) => {
+          version.forEach(v => tempList.push({
+            key: String(`${v["sha"]}`),
+            text: String(`${v["author"]}: ${v["dateTime"]}`),
+            title: String(`${this.gistName}`)
+          }));
+          this.gistVersionOptions = tempList.reverse();
+          if (this.gistVersionOptions.length > 10) { this.gistVersionOptions = this.gistVersionOptions.slice(0, 10); }
+        });
+    }
+    else {
+      this.diagnosticApiService.getDetectorCode(`${this.gistName}/${this.gistName}.csx`, this.defaultBranch, this.resourceId).subscribe(gistCode => {
+        this.latestGistVersion = gistCode;
+      });
+    }
+  }
+
+  gistVersionOnChange(event: string) {
+    this.temporarySelection[event["option"]["title"]]['version'] = event["option"]["key"];
+
+    this.githubService.getCommitContent(event["option"]["title"], this.temporarySelection[event["option"]["title"]]['version']).subscribe(x => {
+      this.temporarySelection[event["option"]["title"]]['code'] = x;
+    });
+  }
+
+  disableRunButton() {
+    this.runButtonDisabled = true;
+    this.runButtonStyle = {
+      root: {
+        cursor: "not-allowed",
+        color: "grey"
+      }
+    };
+    this.runIcon = {
+      iconName: 'Play',
+      styles: {
+        root: {
+          color: 'grey'
+        }
+      }
+    };
+  }
+
+  disablePublishButton() {
+    this.publishButtonDisabled = true;
+    this.publishButtonStyle = {
+      root: {
+        cursor: "not-allowed",
+        color: "grey"
+      }
+    };
+    this.publishIcon = {
+      iconName: 'Upload',
+      styles: {
+        root: { color: "grey" }
+      }
+    };
+  }
+
+  enableRunButton() {
+    this.runButtonDisabled = false;
+    this.runButtonStyle = {
+      root: { cursor: "default" }
+    };
+    this.runIcon = { iconName: 'Play' };
+  }
+
+  enablePublishButton() {
+    this.publishButtonDisabled = false;
+    this.publishButtonStyle = {
+      root: { cursor: "default" }
+    };
+    this.publishIcon = { iconName: 'Upload' };
+  }
+
+  showGistDialog() {
+    this.gistsDropdownOptions = [];
+    this.gists = Object.keys(this.configuration['dependencies']);
+    this.gists.forEach(g => {
+      this.gistsDropdownOptions.push({
+        key: String(g),
+        text: String(g)
+      });
+    });
+    if (this.gists.length == 0) {
+      this.gistUpdateTitle = "No gists available";
+    }
+    else {
+      this.gistUpdateTitle = "Update Gist version"
+    }
+    this.gistDialogHidden = false;
+    this.gists.forEach(g => this.temporarySelection[g] = { version: this.configuration['dependencies'][g], code: '' });
+  }
+  dismissGistDialog() {
+    this.gistDialogHidden = true;
+  }
+
+  isCompilationTraceClickable(item: CompilationTraceOutputDetails): boolean {
+    return (!!item.location &&
+      item.location.start.linePos > -1 && item.location.start.colPos > -1 && item.location.end.linePos > -1 && item.location.end.colPos > -1 &&
+      (item.location.start.linePos > 0 || item.location.start.colPos > 0 || item.location.end.linePos > 0 || item.location.end.colPos > 0)
+    )
+  }
+
+  markCodeLinesInEditor(compilerTraces: CompilationTraceOutputDetails[]) {
+    if (!!this._monacoEditor) {
+      if (compilerTraces == null) {
         //Clear off all code decorations/underlines
         this._oldCodeDecorations = this._monacoEditor.deltaDecorations(this._oldCodeDecorations, []);
       }
       else {
         let newDecorations = [];
         compilerTraces.forEach(traceEntry => {
-          if(this.isCompilationTraceClickable(traceEntry)) {
+          if (this.isCompilationTraceClickable(traceEntry)) {
             let underLineColor = '';
-            if(traceEntry.severity == HealthStatus.Critical) underLineColor = 'codeUnderlineError';          
-            if(traceEntry.severity == HealthStatus.Warning) underLineColor = 'codeUnderlineWarning';
-            if(traceEntry.severity == HealthStatus.Info) underLineColor = 'codeUnderlineInfo';
-            if(traceEntry.severity == HealthStatus.Success) underLineColor = 'codeUnderlineSuccess';
+            if (traceEntry.severity == HealthStatus.Critical) underLineColor = 'codeUnderlineError';
+            if (traceEntry.severity == HealthStatus.Warning) underLineColor = 'codeUnderlineWarning';
+            if (traceEntry.severity == HealthStatus.Info) underLineColor = 'codeUnderlineInfo';
+            if (traceEntry.severity == HealthStatus.Success) underLineColor = 'codeUnderlineSuccess';
 
             newDecorations.push({
-              range: new monaco.Range(traceEntry.location.start.linePos+1, traceEntry.location.start.colPos+1, traceEntry.location.end.linePos+1, traceEntry.location.end.colPos+1),
-              options:{
+              range: new monaco.Range(traceEntry.location.start.linePos + 1, traceEntry.location.start.colPos + 1, traceEntry.location.end.linePos + 1, traceEntry.location.end.colPos + 1),
+              options: {
                 isWholeLine: false,
                 inlineClassName: `codeUnderline ${underLineColor}`,
-                hoverMessage:[{
-                  value:traceEntry.message,
-                  isTrusted:true,                  
+                hoverMessage: [{
+                  value: traceEntry.message,
+                  isTrusted: true,
                 } as monaco.IMarkdownString]
               }
             } as monaco.editor.IModelDeltaDecoration);
           }
         });
-        if(newDecorations.length>0) {
+        if (newDecorations.length > 0) {
           this._oldCodeDecorations = this._monacoEditor.deltaDecorations(this._oldCodeDecorations, newDecorations);
         }
       }
     }
   }
 
-  navigateToEditorIfApplicable(item:CompilationTraceOutputDetails){
-    if(this.isCompilationTraceClickable(item) && !!this._monacoEditor) {
+  navigateToEditorIfApplicable(item: CompilationTraceOutputDetails) {
+    if (this.isCompilationTraceClickable(item) && !!this._monacoEditor) {
       this._monacoEditor.revealRangeInCenterIfOutsideViewport({
-        startLineNumber: item.location.start.linePos+1,
-        startColumn: item.location.start.colPos+1,
-        endLineNumber: item.location.end.linePos+1,
-        endColumn: item.location.end.colPos+1
+        startLineNumber: item.location.start.linePos + 1,
+        startColumn: item.location.start.colPos + 1,
+        endLineNumber: item.location.end.linePos + 1,
+        endColumn: item.location.end.colPos + 1
       }, 1);
 
       this._monacoEditor.setPosition({
-        lineNumber:item.location.start.linePos+1,
-        column:item.location.start.colPos+1
+        lineNumber: item.location.start.linePos + 1,
+        column: item.location.start.colPos + 1
       });
       this._monacoEditor.focus();
     }
   }
 
-  getfaIconClass(item:CompilationTraceOutputDetails): string {
-    if(item.severity == HealthStatus.Critical) return 'fa-exclamation-circle critical-color';
-    if(item.severity == HealthStatus.Warning) return 'fa-exclamation-triangle warning-color';
-    if(item.severity == HealthStatus.Info) return 'fa-info-circle info-color';
-    if(item.severity == HealthStatus.Success) return 'fa-check-circle success-color';
+  getfaIconClass(item: CompilationTraceOutputDetails): string {
+    if (item.severity == HealthStatus.Critical) return 'fa-exclamation-circle critical-color';
+    if (item.severity == HealthStatus.Warning) return 'fa-exclamation-triangle warning-color';
+    if (item.severity == HealthStatus.Info) return 'fa-info-circle info-color';
+    if (item.severity == HealthStatus.Success) return 'fa-check-circle success-color';
     return '';
-  }
-
-  gistVersionChange(event: string) {
-    this.temporarySelection[this.selectedGist] = event;
   }
 
   confirm() {
@@ -379,19 +789,26 @@ createWebSocket(url: string): WebSocket {
     this.ngxSmartModalService.getModal('packageModal').open();
   }
 
+  /*downloadCode(){
+    var a = document.getElementById("a");
+    var file = new Blob([this.id.toLowerCase()], {type: type});
+    a.href = URL.createObjectURL(file);
+    a.download = name;
+  }*/
+
   saveProgress() {
-    localStorage.setItem(`${this.id}_code`, this.code);
+    localStorage.setItem(`${this.id.toLowerCase()}_code`, this.code);
   }
 
   retrieveProgress() {
-    let savedCode: string = localStorage.getItem(`${this.id}_code`)
+    let savedCode: string = localStorage.getItem(`${this.id.toLowerCase()}_code`)
     if (savedCode) {
       this.code = savedCode;
     }
   }
 
   deleteProgress() {
-    localStorage.removeItem(`${this.id}_code`);
+    localStorage.removeItem(`${this.id.toLowerCase()}_code`);
   }
 
   ngAfterViewInit() {
@@ -425,7 +842,7 @@ createWebSocket(url: string): WebSocket {
 
     localStorage.setItem("localdevmodal.hidden", this.hideModal === true ? "true" : "false");
 
-    this.diagnosticApiService.prepareLocalDevelopment(body, this.id, this._detectorControlService.startTimeString,
+    this.diagnosticApiService.prepareLocalDevelopment(body, this.id.toLowerCase(), this._detectorControlService.startTimeString,
       this._detectorControlService.endTimeString, this.dataSource, this.timeRange)
       .subscribe((response: string) => {
         this.localDevButtonDisabled = false;
@@ -461,6 +878,9 @@ createWebSocket(url: string): WebSocket {
   }
 
   runCompilation() {
+    if (this.runButtonDisabled) {
+      return;
+    }
     this.buildOutput = [];
     this.buildOutput.push("------ Build started ------");
     this.detailedCompilationTraces = [];
@@ -468,12 +888,12 @@ createWebSocket(url: string): WebSocket {
       severity: HealthStatus.None,
       message: '------ Build started ------',
       location: {
-        start:{
-          linePos:0,
-          colPos:0
+        start: {
+          linePos: 0,
+          colPos: 0
         } as Position,
-        end :{
-          linePos:0,
+        end: {
+          linePos: 0,
           colPos: 0
         } as Position
       } as LocationSpan
@@ -488,8 +908,8 @@ createWebSocket(url: string): WebSocket {
       detectorUtterances: JSON.stringify(this.allUtterances.map(x => x.text))
     };
 
-    this.runButtonDisabled = true;
-    this.publishButtonDisabled = true;
+    this.disableRunButton();
+    this.disablePublishButton();
     this.localDevButtonDisabled = true;
     this.runButtonText = "Running";
     this.runButtonIcon = "fa fa-circle-o-notch fa-spin";
@@ -504,209 +924,212 @@ createWebSocket(url: string): WebSocket {
       if (serializedParams && serializedParams.length > 0) {
         serializedParams = "&" + serializedParams;
       };
-      this.diagnosticApiService.getCompilerResponse(body, isSystemInvoker, this.id, this._detectorControlService.startTimeString,
-      this._detectorControlService.endTimeString, this.dataSource, this.timeRange, {
+      this.diagnosticApiService.getCompilerResponse(body, isSystemInvoker, this.id.toLowerCase(), this._detectorControlService.startTimeString,
+        this._detectorControlService.endTimeString, this.dataSource, this.timeRange, {
         scriptETag: this.compilationPackage.scriptETag,
         assemblyName: this.compilationPackage.assemblyName,
         formQueryParams: serializedParams,
         getFullResponse: true
       }, this.getDetectorId())
-      .subscribe((response: any) => {
-        this.queryResponse = response.body;
-        if (this.queryResponse.invocationOutput && this.queryResponse.invocationOutput.metadata && this.queryResponse.invocationOutput.metadata.id && !isSystemInvoker){
-          this.id = this.queryResponse.invocationOutput.metadata.id;
-        }
-        if (this.queryResponse.invocationOutput.suggestedUtterances && this.queryResponse.invocationOutput.suggestedUtterances.results) {
-          this.recommendedUtterances = this.queryResponse.invocationOutput.suggestedUtterances.results;
-          this._telemetryService.logEvent("SuggestedUtterances", { detectorId: this.queryResponse.invocationOutput.metadata.id, detectorDescription: this.queryResponse.invocationOutput.metadata.description, numUtterances: this.allUtterances.length.toString(), numSuggestedUtterances: this.recommendedUtterances.length.toString(), ts: Math.floor((new Date()).getTime() / 1000).toString() });
-        }
-        else{
-          this._telemetryService.logEvent("SuggestedUtterancesNull", { detectorId: this.queryResponse.invocationOutput.metadata.id, detectorDescription: this.queryResponse.invocationOutput.metadata.description, numUtterances: this.allUtterances.length.toString(), ts: Math.floor((new Date()).getTime() / 1000).toString() });
-        }
-        this.runButtonDisabled = false;
-        this.runButtonText = "Run";
-        this.runButtonIcon = "fa fa-play";
-        if (this.queryResponse.compilationOutput.compilationTraces) {
-          this.queryResponse.compilationOutput.compilationTraces.forEach(element => {
-            this.buildOutput.push(element);
-          });
-        }
-        if(this.queryResponse.compilationOutput.detailedCompilationTraces) {
-          this.showDetailedCompilationTraces = true;
-          this.queryResponse.compilationOutput.detailedCompilationTraces.forEach(traceElement => {
-            this.detailedCompilationTraces.push(traceElement);
-          });
-        }
-        else {
-          this.showDetailedCompilationTraces = false;
-        }
-        // If the script etag returned by the server does not match the previous script-etag, update the values in memory
-        if (response.headers.get('diag-script-etag') != undefined && this.compilationPackage.scriptETag !== response.headers.get('diag-script-etag')) {
-          this.compilationPackage.scriptETag = response.headers.get('diag-script-etag');
-          this.compilationPackage.assemblyName = this.queryResponse.compilationOutput.assemblyName;
-          this.compilationPackage.assemblyBytes = this.queryResponse.compilationOutput.assemblyBytes;
-          this.compilationPackage.pdbBytes = this.queryResponse.compilationOutput.pdbBytes;
-        }
+        .subscribe((response: any) => {
+          this.queryResponse = response.body;
+          if (this.queryResponse.invocationOutput && this.queryResponse.invocationOutput.metadata && this.queryResponse.invocationOutput.metadata.id && !isSystemInvoker) {
+            this.id = this.queryResponse.invocationOutput.metadata.id;
+          }
+          if (this.queryResponse.invocationOutput.suggestedUtterances && this.queryResponse.invocationOutput.suggestedUtterances.results) {
+            this.recommendedUtterances = this.queryResponse.invocationOutput.suggestedUtterances.results;
+            this._telemetryService.logEvent("SuggestedUtterances", { detectorId: this.queryResponse.invocationOutput.metadata.id, detectorDescription: this.queryResponse.invocationOutput.metadata.description, numUtterances: this.allUtterances.length.toString(), numSuggestedUtterances: this.recommendedUtterances.length.toString(), ts: Math.floor((new Date()).getTime() / 1000).toString() });
+          }
+          else {
+            this._telemetryService.logEvent("SuggestedUtterancesNull", { detectorId: this.queryResponse.invocationOutput.metadata.id, detectorDescription: this.queryResponse.invocationOutput.metadata.description, numUtterances: this.allUtterances.length.toString(), ts: Math.floor((new Date()).getTime() / 1000).toString() });
+          }
+          this.enableRunButton();
+          this.runButtonText = "Run";
+          this.runButtonIcon = "fa fa-play";
+          if (this.queryResponse.compilationOutput.compilationTraces) {
+            this.queryResponse.compilationOutput.compilationTraces.forEach(element => {
+              this.buildOutput.push(element);
+            });
+          }
+          if (this.queryResponse.compilationOutput.detailedCompilationTraces) {
+            this.showDetailedCompilationTraces = true;
+            this.queryResponse.compilationOutput.detailedCompilationTraces.forEach(traceElement => {
+              this.detailedCompilationTraces.push(traceElement);
+            });
+          }
+          else {
+            this.showDetailedCompilationTraces = false;
+          }
+          // If the script etag returned by the server does not match the previous script-etag, update the values in memory
+          if (response.headers.get('diag-script-etag') != undefined && this.compilationPackage.scriptETag !== response.headers.get('diag-script-etag')) {
+            this.compilationPackage.scriptETag = response.headers.get('diag-script-etag');
+            this.compilationPackage.assemblyName = this.queryResponse.compilationOutput.assemblyName;
+            this.compilationPackage.assemblyBytes = this.queryResponse.compilationOutput.assemblyBytes;
+            this.compilationPackage.pdbBytes = this.queryResponse.compilationOutput.pdbBytes;
+          }
 
-        if (this.queryResponse.compilationOutput.compilationSucceeded === true) {
-          this.publishButtonDisabled = false;
-          this.preparePublishingPackage(this.queryResponse, currentCode);
-          this.buildOutput.push("========== Build: 1 succeeded, 0 failed ==========");
-          this.detailedCompilationTraces.push({
-            severity: HealthStatus.None,
-            message: '========== Build: 1 succeeded, 0 failed ==========',
-            location: {
-              start:{
-                linePos:0,
-                colPos:0
-              } as Position,
-              end :{
-                linePos:0,
-                colPos: 0
-              } as Position
-            } as LocationSpan
-          } as CompilationTraceOutputDetails);
-        } else {
-          this.publishButtonDisabled = true;
+          if (this.queryResponse.compilationOutput.compilationSucceeded === true) {
+            this.publishButtonDisabled = false;
+            this.preparePublishingPackage(this.queryResponse, currentCode);
+            this.buildOutput.push("========== Build: 1 succeeded, 0 failed ==========");
+            this.detailedCompilationTraces.push({
+              severity: HealthStatus.None,
+              message: '========== Build: 1 succeeded, 0 failed ==========',
+              location: {
+                start: {
+                  linePos: 0,
+                  colPos: 0
+                } as Position,
+                end: {
+                  linePos: 0,
+                  colPos: 0
+                } as Position
+              } as LocationSpan
+            } as CompilationTraceOutputDetails);
+          } else {
+            this.publishButtonDisabled = true;
+            this.publishingPackage = null;
+            this.buildOutput.push("========== Build: 0 succeeded, 1 failed ==========");
+            this.detailedCompilationTraces.push({
+              severity: HealthStatus.None,
+              message: '========== Build: 0 succeeded, 1 failed ==========',
+              location: {
+                start: {
+                  linePos: 0,
+                  colPos: 0
+                } as Position,
+                end: {
+                  linePos: 0,
+                  colPos: 0
+                } as Position
+              } as LocationSpan
+            } as CompilationTraceOutputDetails);
+          }
+
+          if (this.queryResponse.runtimeLogOutput) {
+            this.queryResponse.runtimeLogOutput.forEach(element => {
+              if (element.exception) {
+                this.buildOutput.push(element.timeStamp + ": " +
+                  element.message + ": " +
+                  element.exception.ClassName + ": " +
+                  element.exception.Message + "\r\n" +
+                  element.exception.StackTraceString);
+
+                this.detailedCompilationTraces.push({
+                  severity: HealthStatus.Critical,
+                  message: `${element.timeStamp}: ${element.message}: ${element.exception.ClassName}: ${element.exception.Message}: ${element.exception.StackTraceString}`,
+                  location: {
+                    start: {
+                      linePos: 0,
+                      colPos: 0
+                    },
+                    end: {
+                      linePos: 0,
+                      colPos: 0
+                    }
+                  }
+                });
+              }
+              else {
+                this.buildOutput.push(element.timeStamp + ": " + element.message);
+                this.detailedCompilationTraces.push({
+                  severity: HealthStatus.Info,
+                  message: `${element.timeStamp}: ${element.message}`,
+                  location: {
+                    start: {
+                      linePos: 0,
+                      colPos: 0
+                    },
+                    end: {
+                      linePos: 0,
+                      colPos: 0
+                    }
+                  }
+                });
+              }
+            });
+          }
+
+          if ((
+            !this.gistMode && this.queryResponse.runtimeSucceeded != null && !this.queryResponse.runtimeSucceeded
+          ) || (
+              this.gistMode && this.queryResponse.compilationOutput != null &&
+              !this.queryResponse.compilationOutput.compilationSucceeded
+            )) {
+            this.disablePublishButton();
+          }
+          else {
+            this.enablePublishButton();
+          }
+
+          this.localDevButtonDisabled = false;
+          this.markCodeLinesInEditor(this.detailedCompilationTraces);
+        }, ((error: any) => {
+          this.enableRunButton();
           this.publishingPackage = null;
+          this.localDevButtonDisabled = false;
+          this.runButtonText = "Run";
+          this.runButtonIcon = "fa fa-play";
+          this.buildOutput.push("Something went wrong during detector invocation.");
           this.buildOutput.push("========== Build: 0 succeeded, 1 failed ==========");
+          this.detailedCompilationTraces.push({
+            severity: HealthStatus.Critical,
+            message: 'Something went wrong during detector invocation.',
+            location: {
+              start: {
+                linePos: 0,
+                colPos: 0
+              },
+              end: {
+                linePos: 0,
+                colPos: 0
+              }
+            }
+          });
           this.detailedCompilationTraces.push({
             severity: HealthStatus.None,
             message: '========== Build: 0 succeeded, 1 failed ==========',
             location: {
-              start:{
-                linePos:0,
-                colPos:0
-              } as Position,
-              end :{
-                linePos:0,
+              start: {
+                linePos: 0,
                 colPos: 0
-              } as Position
-            } as LocationSpan
-          } as CompilationTraceOutputDetails);
-        }        
-
-        if (this.queryResponse.runtimeLogOutput) {
-          this.queryResponse.runtimeLogOutput.forEach(element => {
-            if (element.exception) {
-              this.buildOutput.push(element.timeStamp + ": " +
-                element.message + ": " +
-                element.exception.ClassName + ": " +
-                element.exception.Message + "\r\n" +
-                element.exception.StackTraceString);
-              
-              this.detailedCompilationTraces.push({
-                severity:HealthStatus.Critical,
-                message: `${element.timeStamp}: ${element.message}: ${element.exception.ClassName}: ${element.exception.Message}: ${element.exception.StackTraceString}`,
-                location: {
-                  start: {
-                    linePos:0,
-                    colPos: 0
-                  },
-                  end: {
-                    linePos: 0,
-                    colPos: 0
-                  }
-                }
-              });
-            }
-            else {
-              this.buildOutput.push(element.timeStamp + ": " + element.message);
-              this.detailedCompilationTraces.push({
-                severity:HealthStatus.Info,
-                message: `${element.timeStamp}: ${element.message}`,
-                location: {
-                  start: {
-                    linePos:0,
-                    colPos: 0
-                  },
-                  end: {
-                    linePos: 0,
-                    colPos: 0
-                  }
-                }
-              });
+              },
+              end: {
+                linePos: 0,
+                colPos: 0
+              }
             }
           });
-        }
-
-        this.publishButtonDisabled = (
-          !this.gistMode && this.queryResponse.runtimeSucceeded != null && !this.queryResponse.runtimeSucceeded
-        ) || (
-          this.gistMode && this.queryResponse.compilationOutput != null &&
-          !this.queryResponse.compilationOutput.compilationSucceeded
-        )
-
-        this.localDevButtonDisabled = false;
-        this.markCodeLinesInEditor(this.detailedCompilationTraces);
-      }, ((error: any) => {
-        this.runButtonDisabled = false;
-        this.publishingPackage = null;
-        this.localDevButtonDisabled = false;
-        this.runButtonText = "Run";
-        this.runButtonIcon = "fa fa-play";
-        this.buildOutput.push("Something went wrong during detector invocation.");
-        this.buildOutput.push("========== Build: 0 succeeded, 1 failed ==========");
-        this.detailedCompilationTraces.push({
-          severity:HealthStatus.Critical,
-          message: 'Something went wrong during detector invocation.',
-          location: {
-            start: {
-              linePos:0,
-              colPos: 0
-            },
-            end: {
-              linePos: 0,
-              colPos: 0
-            }
-          }
-        });
-        this.detailedCompilationTraces.push({
-          severity:HealthStatus.None,
-          message: '========== Build: 0 succeeded, 1 failed ==========',
-          location: {
-            start: {
-              linePos:0,
-              colPos: 0
-            },
-            end: {
-              linePos: 0,
-              colPos: 0
-            }
-          }
-        });
-        this.markCodeLinesInEditor(this.detailedCompilationTraces);
-      }));
+          this.markCodeLinesInEditor(this.detailedCompilationTraces);
+        }));
     });
   }
 
-  getDetectorId():string {
-    if (this.mode === DevelopMode.Edit){
-      return this.id;
+  getDetectorId(): string {
+    if (this.mode === DevelopMode.Edit) {
+      return this.id.toLowerCase();
     } else if (this.mode === DevelopMode.Create) {
       return newDetectorId;
     }
   }
-  
+
   checkAccessAndConfirmPublish() {
 
-    var isOriginalCodeMarkedPublic : boolean = this.IsDetectorMarkedPublic(this.originalCode);
+    var isOriginalCodeMarkedPublic: boolean = this.IsDetectorMarkedPublic(this.originalCode);
     this.diagnosticApiService.verfifyPublishingDetectorAccess(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`, this.publishingPackage.codeString, isOriginalCodeMarkedPublic).subscribe(data => {
 
       this.publishAccessControlResponse = data;
-      if(data.hasAccess === false)
-      {
+      if (data.hasAccess === false) {
         this.ngxSmartModalService.getModal('publishAccessDeniedModal').open();
       }
-      else
-      {
+      else {
         if (!this.publishButtonDisabled) {
           this.ngxSmartModalService.getModal('publishModal').open();
-        }        
+        }
       }
-      
+
     }, err => {
-      this._telemetryService.logEvent("ErrorValidatingPublishingAccess", {error: JSON.stringify(err)});
+      this._telemetryService.logEvent("ErrorValidatingPublishingAccess", { error: JSON.stringify(err) });
       this.ngxSmartModalService.getModal('publishModal').open();
     });
   }
@@ -715,7 +1138,80 @@ createWebSocket(url: string): WebSocket {
     this.publishingPackage.metadata = JSON.stringify({ "utterances": this.allUtterances });
   }
 
+  setBranch() {
+    this.Branch;
+  }
+
+  targetInShowBranches(target) {
+    var match;
+    this.showBranches.forEach(x => {
+      if (x.key === target) {
+        match = true;
+      }
+    });
+    return match;
+  }
+
+  setTargetBranch(){
+    var targetBranch = `dev/${this.userName.split("@")[0]}/detector/${this.id.toLowerCase()}`;
+
+    if (this.Branch === this.defaultBranch && this.targetInShowBranches(targetBranch)) {
+      this.Branch = targetBranch;
+      this.displayBranch = `${targetBranch}`;
+    }
+    else if (!(this.showBranches.length > 1) || this.Branch === this.defaultBranch) {
+      this.displayBranch = `${targetBranch} (not published)`;
+      this.Branch = targetBranch;
+    }
+  }
+
+  showPublishDialog() {
+    if (this.publishButtonDisabled) {
+      return;
+    }
+
+    this.setTargetBranch();
+    
+    if (this.mode == DevelopMode.Create) {
+      this.PRTitle = `Creating ${this.id}`;
+    }
+    else {
+      this.PRTitle = `Changes to ${this.id}`;
+    }
+    this.publishDialogHidden = false;
+  }
+
+  publishDialogCancel() {
+    this.publishDialogHidden = true;
+  }
+
+  toggleOpenState() {
+
+  }
+
+  dismissDialog() {
+
+  }
+
+  onOpenPublishSuccessPanel() {
+    this.currentTime = moment(Date.now()).format("hh:mm A");
+    this.submittedPanelTimer = setTimeout(() => {
+      this.dismissPublishSuccessHandler();
+    }, 10000);
+  }
+
+  dismissPublishSuccessHandler() {
+    this.publishSuccess = false;
+    this.publishFailed = false;
+  }
+
+
+
   publish() {
+    if (this.publishButtonDisabled) {
+      return;
+    }
+
     if (!this.publishingPackage ||
       this.publishingPackage.codeString === '' ||
       this.publishingPackage.id === '' ||
@@ -724,33 +1220,169 @@ createWebSocket(url: string): WebSocket {
     }
 
     this.prepareMetadata();
-    this.publishButtonDisabled = true;
-    this.runButtonDisabled = true;
+    this.disableRunButton();
+    this.disablePublishButton();
     this.modalPublishingButtonDisabled = true;
-    this.modalPublishingButtonText = "Publishing";
-    var isOriginalCodeMarkedPublic : boolean = this.IsDetectorMarkedPublic(this.originalCode);
-    this.diagnosticApiService.publishDetector(this.emailRecipients, this.publishingPackage, `${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`, isOriginalCodeMarkedPublic).subscribe(data => {
-      this.originalCode = this.publishingPackage.codeString;
-      this.deleteProgress();
-      this.utteranceInput = "";
-      this.runButtonDisabled = false;
-      this.localDevButtonDisabled = false;
-      this.publishButtonText = "Publish";
-      this.modalPublishingButtonDisabled = false;
-      this.modalPublishingButtonText = "Publish";
-      this.ngxSmartModalService.getModal('publishModal').close();
-      this.showAlertBox('alert-success', 'Detector published successfully. Changes will be live shortly.');
-      this._telemetryService.logEvent("SearchTermPublish", { detectorId: this.id, numUtterances: this.allUtterances.length.toString() , ts: Math.floor((new Date()).getTime() / 1000).toString()});
-    }, err => {
-      this.runButtonDisabled = false;
-      this.localDevButtonDisabled = false;
-      this.publishButtonText = "Publish";
-      this.modalPublishingButtonDisabled = false;
-      this.modalPublishingButtonText = "Publish";
-      this.ngxSmartModalService.getModal('publishModal').close();
-      this.showAlertBox('alert-danger', 'Publishing failed. Please try again after some time.');
-    });
+    this.modalPublishingButtonText = this.detectorGraduation ? "Sending PR" : "Publishing";
+    var isOriginalCodeMarkedPublic: boolean = this.IsDetectorMarkedPublic(this.originalCode);
+    if (this.detectorGraduation) {
+      this.gradPublish();
+    }
+    else {
+      this.diagnosticApiService.publishDetector(this.emailRecipients, this.publishingPackage, `${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`, isOriginalCodeMarkedPublic).subscribe(data => {
+        this.originalCode = this.publishingPackage.codeString;
+        this.deleteProgress();
+        this.utteranceInput = "";
+        this.enableRunButton();
+        this.localDevButtonDisabled = false;
+        this.enablePublishButton();
+        this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
+        this.ngxSmartModalService.getModal('publishModal').close();
+        this.detectorName = this.publishingPackage.id;
+        this.publishSuccess = true;
+        this._telemetryService.logEvent("SearchTermPublish", { detectorId: this.id.toLowerCase(), numUtterances: this.allUtterances.length.toString(), ts: Math.floor((new Date()).getTime() / 1000).toString() });
+      }, err => {
+        this.enableRunButton();
+        this.localDevButtonDisabled = false;
+        this.enablePublishButton();
+        this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
+        this.ngxSmartModalService.getModal('publishModal').close();
+        this.showAlertBox('alert-danger', 'Publishing failed. Please try again after some time.');
+        this.publishFailed = true;
+      });
+    }
   }
+
+  gradPublish() {
+    this.publishDialogHidden = true;
+
+    const commitType = this.mode == DevelopMode.Create ? "add" : "edit";
+    const commitMessageStart = this.mode == DevelopMode.Create ? "Adding" : "Editing";
+
+    let gradPublishFiles: string[] = [
+      this.publishingPackage.codeString,
+      this.publishingPackage.metadata,
+      this.publishingPackage.packageConfig
+    ];
+
+
+    let gradPublishFileTitles: string[] = [
+      `/${this.publishingPackage.id}/${this.publishingPackage.id}.csx`,
+      `/${this.publishingPackage.id}/metadata.json`,
+      `/${this.publishingPackage.id}/package.json`
+    ];
+
+    if (this.autoMerge) {
+      this.Branch = this.defaultBranch;
+    }
+
+    const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.publishingPackage.id}`, commitType, this.resourceId);
+    const makePullRequestObservable = this.diagnosticApiService.makePullRequest(this.Branch, this.defaultBranch, this.PRTitle, this.resourceId);
+
+    DetectorObservable.subscribe(_ => {
+      if (!this.autoMerge) {
+        makePullRequestObservable.subscribe(_ => {
+          this.PRLink = `${_["webUrl"]}/pullrequest/${_["prId"]}`
+          this.publishSuccess = true;
+          this.postPublish();
+          this._applensCommandBarService.refreshPage();
+        }, err => {
+          this.publishFailed = true;
+          this.postPublish();
+        });
+      }
+      else {
+        this.publishSuccess = true;
+        this.postPublish();
+        this._applensCommandBarService.refreshPage();
+      }
+    }, err => {
+      this.publishFailed = true;
+      this.postPublish();
+    });
+
+
+  }
+
+  deleteDetector() {
+    this.deletingDetector = true;
+
+    let gradPublishFiles: string[] = [
+      "delete code",
+      "delete metadata",
+      "delete package"
+    ];
+
+
+    let gradPublishFileTitles: string[] = [
+      `/${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`,
+      `/${this.id.toLowerCase()}/metadata.json`,
+      `/${this.id.toLowerCase()}/package.json`
+    ];
+
+    if (this.autoMerge) {
+      this.Branch = this.defaultBranch;
+    }
+
+    const deleteDetectorFiles = this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `deleting detector: ${this.id}`, "delete", this.resourceId);
+    const makePullRequestObservable = this.diagnosticApiService.makePullRequest(this.Branch, this.defaultBranch, `Deleting ${this.id}`, this.resourceId);
+    deleteDetectorFiles.subscribe(_ => {
+      if (!this.autoMerge) {
+        makePullRequestObservable.subscribe(_ => {
+          this.PRLink = `${_["webUrl"]}/pullrequest/${_["prId"]}`
+          this.publishSuccess = true;
+          this.postPublish();
+        }, err => {
+          this.publishFailed = true;
+          this.postPublish();
+        });
+      }
+      else {
+        this.publishSuccess = true;
+        this.postPublish();
+      }
+    }, err => {
+      this.publishFailed = true;
+      this.postPublish();
+    });
+
+    this.dismissDeleteDialog();
+    this.deletingDetector = false
+  }
+
+  postPublish() {
+    this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
+    this.getBranchList();
+    this.enablePublishButton();
+    this.enableRunButton();
+  }
+
+
+  isCallOutVisible: boolean = false;
+
+  branchToggleCallout() {
+    if (!this.branchButtonDisabled) {
+      this.isCallOutVisible = !this.isCallOutVisible;
+    }
+  }
+
+  toggleCallout() {
+    this.isCallOutVisible = !this.isCallOutVisible;
+  }
+
+  closeCallout() {
+    this.isCallOutVisible = false;
+  }
+
+  toggleTimeCallout() {
+    this.openTimePickerCallout = !this.openTimePickerCallout;
+  }
+
+  closeTimeCallout() {
+    this.openTimePickerCallout = false;
+  }
+
+
 
   publishingAccessDeniedEmailOwners() {
     var toList: string = this.publishAccessControlResponse.resourceOwners.join("; ");
@@ -764,7 +1396,7 @@ createWebSocket(url: string): WebSocket {
     let temp = {};
     let newPackage = [];
     let ids = new Set(Object.keys(this.configuration['dependencies']));
-    if(queryResponse.compilationOutput.references != null) {
+    if (queryResponse.compilationOutput.references != null) {
       queryResponse.compilationOutput.references.forEach(r => {
         if (ids.has(r)) {
           temp[r] = this.configuration['dependencies'][r];
@@ -792,24 +1424,37 @@ createWebSocket(url: string): WebSocket {
 
     let newPackage = this.UpdateConfiguration(queryResponse);
 
-    let update = of(null);
-    if (newPackage.length > 0) {
-      update = forkJoin(newPackage.map(r => this.githubService.getChangelist(r).pipe(
-        map(c => this.configuration['dependencies'][r] = c[c.length - 1].sha),
-        flatMap(v => this.githubService.getCommitContent(r, v).pipe(map(s => this.reference[r] = s))))))
-    }
+    if (!this.detectorGraduation) {
+      let update = of(null);
+      if (newPackage.length > 0) {
+        update = forkJoin(newPackage.map(r => this.githubService.getChangelist(r).pipe(
+          map(c => this.configuration['dependencies'][r] = c[c.length - 1].sha),
+          flatMap(v => this.githubService.getCommitContent(r, v).pipe(map(s => this.reference[r] = s))))))
+      }
 
-    update.subscribe(_ => {
+      update.subscribe(_ => {
+        this.publishingPackage = {
+          id: queryResponse.invocationOutput.metadata.id,
+          codeString: this.codeCompletionEnabled ? code.replace(codePrefix, "") : code,
+          committedByAlias: this.userName,
+          dllBytes: this.compilationPackage.assemblyBytes,
+          pdbBytes: this.compilationPackage.pdbBytes,
+          packageConfig: JSON.stringify(this.configuration),
+          metadata: JSON.stringify({ "utterances": this.allUtterances })
+        };
+      });
+    }
+    else {
       this.publishingPackage = {
         id: queryResponse.invocationOutput.metadata.id,
-        codeString: this.codeCompletionEnabled? code.replace(codePrefix, ""): code,
+        codeString: this.codeCompletionEnabled ? code.replace(codePrefix, "") : code,
         committedByAlias: this.userName,
         dllBytes: this.compilationPackage.assemblyBytes,
         pdbBytes: this.compilationPackage.pdbBytes,
         packageConfig: JSON.stringify(this.configuration),
         metadata: JSON.stringify({ "utterances": this.allUtterances })
       };
-    });
+    }
   }
 
   private showAlertBox(alertClass: string, message: string) {
@@ -824,59 +1469,96 @@ createWebSocket(url: string): WebSocket {
     let detectorFile: Observable<string>;
     this.recommendedUtterances = [];
     this.utteranceInput = "";
-    this.githubService.getMetadataFile(this.id).subscribe(res => {
-      this.allUtterances = JSON.parse(res).utterances;
-    },
-      (err) => {
-        this.allUtterances = [];
-      });
+    if (this.detectorGraduation && this.mode != DevelopMode.Create) {
+      this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/metadata.json`, this.Branch, this.resourceId).subscribe(res => {
+        this.allUtterances = JSON.parse(res).utterances;
+      },
+        (err) => {
+          this.allUtterances = [];
+        });
+    }
+    else {
+      this.githubService.getMetadataFile(this.id.toLowerCase()).subscribe(res => {
+        this.allUtterances = JSON.parse(res).utterances;
+      },
+        (err) => {
+          this.allUtterances = [];
+        });
+    }
     this.compilationPackage = new CompilationProperties();
 
     switch (this.mode) {
-        case DevelopMode.Create: {
-            let templateFileName = (this.gistMode ? "Gist_" : "Detector_") + this.resourceService.templateFileName;
-            detectorFile = this.githubService.getTemplate(templateFileName);
-            this.fileName = "new.csx";
-            this.startTime = this._detectorControlService.startTime;
-            this.endTime = this._detectorControlService.endTime;
-            break;
+      case DevelopMode.Create: {
+        let templateFileName = (this.gistMode ? "Gist_" : "Detector_") + this.resourceService.templateFileName;
+        detectorFile = this.githubService.getTemplate(templateFileName);
+        this.fileName = "new.csx";
+        this.startTime = this._detectorControlService.startTime;
+        this.endTime = this._detectorControlService.endTime;
+        break;
+      }
+      case DevelopMode.Edit: {
+        if (this.detectorGraduation) {
+          this.fileName = `${this.id.toLowerCase()}.csx`;
+          this.deleteAvailable = true;
+          detectorFile = this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId)
         }
-        case DevelopMode.Edit: {
-            this.fileName = `${this.id}.csx`;
-            detectorFile = this.githubService.getSourceFile(this.id);
-            this.startTime = this._detectorControlService.startTime;
-            this.endTime = this._detectorControlService.endTime;
-            break;
+        else {
+          this.fileName = `${this.id.toLowerCase()}.csx`;
+          detectorFile = this.githubService.getSourceFile(this.id.toLowerCase());
         }
-        case DevelopMode.EditMonitoring: {
-            this.fileName = '__monitoring.csx';
-            detectorFile = this.githubService.getSourceFile("__monitoring");
-            break;
-        }
-        case DevelopMode.EditAnalytics: {
-            this.fileName = '__analytics.csx';
-            detectorFile = this.githubService.getSourceFile("__analytics");
-            break;
-        }
+        this.startTime = this._detectorControlService.startTime;
+        this.endTime = this._detectorControlService.endTime;
+        break;
+      }
+      case DevelopMode.EditMonitoring: {
+        this.fileName = '__monitoring.csx';
+        detectorFile = this.githubService.getSourceFile("__monitoring");
+        break;
+      }
+      case DevelopMode.EditAnalytics: {
+        this.fileName = '__analytics.csx';
+        detectorFile = this.githubService.getSourceFile("__analytics");
+        break;
+      }
     }
 
     let configuration = of(null);
-    if (this.id !== '') {
-      configuration = this.githubService.getConfiguration(this.id).pipe(
-        map(config => {
-          if (!('dependencies' in config)) {
-            config['dependencies'] = {};
-          }
+    if (this.id.toLowerCase() !== '') {
+      if (!this.detectorGraduation) {
+        configuration = this.githubService.getConfiguration(this.id.toLowerCase()).pipe(
+          map(config => {
+            if (!('dependencies' in config)) {
+              config['dependencies'] = {};
+            }
 
-          this.configuration = config;
-          return this.configuration['dependencies'];
-        }),
-        flatMap(dep => {
-          let keys = Object.keys(dep);
-          if (keys.length === 0) return of([]);
-          return forkJoin(Object.keys(dep).map(key => this.githubService.getSourceReference(key, dep[key])));
+            this.configuration = config;
+            return this.configuration['dependencies'];
+          }),
+          flatMap(dep => {
+            let keys = Object.keys(dep);
+            if (keys.length === 0) return of([]);
+            return forkJoin(Object.keys(dep).map(key => this.githubService.getSourceReference(key, dep[key])));
+          }));
+      }
+      else {
+        const branchObservable = this.diagnosticApiService.getBranches(this.resourceId).pipe(map(branches => {
+          const defaultBranch = branches.find(b => b.isMainBranch.toLowerCase() === "true");
+          this.defaultBranch = String(defaultBranch.branchName);
+          return this.defaultBranch;
         }));
-    } else {
+
+        configuration = branchObservable.pipe(switchMap((branch: string) => {
+          return this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/package.json`, branch, this.resourceId).pipe(map(config => {
+            let c: object = JSON.parse(config)
+            c['dependencies'] = c['dependencies'] || {};
+
+            this.configuration = c;
+            return this.configuration['dependencies'];
+          }));
+        }));
+      }
+    } 
+    else {
       if (!('dependencies' in this.configuration)) {
         this.configuration['dependencies'] = {};
       }
@@ -884,6 +1566,7 @@ createWebSocket(url: string): WebSocket {
 
     forkJoin(detectorFile, configuration, this.diagnosticApiService.getGists()).subscribe(res => {
       this.codeLoaded = true;
+      if (!this.code)
       this.code = this.addCodePrefix(res[0]);
       this.originalCode = this.code;
       if (res[1] !== null) {
@@ -893,23 +1576,22 @@ createWebSocket(url: string): WebSocket {
         });
       }
 
-      if(res[2] !== null) {
+      if (res[2] !== null) {
         res[2].forEach(m => {
           this.allGists.push(m.id);
         });
       }
 
-      if (!this.hideModal && !this.gistMode) {
-        this.ngxSmartModalService.getModal('devModeModal').open();
-      }
+      // if (!this.hideModal && !this.gistMode) {
+      //   this.ngxSmartModalService.getModal('devModeModal').open();
+      // }
     });
   }
 
   // Loose way to identify if the detector code is marked public or not
   // Unfortunately, we dont return this flag in the API response.
-  private IsDetectorMarkedPublic(codeString: string) : boolean {
-    if(codeString)
-    {
+  private IsDetectorMarkedPublic(codeString: string): boolean {
+    if (codeString) {
       var trimmedCode = codeString.toLowerCase().replace(/\s/g, "");
       return trimmedCode.includes('internalonly=false)') || trimmedCode.includes('internalonly:false)');
     }

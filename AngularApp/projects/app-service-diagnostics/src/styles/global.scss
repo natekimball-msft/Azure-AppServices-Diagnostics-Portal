@@ -120,46 +120,6 @@ body{
     }
 }
 
-@media screen and (-ms-high-contrast: black-on-white) {
-    .nvd3 text {
-        fill: #000 !important;
-        font-size: 12px !important;
-        font-weight: 400 !important;
-        font-family: inherit !important;
-    }
-
-    .nvd3.nv-noData text {
-        font-size: 18px;
-        font-weight: 700;
-        fill: #000 !important;
-    }
-}
-@media screen and (-ms-high-contrast: white-on-black) {
-    .nvd3 text {
-        fill: #fff !important;
-        font-size: 12px !important;
-        font-weight: 400 !important;
-        font-family: inherit !important;
-    }
-
-    .nvd3.nv-noData text {
-        font-size: 18px;
-        font-weight: 700;
-        fill: #fff !important;
-    }
-}
-
-.nvd3 text {
-    font-size: 12px !important;
-    font-weight: 400 !important;
-    font-family: inherit !important;
-}
-
-.nvd3 .nv-axislabel {
-    font-weight: 600 !important;
-    font-size: 13px !important;
-}
-
 //Remove after A/B Test
 .row {
     margin-left:-5px;
@@ -329,7 +289,7 @@ a:hover {
 
 /*** PANEL DEFAULT ***/
 .with-nav-tabs.panel-default .nav-tabs > li > a {
-    background-color: #eeeeee;
+    background-color: var(--bodyBackground);
 }
 
 .with-nav-tabs.panel-default .nav-tabs > li > a,
@@ -779,12 +739,79 @@ hr {
     font-family: 'Segoe UI';
     font-size: 16px;
     font-weight: 600;
-    color: #323130;
+    color: var(--bodyText);
 }
 
 .blade-description {
     font-family: 'Segoe UI';
     font-weight: 400;
     font-size: 13px;
-    color: #323130;
+    color: var(--bodyText);
+}
+
+
+/**
+ * ================================================================
+ * Dot Flashing for loading
+ * Use it only need to pass dot size(in px),
+ * Below example shows to use it as a 14px size loading dots
+ * .dot-flash {
+     @include dot-flash(14)
+ * }
+ * <div class="dot-flash"></div>
+ * =================================================================
+ */
+@mixin dot-flashing($size) {
+    position: relative;
+    margin: 0px auto;
+    top: 5px;
+    border-radius: 7px;
+    width: #{$size}px;
+    height: #{$size}px;
+    background-color: #3471ff;
+    color: #3471ff;
+    animation: dot-flashing 1s infinite linear alternate;
+    animation-delay: 0.5s;
+
+    &::before,&::after{
+        content: "";
+        display: inline-block;
+        position: absolute;
+        top: 0;
+    }
+
+    &::before {
+        left: #{-2 * $size}px;
+        width: #{$size}px;
+        height: #{$size}px;
+        border-radius: 7px;
+        background-color: #3471ff;
+        color: #3471ff;
+        animation: dot-flashing 1s infinite alternate;
+        animation-delay: 0s;
+    }
+    &::after {
+        left: #{2 * $size}px;
+        width: #{$size}px;
+        height: #{$size}px;
+        border-radius: 7px;
+        background-color: #3471ff;
+        color: #3471ff;
+        animation: dot-flashing 1s infinite alternate;
+        animation-delay: 1s;
+    }
+}
+
+@keyframes dot-flashing {
+    0% {
+        background-color: #3471ff;
+    }
+    50%,
+    100% {
+        background-color: #ebe6ff;
+    }
+}
+
+label, .text-label{
+    color: var(----labelText);
 }

@@ -1,7 +1,7 @@
 <fab-panel [isOpen]="globals.openGeniePanel" [type]="type" [customWidth]="width" [isHiddenOnDismiss]="true"
-  [isLightDismiss]="true" [hasCloseButton]="true" [closeButtonAriaLabel]="'close'"
-  (onDismissed)="genieDismissedHandler()">
-  <div class="row">
+  [isLightDismiss]="true" [hasCloseButton]="true" [isBlocking]="false" [closeButtonAriaLabel]="'close'"
+  (onDismiss)="genieDismissedHandler()">
+  <div class="row panel-padding">
     <div>
       <div style="margin-bottom: 10px">
         <div
@@ -9,7 +9,7 @@
           tabindex="0" aria-label="App Service Diagnostics Genie">
           Ask Genie</div>
         <div
-          style="color:#605E5C; position: absolute; left:25px; right: 32px; top:35px; height: 19px; font-family: 'segoe UI'; font-size: 10px; line-height: 14px; display: block"
+          class="genie-panel-description"
           tabindex="0" aria-label="An interactive self-serve diagnostics tool">
           An interactive self-serve diagnostics tool</div>
         <div style="position: absolute; top:10px; right: 10px; align-items: flex-end; cursor: pointer; "
@@ -23,7 +23,7 @@
       </div>
       <div class="panel-content" style="margin-top: 10px;" #scrollMe>
         <!-- Remove style afterF A/B Test,except margin-left -->
-        <div [style.height.px]="chatContainerHeight" style="overflow-y: auto; display: inline-block; height: 78vh; max-width: 100%;"
+        <div [style.height.px]="chatContainerHeight" style="overflow-y: auto; display: inline-block; height: 78vh; max-width: 100%;margin: 0px 20px;"
           class="ms-Panel-scrollableContent scroll-bottom">
           <div class="animated fadeIn chat-message-container" *ngFor="let item of messages" style="margin-left:0px;margin-top: 10px;margin-right: 10px;
           content: ' ';clear: both;">

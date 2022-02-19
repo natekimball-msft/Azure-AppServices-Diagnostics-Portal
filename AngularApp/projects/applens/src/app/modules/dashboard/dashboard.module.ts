@@ -24,8 +24,8 @@ import { ApplensDiagnosticService } from './services/applens-diagnostic.service'
 import { ApplensCommsService } from './services/applens-comms.service';
 import { ApplensSupportTopicService } from './services/applens-support-topic.service';
 import { ApplensContentService } from './services/applens-content.service';
-import { DiagnosticService, DiagnosticDataModule, CommsService, DetectorControlService, GenericSupportTopicService, GenericContentService , GenericDocumentsSearchService  } from 'diagnostic-data';
-import { FabPanelModule } from '@angular-react/fabric';
+import { DiagnosticService, DiagnosticDataModule, CommsService, DetectorControlService, GenericSupportTopicService, GenericContentService, GenericDocumentsSearchService, GenieGlobals, SolutionOrchestratorComponent, TimePickerOptions, GenericBreadcrumbService } from 'diagnostic-data';
+import { FabBreadcrumbModule, FabButtonModule, FabCalendarComponent, FabCalendarModule, FabCalloutModule, FabCheckboxModule, FabChoiceGroupModule, FabCommandBarModule, FabDatePickerModule, FabDetailsListModule, FabDialogModule, FabDropdownModule, FabIconModule, FabPanelModule, FabPivotModule, FabSearchBoxModule, FabTextFieldModule } from '@angular-react/fabric';
 import { CollapsibleMenuModule } from '../../collapsible-menu/collapsible-menu.module';
 import { ObserverService } from '../../shared/services/observer.service';
 import { TabDataSourcesComponent } from './tabs/tab-data-sources/tab-data-sources.component';
@@ -47,7 +47,7 @@ import { CategoryPageComponent } from './category-page/category-page.component';
 import { AvatarModule } from 'ngx-avatar';
 import { SupportTopicPageComponent } from './support-topic-page/support-topic-page.component';
 import { SelfHelpContentComponent } from './self-help-content/self-help-content.component';
-import { UserProfileComponent } from './user-profile/user-profile.component';
+import { UserDetectorsComponent } from './user-detectors/user-detectors.component';
 import { SearchTermAdditionComponent } from './search-term-addition/search-term-addition.component';
 import { SearchResultsComponent } from './search-results/search-results.component';
 import { Sort } from '../../shared/pipes/sort.pipe';
@@ -55,15 +55,41 @@ import { SearchService } from './services/search.service';
 import { HighchartsChartModule } from 'highcharts-angular';
 import { ConfigurationComponent } from './configuration/configuration.component';
 import { ApplensDocumentsSearchService } from './services/applens-documents-search.service';
-import {SolutionOrchestratorComponent} from "diagnostic-data";
+import { DashboardContainerComponent } from './dashboard-container/dashboard-container.component';
+import { L2SideNavComponent } from './l2-side-nav/l2-side-nav.component';
+import { ApplensCommandBarService } from './services/applens-command-bar.service';
+import { ApplensGlobal as ApplensGlobals } from '../../applens-global';
+import { ResourceInfo } from '../../shared/models/resources';
+import { map } from 'rxjs/operators';
+import { RecentResource } from '../../shared/models/user-setting';
+import { UserSettingService } from './services/user-setting.service';
+import { ApplensDocsComponent } from '../../shared/components/applens-docs/applens-docs.component';
+import { TabKey } from './tabs/tab-key';
+import { UserActivePullrequestsComponent } from './user-active-pullrequests/user-active-pullrequests.component';
+import { BreadcrumbService } from './services/breadcrumb.service';
 
 @Injectable()
-export class InitResolver implements Resolve<Observable<boolean>>{
-    constructor(private _resourceService: ResourceService, private _detectorControlService: DetectorControlService) { }
+export class InitResolver implements Resolve<Observable<ResourceInfo>>{
+    constructor(private _resourceService: ResourceService, private _detectorControlService: DetectorControlService,private _userInfoService:UserSettingService) { }
 
-    resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
-        this._detectorControlService.setCustomStartEnd(route.queryParams['startTime'], route.queryParams['endTime']);
-        return this._resourceService.waitForInitialization();
+    resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<ResourceInfo> {
+        const startTime = route.queryParams['startTime'];
+        const endTime = route.queryParams['endTime'];
+        this._detectorControlService.setCustomStartEnd(startTime, endTime);
+        this._detectorControlService.updateTimePickerInfo({
+            selectedKey: TimePickerOptions.Custom,
+            selectedText: TimePickerOptions.Custom,
+            startDate: new Date(startTime),
+            endDate: new Date(endTime)
+        });
+        return this._resourceService.waitForInitialization().pipe(map(resourceInfo => {
+            const recentResource: RecentResource = {
+                resourceUri: resourceInfo.resourceUri,
+                kind: resourceInfo.kind
+            }
+            this._userInfoService.updateRecentResource(recentResource);
+            return resourceInfo;
+        }));
     }
 }
 
@@ -75,21 +101,39 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
         children: [
             {
                 path: '',
-                redirectTo: 'home/category'
+                component: DashboardContainerComponent
             },
             {
                 path: 'home/:viewType',
-                component: ResourceHomeComponent,
+                // component: ResourceHomeComponent,
+                redirectTo: '',
                 pathMatch: 'full'
             },
             {
                 path: 'users/:userId',
-                component: UserProfileComponent,
+                children: [
+                    {
+                        path: 'detectors',
+                        component: UserDetectorsComponent,
+                        data: { 
+                            isDetector: true,
+                            allItems: false
+                        }
+                    },
+                    {
+                        path: 'gists',
+                        component: UserDetectorsComponent,
+                        data: { 
+                            isDetector: false,
+                            allItems: false
+                        }
+                    }
+                ]
             },
-            {
-                path: 'categories/:category',
-                component: CategoryPageComponent,
-            },
+            // {
+            //     path: 'categories/:category',
+            //     component: CategoryPageComponent,
+            // },
             {
                 path: 'supportTopics/:supportTopic',
                 component: SupportTopicPageComponent,
@@ -111,32 +155,48 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
                 component: SolutionOrchestratorComponent
             },
             {
+                path: 'docs',
+                component: ApplensDocsComponent,
+                data: {
+                    showTitle: false
+                }
+            },
+            {
                 path: 'gists/:gist',
                 component: TabGistCommonComponent,
                 children: [
                     {
                         path: '',
                         component: TabGistDevelopComponent,
+                        data: {
+                            tabKey: TabKey.Develop
+                        }
                     }, {
                         path: 'edit',
                         redirectTo: ''
                     }, {
                         path: 'changelist',
-                        component: TabChangelistComponent
+                        component: TabChangelistComponent, 
+                        data: {
+                            tabKey: TabKey.CommitHistory
+                        }
                     }, {
                         path: 'changelist/:sha',
-                        component: TabChangelistComponent
+                        component: TabChangelistComponent,
+                        data: {
+                            tabKey: TabKey.CommitHistory
+                        }
                     }
                 ]
             },
             {
                 path: 'analysis/:analysisId/popout/:detector',
                 component: TabCommonComponent,
-                children:[
+                children: [
                     {
-                        path:'',
-                        component:TabDataComponent,
-                        data:{
+                        path: '',
+                        component: TabDataComponent,
+                        data: {
                             analysisMode: true
                         },
                     },
@@ -147,61 +207,75 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
                     {
                         path: 'edit',
                         component: TabDevelopComponent,
-                        data:{
+                        data: {
                             analysisMode: true
                         },
                     },
                     {
                         path: 'changelist',
                         component: TabChangelistComponent,
-                        data:{
+                        data: {
                             analysisMode: true
                         },
                     },
                     {
                         path: 'datasource',
                         component: TabDataSourcesComponent,
-                        data:{
+                        data: {
                             analysisMode: true
                         },
                     },
                     {
                         path: 'monitoring',
                         component: TabMonitoringComponent,
-                        data:{
+                        data: {
                             analysisMode: true
                         },
                     },
                     {
                         path: 'analytics',
                         component: TabAnalyticsDashboardComponent,
-                        data:{
+                        data: {
                             analysisMode: true
                         },
                     },
                     {
                         path: 'monitoring/edit',
                         component: TabMonitoringDevelopComponent,
-                        data:{
+                        data: {
                             analysisMode: true
                         },
                     },
                     {
                         path: 'analytics/edit',
                         component: TabAnalyticsDevelopComponent,
-                        data:{
+                        data: {
                             analysisMode: true
                         },
                     }
                 ]
             },
             {
+                path: 'detectors/all',
+                component: UserDetectorsComponent,
+                data: {
+                    isDetector: true,
+                    allItems: true
+                }
+            },
+            {
                 path: 'detectors/:detector',
                 component: TabCommonComponent,
+                data: {
+                    cacheComponent: true
+                },
                 children: [
                     {
                         path: '',
-                        component: TabDataComponent
+                        component: TabDataComponent,
+                        data: {
+                            tabKey: TabKey.Data
+                        }
                     },
                     {
                         path: 'data',
@@ -209,14 +283,23 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
                     },
                     {
                         path: 'edit',
-                        component: TabDevelopComponent
+                        component: TabDevelopComponent,
+                        data: {
+                            tabKey: TabKey.Develop
+                        }
                     }, {
                         path: 'changelist',
-                        component: TabChangelistComponent
+                        component: TabChangelistComponent,
+                        data: {
+                            tabKey: TabKey.CommitHistory
+                        }
                     },
                     {
                         path: 'datasource',
-                        component: TabDataSourcesComponent
+                        component: TabDataSourcesComponent,
+                        data: {
+                            tabKey: TabKey.DataSources
+                        }
                     },
                     {
                         path: 'monitoring',
@@ -243,17 +326,17 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
                     {
                         path: 'detectors/:detector',
                         component: TabDataComponent,
-                        data:{
+                        data: {
                             analysisMode: true
                         },
-                        children:[
+                        children: [
                             {
-                                path:'data',
-                                redirectTo:''
+                                path: 'data',
+                                redirectTo: ''
                             },
                             {
-                                path:'datasource',
-                                component:TabDataSourcesComponent
+                                path: 'datasource',
+                                component: TabDataSourcesComponent
                             }
                         ]
                     },
@@ -268,12 +351,16 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
                 ]
             },
             {
-              path: 'search',
-              component: SearchResultsComponent
+                path: 'search',
+                component: SearchResultsComponent
             },
             {
                 path: 'kustoConfig',
                 component: ConfigurationComponent
+            },
+            {
+                path: 'users/:userId/activepullrequests',
+                component: UserActivePullrequestsComponent
             }
         ]
     },
@@ -295,7 +382,23 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
         NgSelectModule,
         MarkdownModule.forRoot(),
         HighchartsChartModule,
-        FabPanelModule
+        FabPanelModule,
+        FabCommandBarModule,
+        FabIconModule,
+        FabTextFieldModule,
+        FabSearchBoxModule,
+        FabDetailsListModule,
+        DiagnosticDataModule,
+        FabDialogModule,
+        FabButtonModule,
+        FabCalloutModule,
+        FabCheckboxModule,
+        FabChoiceGroupModule,
+        FabPivotModule,
+        FabDatePickerModule,
+        FabCalendarModule,
+        FabDropdownModule,
+        FabBreadcrumbModule
     ],
     providers: [
         ApplensDiagnosticService,
@@ -303,25 +406,30 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
         ApplensCommsService,
         ApplensSupportTopicService,
         ApplensContentService,
+        ApplensCommandBarService,
         InitResolver,
+        ApplensGlobals,
+        BreadcrumbService,
         {
             provide: ResourceService,
             useFactory: ResourceServiceFactory,
             deps: [StartupService, ObserverService]
         },
         { provide: DiagnosticService, useExisting: ApplensDiagnosticService },
-        { provide: GenericSupportTopicService, useExisting: ApplensSupportTopicService},
-        { provide: GenericContentService, useExisting: ApplensContentService},
-        { provide: GenericDocumentsSearchService, useExisting: ApplensDocumentsSearchService},
+        { provide: GenericSupportTopicService, useExisting: ApplensSupportTopicService },
+        { provide: GenericContentService, useExisting: ApplensContentService },
+        { provide: GenericDocumentsSearchService, useExisting: ApplensDocumentsSearchService },
         { provide: CommsService, useExisting: ApplensCommsService },
         { provide: DiagnosticSiteService, useExisting: ResourceService },
         { provide: GenericResourceService, useExisting: ResourceService },
-        { provide: SolutionService, useExisting: GenericSolutionService }
+        { provide: SolutionService, useExisting: GenericSolutionService },
+        { provide: GenieGlobals, useExisting: ApplensGlobals },
+        { provide: GenericBreadcrumbService, useExisting: BreadcrumbService }
     ],
     declarations: [DashboardComponent, SideNavComponent, ResourceMenuItemComponent, ResourceHomeComponent, OnboardingFlowComponent, SearchTermAdditionComponent,
         SearchMenuPipe, TabDataComponent, TabDevelopComponent, TabCommonComponent, TabDataSourcesComponent, TabMonitoringComponent,
         TabMonitoringDevelopComponent, TabAnalyticsDevelopComponent, TabAnalyticsDashboardComponent, GistComponent, TabGistCommonComponent,
         TabGistDevelopComponent, TabChangelistComponent, GistChangelistComponent, TabAnalysisComponent, CategoryPageComponent, SupportTopicPageComponent,
-        SelfHelpContentComponent, UserProfileComponent, FormatResourceNamePipe, Sort, SearchResultsComponent, ConfigurationComponent]
+        SelfHelpContentComponent, UserDetectorsComponent, FormatResourceNamePipe, Sort, SearchResultsComponent, ConfigurationComponent, DashboardContainerComponent, L2SideNavComponent, UserActivePullrequestsComponent]
 })
 export class DashboardModule { }

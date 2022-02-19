@@ -16,6 +16,7 @@ import { VersionTestService } from '../../../fabric-ui/version-test.service';
 export class ResourceRedirectComponent implements OnInit {
   private _newVersionEnabled = true;
   private _useLegacyVersion = true;
+
   constructor(private _authService: AuthService, private _router: Router, private _windowService: WindowService, private _versionTestService: VersionTestService, private _telemetryService: TelemetryService) { }
 
   ngOnInit() {
@@ -30,21 +31,28 @@ export class ResourceRedirectComponent implements OnInit {
             const resourceId = info.resourceId ? info.resourceId : '';
             const ticketBladeWorkflowId = info.workflowId ? info.workflowId : '';
             const supportTopicId = info.supportTopicId ? info.supportTopicId : '';
+            const sapSupportTopicId = info.sapSupportTopicId ? info.sapSupportTopicId : '';
             const sessionId = info.sessionId ? info.sessionId : '';
             const effectiveLocale = !!info.effectiveLocale ? info.effectiveLocale.toLowerCase() : "";
+            const theme = !!info.theme ? info.theme.toLowerCase() : "";
+            const highContrastKey = !!info.highContrastKey ? info.highContrastKey.toString() : "";
 
             const eventProperties: { [name: string]: string } = {
                 'ResourceId': resourceId,
                 'TicketBladeWorkflowId': ticketBladeWorkflowId,
                 'SupportTopicId': supportTopicId,
+                'SapSupportTopicId': sapSupportTopicId,
                 'PortalSessionId': sessionId,
                 'EffectiveLocale': effectiveLocale,
+                'Theme': theme,
+                'HighContrastKey': highContrastKey
             };
+
             this._telemetryService.eventPropertiesSubject.next(eventProperties);
         }
 
-        if (info && info.resourceId && info.token) {
-          if (Array.isArray(info.optionalParameters) && info.optionalParameters.find(param => param.key === "categoryId")) {
+        if (!!info && !!info.resourceId && !!info.token) {
+          if (!!info.optionalParameters && Array.isArray(info.optionalParameters) && info.optionalParameters.find(param => param.key === "categoryId")) {
             //  Open the new experience since we are navigating to a specific category
             this._versionTestService.setLegacyFlag(2);
           }
@@ -74,19 +82,31 @@ export class ResourceRedirectComponent implements OnInit {
 
             var referrerParam = info.optionalParameters.find(param => param.key.toLowerCase() === "referrer");
             if (referrerParam) {
+             let referrerValue = referrerParam.value;
               path += `/portalReferrerResolver`;
+
+              if (referrerValue.StartTime && referrerValue.EndTime)
+              {
+                  let startTimeStr = referrerValue.StartTime;
+                  let endTimeStr = referrerValue.EndTime;
+                  navigationExtras.queryParams = {...navigationExtras.queryParams, startTime: startTimeStr, endTime: endTimeStr};
+              }
+
               this._router.navigateByUrl(
-                this._router.createUrlTree([path])
+                this._router.createUrlTree([path], navigationExtras)
               );
             }
           }
-          if (info.supportTopicId) {
+
+          if (info.supportTopicId || info.sapSupportTopicId) {
             path += `/supportTopicId`;
             navigationExtras.queryParams = {
               ...navigationExtras.queryParams,
               supportTopicId: info.supportTopicId,
               caseSubject: caseSubject,
-              pesId: info.pesId
+              pesId: info.pesId,
+              sapSupportTopicId: info.sapSupportTopicId,
+              sapProductId: info.sapProductId,
             };
           }
 

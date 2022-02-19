@@ -1,10 +1,10 @@
 .card-container {
-    background: #ffffff;
-    border: 1px solid rgba(204, 204, 204, 0.5);
+    background: var(--bodyBackground);
+    border: 1px solid var(--inputBorder);
     box-sizing: border-box;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
     border-radius: 2px;
-    //width can be percent to responsive 
+    //width can be percent to responsive
     max-width: 250px;
     // height: 90px;
     flex: 1;
@@ -17,7 +17,9 @@
     box-shadow: rgba(50,50,50,0.5) 0px 2px 2px;
 }
 
-
+.card-container:hover {
+    background-color: var(--tileHomepageHoverBackground);
+}
 
 .fa-exclamation-circle {
     color: #ff0000;
@@ -37,20 +39,24 @@
 .card-title{
     font-size: 13px;
     line-height: 15px;
-    color: #646464;
+    color: var(--cardViewTitle);
     margin: 3px;
 }
 .card-description {
     font-size: 13px;
     line-height: 15px;
     margin: 3px;
+    color: var(--bodyText);
 }
 
 .card-message{
+    display: flex;
+    align-items: center;
     font-size: 20px;
     line-height: 23px;
     margin: 5px 3px;
     font-weight: 600;
+    color: var(--bodyText);
 }
 
 .card-icon {

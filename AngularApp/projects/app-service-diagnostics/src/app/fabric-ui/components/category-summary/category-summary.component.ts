@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, NavigationExtras, NavigationEnd, Scroll, ChildA
 import { CategoryService } from '../../../shared-v2/services/category.service';
 import { Category } from '../../../shared-v2/models/category';
 import { CategoryChatStateService } from '../../../shared-v2/services/category-chat-state.service';
-import { INavProps, INavLink, INav, autobind, INavStyles } from 'office-ui-fabric-react';
+import { INavProps, INavLink, INav, INavStyles } from 'office-ui-fabric-react';
 import { CategoriesService } from '../../../shared/services/categories.service';
 import { FeatureService } from '../../../shared-v2/services/feature.service';
 import { Tile } from '../../../shared/components/tile-list/tile-list.component';
@@ -109,5 +109,9 @@ export class CategorySummaryComponent implements OnInit {
 
     ngAfterViewInit() {
         this._telemetryService.logPageView(TelemetryEventNames.CategoryPageLoaded, {"category": this.categoryName});
+
+        if(document.getElementById("Overview")) {
+            (<HTMLInputElement>document.getElementById("Overview")).focus();
+        }
     }
 }

@@ -58,7 +58,7 @@
 }
 
 .active {
-    background-color: gainsboro;
+    background-color: var(--tileHomepageHoverBackground);
 }
 
 .activeAction {
@@ -96,7 +96,7 @@ input[type="number"] {
     vertical-align: middle;
     height: 23px;
     padding: 0 5px;
-    background-color: #fff;
+    background-color: var(--bodyBackground);
     color: inherit;
     font-size: 12px;
     width:80%;
@@ -130,6 +130,7 @@ label {
 .topmenu-button {
     border-bottom-left-radius: 0px;
     border-bottom-right-radius: 0px;
+    background-color: var(--proactiveTopMenuButton);
 }
 
 .btn-primary {
@@ -143,8 +144,12 @@ label {
 }
 
 .error-details {
-    background-color: rgb(254, 240, 240);
+    background-color: var(--bodyBackground);
     padding: 5px;
     width: 90%;
     margin-bottom: 10px;
+}
+
+.autoheal-rule-input {
+    background-color: var(--bodyBackground);
 }

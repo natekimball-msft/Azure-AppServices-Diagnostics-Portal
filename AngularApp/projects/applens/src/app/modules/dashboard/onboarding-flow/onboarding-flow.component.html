@@ -1,15 +1,15 @@
 <div *ngIf="!isProd || !detectorGraduation" class="view-container">
-
   <ngx-smart-modal #publishModal identifier="publishModal" [customClass]="'publish-dialog'">
     <div>
       <h4>Confirm?</h4>
       <hr style="margin-top: 10px;margin-bottom: 10px;">
       <span>Published changes will be live in Applens and App Services "Diagnose and Solve" blade for external
         customers if the detector is marked public.</span>
-      <search-term-addition [allUtterances]="allUtterances" [recommendedUtterances]="recommendedUtterances" [utteranceInput]="utteranceInput" [detectorId]="id"></search-term-addition>
+      <search-term-addition [allUtterances]="allUtterances" [recommendedUtterances]="recommendedUtterances"
+        [utteranceInput]="utteranceInput" [detectorId]="id"></search-term-addition>
       <div style="margin-top:10px;margin-bottom: 10px;position: relative;">
         <button type="button" class="btn btn-primary" (click)="publish()"
-                [class.disabled]="modalPublishingButtonDisabled" style="margin-right:6px">
+          [class.disabled]="modalPublishingButtonDisabled" style="margin-right:6px">
           {{modalPublishingButtonText}}
         </button>
         <button type="button" class="btn btn-danger" (click)="publishModal.close()">Cancel</button>
@@ -50,14 +50,18 @@
           <h4 style="font-weight: bold; color:#373277">Local Development Prerequisites</h4>
           <p>1. Make sure you have installed
             <a href="https://code.visualstudio.com/" target="_blank">Visual Studio Code</a> and <a
-              href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp" target="_blank">C# extension
-            </a> locally.</p>
+              href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp" target="_blank">C#
+              extension
+            </a> locally.
+          </p>
           <p>2. Install
             <a href="https://nodejs.org/en/" target="_blank">Node.js
-            </a> with version 8.x or later.</p>
+            </a> with version 8.x or later.
+          </p>
           <p>2. Install
             <a href="https://git-scm.com/download/win" target="_blank">Git
-            </a> locally.</p>
+            </a> locally.
+          </p>
           <br>
 
           <h4 style="font-weight: bold; color: #373277">Local Development Instructions</h4>
@@ -94,7 +98,8 @@
     </div>
   </ngx-smart-modal>
 
-  <ngx-smart-modal #publishAccessDeniedModal identifier="publishAccessDeniedModal" [customClass]="'wide-modal'" class="publishAccessDenied">
+  <ngx-smart-modal #publishAccessDeniedModal identifier="publishAccessDeniedModal" [customClass]="'wide-modal'"
+    class="publishAccessDenied">
     <div class="modal-header">
       <img src="assets/img/access-denied.svg" width="70" height="70" class="modal-logo" />
       <div class="modal-title-container">
@@ -103,16 +108,16 @@
       </div>
     </div>
     <div class="modal-content">
-     
+
       <div class="content-row">
         <span>
-          The following team has restricted access to publish public-facing detectors. 
+          The following team has restricted access to publish public-facing detectors.
           <br />
-          Please reach out to the owners in case you want to publish your changes for this detector.    
-        </span>    
+          Please reach out to the owners in case you want to publish your changes for this detector.
+        </span>
         <li class="bullet-point">
           <span>{{publishAccessControlResponse.serviceName}}</span>
-          <span style="color: rgb(95, 95, 95);">  ({{publishAccessControlResponse.resourceType}})</span>
+          <span style="color: rgb(95, 95, 95);"> ({{publishAccessControlResponse.resourceType}})</span>
         </li>
       </div>
 
@@ -124,30 +129,211 @@
       </div>
 
       <div class="content-row">
-        <button type="button" class="btn btn-primary" (click)="publishingAccessDeniedEmailOwners()">Email Owners</button>
-      </div> 
+        <button type="button" class="btn btn-primary" (click)="publishingAccessDeniedEmailOwners()">Email
+          Owners</button>
+      </div>
     </div>
   </ngx-smart-modal>
+
+  <fab-dialog [hidden]="publishDialogHidden || !detectorGraduation" (onDismiss)="publishDialogCancel()">
+    <div class="callout-padding">
+    <fab-dialog-content [title]="dialogTitle" [subText]="dialogSubText" [styles]="publishDialogStyles">
+      <p>Branch Name: </p><p style="text-decoration: underline; font-weight: bold; word-wrap: break-word;">{{Branch}}</p>
+      <!-- <fab-text-field [label]="branchName" [(value)]="Branch" [placeholder]="branchPlaceholder"></fab-text-field> -->
+      <fab-text-field [label]="PRName" [(value)]="PRTitle" [placeholder]="PRPlaceholder" [required]="true"></fab-text-field>
+      <!-- <fab-text-field [label]="PRDescription" [(value)]="PRDesc" [placeholder]="PRDescriptionPlaceholder"
+        [required]="true" [multiline]="true"></fab-text-field> -->
+      <div style="border-top: 1px solid gray;" class="pt-3 pb-3 callout-padding">
+        <fab-primary-button [text]="publishButtonText" (onClick)="publish()"></fab-primary-button>
+        <fab-default-button [text]="cancelButtonText" (onClick)="publishDialogCancel()"></fab-default-button>
+      </div>
+    </fab-dialog-content>
+    </div>
+    <fab-dialog-footer>
+
+    </fab-dialog-footer>
+  </fab-dialog>
+
+  <fab-dialog [hidden]="deleteDialogHidden" (onDismiss)="dismissDeleteDialog()">
+    <fab-dialog-content [title]="deleteDialogTitle">
+      <p>This action will remove the detector from the repo. Are you sure you want to delete?</p>
+      <div class="mt-5">
+        <fab-primary-button text="Delete" (onClick)="deleteDetector()" contentClass="mr-3">
+        </fab-primary-button>
+        <fab-default-button text="Cancel" (onClick)="dismissDeleteDialog()"></fab-default-button>
+      </div>
+    </fab-dialog-content>
+  </fab-dialog>
+
+  <fab-dialog *ngIf="!detectorGraduation || gists.length == 0" [hidden]="gistDialogHidden" (onDismiss)="dismissGistDialog()">
+    <fab-dialog-content [title]="gistUpdateTitle">
+      <fab-dropdown *ngIf="gists.length > 0" label="Gist name" placeholder="Field value"
+        [options]="gistsDropdownOptions" (onChange)="updateGistVersionOptions($event)"></fab-dropdown>
+      <fab-dropdown [disabled]="!gistName" label="Gist version" (onChange)="gistVersionOnChange($event)"
+        placeholder="Field value" [options]="gistVersionOptions">
+      </fab-dropdown>
+      <div class="mt-5">
+        <fab-primary-button *ngIf="gists.length > 0" text="Update" (onClick)="gistVersionChange()" contentClass="mr-3">
+        </fab-primary-button>
+        <fab-default-button text="Cancel" (onClick)="dismissGistDialog()"></fab-default-button>
+      </div>
+    </fab-dialog-content>
+  </fab-dialog>
+
+  <fab-dialog *ngIf="detectorGraduation && gists.length > 0" [hidden]="gistDialogHidden" (onDismiss)="dismissGistDialog()" [minWidth]="'80%'">
+    <fab-dialog-content title="Latest Gist Version" >
+      <fab-dropdown label="Gist name" placeholder="Field value"
+        [options]="gistsDropdownOptions" (onChange)="updateGistVersionOptions($event)"></fab-dropdown>
+      <div class="onboarding-container">
+        <ngx-monaco-editor [options]="editorOptions"
+              [ngModel]="latestGistVersion">
+            </ngx-monaco-editor>
+      </div>
+    </fab-dialog-content>
+  </fab-dialog>
+
+
+  <fab-panel [isOpen]="publishSuccess || publishFailed" [isLightDismiss]="true" [type]="PanelType.custom"
+    [customWidth]="'400px'" [isHiddenOnDismiss]="true" [hasCloseButton]="false" [closeButtonAriaLabel]="'close'"
+    [styles]="submittedPanelStyles" [isBlocking]="false" (onDismissed)="dismissPublishSuccessHandler()"
+    (onOpened)="onOpenPublishSuccessPanel()" >
+    <div class="submitted-panel-text panel-text">
+      <div style="display: flex;align-items: center; margin-left: 4px; margin-right: 8px;">
+        <div *ngIf="publishSuccess && !detectorGraduation" style="display: flex; align-items: center; padding: 0px 10px;">
+          <status-icon [status]="HealthStatus.Success" class="mr-3"></status-icon>
+          <div>
+            <h5 style="font-weight: 600;">Your detector {{detectorName}} was saved</h5>
+          </div>
+        </div>
+
+        <div *ngIf="publishFailed && !detectorGraduation" style="display: flex; align-items: center; padding: 0px 10px;">
+          <status-icon [status]="HealthStatus.Critical" class="mr-3"></status-icon>
+          <div style="font-weight: 600;">Your detector {{detectorName}} publish failed </div>
+        </div>
+
+        <div *ngIf="publishSuccess && detectorGraduation" style="display: flex; align-items: center; padding: 0px 10px;">
+          <status-icon [status]="HealthStatus.Success" class="mr-3"></status-icon>
+          <div>
+            <h5 style="font-weight: 600;">Pull request sent successfully</h5>
+          </div>
+        </div>
+
+        <div *ngIf="publishFailed && detectorGraduation" style="display: flex; align-items: center; padding: 0px 10px;">
+          <status-icon [status]="HealthStatus.Critical" class="mr-3"></status-icon>
+          <div style="font-weight: 600;">Pull request failed to send</div>
+        </div>
+
+      </div>
+      <div style="margin-top: auto; margin-bottom: auto; margin-right: 20px">
+        <h5>{{currentTime}}</h5>
+      </div>
+    </div>
+    <div *ngIf="publishSuccess && !detectorGraduation" style="margin-left: 4px;">You can find it in "Your detectors" later.</div>
+    <div *ngIf="publishSuccess && detectorGraduation" style="margin-left: 4px;">You can view your PR <a target="_blank" rel="noopener noreferrer" [href]="PRLink">here</a>.</div>
+  </fab-panel>
+
+
+  <detector-time-picker [target]="'#develop-tab-timepicker'" [openTimePickerCalloutObservable]="openTimePickerSubject">
+  </detector-time-picker>
 
   <div *ngIf="showAlert" class="alert alert-container" [ngClass]="alertClass" role="alert">
     {{alertMessage}}
   </div>
   <loader-view *ngIf="!codeLoaded" message="Starting onboarding flow ..."></loader-view>
 
+  <fab-command-bar [attr.id]="'fab-command-bar'" contentClass="fab-command-bar-class">
+    <items>
+      <!-- do not use *ngIf on these buttons  -->
+      <fab-command-bar-item key="run" [text]="runButtonText" [iconProps]="runIcon" (click)="runCompilation()"
+      [disabled]="runButtonDisabled"></fab-command-bar-item>
+      <fab-command-bar-item key="publishGrad" [text]="modalPublishingButtonText" [iconProps]="publishIcon"
+          (click)="publishButtonOnClick()" [disabled]="publishButtonDisabled">
+        </fab-command-bar-item>
+
+      <!-- <fab-command-bar-item key="run" [text]="runButtonText" [iconProps]="runIcon" (click)="runCompilation()"
+        [buttonStyles]="runButtonStyle"></fab-command-bar-item>
+      <fab-command-bar-item key="publishGrad" [text]="modalPublishingButtonText" [iconProps]="publishIcon"
+          (click)="publishButtonOnClick()" [buttonStyles]="publishButtonStyle">
+        </fab-command-bar-item> -->
+
+      <fab-command-bar-item key="download" text="Download" [iconProps]="{ iconName: 'Download' }"
+        (click)="getDevOptions()"></fab-command-bar-item>
+      <fab-command-bar-item key="gistVersion" text="Gist version" [iconProps]="{ iconName: 'BackToWindow' }"
+        (click)="showGistDialog()"></fab-command-bar-item>
+      
+      <fab-command-bar-item [style]="deleteVisibilityStyle" key="delete" text="Delete" [iconProps]="{iconName: 'Delete'}"
+        (click)="showDeleteDialog()"></fab-command-bar-item>
+      <!-- <fab-command-bar-item key="internal" [text]="internalExternalText" [iconProps]="{ iconName: 'View' }"
+        (click)="internalExternalToggle()"></fab-command-bar-item> -->
+      <far-items>
+        <fab-command-bar-item *ngIf="detectorGraduation" key="brachSelectorPill" text="custom text">
+          <render>
+            <ng-template let-item="item">
+              <div style="padding-top:1px!important;">
+                <fab-default-button id="develop-tab-branch-selector" (click)="branchToggleCallout()"
+                  [styles]="branchButtonStyle" [ariaLabel]="displayName" [iconProps]="{ iconName: 'BranchSearch' }">
+                  Branch: {{displayBranch}}</fab-default-button>
+                <fab-callout *ngIf="isCallOutVisible" (onDismiss)="closeCallout()" [setInitialFocus]="true"
+                  [target]="'#develop-tab-branch-selector'">
+                  <div class="callout-padding">
+                    <div>
+                      <fab-choice-group [options]="showBranches" (onChange)="updateTempBranch($event)">
+                      </fab-choice-group>
+                    </div>
+                    <div style="border-top: 1px solid gray;" class="pt-3 pb-3 callout-padding">
+                      <fab-primary-button (onClick)="updateBranch()" (keyup.enter)="updateTableWithOptions()"
+                        [ariaLabel]="'Apply'" contentClass="mr-3 callout-button" contentStyle="border-radius: 2px;">
+                        Apply
+                      </fab-primary-button>
+                      <fab-default-button (onClick)="closeCallout()" (keyup.enter)="closeCallout()"
+                        [ariaLabel]="'Cancel'" contentStyle="border-radius: 2px;">Cancel</fab-default-button>
+                    </div>
+                  </div>
+                </fab-callout>
+              </div>
+            </ng-template>
+          </render>
+          <render-icon>
+            <ng-template let-contextualMenuItemProps="contextualMenuItemProps">
+              <div>custom icon</div>
+            </ng-template>
+          </render-icon>
+        </fab-command-bar-item>
+        <fab-command-bar-item key="timePickerPill" text="custom text">
+          <render>
+            <ng-template let-item="item">
+              <div style="padding-top:1px!important;">
+                <fab-default-button id="develop-tab-timepicker" (onClick)="openTimePickerSubject.next(true);"
+                  [styles]="buttonStyle" [ariaLabel]="displayName" [iconProps]="{ iconName: 'clock' }">Time range (UTC):
+                  {{timePickerButtonStr}}
+                </fab-default-button>
+              </div>
+            </ng-template>
+          </render>
+          <render-icon>
+            <ng-template let-contextualMenuItemProps="contextualMenuItemProps">
+              <div>custom icon</div>
+            </ng-template>
+          </render-icon>
+        </fab-command-bar-item>
+      </far-items>
+    </items>
+  </fab-command-bar>
+
   <div *ngIf="codeLoaded" class="onboarding-container">
     <split [direction]="horizontal" gutterSize="8" gutterColor="#dff0ff">
       <split-area size="60">
         <split direction="vertical" gutterSize="8" gutterColor="rgb(249, 233, 212)">
           <split-area size="85">
-            <detector-control *ngIf="mode === DevelopMode.Create || mode === DevelopMode.Edit">
-            </detector-control>
-            <div class="code-container-header">
+            <!-- <detector-control *ngIf="mode === DevelopMode.Create || mode === DevelopMode.Edit">
+            </detector-control> -->
+            <!-- <div class="code-container-header">
 
               <div class="file-tab active">
                 {{fileName}}
               </div>
 
-              <div (click)="checkAccessAndConfirmPublish()" class="action-button publish-button"
+              <div (click)="showPublishDialog()" class="action-button publish-button"
                 [class.disabled]="publishButtonDisabled">
                 <i class="fa fa-cloud-upload"></i>
                 {{publishButtonText}}
@@ -169,9 +355,10 @@
                 <i class="fa fa-cubes"></i>
                 Manage Package
               </div>
-            </div>
+            </div> -->
 
-            <ngx-monaco-editor (onInit)="onInit($event)" style="height:calc(100% - 100px)" [options]="editorOptions" [(ngModel)]="code">
+            <ngx-monaco-editor (onInit)="onInit($event)" style="height:calc(98%)" [options]="editorOptions"
+              [(ngModel)]="code">
             </ngx-monaco-editor>
 
           </split-area>
@@ -180,12 +367,12 @@
               <div *ngIf="!showDetailedCompilationTraces">
                 <div *ngFor="let item of buildOutput" class="compilation-output">{{item}}</div>
               </div>
-              <div *ngIf="showDetailedCompilationTraces" class = "compilation-detailed-output-container">
-                <div class = "compilation-detailed-output-rowEntry" *ngFor = "let item of detailedCompilationTraces"
-                [ngClass]="[isCompilationTraceClickable(item)? 'compilation-detailed-output-clickable' : '']" 
-                (click) = navigateToEditorIfApplicable(item) >
+              <div *ngIf="showDetailedCompilationTraces" class="compilation-detailed-output-container">
+                <div class="compilation-detailed-output-rowEntry" *ngFor="let item of detailedCompilationTraces"
+                  [ngClass]="[isCompilationTraceClickable(item)? 'compilation-detailed-output-clickable' : '']"
+                  (click)=navigateToEditorIfApplicable(item)>
                   <div class="compilation-detailed-output-entryCell compilation-detailed-output-iconCell">
-                    <span class="fa status-icon" [ngClass] = "getfaIconClass(item)"></span>
+                    <span class="fa status-icon" [ngClass]="getfaIconClass(item)"></span>
                   </div>
                   <div class="compilation-detailed-output-entryCell">
                     <span>{{item.message}}</span>
@@ -197,8 +384,22 @@
         </split>
 
       </split-area>
-      <split-area size="40" *ngIf="!gistMode">
-        <div class="invocation-output-title-container">
+      <split-area style="margin-left:10px" size="40" *ngIf="!gistMode">
+        <fab-pivot [styles]="pivotStyle">
+          <fab-pivot-item [headerText]="'Data'">
+            <detector-view *ngIf="queryResponse" [detectorResponse]="queryResponse.invocationOutput"
+              [startTime]="startTime" [endTime]="endTime" [error]="errorState" [showEdit]="false"
+              [developmentMode]="true" [script]="code" [compilationPackage]="compilationPackage"
+              [hideDetectorHeader]="true" [hideDetectorControl]="true"></detector-view>
+          </fab-pivot-item>
+          <fab-pivot-item [headerText]="'Data source'">
+            <tab-data-sources *ngIf="queryResponse" [onboardingMode]="true"
+              [detectorResponse]="queryResponse.invocationOutput">
+            </tab-data-sources>
+          </fab-pivot-item>
+        </fab-pivot>
+        <!-- <div class="invocation-output-title-container">
+          
           <div class="invocation-title" [ngClass]="[!showDataSources ? 'active' : '']"
             (click)="queryResponse ? showDataSources=false : false">
             Detector Output
@@ -207,15 +408,15 @@
             (click)="queryResponse ? showDataSources=true : false">
             Data Sources
           </div>
-        </div>
+        </div> -->
 
         <div style="padding:10px">
-          <detector-view *ngIf="queryResponse && !showDataSources" [detectorResponse]="queryResponse.invocationOutput"
-            [startTime]="startTime" [endTime]="endTime" [error]="errorState" [showEdit]="false" [developmentMode]="true" [script]="code" [compilationPackage]="compilationPackage"></detector-view>
+          <!-- <detector-view *ngIf="queryResponse && !showDataSources" [detectorResponse]="queryResponse.invocationOutput"
+            [startTime]="startTime" [endTime]="endTime" [error]="errorState" [showEdit]="false" [developmentMode]="true" [script]="code" [compilationPackage]="compilationPackage"></detector-view> -->
 
-          <tab-data-sources *ngIf="queryResponse && showDataSources" [onboardingMode]="true"
+          <!-- <tab-data-sources *ngIf="queryResponse && showDataSources" [onboardingMode]="true"
             [detectorResponse]="queryResponse.invocationOutput">
-          </tab-data-sources>
+          </tab-data-sources> -->
           <nav class="dev-options">
             <a (click)="getDevOptions()" tooltip="Local VS Development" class="buttons">
               <span>
@@ -231,7 +432,7 @@
 <div *ngIf="isProd && detectorGraduation" style="display: flex;">
   <status-icon [status]="HealthStatus.Warning" class="mr-3"></status-icon>
   <div>
-    <p>To ensure the quality, accuracy, and security of detectors, the <b>{{resourceService["searchSuffix"]}}</b> team is now utilizing the <a [href]="PPELink">AppLens PPE Environment</a> for detector development.</p>
+    <p>To ensure the quality, accuracy, and security of detectors, the <b>{{resourceService.searchSuffix}}</b> team is now utilizing the <a [href]="PPELink">AppLens PPE Environment</a> for detector development.</p>
     <p>To learn more about this new experience, click <a target="_blank" href="https://applensdiagnostics.azurewebsites.net/?p=715">here</a>.</p>
     <p>You will be redirected there in {{PPERedirectTimer}} seconds...</p>
   </div>

@@ -1,45 +1,10 @@
 
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
-.ngx-datatable.bootstrap {
-    border: 1px solid #dddddd;
-}
+@import "../src/styles/icons.scss";
 
-.ngx-datatable.bootstrap .datatable-body .datatable-body-row .datatable-body-cell {
-    padding-right: 15px;
-}
-
-.ngx-datatable.bootstrap .datatable-body .datatable-body-row.datatable-row-even {
-    background-color: rgba(0, 0, 0, 0);
-}
-
-.ngx-datatable.bootstrap .datatable-body .datatable-body-row:hover {
-    background-color: rgba(182, 235, 255, 0.22);
-}
-
-.ngx-datatable.bootstrap .datatable-footer {
-    border-top: 1px solid #d0d0d0;
-}
-
-.ngx-datatable.bootstrap .datatable-footer .datatable-pager ul li:not(.disabled).active a {
-    background-color: #aeaeae;
-}
-
-.ngx-datatable.bootstrap .datatable-header .datatable-header-cell {
-    padding: 0.15rem 0.75rem;
-    border-bottom: none;
-}
-
-.ngx-datatable.bootstrap .datatable-header,
-.ngx-datatable.bootstrap .datatable-footer {
-    background-color: #eaeaea;
-    font-weight: 600;
-}
-
-.ngx-datatable.bootstrap .datatable-footer,
-.ngx-datatable.bootstrap .datatable-footer .datatable-pager a,
-.ngx-datatable.bootstrap .datatable-header .datatable-header-cell .datatable-header-cell-label {
-    color: #3a3a3a;
-}
+body {
+    background-color: var(--bodyBackground)!important;
+  }
 
 .btn {
     & + & {
@@ -47,46 +12,7 @@
     }
 }
 
-.critical-color {
-    color: #ff0000;
-}
 
-.warning-color {
-    color: #ff9104;
-}
-
-.success-color {
-    color: #3da907;
-}
-
-.info-color {
-    color: #3a9bc7;
-}
-
-.critical {
-    color: #ff0000;
-}
-.bg-critical{
-    background-color: #ff0000;
-}
-.warning {
-    color: #ff9104;
-}
-.bg-warning {
-    background-color: #ff9104;
-}
-.success {
-    color: #3da907;
-}
-.bg-success {
-    background-color: #3da907;
-}
-.info {
-    color: #3a9bc7;
-}
-.bg-info {
-    background-color: #3a9bc7;
-}
 
 /* highchart container configuration */
 .highcharts-container {
@@ -134,7 +60,7 @@ fab-command-bar .ms-SearchBox {
     height: 34px;
 }
 .ms-CommandBar, .ms-Button--commandBar{
-    background-color: white!important;
+    background-color: var(--bodyBackground)!important;
 }
 
 .ms-Button--commandBar:hover {
@@ -152,6 +78,7 @@ fab-command-bar {
     border-bottom: 1px solid rgb(204, 204, 204)!important;
     font-size: 12px!important;
     height: 34px;
+    background-color: var(--bodyBackground)!important;
 }
 
 
@@ -159,6 +86,24 @@ fab-command-bar {
     height: 33px;
 }
 
+.ms-Fabric {
+    color: var(--bodyText);
+}
+
+.ms-Panel-content textarea {
+    background-color: var(--bodyBackground);
+    color: var(--bodyText);
+  }
 
 
+.ms-Panel-content textarea::placeholder{
+    color: var(--inputPlaceholderText);
+}
 
+.ms-Panel-main {
+    border: 1px solid var(--panelBorder)
+}
+
+blockquote p{
+    color: var(--bodyText)!important;
+}

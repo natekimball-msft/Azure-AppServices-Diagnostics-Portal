@@ -11,7 +11,7 @@ export enum ResourceType {
 export interface ResourceTypeState {
     displayName: string;
     routeName: Function;
-    resourceType: ResourceType;
+    resourceType: string;
     resourceTypeLabel?: string;
     enabled: boolean;
     caseId: boolean;
@@ -28,6 +28,22 @@ export interface ArmResource {
     provider: string;
     resourceTypeName: string;
     resourceName: string;
+}
+
+export class ResourceInfo {
+    resourceName: string;
+    imgSrc: string;
+    searchSuffix: string;
+    resourceUri: string;
+    kind: string;
+
+    constructor(resourceName = "",imgSrc = "",searchSuffix = "", resourceUri:string = "",kind: string = "") {
+        this.resourceName = resourceName;
+        this.imgSrc = imgSrc;
+        this.searchSuffix = searchSuffix;
+        this.resourceUri = resourceUri;
+        this.kind = kind;
+    }
 }
 
 export interface ResourceServiceInputsJsonResponse{
@@ -48,6 +64,7 @@ export interface ResourceServiceInputs {
     altIcons?: { [path: string]: string };
     searchSuffix: string;
     emergingIssuesICMLookupEnabled?: boolean;
+    displayName?: string;
 }
 
 export const RESOURCE_SERVICE_INPUTS = new InjectionToken<ResourceServiceInputs>('ResourceServiceInputs');

@@ -1,19 +1,16 @@
-import 'd3';
-import 'nvd3';
 import { DetectorControlService } from './services/detector-control.service';
 import { DiagnosticService } from './services/diagnostic.service';
 import { GenericSupportTopicService } from './services/generic-support-topic.service';
+import { GenericThemeService } from './services/generic-theme.service';
 import { GenericContentService } from './services/generic-content.service';
 import { GenericDocumentsSearchService } from './services/generic-documents-search.service';
 import { TelemetryService } from './services/telemetry/telemetry.service';
 import { GenieGlobals } from './services/genie.service';
-import { NvD3Module } from 'ng2-nvd3';
 import { MarkdownModule } from 'ngx-markdown';
 import { MonacoEditorModule } from 'ngx-monaco-editor';
 import { CommonModule } from '@angular/common';
 import { ModuleWithProviders, NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { CardSelectionComponent } from './components/card-selection/card-selection.component';
 import { CommAlertComponent } from './components/comm-alert/comm-alert.component';
 import {
@@ -22,7 +19,6 @@ import {
 import { DataContainerComponent } from './components/data-container/data-container.component';
 import { DataRenderBaseComponent } from './components/data-render-base/data-render-base.component';
 import { DataSummaryComponent } from './components/data-summary/data-summary.component';
-import { DataTableComponent } from './components/data-table/data-table.component';
 import {
   DetectorContainerComponent
 } from './components/detector-container/detector-container.component';
@@ -42,7 +38,6 @@ import { InsightsComponent } from './components/insights/insights.component';
 import { LoaderViewComponent } from './components/loader-view/loader-view.component';
 import { MarkdownEditorComponent } from './components/markdown-editor/markdown-editor.component';
 import { MarkdownViewComponent } from './components/markdown-view/markdown-view.component';
-import { Nvd3GraphComponent } from './components/nvd3-graph/nvd3-graph.component';
 import {
   StarRatingFeedbackComponent
 } from './components/star-rating-feedback/star-rating-feedback.component';
@@ -81,9 +76,8 @@ import { CustomMaterialModule } from './material-module';
 import { DetectorListAnalysisComponent } from './components/detector-list-analysis/detector-list-analysis.component';
 import { AppDependenciesComponent } from './components/app-dependencies/app-dependencies.component';
 import { HighchartsChartModule } from 'highcharts-angular';
-import { HighchartsGraphComponent } from './components/highcharts-graph/highcharts-graph.component';
-import { FabNavModule } from './components/fab-nav/fab-nav.module';
-import { FabPanelModule, FabIconModule, FabChoiceGroupModule, FabCommandBarModule, FabSearchBoxModule, FabDropdownModule, FabDetailsListModule, FabTextFieldModule, FabMessageBarModule, FabButtonModule, FabTooltipModule, FabSpinnerModule, FabCalloutModule, FabCheckboxModule, FabPivotModule, FabLinkModule, FabBreadcrumbModule } from '@angular-react/fabric';
+import { ChartMetricPipe, HighchartsGraphComponent } from './components/highcharts-graph/highcharts-graph.component';
+import { FabPanelModule, FabIconModule, FabChoiceGroupModule, FabSearchBoxModule, FabDropdownModule, FabDetailsListModule, FabTextFieldModule, FabMessageBarModule, FabButtonModule, FabTooltipModule, FabSpinnerModule, FabCalloutModule, FabCheckboxModule, FabPivotModule, FabLinkModule, FabDatePickerModule, FabCalendarModule, FabCommandBarModule, FabBreadcrumbModule } from '@angular-react/fabric';
 import { SummaryCardsComponent } from './components/summary-cards/summary-cards.component';
 import { InsightsV4Component } from './components/insights-v4/insights-v4.component';
 import { CardSelectionV4Component } from './components/card-selection-v4/card-selection-v4.component';
@@ -118,18 +112,24 @@ import { DropDownStepComponent, GetDropdownOptionsPipe } from './components/step
 import { CheckStepComponent } from './components/step-views/check-step-view/check-step.component';
 import { CheckComponent, ConvertLevelToHealthStatusPipe } from './components/step-views/check-step-view/check.component';
 import {SolutionOrchestratorComponent} from "./components/solution-orchestrator/solution-orchestrator.component";
-import { RouterModule } from '@angular/router';
 import { ButtonStepComponent } from './components/step-views/button-step-view/button-step.component';
+import { HighChartsHoverService } from './services/highcharts-hover.service';
+import { RouterModule } from '@angular/router';
+import { FabDataTableComponent } from './components/fab-data-table/fab-data-table.component';
+import { FabCardComponent } from './components/fab-card/fab-card.component';
+import { SolutionsPanelComponent } from './components/solutions-panel/solutions-panel.component';
+import { DetectorTimePickerComponent } from './components/detector-time-picker/detector-time-picker.component';
+import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-feedback.component';
+
 @NgModule({
   imports: [
     CommonModule,
-    NvD3Module,
-    NgxDatatableModule,
     MarkdownModule.forRoot(),
     FormsModule,
     MonacoEditorModule.forRoot(),
     CustomMaterialModule,
     HighchartsChartModule,
+    RouterModule,
     FabPanelModule,
     FabIconModule,
     FabChoiceGroupModule,
@@ -148,13 +148,15 @@ import { ButtonStepComponent } from './components/step-views/button-step-view/bu
     FabPivotModule,
     FabLinkModule,
     FabBreadcrumbModule,
-    RouterModule
+    RouterModule,
+    FabDatePickerModule,
+    FabCalendarModule
   ],
   providers: [
     ClipboardService
   ],
   declarations: [
-    Nvd3GraphComponent, TimeSeriesGraphComponent, DataTableComponent, DynamicDataComponent,
+    TimeSeriesGraphComponent, DynamicDataComponent,
     DataRenderBaseComponent, DataContainerComponent, TimeSeriesInstanceGraphComponent, DetectorViewComponent, DetectorSearchComponent,
     DataSummaryComponent, EmailComponent, InsightsComponent, LoaderViewComponent, DynamicInsightComponent,
     MarkdownViewComponent, DetectorListComponent, DetectorOrderPipe, StarRatingComponent, StarRatingFeedbackComponent,
@@ -202,11 +204,17 @@ import { ButtonStepComponent } from './components/step-views/button-step-view/bu
     CheckComponent,
     ConvertLevelToHealthStatusPipe,
     GetDropdownOptionsPipe,
-    SolutionOrchestratorComponent
+    SolutionOrchestratorComponent,
+    FabCardComponent,
+    FabDataTableComponent,
+    SolutionsPanelComponent,
+    DetectorTimePickerComponent,
+    FabricFeedbackComponent,
+    ChartMetricPipe
   ],
   entryComponents: [DetectorListAnalysisComponent],
   exports: [
-    FormsModule, TimeSeriesGraphComponent, DataTableComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent,
+    FormsModule, TimeSeriesGraphComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent,
     DataSummaryComponent, LoaderViewComponent, LoaderDetectorViewComponent, StatusIconComponent, DetectorControlComponent,
     DetectorContainerComponent, InternalPipe, CommAlertComponent, GuageControlComponent, SolutionComponent,
     FormComponent, VerticalDisplayListComponent, VerticalDisplayListItemComponent, SolutionTypeTagComponent, DataContainerComponent,
@@ -215,7 +223,6 @@ import { ButtonStepComponent } from './components/step-views/button-step-view/bu
     ChangesViewComponent,
     DetectorListAnalysisComponent,
     AppInsightsMarkdownComponent,
-    FabNavModule,
     FeedbackComponent,
     CxpChatLauncherComponent,
     AppInsightsEnablementComponent,
@@ -235,7 +242,10 @@ import { ButtonStepComponent } from './components/step-views/button-step-view/bu
     CheckComponent,
     ConvertLevelToHealthStatusPipe,
     GetDropdownOptionsPipe,
-    SolutionOrchestratorComponent
+    SolutionOrchestratorComponent,
+    FabricFeedbackComponent,
+    FabDataTableComponent,
+    DetectorTimePickerComponent
   ],
 })
 export class DiagnosticDataModule {
@@ -245,6 +255,7 @@ export class DiagnosticDataModule {
       providers: [
         DiagnosticService,
         GenericSupportTopicService,
+        GenericThemeService,
         GenericContentService,
         GenericDocumentsSearchService,
         { provide: DIAGNOSTIC_DATA_CONFIG, useValue: config },
@@ -258,7 +269,7 @@ export class DiagnosticDataModule {
         FeatureNavigationService,
         AppInsightsQueryService,
         ParseResourceService,
-        FabNavModule
+        HighChartsHoverService
       ]
     };
   }

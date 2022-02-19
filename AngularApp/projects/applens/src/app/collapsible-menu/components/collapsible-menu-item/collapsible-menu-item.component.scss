@@ -4,8 +4,9 @@
 
 .menu-item {
     cursor: pointer;
-    font-family: az_ea_font,"Segoe UI",wf_segoe-ui_normal,"Segoe WP",Tahoma,Arial,sans-serif;
-    
+    display: flex;
+    font-size: 13px;
+    font-weight: 400;
 }
 
 .expand-icon {
@@ -14,32 +15,32 @@
     font-size: 12px;
 }
 
-/* DARK THEME */
+.menu-label {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 260px;
+}
 
-:host-context(.dark-theme) .menu-item {
-    color:#e2e2e2;
+.menu-item {
+    color:var(--bodyText);
     padding: 5px 5px 5px 30px;
     font-size: 14px;
 }
 
-:host-context(.dark-theme) .menu-item:hover,
-:host-context(.dark-theme) .menu-item.selected {
-    color:#fff;
-    background-color: #222222;
-}
-
-/* LIGHT THEME */
-:host-context(.light-theme) .menu-item {
-    color:#1d1d1d;
-    font-size: 12px;
-    padding: 10px 5px 9px 35px;
-}
-
-:host-context(.light-theme) .menu-item:hover,
-:host-context(.light-theme) .menu-item.selected {
-    background-color: rgba(0,137,250,.1);
+.menu-item:hover,
+.menu-item.selected {
+    color:var(--bodyText);
+    background-color: var(--bodyBackground);
 }
 
 .menu-label > b {
     color: #ffb353;
+}
+
+.break-all {
+    word-break: break-all;
+}
+
+.bold {
+    font-weight: 600;
 }

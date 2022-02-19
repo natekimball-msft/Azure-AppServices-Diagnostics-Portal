@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { AdalService } from 'adal-angular4';
 import {AadAuthGuard} from './shared/auth/aad-auth-guard.service';
 import { environment } from '../environments/environment';
-import * as Highcharts from 'highcharts';
 import { initializeIcons } from 'office-ui-fabric-react/lib/Icons';
+import { GenericThemeService } from 'diagnostic-data';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +14,7 @@ export class AppComponent implements OnInit{
 
   env = environment;
   showBanner = true;
-  constructor(private _adalService: AdalService, public _authGuardService: AadAuthGuard) {
+  constructor(private _adalService: AdalService, public _authGuardService: AadAuthGuard, public _themeService: GenericThemeService) {
     if (environment.adal.enabled){
       this._adalService.init({
         clientId: environment.adal.clientId,

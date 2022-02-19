@@ -1,16 +1,16 @@
 import { Moment } from 'moment';
 import { v4 as uuid } from 'uuid';
-import { Component, OnInit, Input, Inject, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, Input, Inject, EventEmitter, Output, Optional } from '@angular/core';
 import { DataRenderBaseComponent } from '../data-render-base/data-render-base.component';
 import { LoadingStatus } from '../../models/loading';
 import { StatusStyles } from '../../models/styles';
-import { DetectorControlService } from '../../services/detector-control.service';
+import { DetectorControlService, TimePickerOptions } from '../../services/detector-control.service';
 import { DiagnosticService } from '../../services/diagnostic.service';
 import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 import { TelemetryService } from '../../services/telemetry/telemetry.service';
 import { Solution } from '../solution/solution';
 import { ActivatedRoute, Router, NavigationExtras } from '@angular/router';
-import { forkJoin as observableForkJoin, Observable, of } from 'rxjs';
+import { BehaviorSubject, forkJoin as observableForkJoin, Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { DetectorResponse, DetectorMetaData, HealthStatus, DetectorType, DownTime } from '../../models/detector';
 import { Insight, InsightUtils } from '../../models/insight';
@@ -29,6 +29,8 @@ import { GenericResourceService } from '../../services/generic-resource-service'
 import { zoomBehaviors } from '../../models/time-series';
 import * as momentNs from 'moment';
 const moment = momentNs;
+import { PanelType } from 'office-ui-fabric-react';
+import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.service';
 
 const WAIT_TIME_IN_SECONDS_TO_ALLOW_DOWNTIME_INTERACTION: number = 58;
 const PERCENT_CHILD_DETECTORS_COMPLETED_TO_ALLOW_DOWNTIME_INTERACTION: number = 0.9;
@@ -66,19 +68,23 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     downtimeResetTimer: any = null;
     @Input() searchTerm: string = "";
     @Input() keystoneSolutionView: boolean = false;
+    analysisName: string = "";
     detectorViewModels: any[];
     detectorId: string;
     detectorName: string = '';
     contentHeight: string;
     detectors: any[] = [];
     LoadingStatus = LoadingStatus;
+    HealthStatus = HealthStatus;
     issueDetectedViewModels: any[] = [];
     successfulViewModels: any[] = [];
+    failedLoadingViewModels: any[] = [];
     detectorMetaData: DetectorMetaData[];
     private childDetectorsEventProperties = {};
     loadingChildDetectors: boolean = false;
     appInsights: any;
     allSolutions: Solution[] = [];
+    allSolutionsMap: Map<string, Solution[]> = new Map<string, Solution[]>();
     loadingMessages: string[] = [];
     loadingMessageIndex: number = 0;
     loadingMessageTimer: any;
@@ -111,12 +117,16 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     public inDrillDownMode: boolean = false;
     drillDownDetectorId: string = '';
     totalChildDetectorsLoaded: number = 0;
+    solutionPanelOpen: boolean = false;
+    solutionPanelType: PanelType = PanelType.custom;
+    solutionPanelOpenSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
+    solutionTitle: string = "";
 
     constructor(public _activatedRoute: ActivatedRoute, private _router: Router,
         private _diagnosticService: DiagnosticService, private _detectorControl: DetectorControlService,
         protected telemetryService: TelemetryService, public _appInsightsService: AppInsightsQueryService,
         private _supportTopicService: GenericSupportTopicService, protected _globals: GenieGlobals, private _solutionService: SolutionService,
-        @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, private portalActionService: PortalActionGenericService, private _resourceService: GenericResourceService) {
+        @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, private portalActionService: PortalActionGenericService, private _resourceService: GenericResourceService, @Optional() private _genericBreadcrumbService?: GenericBreadcrumbService) {
         super(telemetryService);
         this.isPublic = config && config.isPublic;
 
@@ -162,6 +172,11 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
 
         this.startTime = this._detectorControl.startTime;
         this.endTime = this._detectorControl.endTime;
+
+        this._diagnosticService.getDetectors().subscribe(detectors => {
+            const metaData = detectors.find(d => d.id === this.analysisId && d.type === DetectorType.Analysis);
+            if(metaData) this.analysisName = metaData.name;
+        })
     }
 
     toggleSuccessful() {
@@ -575,7 +590,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                             this.successfulViewModels.push(successViewModel);
                         }
                     }
-
+                    
                     return {
                         'ChildDetectorName': this.detectorViewModels[index].title,
                         'ChildDetectorId': this.detectorViewModels[index].metadata.id,
@@ -585,7 +600,15 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                 })
                 , catchError(err => {
                     this.evaluateAndEmitDowntimeInteractionState(containsDownTime, this.detectorViewModels.length, zoomBehaviors.CancelZoom | zoomBehaviors.FireXAxisSelectionEvent | zoomBehaviors.UnGreyGraph);
-                    this.detectorViewModels[index].loadingStatus = LoadingStatus.Failed;
+                    if (this.detectorViewModels[index] != null) {
+                        this.detectorViewModels[index].loadingStatus = LoadingStatus.Failed;
+                    }
+                    const viewModel = this.detectorViewModels[index];
+                    if(viewModel && viewModel.model && viewModel.model.title) {
+                        this.failedLoadingViewModels.push({
+                            model: viewModel
+                         });
+                    }
                     return of({});
                 })
             ));
@@ -683,20 +706,19 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
             insight = { title: detectorInsight.title, description: description };
 
             // now populate solutions for all the insights
+            const solutions: Solution[] = [];
             allInsights.forEach(i => {
-                if (i.solutions != null) {
+                if (i.solutions != null && i.solutions.length > 0) {
                     i.solutions.forEach(s => {
-                        if (this.allSolutions.findIndex(x => x.Name === s.Name) === -1) {
-                            this.allSolutions.push(s);
+                        if (solutions.findIndex(x => x.Name === s.Name) === -1) {
+                            solutions.push(s);
                         }
                     });
+                    this.allSolutionsMap.set(viewModel.title, solutions);
                 }
             });
         }
         return insight;
-    }
-
-    ngOnChanges() {
     }
 
     private updateDetectorViewModelSuccess(viewModel: any, res: DetectorResponse) {
@@ -823,7 +845,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                 if (this.analysisId === "searchResultsAnalysis" && this.searchTerm && this.searchTerm.length > 0) {
                     //If in homepage then open second blade for Diagnostic Tool and second blade will continue to open third blade for
                     if (this.withinGenie) {
-                        const isHomepage = !(!!this._activatedRoute.root.firstChild && !!this._activatedRoute.root.firstChild.firstChild && !!this._activatedRoute.root.firstChild.firstChild.firstChild && !!this._activatedRoute.root.firstChild.firstChild.firstChild.firstChild && !!this._activatedRoute.root.firstChild.firstChild.firstChild.firstChild.snapshot && !!this._activatedRoute.root.firstChild.firstChild.firstChild.firstChild.snapshot.params["category"]);
+                        const isHomepage = !(!!this._activatedRoute.root.firstChild && !!this._activatedRoute.root.firstChild.firstChild && !!this._activatedRoute.root.firstChild.firstChild.firstChild && !!this._activatedRoute.root.firstChild.firstChild.firstChild.firstChild && !!this._activatedRoute.root.firstChild.firstChild.firstChild.firstChild.firstChild && !!this._activatedRoute.root.firstChild.firstChild.firstChild.firstChild.firstChild.snapshot && !!this._activatedRoute.root.firstChild.firstChild.firstChild.firstChild.firstChild.snapshot.params["category"]);
                         if (detectorId == 'appchanges' && !this._detectorControl.internalClient) {
                             this.portalActionService.openChangeAnalysisBlade(this._detectorControl.startTimeString, this._detectorControl.endTimeString);
                             return;
@@ -847,29 +869,24 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                     if (detectorId === 'appchanges' && !this._detectorControl.internalClient) {
                         this.portalActionService.openChangeAnalysisBlade(this._detectorControl.startTimeString, this._detectorControl.endTimeString);
                     } else {
-                        this.updateDrillDownMode(true, viewModel);
+                        //TODO, For D&S blade, need to add a service to find category and navigate to detector
                         if (viewModel.model.startTime != null && viewModel.model.endTime != null) {
                             this.analysisContainsDowntime().subscribe(containsDowntime => {
-                                if (containsDowntime) {
-                                    this._router.navigate([`./detectors/${detectorId}`], {
-                                        relativeTo: this._activatedRoute,
-                                        queryParams: { startTimeChildDetector: viewModel.model.startTime, endTimeChildDetector: viewModel.model.endTime },
-                                        queryParamsHandling: 'merge',
-                                        replaceUrl: true
-                                    });
-                                }
-                                else {
-                                    this._router.navigate([`./detectors/${detectorId}`], {
-                                        relativeTo: this._activatedRoute,
-                                        queryParams: { startTime: viewModel.model.startTime, endTime: viewModel.model.endTime },
-                                        queryParamsHandling: 'merge',
-                                        replaceUrl: true
-                                    });
-                                }
+                                this._detectorControl.setCustomStartEnd(viewModel.model.startTime, viewModel.model.endTime);
+                                //Todo, detector control service should able to read and infer TimePickerOptions from startTime and endTime
+                                this._detectorControl.updateTimePickerInfo({
+                                    selectedKey: TimePickerOptions.Custom,
+                                    selectedText: TimePickerOptions.Custom,
+                                    startDate: new Date(viewModel.model.startTime),
+                                    endDate: new Date(viewModel.model.endTime)
+                                });
+                                this.updateBreadcrumb();
+                                this._router.navigate([`../../detectors/${detectorId}`], { relativeTo: this._activatedRoute });
                             });
                         }
                         else {
-                            this._router.navigate([`../../analysis/${this.analysisId}/detectors/${detectorId}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', preserveFragment: true });
+                            this.updateBreadcrumb();
+                            this._router.navigate([`../../detectors/${detectorId}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', preserveFragment: true });
                         }
                     }
                 }
@@ -908,6 +925,23 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                 self.showLoadingMessage = false;
             }, 3000)
         }, 4000);
+    }
+
+    openSolutionPanel(title: string) {
+        this.solutionTitle = title;
+        this.allSolutions = this.allSolutionsMap.get(title);
+        this.solutionPanelOpenSubject.next(true);
+    }
+
+    private updateBreadcrumb() {
+        if(this.isPublic || this.withinGenie) return;
+        if (this._genericBreadcrumbService) {
+            this._genericBreadcrumbService.updateBreadCrumbSubject({
+                name: this.analysisName,
+                id: this.analysisId,
+                isDetector: false
+            });
+        }
     }
 }
 

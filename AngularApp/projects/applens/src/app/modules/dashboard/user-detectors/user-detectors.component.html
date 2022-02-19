@@ -1,0 +1,45 @@
+<!-- <div *ngIf="userInfo" class="banner">
+  <div>
+    <button class="btn back-button" (click)="navigateBack()">&lt; Back</button>
+  </div>
+  <div class="category-info-container">
+    <img *ngIf="userPhotoSource != undefined && userPhotoSource != ''" class="author-icon" src={{userPhotoSource}} />
+    <ngx-avatar *ngIf="userInfo.displayName != undefined && (userPhotoSource == undefined || userPhotoSource === '')" [name]=userInfo.displayName
+      class="category-icon-avatar" [round]="false" initialsSize="2" size="100"></ngx-avatar>
+    <div class="author-title">
+      <span class="author-name">
+        {{userInfo.displayName}}
+        <span class="author-description">({{userInfo.jobTitle}})</span>
+      </span>
+      <div class="category-description">
+        <div *ngIf="userInfo">
+          <div class="user-detail">
+            <p>
+              <i class="fa fa-phone fa-lg message"></i> {{businessPhones}}</p>
+            <p>
+              <i class="fa fa-home fa-lg message"></i> {{userInfo.officeLocation}}</p>
+            <p>
+              <a class="author-email" href="mailto:{{userId}}@microsoft.com">{{userInfo.userPrincipalName}}
+              </a>
+            </p>
+            <p>
+              <span class="detector-number">{{detectorsNumber}}</span> detectors
+            </p>
+            <p *ngIf="isCurrentUser">
+                <span class="detector-number"><i class="fa fa-star working-space" aria-hidden="true"></i>Working space</span>
+              </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> -->
+<!-- <div *ngIf="userInfo == undefined" class="loading-page">
+    <i class="fa fa-spinner fa-spin fa-4x fa-fw"></i>
+</div> -->
+<div *ngIf="table" class="detector-list">
+  <fab-data-table [table]="table" [allowColumnSearch]="true" [columnOptions]="columnOptions" [tableHeight]="'100%'"></fab-data-table>
+</div>
+<!-- <div *ngIf="userInfo != undefined && detectorsOfAuthor == undefined" class="loading-page">
+  <i class="fa fa-spinner fa-spin fa-4x fa-fw"></i>
+</div> -->

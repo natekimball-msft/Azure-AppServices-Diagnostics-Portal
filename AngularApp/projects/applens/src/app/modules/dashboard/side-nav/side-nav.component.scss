@@ -79,3 +79,13 @@ menu-scroll {
     margin: 60px;
 }
 
+.icon-colleapse-side-nav :hover{
+    cursor: pointer;
+}
+
+::ng-deep {
+    .ms-GroupHeader-title{
+        font-size: 14px;
+        font-weight: 600;
+    }
+}

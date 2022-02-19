@@ -1,4 +1,4 @@
-<div class="tab-gist">
+<!-- <div class="tab-gist">
   <div class="toolbar-container">
     <ul class="nav nav-tabs">
       <li class="nav-item">
@@ -16,4 +16,12 @@
       <router-outlet></router-outlet>
     </div>
   </div>
+</div> -->
+
+<div class="mb-3">
+  <fab-pivot *ngIf="showTabs" (onLinkClick)="navigateToData($event)" [selectedKey]="selectedTabKey">
+    <fab-pivot-item *ngFor="let tab of tabs" [headerText]="tab.headerText" [itemKey]="tab.itemKey">
+    </fab-pivot-item>
+  </fab-pivot>
 </div>
+<router-outlet></router-outlet>

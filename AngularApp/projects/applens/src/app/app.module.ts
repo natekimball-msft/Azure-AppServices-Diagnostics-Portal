@@ -1,5 +1,4 @@
-
-import {map} from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, Injectable, ErrorHandler } from '@angular/core';
 import { RouterModule, Resolve, ActivatedRouteSnapshot, Router, UrlSerializer } from '@angular/router';
@@ -14,15 +13,17 @@ import { AadAuthGuard } from './shared/auth/aad-auth-guard.service';
 import { LoginComponent } from './shared/components/login/login.component';
 import { AdalService, AdalGuard, AdalInterceptor } from 'adal-angular4';
 import { CustomUrlSerializerService } from './shared/services/custom-url-serializer.service';
-import { DiagnosticDataModule } from 'diagnostic-data';
+import { DiagnosticDataModule, GenericThemeService } from 'diagnostic-data';
 import { UnhandledExceptionHandlerService, AppInsightsTelemetryService } from 'diagnostic-data';
-import {CustomMaterialModule} from './material-module';
 import { HighchartsChartModule } from 'highcharts-angular';
-import {UnauthorizedComponent} from './shared/components/unauthorized/unauthorized.component';
-import {AuthRequestFailedComponent} from './shared/components/auth-request-failed/auth-request-failed.component';
-import {TokenInvalidComponent} from './shared/components/tokeninvalid/tokeninvalid.component';
+import { UnauthorizedComponent } from './shared/components/unauthorized/unauthorized.component';
+import { AuthRequestFailedComponent } from './shared/components/auth-request-failed/auth-request-failed.component';
+import { TokenInvalidComponent } from './shared/components/tokeninvalid/tokeninvalid.component';
 import { AngularReactBrowserModule } from '@angular-react/core';
 import { ApplensAppinsightsTelemetryService } from './shared/services/applens-appinsights-telemetry.service';
+import { ApplensThemeService } from './shared/services/applens-theme.service';
+import { ApplensHeaderComponent } from './shared/components/applens-header/applens-header.component';
+import { FabButtonModule, FabDialogModule, FabPanelModule } from '@angular-react/fabric';
 
 @Injectable()
 export class ValidResourceResolver implements Resolve<void>{
@@ -116,7 +117,8 @@ export const Routes = RouterModule.forRoot([
     path: 'login',
     component: LoginComponent
   }
-]);
+]
+);
 
 @NgModule({
   declarations: [
@@ -132,12 +134,13 @@ export const Routes = RouterModule.forRoot([
     DiagnosticDataModule.forRoot(),
     Routes,
     SharedModule.forRoot(),
-    CustomMaterialModule,
-    HighchartsChartModule
+    FabPanelModule,
+    FabDialogModule,
+    FabButtonModule
   ],
   providers: [
     ValidResourceResolver,
-    { provide: AppInsightsTelemetryService, useExisting: ApplensAppinsightsTelemetryService},
+    { provide: AppInsightsTelemetryService, useExisting: ApplensAppinsightsTelemetryService },
     AdalService,
     {
       provide: UrlSerializer,
@@ -146,7 +149,8 @@ export const Routes = RouterModule.forRoot([
     {
       provide: ErrorHandler,
       useClass: UnhandledExceptionHandlerService
-    }
+    },
+    { provide: GenericThemeService, useExisting: ApplensThemeService }
   ],
   bootstrap: [AppComponent]
 })

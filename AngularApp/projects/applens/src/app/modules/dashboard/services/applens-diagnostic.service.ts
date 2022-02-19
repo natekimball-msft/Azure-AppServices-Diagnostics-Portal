@@ -1,23 +1,27 @@
 import { Injectable } from '@angular/core';
 import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
 import { ResourceService } from '../../../shared/services/resource.service';
-import { DetectorResponse, DetectorMetaData } from 'diagnostic-data';
+import { DetectorResponse, DetectorMetaData, ExtendDetectorMetaData } from 'diagnostic-data';
 import { Observable } from 'rxjs';
 import { QueryResponse } from 'diagnostic-data';
 import { Package } from '../../../shared/models/package';
+import { filter } from 'rxjs-compat/operator/filter';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class ApplensDiagnosticService {
-
+  public resourceId: string = "";
   constructor(private _diagnosticApi: DiagnosticApiService, private _resourceService: ResourceService) {
+    this.resourceId = this._resourceService.getCurrentResourceId(true);
+    if (!this.resourceId.startsWith("/")) this.resourceId = "/" + this.resourceId;
   }
 
-  getDetector(detector: string, startTime: string, endTime: string, refresh: boolean = false, internalView: boolean = true, formQueryParams?: string,overrideResourceUri?: string): Observable<DetectorResponse> {
+  getDetector(detector: string, startTime: string, endTime: string, refresh: boolean = false, internalView: boolean = true, formQueryParams?: string, overrideResourceUri?: string): Observable<DetectorResponse> {
     let resourceId = overrideResourceUri ? overrideResourceUri : this._resourceService.getCurrentResourceId(true);
-    if(!resourceId.startsWith('/')) resourceId = '/' + resourceId;
+    if (!resourceId.startsWith('/')) resourceId = '/' + resourceId;
 
     let versionPrefix = this._resourceService.versionPrefix;
-    if(versionPrefix.endsWith('/')) versionPrefix = versionPrefix.substring(versionPrefix.length - 1);
+    if (versionPrefix.endsWith('/')) versionPrefix = versionPrefix.substring(versionPrefix.length - 1);
     return this._diagnosticApi.getDetector(
       versionPrefix,
       resourceId,
@@ -40,34 +44,50 @@ export class ApplensDiagnosticService {
       null);
   }
 
-  getDetectors(overrideResourceUri:string = "",internalClient: boolean = true,query?: string): Observable<DetectorMetaData[]> {
+  getDetectors(overrideResourceUri: string = "", internalClient: boolean = true, query?: string): Observable<DetectorMetaData[]> {
     var queryParams: any[] = null;
 
     let resourceId = overrideResourceUri ? overrideResourceUri : this._resourceService.getCurrentResourceId(true);
-    if(!resourceId.startsWith('/')) resourceId = '/' + resourceId;
+    if (!resourceId.startsWith('/')) resourceId = '/' + resourceId;
 
     let versionPrefix = this._resourceService.versionPrefix;
-    if(versionPrefix.endsWith('/')) versionPrefix = versionPrefix.substring(0,versionPrefix.length - 1);
+    if (versionPrefix.endsWith('/')) versionPrefix = versionPrefix.substring(0, versionPrefix.length - 1);
     if (query != null)
       queryParams = [{ "key": "text", "value": encodeURIComponent(query) }];
-      return this._diagnosticApi.getDetectors(
-        versionPrefix,
-        resourceId,
-        null,
-        queryParams,
-        internalClient);
+    return this._diagnosticApi.getDetectors(
+      versionPrefix,
+      resourceId,
+      null,
+      queryParams,
+      internalClient);
+  }
+
+  getDetectorsWithExtendDefinition(internalClient: boolean = true): Observable<ExtendDetectorMetaData[]> {
+    let resourceId = this._resourceService.getCurrentResourceId(true);
+    if (!resourceId.startsWith('/')) resourceId = '/' + resourceId;
+
+    let versionPrefix = this._resourceService.versionPrefix;
+    if (versionPrefix.endsWith('/')) versionPrefix = versionPrefix.substring(0, versionPrefix.length - 1);
+
+    return this._diagnosticApi.getDetectorsWithExtendDefinition(versionPrefix, resourceId, null, internalClient);
   }
 
   getDetectorsSearch(query: string, internalClient: boolean = true): Observable<DetectorMetaData[]> {
     var queryParams: any[] = null;
     if (query != null)
       queryParams = [{ "key": "text", "value": encodeURIComponent(query) }];
-      return this._diagnosticApi.getDetectors(
-        this._resourceService.versionPrefix,
-        this._resourceService.getCurrentResourceId(true),
-        null,
-        queryParams,
-        internalClient);
+    return this._diagnosticApi.getDetectors(
+      this._resourceService.versionPrefix,
+      this._resourceService.getCurrentResourceId(true),
+      null,
+      queryParams,
+      internalClient);
+  }
+
+  getDetectorMetaDataById(id: string): Observable<DetectorMetaData> {
+    return this.getDetectors().pipe(map(datas => {
+      return datas.find(d => d.id === id);
+    }));
   }
 
   getUsers(body: any): Observable<any> {
@@ -107,9 +127,8 @@ export class ApplensDiagnosticService {
     return this._diagnosticApi.getHasTestersAccess();
   }
 
-  getCompilerResponse(body: any, isSystemInvoker: boolean, detectorId: string = '', startTime: string = '', endTime: string = '', dataSource: string = '', timeRange: string = '', additionalParams: any, publishingDetectorId:string): Observable<QueryResponse<DetectorResponse>> {
-    if (isSystemInvoker === false)
-    {
+  getCompilerResponse(body: any, isSystemInvoker: boolean, detectorId: string = '', startTime: string = '', endTime: string = '', dataSource: string = '', timeRange: string = '', additionalParams: any, publishingDetectorId: string): Observable<QueryResponse<DetectorResponse>> {
+    if (isSystemInvoker === false) {
       return this._diagnosticApi.getCompilerResponse(
         this._resourceService.versionPrefix,
         this._resourceService.getCurrentResourceId(true),
@@ -118,8 +137,7 @@ export class ApplensDiagnosticService {
         endTime,
         additionalParams, publishingDetectorId);
     }
-    else
-    {
+    else {
       return this._diagnosticApi.getSystemCompilerResponse(
         this._resourceService.getCurrentResourceId(true),
         body,
@@ -135,17 +153,17 @@ export class ApplensDiagnosticService {
     return this._diagnosticApi.getLocalDevelopmentResponse(
       detectorId.toLowerCase(),
       this._resourceService.versionPrefix,
-      '/'+this._resourceService.getCurrentResourceId(true),
+      '/' + this._resourceService.getCurrentResourceId(true),
       body,
       startTime,
       endTime);
   }
 
-  verfifyPublishingDetectorAccess(resourceType: string, detectorCode: string, isOriginalCodeMarkedPublic: boolean) : Observable<any> {
+  verfifyPublishingDetectorAccess(resourceType: string, detectorCode: string, isOriginalCodeMarkedPublic: boolean): Observable<any> {
     return this._diagnosticApi.verfifyPublishingDetectorAccess(resourceType, detectorCode, isOriginalCodeMarkedPublic);
   }
 
-  publishDetector(emailRecipients: string, pkg: Package, resourceType: string, isOriginalCodeMarkedPublic: boolean) : Observable<any> {
+  publishDetector(emailRecipients: string, pkg: Package, resourceType: string, isOriginalCodeMarkedPublic: boolean): Observable<any> {
     return this._diagnosticApi.publishPackage(
       this._resourceService.getCurrentResourceId(true),
       emailRecipients,
@@ -155,12 +173,32 @@ export class ApplensDiagnosticService {
     );
   }
 
-  createOrUpdateKustoMappings(body: string) : Observable<any> {
+  createOrUpdateKustoMappings(body: string): Observable<any> {
     return this._diagnosticApi.createOrUpdateKustoMappings(this._resourceService.getCurrentResourceId(true), body);
   }
 
-  getKustoMappings() : Observable<any> {
+  getKustoMappings(): Observable<any> {
     return this._diagnosticApi.getKustoMappings(this._resourceService.getCurrentResourceId(true));
+  }
+
+  getDetectorCode(detectorPath: string, branch: string, resourceUri: string): Observable<string> {
+    return this._diagnosticApi.getDetectorCode(detectorPath, branch, resourceUri);
+  }
+
+  pushDetectorChanges(branch: string, files: string[], repoPaths: string[], comment: string, changeType: string, resourceUri: string) {
+    return this._diagnosticApi.pushDetectorChanges(branch, files, repoPaths, comment, changeType, resourceUri);
+  }
+
+  makePullRequest(sourceBranch: string, targetBranch: string, title: string, resourceUri: string) {
+    return this._diagnosticApi.makePullRequest(sourceBranch, targetBranch, title, resourceUri);
+  }
+
+  getBranches(resourceId: string) {
+    return this._diagnosticApi.getBranches(resourceId);
+  }
+
+  merge(branch: string, detectorName: string, resourceUri: string){
+    return this._diagnosticApi.merge(branch, detectorName, this.resourceId)
   }
 
   getDevopsConfig(resourceProviderType: string) {
@@ -173,5 +211,9 @@ export class ApplensDiagnosticService {
 
   getPPEHostname(): Observable<string>{
     return this._diagnosticApi.getPPEHostname();
+  }
+
+  getDevopsPullRequest(resourceProviderType: string) {
+    return this._diagnosticApi.getDevopsPullRequest(resourceProviderType);
   }
 }
