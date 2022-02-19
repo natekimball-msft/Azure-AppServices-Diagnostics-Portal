@@ -12,6 +12,7 @@ import { AuthService } from '../../startup/services/auth.service';
 export class CXPChatCallerService {
   public isChatSupported: boolean;
   private supportedSupportTopicIds: string[];
+  private supportedSapSupportTopicIds: string[];
   public pesId: string = '';
   public sapProductId:string = '';
   public readonly cxpChatTagName: string = 'webapps';
@@ -29,6 +30,7 @@ export class CXPChatCallerService {
     this.isChatSupported = this._resourceService.isApplicableForLiveChat;
     if (this.isChatSupported) {
       this.supportedSupportTopicIds = this._resourceService.liveChatEnabledSupportTopicIds;
+      this.supportedSapSupportTopicIds = this._resourceService.liveChatEnabledSapSupportTopicIds;
     }
 
     this._authService.getStartupInfo()
@@ -67,17 +69,25 @@ export class CXPChatCallerService {
       return false;
     }
 
-    if (this.supportedSupportTopicIds.length === 1 && this.supportedSupportTopicIds[0] === '*') {
+    if ((this.supportedSapSupportTopicIds.length === 1 && this.supportedSapSupportTopicIds[0] === '*') || (this.supportedSupportTopicIds.length === 1 && this.supportedSupportTopicIds[0] === '*')) {
       return true;
     }
     else {
       supportTopicIdToCheck = supportTopicIdToCheck.toLowerCase();
       let returnValue: boolean = false;
 
-      this.supportedSupportTopicIds.some((currValue: string) => {
-        returnValue = (supportTopicIdToCheck === currValue || currValue === '*');
+      this.supportedSapSupportTopicIds.some((curSapSupportTopicId:string) => {
+        returnValue = (supportTopicIdToCheck === curSapSupportTopicId || curSapSupportTopicId === '*');
         return returnValue;
       });
+
+      //Keeping this part too since we are supporting both SapSupportTopicId's and non SapSupportTopicId's.
+      if(!returnValue) {
+        this.supportedSupportTopicIds.some((currValue: string) => {
+          returnValue = (supportTopicIdToCheck === currValue || currValue === '*');
+          return returnValue;
+        });
+      }
       return returnValue;
     }
   }
@@ -104,12 +114,10 @@ export class CXPChatCallerService {
  * @returns CXP Chat type. If no engineer is available, it will return None, else it will return the type of chat that can be initiated for this support topic.
  */
   public getChatAvailability(supportTopicId: string, trackingIdGuid: string): ReplaySubject<any> {
-
-
     let input = {
       tagName: this.cxpChatTagName,
       eligibilityParams: {
-        productId: this.pesId,
+        productId: this.getEffectiveProductId(supportTopicId),
         supportPlanType: this.supportPlanType,
         supportTopicId: supportTopicId,
         language: this.chatLanguage,
@@ -193,6 +201,17 @@ export class CXPChatCallerService {
     }
   }
 
+  private getEffectiveProductId(supportTopicId: string):string {
+    if(supportTopicId && !isNaN(Number(supportTopicId))) {
+      //Supplied support topic id was numerical. We are still using old support topic id's.
+      return this.pesId;
+    }
+    else {
+      //Supplied support topic id was not a numerical value. We are using sap support topic id's.
+      return this.sapProductId;
+    }
+  }
+
 
   /**
    * @param supportTopicId  Support Topic id for which the chat is being initiated for.
@@ -204,7 +223,7 @@ export class CXPChatCallerService {
     let input = {
       tagName: this.cxpChatTagName,
       eligibilityParams: {
-        productId: this.pesId,
+        productId: this.getEffectiveProductId(supportTopicId),
         supportTopicId: supportTopicId,
         language: this.chatLanguage,
         subscriptionId: this._resourceService.subscriptionId
@@ -218,7 +237,7 @@ export class CXPChatCallerService {
       createTicket: true,
       ticketInformation: {
         subscriptionId: this._resourceService.subscriptionId,
-        productId: this.pesId,
+        productId: this.getEffectiveProductId(supportTopicId),
         supportTopicId: supportTopicId,
         title: this.caseSubject,
         resourceId: this._resourceService.resource.id

@@ -152,6 +152,10 @@ export class WebSitesService extends ResourceService {
     }
 
     public get liveChatEnabledSupportTopicIds(): string[] {
+        return this.liveChatEnabledSapSupportTopicIds;
+    }
+
+    public get liveChatEnabledSapSupportTopicIds():string[] {
         if (this.isApplicableForLiveChat) {
             if (this.appType === AppType.FunctionApp) {
                 return ['*']; //Enable all support topics for chat. CXP system, performs a check and they can independently enable/disable chats for specific ST's

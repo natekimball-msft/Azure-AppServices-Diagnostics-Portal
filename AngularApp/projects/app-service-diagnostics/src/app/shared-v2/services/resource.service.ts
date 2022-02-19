@@ -163,6 +163,25 @@ export class ResourceService {
     }
   }
 
+  public get liveChatEnabledSapSupportTopicIds():string[] {
+    if(this._genericArmConfigService) {
+      let currConfig: ArmResourceConfig = this._genericArmConfigService.getArmResourceConfig(this.resource.id);
+      if(this.isApplicableForLiveChat === true) {
+        if ( currConfig.liveChatConfig && currConfig.liveChatConfig.sapSupportTopicIds
+          &&  currConfig.liveChatConfig.sapSupportTopicIds instanceof Array
+          && currConfig.liveChatConfig.sapSupportTopicIds.length > 0 ) {
+          return currConfig.liveChatConfig.sapSupportTopicIds;
+        }
+        else {
+          return [];
+        }
+      }
+      else {
+        return [];
+      }
+    }
+  }
+
   public registerResource(resourceUri: string): Observable<{} | ArmResource> {
     if (this._genericArmConfigService && resourceUri.indexOf('hostingenvironments') < 0) {
       return this._genericArmConfigService.initArmConfig(resourceUri).pipe(
