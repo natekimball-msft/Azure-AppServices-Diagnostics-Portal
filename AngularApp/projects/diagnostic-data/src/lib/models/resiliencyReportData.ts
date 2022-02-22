@@ -1,6 +1,3 @@
-
-
-
 export class ResiliencyReportData {
     /**
      * Used to receive data for generating the Resiliency Score report PDF
