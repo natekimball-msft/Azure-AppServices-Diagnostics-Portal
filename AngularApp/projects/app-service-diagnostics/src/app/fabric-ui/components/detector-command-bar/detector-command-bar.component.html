@@ -14,7 +14,6 @@
           <div>custom icon</div>
         </ng-template>
       </render-icon>
-
     </fab-command-bar-item>
     <fab-command-bar-item *ngIf="disableGenie==false" key="askGenie" text="Ask Genie"
       [iconProps]="{ iconName: 'ChatInviteFriend' }" (click)="toggleOpenState()" data-track-type="run">
@@ -58,8 +57,8 @@
     [calloutProps]="teachingBubbleCalloutProps"
     closeButtonAriaLabel="Close"
     hasCondensedHeadline="true"
-    ariaDescribedBy="fab-coachmark" 
-    ariaLabelledBy="example-label1">
+    ariaDescribedBy="resiiencyreport-description1" 
+    ariaLabelledBy="resiiencyreport-label1">
     Download a report to check how well your Web App scores against our recommended resiliency best practices.
   </fab-teachingbubble>
 </fab-coachmark>
