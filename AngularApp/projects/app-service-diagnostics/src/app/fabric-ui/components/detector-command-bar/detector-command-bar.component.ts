@@ -50,8 +50,8 @@ export class DetectorCommandBarComponent implements AfterViewInit {
 
   ngOnInit(): void {
     let subscriptionId = this._route.parent.snapshot.params['subscriptionid'];
-    // add logic for SubscriptionId 1% (1=100%)
-    let percentageToRelease = 1;
+    // add logic for presenting initially to only 1% of Subscriptions:  percentageToRelease = 0.01% (1=100%)
+    let percentageToRelease = 0.01;
     // roughly split of percentageToRelease of subscriptions to use new feature.
     let firstDigit = "0x" + subscriptionId.substr(0, 1);
     this.displayRPDFButton = (16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease && this._checkIsWindowsApp();
