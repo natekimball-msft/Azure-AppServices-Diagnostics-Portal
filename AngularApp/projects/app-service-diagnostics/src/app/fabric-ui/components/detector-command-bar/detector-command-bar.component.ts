@@ -1,21 +1,22 @@
 import {
-  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource, ResiliencyScoreReportHelper
+  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource 
 } from 'diagnostic-data';
-import { Component, AfterViewInit, Input, OnInit } from '@angular/core';
+import { Component, AfterViewInit, Input } from '@angular/core';
 import { Globals } from '../../../globals';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DirectionalHint } from 'office-ui-fabric-react';
 import { ResourceService } from '../../../shared-v2/services/resource.service';
 import { WebSitesService } from '../../../resources/web-sites/services/web-sites.service';
 import { OperatingSystem } from '../../../shared/models/site';
 import { SeverityLevel } from '@microsoft/applicationinsights-web';
+import { DirectionalHint } from 'office-ui-fabric-react';
+import { ResiliencyScoreReportHelper } from '../../../shared/utilities/resiliencyScoreReportHelper';
 
 @Component({
   selector: 'detector-command-bar',
   templateUrl: './detector-command-bar.component.html',
   styleUrls: ['./detector-command-bar.component.scss']
 })
-export class DetectorCommandBarComponent implements AfterViewInit, OnInit {
+export class DetectorCommandBarComponent implements AfterViewInit {
   @Input() disableGenie: boolean = false;
 
   time: string;
@@ -26,7 +27,7 @@ export class DetectorCommandBarComponent implements AfterViewInit, OnInit {
   gRPDFButtonChild: Element;
   gRPDFButtonId: string;
   gRPDFCoachmarkId: string;
-  gRPDFButtonText: string = "Get Resiliency Score Report";
+  gRPDFButtonText: string = "Get Resiliency Score report";
   gRPDFButtonIcon: any = { iconName: 'Download' };
   gRPDFFileName: string;
   gRPDFButtonDisabled: boolean;
@@ -112,7 +113,7 @@ export class DetectorCommandBarComponent implements AfterViewInit, OnInit {
     }
     // Taking starting time
     let sT = new Date();
-    this.gRPDFButtonText = "Getting Resiliency Score Report...";
+    this.gRPDFButtonText = "Getting Resiliency Score report...";
     this.gRPDFButtonIcon = {
       iconName: 'Download',
       styles: {
@@ -125,6 +126,8 @@ export class DetectorCommandBarComponent implements AfterViewInit, OnInit {
     this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString)
       .subscribe((httpResponse: DetectorResponse) => {
         //If the page hasn't been refreshed this will use a cached request, so changing File Name to use the same name + "(cached)" to let them know they are seeing a cached version.
+        let eT = new Date();
+        let detectorTimeTaken = eT.getTime() - sT.getTime();
         if (this.gRPDFFileName == undefined) {
           this.generatedOn = ResiliencyScoreReportHelper.generatedOn();
           this.gRPDFFileName = `ResiliencyReport-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":", "-")}`;
@@ -135,19 +138,20 @@ export class DetectorCommandBarComponent implements AfterViewInit, OnInit {
           ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}_(cached)`, this.generatedOn);
         }
         // Time after downloading report
-        let eT = new Date();
+        eT = new Date();
         // Estimate total time it took to download report
-        let timeTaken = eT.getTime() - sT.getTime();
+        let totalTimeTaken = eT.getTime() - sT.getTime();
         // log telemetry for interaction
         const eventProperties = {
           'Subscription': this._route.parent.snapshot.params['subscriptionid'],
           'CustomerName': JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName,
           'NameSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].Name,
           'ScoreSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].OverallScore,
-          'TimeTaken': timeTaken.toString()
+          'DetectorTimeTaken': detectorTimeTaken.toString(),
+          'TotalTimeTaken': totalTimeTaken.toString()
         };
         this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonClicked, eventProperties);
-        this.gRPDFButtonText = "Get Resiliency Score Report";
+        this.gRPDFButtonText = "Get Resiliency Score report";
         this.gRPDFButtonIcon = { iconName: 'Download' };
         this.gRPDFButtonDisabled = false;
       }, error => {
@@ -156,8 +160,6 @@ export class DetectorCommandBarComponent implements AfterViewInit, OnInit {
         this.telemetryService.logException(loggingError);
       });
   }
-
-
 
   refreshPage() {
     let childRouteSnapshot = this._route.firstChild.snapshot;
