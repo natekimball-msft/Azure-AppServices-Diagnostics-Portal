@@ -120,6 +120,9 @@ import { CheckComponent, ConvertLevelToHealthStatusPipe } from './components/ste
 import {SolutionOrchestratorComponent} from "./components/solution-orchestrator/solution-orchestrator.component";
 import { RouterModule } from '@angular/router';
 import { ButtonStepComponent } from './components/step-views/button-step-view/button-step.component';
+import { FabCoachmarkModule } from './modules/fab-coachmark/coachmark.module';
+import { FabTeachingBubbleModule } from './modules/fab-teachingbubble/teachingbubble.module';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -134,6 +137,8 @@ import { ButtonStepComponent } from './components/step-views/button-step-view/bu
     FabIconModule,
     FabChoiceGroupModule,
     FabSearchBoxModule,
+    FabCoachmarkModule,
+    FabTeachingBubbleModule,
     FabCommandBarModule,
     FabDropdownModule,
     InViewportModule,
@@ -235,7 +240,9 @@ import { ButtonStepComponent } from './components/step-views/button-step-view/bu
     CheckComponent,
     ConvertLevelToHealthStatusPipe,
     GetDropdownOptionsPipe,
-    SolutionOrchestratorComponent
+    SolutionOrchestratorComponent,
+    FabCoachmarkModule,
+    FabTeachingBubbleModule,
   ],
 })
 export class DiagnosticDataModule {
