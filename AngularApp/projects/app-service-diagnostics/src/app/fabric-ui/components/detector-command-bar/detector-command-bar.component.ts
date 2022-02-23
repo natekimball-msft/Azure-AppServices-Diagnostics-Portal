@@ -63,11 +63,16 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     this.gRPDFButtonDisabled = false;
     //Get showCoachMark value(string) from local storage (if exists), then convert to boolean   
     try {
-      if (localStorage.getItem("showCoachmark") != undefined) {
-        this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
-      }
-      else {
+      if (this.displayRPDFButton){
+        if (localStorage.getItem("showCoachmark") != undefined)  {
+          this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
+        }
+        else {
         this.showCoachmark = true;
+        }
+      }
+      else{
+        this.showCoachmark = false;
       }
     }
     catch (error) {
@@ -96,12 +101,17 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     // Once the button is clicked no need to show Coachmark anymore:
     const loggingError = new Error();
     try {
-      if (localStorage.getItem("showCoachmark") != undefined) {
-        this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
+      if (this.displayRPDFButton){
+        if (localStorage.getItem("showCoachmark") != undefined) {
+          this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
+        }
+        else {
+          this.showCoachmark = false;
+          localStorage.setItem("showCoachmark", "false");
+        }
       }
-      else {
+      else{
         this.showCoachmark = false;
-        localStorage.setItem("showCoachmark", "false");
       }
     }
     catch (error) {
