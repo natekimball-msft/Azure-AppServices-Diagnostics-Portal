@@ -58,9 +58,6 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     let firstDigit = "0x" + subscriptionId.substr(0, 1);
     this.displayRPDFButton = (16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease && this._checkIsWindowsApp();
     this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonDisplayed, { 'ResiliencyScoreButtonDisplayed': this.displayRPDFButton.toString(), 'SubscriptionId': this._route.parent.snapshot.params['subscriptionid'] });
-  }
-
-  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private _resourceService: ResourceService) {
     const loggingError = new Error();
     this.gRPDFButtonDisabled = false;
     //Get showCoachMark value(string) from local storage (if exists), then convert to boolean   
@@ -78,6 +75,9 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       let _severityLevel: SeverityLevel = SeverityLevel.Warning;
       this.telemetryService.logException(loggingError, null, null, _severityLevel);
     }
+  }
+
+  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private _resourceService: ResourceService) {
   }
 
   toggleOpenState() {
@@ -210,10 +210,14 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     const btns = document.querySelectorAll("#fab-command-bar button");
     const pdfButtonId = "generatePDFButton";
     const coachMarkId = "fab-coachmark";
+    let PDFButtonIndex = btns.length;
     if (btns && btns.length > 0) {
-      const dropdown = btns[btns.length - 1];
-      dropdown.setAttribute("aria-expanded", `${this.globals.openTimePicker}`);
-      const PDFButton = btns[btns.length - 2];
+      btns.forEach((btn,i) => {
+        if(btn.textContent.includes(this.gRPDFButtonText)) {
+          PDFButtonIndex = i;
+        }
+      });
+      const PDFButton = btns[PDFButtonIndex];
       PDFButton.setAttribute("id", pdfButtonId);
     }
 
