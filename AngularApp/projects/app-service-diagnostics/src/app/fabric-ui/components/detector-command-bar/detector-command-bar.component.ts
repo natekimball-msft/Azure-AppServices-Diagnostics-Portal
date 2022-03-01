@@ -68,11 +68,13 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     this.gRPDFButtonDisabled = false;
     //Get showCoachMark value(string) from local storage (if exists), then convert to boolean   
     try {
-      if (localStorage.getItem("showCoachmark") != undefined) {
-        this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
-      }
-      else {
-        this.showCoachmark = true;
+      if (this.displayRPDFButton){
+        if (localStorage.getItem("showCoachmark") != undefined) {
+          this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
+        }
+        else {
+          this.showCoachmark = true;
+        }
       }
     }
     catch (error) {
@@ -247,5 +249,11 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       let _severityLevel: SeverityLevel = SeverityLevel.Warning;
       this.telemetryService.logException(loggingError, null, null, _severityLevel);
     }
+  }
+
+  showingTeachingBubble(){
+    if (this.displayRPDFButton){
+      this.showTeachingBubble = true;
+    }  
   }
 }
