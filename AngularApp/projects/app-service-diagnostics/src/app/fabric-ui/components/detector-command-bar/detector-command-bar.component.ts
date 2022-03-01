@@ -58,7 +58,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     // allowlisting beta subscriptions for testing purposes
     this._isBetaSubscription = DemoSubscriptions.betaSubscriptions.indexOf(subscriptionId) >= 0;
     // add logic for presenting initially to only 1% of Subscriptions:  percentageToRelease = 0.01% (1=100%)
-    let percentageToRelease = 1;
+    let percentageToRelease = 0.01;
     // roughly split of percentageToRelease of subscriptions to use new feature.
     
     let firstDigit = "0x" + subscriptionId.substr(0, 1);
