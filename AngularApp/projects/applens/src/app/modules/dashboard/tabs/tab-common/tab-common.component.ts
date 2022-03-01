@@ -75,6 +75,12 @@ export class TabCommonComponent implements OnInit {
             queryParamsHandling:"preserve"
           });
           break;
+      case TabKey.Analytics:
+          this._router.navigate(["analytics"], {
+            relativeTo: this._activatedRoute,
+            queryParamsHandling:"preserve"
+          });
+          break;
     }
   }
 }
