@@ -62,7 +62,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     // roughly split of percentageToRelease of subscriptions to use new feature.
     
     let firstDigit = "0x" + subscriptionId.substr(0, 1);
-    this.displayRPDFButton = ((16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease || this._isBetaSubscription) && this._checkIsWindowsApp();
+    this.displayRPDFButton = ((16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease || this._isBetaSubscription) && this._checkIsWindowsApp();    
     this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonDisplayed, { 'ResiliencyScoreButtonDisplayed': this.displayRPDFButton.toString(), 'SubscriptionId': this._route.parent.snapshot.params['subscriptionid'] });
     const loggingError = new Error();
     this.gRPDFButtonDisabled = false;
