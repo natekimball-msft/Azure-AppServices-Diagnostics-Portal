@@ -397,6 +397,8 @@ export class OnboardingFlowComponent implements OnInit {
 
   ableToDelete: boolean = false;
   deleteVisibilityStyle = {};
+  commitHistoryVisibilityStyle = {};
+  commitHistoryLink: string = "";
 
   isProd: boolean = false;
   PPELink: string;
@@ -409,6 +411,8 @@ export class OnboardingFlowComponent implements OnInit {
     this.diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(devopsConfig => {
       this.detectorGraduation = devopsConfig.graduationEnabled;
       this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
+      this.commitHistoryVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
+      //this.commitHistoryLink = (this.detectorGraduation && this.mode !== DevelopMode.Create) ? `$https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=/${this.id}/${this.id}.csx&_a=history` : "";
 
       this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
 

@@ -277,7 +277,9 @@
         (click)="getDevOptions()"></fab-command-bar-item>
       <fab-command-bar-item key="gistVersion" text="Gist version" [iconProps]="{ iconName: 'BackToWindow' }"
         (click)="showGistDialog()"></fab-command-bar-item>
-      
+      <a target="_blank" [href]="commitHistoryLink">
+        <fab-command-bar-item [style]="commitHistoryVisibilityStyle" key="commitHistory" text="commitHistory" [iconProps]="{iconName: 'ReadingMode'}"></fab-command-bar-item>
+      </a>
       <fab-command-bar-item [style]="deleteVisibilityStyle" key="delete" text="Delete" [iconProps]="{iconName: 'Delete'}"
         (click)="showDeleteDialog()"></fab-command-bar-item>
       <!-- <fab-command-bar-item key="internal" [text]="internalExternalText" [iconProps]="{ iconName: 'View' }"
