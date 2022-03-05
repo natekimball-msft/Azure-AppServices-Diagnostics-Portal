@@ -412,7 +412,7 @@ export class OnboardingFlowComponent implements OnInit {
       this.detectorGraduation = devopsConfig.graduationEnabled;
       this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
       this.commitHistoryVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
-      //this.commitHistoryLink = (this.detectorGraduation && this.mode !== DevelopMode.Create) ? `$https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=/${this.id}/${this.id}.csx&_a=history` : "";
+      this.commitHistoryLink = (this.detectorGraduation && this.mode !== DevelopMode.Create) ? `https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=/${this.id}/${this.id}.csx&_a=history` : "";
 
       this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
 
@@ -619,6 +619,10 @@ export class OnboardingFlowComponent implements OnInit {
     });
 
     this.gistDialogHidden = true;
+  }
+
+  openCommitHistory(){
+    window.open(this.commitHistoryLink);
   }
 
   updateGistVersionOptions(event: string) {
