@@ -1407,11 +1407,6 @@ export class OnboardingFlowComponent implements OnInit {
   }
 
   saveTempId: string = "";
-  showSaveDialog: boolean = false;
-
-  openSaveDialog(){
-    this.showSaveDialog = true;
-  }
 
   saveDetectorCode(){
     //get from code
