@@ -1426,6 +1426,8 @@ export class OnboardingFlowComponent implements OnInit {
       this.saveTempId = this.id;
     }
 
+    this.setTargetBranch();
+
     this.saveButtonText = "Saving";
     this.publishDialogHidden = true;
     this.disableSaveButton();
