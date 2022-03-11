@@ -1413,15 +1413,9 @@ export class OnboardingFlowComponent implements OnInit {
     this.showSaveDialog = true;
   }
 
-  testGetCodeSolution(detectorId: string){
-    this.diagnosticApiService.getDetectorCode(`${detectorId}/${detectorId}.csx`, this.defaultBranch, this.resourceId).subscribe(x => {
-      return x;
-    });
-  }
-  //get from code
-  //does exist?
-
   saveDetectorCode(){
+    //get from code
+    //does exist?
     if (this.mode != DevelopMode.Create){
       this.saveTempId = this.id;
     }
