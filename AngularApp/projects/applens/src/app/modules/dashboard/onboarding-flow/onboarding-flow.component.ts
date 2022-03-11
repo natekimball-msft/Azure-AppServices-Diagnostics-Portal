@@ -176,6 +176,9 @@ export class OnboardingFlowComponent implements OnInit {
   currentTime: string = "";
   publishSuccess: boolean = false;
   publishFailed: boolean = false;
+  saveSuccess: boolean = false;
+  saveFailed: boolean = false;
+  saveButtonText: string = "Save";
   detectorName: string = "";
   submittedPanelTimer: any = null;
   deleteButtonText: string = "Delete";
@@ -186,6 +189,10 @@ export class OnboardingFlowComponent implements OnInit {
   openTimePickerSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
   failureMessage: string = "";
   PPERedirectTimer: number = 10;
+  Organization: string = "";
+  Project: string = "";
+  Repository: string = "";
+  FolderPath: string = "";
   runButtonStyle: any = {
     root: { cursor: "default" }
   };
@@ -195,6 +202,8 @@ export class OnboardingFlowComponent implements OnInit {
       color: "grey"
     }
   };
+  saveButtonVisibilityStyle: any = {};
+  saveButtonDisabled: boolean = false;
   PRLink: string = "";
 
   detectorGraduation: boolean = false;
@@ -408,7 +417,13 @@ export class OnboardingFlowComponent implements OnInit {
     this.branchInput = this._activatedRoute.snapshot.queryParams['branchInput'];
     this.diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(devopsConfig => {
       this.detectorGraduation = devopsConfig.graduationEnabled;
+      this.Organization = devopsConfig.organization;
+      this.Repository = devopsConfig.repository;
+      this.FolderPath = devopsConfig.folderPath;
+      this.Project = devopsConfig.project;
+
       this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
+      this.saveButtonVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
 
       this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
 
@@ -1241,6 +1256,8 @@ export class OnboardingFlowComponent implements OnInit {
   dismissPublishSuccessHandler() {
     this.publishSuccess = false;
     this.publishFailed = false;
+    this.saveSuccess = false;
+    this.saveFailed = false;
   }
 
 
@@ -1389,11 +1406,79 @@ export class OnboardingFlowComponent implements OnInit {
     this.deletingDetector = false
   }
 
+  saveTempId: string = "";
+  showSaveDialog: boolean = false;
+
+  openSaveDialog(){
+    this.showSaveDialog = true;
+  }
+
+  testGetCodeSolution(detectorId: string){
+    this.diagnosticApiService.getDetectorCode(`${detectorId}/${detectorId}.csx`, this.defaultBranch, this.resourceId).subscribe(x => {
+      return x;
+    });
+  }
+  //get from code
+  //does exist?
+
+  saveDetectorCode(){
+    if (this.mode != DevelopMode.Create){
+      this.saveTempId = this.id;
+    }
+
+    this.saveButtonText = "Saving";
+    this.publishDialogHidden = true;
+    this.disableSaveButton();
+
+    const commitType = this.mode == DevelopMode.Create ? "add" : "edit";
+    const commitMessageStart = this.mode == DevelopMode.Create ? "Adding" : "Editing";
+
+    let file = [this.codeCompletionEnabled ? this.code.replace(codePrefix, "") : this.code];
+    let title = [`/${this.saveTempId}/${this.saveTempId}.csx`];
+
+    let link = this.gistMode ? `${this.PPEHostname}/${this.resourceId}/gists/${this.saveTempId.toLowerCase()}?branchInput=${this.Branch}` : `${this.PPEHostname}/${this.resourceId}/detectors/${this.saveTempId.toLowerCase()}/edit?branchInput=${this.Branch}`;
+    
+    const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, file, title, `${commitMessageStart} ${this.saveTempId.toLowerCase()}`, commitType, this.resourceId);
+    
+
+    DetectorObservable.subscribe(_ => {
+        this.PRLink = (this.FolderPath === "/") ? `https://dev.azure.com/${this.Organization}/${this.Project}/_git/${this.Repository}?path=${this.FolderPath}${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.Organization}/${this.Project}/_git/${this.Repository}?path=${this.FolderPath}/${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx&version=GB${this.Branch}`;
+        this.saveSuccess = true;
+        this.postSave();
+        this._applensCommandBarService.refreshPage();
+    }, err => {
+      this.saveFailed = true;
+      this.postSave();
+    });
+  }
+
   postPublish() {
     this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
     this.getBranchList();
     this.enablePublishButton();
     this.enableRunButton();
+  }
+
+  postSave(){
+    this.saveButtonText = "Save";
+    this.enableSaveButton();
+  }
+
+  saveIcon: any = { iconName: 'Save' };
+
+  disableSaveButton(){
+    this.saveButtonDisabled = true;
+    this.saveIcon = {
+      iconName: 'Save',
+      styles: {
+        root: { color: "grey" }
+      }
+    };
+  }
+
+  enableSaveButton() {
+    this.saveButtonDisabled = false;
+    this.saveIcon = { iconName: 'Save' };
   }
 
 
