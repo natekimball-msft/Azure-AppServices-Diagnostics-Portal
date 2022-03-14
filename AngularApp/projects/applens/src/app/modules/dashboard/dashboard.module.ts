@@ -307,7 +307,10 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
                     },
                     {
                         path: 'analytics',
-                        component: TabAnalyticsDashboardComponent
+                        component: TabAnalyticsDashboardComponent,
+                        data: {
+                            tabKey: TabKey.Analytics
+                        }
                     },
                     {
                         path: 'monitoring/edit',

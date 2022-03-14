@@ -3,7 +3,8 @@ export enum TabKey {
     Develop = "Develop",
     CommitHistory = "CommitHistory",
     DataSources = "DataSources",
-    Monitoring = "Monitoring"
+    Monitoring = "Monitoring",
+    Analytics = "Analytics"
 }
 
 export interface Tab {
