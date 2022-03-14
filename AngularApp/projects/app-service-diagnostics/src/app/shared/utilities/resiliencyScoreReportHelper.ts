@@ -281,13 +281,13 @@ export class ResiliencyScoreReportHelper {
             content: [
                 // Resiliency Score page
                 {
-                    absolutePosition: { x: 60, y: 20 },
+                    absolutePosition: { x: 60, y: 15 },
                     text: [
                         { text: 'Azure App Service Resiliency Score report for: ', style: 'header3', fontSize: 16, pageOrientation: 'portrait' }, { text: resiliencyReportData.CustomerName, bold: true, style: 'header3', fontSize: 16, pageOrientation: 'portrait' }
                     ]
                 },
                 {
-                    absolutePosition: { x: 60, y: 28 },
+                    absolutePosition: { x: 60, y: 35 },
                     text: `\nReport generated on: ${generatedOn}`,
                     style: 'header3',
                     fontSize: 11,
@@ -309,28 +309,6 @@ export class ResiliencyScoreReportHelper {
                             x: 246, y: 110,
                             r1: 100, r2: 100,
                             linearGradient: ['red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'yellow', 'yellow', 'green', 'green', 'green'],
-                        },
-                        { //Gauge needle's light
-                            type: 'line',
-                            color: 'white',
-                            lineColor: 'white',
-                            x1: 246,
-                            y1: 110,
-                            x2: ResiliencyScoreReportHelper.NeedleX2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
-                            y2: ResiliencyScoreReportHelper.NeedleY2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
-                            lineWidth: 10,
-                            lineCap: 'round'
-                        },
-                        { //Gauge needle
-                            type: 'line',
-                            color: 'white',
-                            lineColor: 'black',
-                            x1: 246,
-                            y1: 110,
-                            x2: ResiliencyScoreReportHelper.NeedleX2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
-                            y2: ResiliencyScoreReportHelper.NeedleY2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
-                            lineWidth: 6,
-                            lineCap: 'round'
                         },
                         // 0 Red 
                         {
@@ -439,6 +417,29 @@ export class ResiliencyScoreReportHelper {
                             x2: 337, y2: 75,
                             lineWidth: 5
                         },
+                        { //Gauge needle's light
+                            type: 'line',
+                            color: 'white',
+                            lineColor: 'white',
+                            x1: 246,
+                            y1: 110,
+                            x2: ResiliencyScoreReportHelper.NeedleX2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
+                            y2: ResiliencyScoreReportHelper.NeedleY2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
+                            lineWidth: 10,
+                            lineCap: 'round'
+                        },
+                        { //Gauge needle
+                            type: 'line',
+                            color: 'white',
+                            lineColor: 'black',
+                            x1: 246,
+                            y1: 110,
+                            x2: ResiliencyScoreReportHelper.NeedleX2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
+                            y2: ResiliencyScoreReportHelper.NeedleY2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
+                            lineWidth: 6,
+                            lineCap: 'round'
+                        },
+                        
                         // Gauge's outer black border
                         {
                             type: 'ellipse',
@@ -500,11 +501,11 @@ export class ResiliencyScoreReportHelper {
                 },
                 // Site name
                 {
-                    absolutePosition: { x: 60, y: 205 },
+                    absolutePosition: { x: 60, y: 215 },
                     columns: [
                         {
                             alignment: 'center',
-                            text: [{ text: 'Site: ', margin: [5, 2, 5, 2], width: 160, color: 'black', fontSize: 17 }, { text: resiliencyReportData.ResiliencyResourceList[0].Name, margin: [5, 2, 5, 2], width: 160, color: 'black', fontSize: 17 }]
+                            text: [{ text: 'Site: ', margin: [5, 2, 5, 2], width: 150, color: 'black', fontSize: 17 }, { text: resiliencyReportData.ResiliencyResourceList[0].Name, margin: [5, 2, 5, 2], width: 150, color: 'black', fontSize: 17 }]
                         }
                     ]
                 },
@@ -869,7 +870,7 @@ export class ResiliencyScoreReportHelper {
                             ul: [
                                 { text: ['Open the ', { text: 'Azure Portal', bold: true }] },
                                 { text: ['Click on an ', { text: 'App Services', bold: true }] },
-                                'Click on the Web App where for which you want to enable Health Check.',
+                                'Click on the Web App for which you want to enable Health Check.',
                                 { text: ['Under ', { text: 'Monitoring ', bold: true }, 'click in ', { text: 'Health check', bold: true }, '.'] },
                                 { text: ['Click ', { text: 'Enable', bold: true }, '.'] },
                                 { text: ['Under ', { text: 'Path ', bold: true }, 'add the path to a page that will only return 200 once your app and its dependencies are responsive.'] },
