@@ -32,9 +32,13 @@ export class TabMonitoringComponent implements OnInit {
 
   reportName: string = "";
   detectorId: string;
-  private dataSourceMapping: Map<string, string> = new Map<string, string>([
+  private monitoringDataSourceMapping: Map<string, string> = new Map<string, string>([
     ["All", "0"],
-    ["Applens", "1"],
+    ["Applens",  "1"],
+    ["Azure Portal", "2"]
+  ]);
+  private analyticsDataSourceMapping: Map<string, string> = new Map<string, string>([
+    ["Applens",  "1"],
     ["Azure Portal", "2"]
   ]);
   dataSourceKeys: string[];
@@ -73,7 +77,8 @@ export class TabMonitoringComponent implements OnInit {
   ngOnInit() {
     this.getMonitoringResponse();
     this.getDetectorResponse();
-    this.dataSourceKeys = Array.from(this.dataSourceMapping.keys());
+    this.selectedDataSource  = this.statisticsType === StatisticsType.Analytics ? "Applens" : "All";
+    this.dataSourceKeys = this.statisticsType === StatisticsType.Analytics ? Array.from(this.analyticsDataSourceMapping.keys()) : Array.from(this.monitoringDataSourceMapping.keys());
     this.timeRangeKeys = Array.from(this.timeRangeMapping.keys());
   }
 
@@ -108,7 +113,7 @@ export class TabMonitoringComponent implements OnInit {
 
   setDataSource(selectedDataSource: string) {
     this.selectedDataSource = selectedDataSource;
-    this.dataSourceFlag = this.dataSourceMapping.get(selectedDataSource);
+    this.dataSourceFlag = this.monitoringDataSourceMapping.get(selectedDataSource);
     this.refresh();
   }
 
