@@ -190,13 +190,7 @@ export class OnboardingFlowComponent implements OnInit {
   openTimePickerSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
   failureMessage: string = "";
   PPERedirectTimer: number = 10;
-  DevopsConfig: DevopsConfig = {
-    organization: "",
-    project: "",
-    folderPath: "",
-    repository: ""
-  };
-  FolderPath: string = "";
+  DevopsConfig: DevopsConfig;
   runButtonStyle: any = {
     root: { cursor: "default" }
   };
@@ -421,10 +415,7 @@ export class OnboardingFlowComponent implements OnInit {
     this.branchInput = this._activatedRoute.snapshot.queryParams['branchInput'];
     this.diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(devopsConfig => {
       this.detectorGraduation = devopsConfig.graduationEnabled;
-      this.DevopsConfig.organization = devopsConfig.organization;
-      this.DevopsConfig.repository = devopsConfig.repository;
-      this.DevopsConfig.folderPath = devopsConfig.folderPath;
-      this.DevopsConfig.project = devopsConfig.project;
+      this.DevopsConfig = new DevopsConfig(devopsConfig);
 
       this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
       this.saveButtonVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
