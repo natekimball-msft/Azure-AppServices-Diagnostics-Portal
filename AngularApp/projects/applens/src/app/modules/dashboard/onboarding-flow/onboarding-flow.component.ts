@@ -427,7 +427,7 @@ export class OnboardingFlowComponent implements OnInit {
       this.DevopsConfig.project = devopsConfig.project;
 
       this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
-      this.saveButtonVisibilityStyle = !(this.detectorGraduation === true) ? {display: "none"} : {};
+      this.saveButtonVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
 
       this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
 
@@ -1411,6 +1411,7 @@ export class OnboardingFlowComponent implements OnInit {
   }
 
   saveTempId: string = "";
+  saveFailMessage: string = "";
 
   saveDetectorCode(){
     this.setTargetBranch();
@@ -1427,7 +1428,7 @@ export class OnboardingFlowComponent implements OnInit {
     if (this.mode != DevelopMode.Create){
       this.saveTempId = this.id;
     }
-    else{
+    else {
       let def = new RegExp("(?<=Definition).*(?=\\])");
       let idStatement = new RegExp("(?<=Id).*?(?=,)");
       let dId = new RegExp("(?<=\").*(?=\")");
@@ -1436,6 +1437,14 @@ export class OnboardingFlowComponent implements OnInit {
       this.saveTempId = dId.exec(this.saveTempId)[0];
       this.Branch = `${this.Branch}${this.saveTempId}`;
     }
+
+    /*
+    if (this.mode == DevelopMode.Create && idInSystem(saveTempId)){
+      this.saveFailed = true;
+      this.saveFailMessage = "A detector with this ID already exists. Please enter a new ID"
+      postSave();
+    }
+    */
 
     
     let title = [`/${this.saveTempId}/${this.saveTempId}.csx`];
