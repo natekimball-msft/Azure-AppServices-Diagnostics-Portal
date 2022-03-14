@@ -183,7 +183,7 @@ export class DetectorViewComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this._route.snapshot.data.tabKey == 'Monitoring')
+    if (this._route.snapshot.data.tabKey == 'Monitoring' || this._route.snapshot.data.tabKey == 'Analytics')
         this.buttonStyle = {root:{display: "none"}};
     this.versionService.isLegacySub.subscribe(isLegacy => this.isLegacy = isLegacy);
     this._route.params.subscribe(p => {
