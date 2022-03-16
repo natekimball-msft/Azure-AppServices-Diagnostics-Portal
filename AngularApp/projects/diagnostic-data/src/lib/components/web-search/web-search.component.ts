@@ -191,7 +191,7 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
         this.resetGlobals();
         if (!this.isChildComponent || !this.searchId || this.searchId.length <1) this.searchId = uuid();
         if (!this.webSearchConfig) {
-            this.webSearchConfig = new WebSearchConfiguration(this.pesId);
+            this.webSearchConfig = new WebSearchConfiguration(this.pesId, null);
         }
         var searchTask;
         let searchTaskComplete = false;

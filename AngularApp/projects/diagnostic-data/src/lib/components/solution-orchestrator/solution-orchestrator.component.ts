@@ -362,7 +362,7 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
 
     getDocuments() {
         if (!this.webSearchConfig) {
-            this.webSearchConfig = new WebSearchConfiguration(this.pesId);
+            this.webSearchConfig = new WebSearchConfiguration(this.pesId, this.sapProductId);
         }
         var searchTask;
         let searchTaskComplete = false;

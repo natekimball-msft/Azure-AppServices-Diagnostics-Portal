@@ -13,8 +13,10 @@ export class CXPChatCallerService {
   public isChatSupported: boolean;
   private supportedSupportTopicIds: string[];
   private supportedSapSupportTopicIds: string[];
-  public pesId: string = '';
-  public sapProductId:string = '';
+  public configuredPesId: string = '';  // pesId as configured in the arm resource config by partners.
+  public configuredSapProductId:string = ''; // sapProductId as configured in the arm resource config by partners.
+  public suppliedPesId: string = ''; // pesId as supplied by case submission flow.
+  public suppliedSapProductId: string = ''; // sapProductId as supplied by case submission flow.
   public readonly cxpChatTagName: string = 'webapps';
   public readonly applensUserAgentForCXPChat: string = 'applensDiagnostics';
   public supportPlanType: string = '';
@@ -40,6 +42,14 @@ export class CXPChatCallerService {
             this.chatLanguage = startupInfo.effectiveLocale;
           }
 
+          if(!!startupInfo.pesId && !isNaN(Number(startupInfo.pesId))) {
+            this.suppliedPesId = startupInfo.pesId;
+          }
+
+          if(!!startupInfo.sapProductId && isNaN(Number(startupInfo.sapProductId))) {
+            this.suppliedSapProductId = startupInfo.sapProductId;
+          }
+
           if (!!startupInfo.optionalParameters && Array.isArray(startupInfo.optionalParameters)) {
             var caseSubjectParam = startupInfo.optionalParameters.find(param => param.key === "caseSubject");
             if (!!caseSubjectParam) {
@@ -55,15 +65,22 @@ export class CXPChatCallerService {
       });
 
     this._resourceService.getPesId().subscribe(pesId => {
-      this.pesId = pesId;
+      if(isNaN(Number(pesId))) {
+        this.configuredPesId = pesId;
+      }
     });
     
     this._resourceService.getSapProductId().subscribe(sapProductId => {
-      this.sapProductId = sapProductId;
-    });    
+      if(!isNaN(Number(sapProductId))) {
+        this.configuredSapProductId = sapProductId;
+      }
+    });
   }
 
   public isSupportTopicEnabledForLiveChat(supportTopicIdToCheck: string): boolean {
+    if(!supportTopicIdToCheck) {
+      return false;
+    }
     if (!this.isChatSupported) {
       this.logChatEligibilityCheck(supportTopicIdToCheck, 'CXPChatEnabled', 'false');
       return false;
@@ -117,7 +134,7 @@ export class CXPChatCallerService {
     let input = {
       tagName: this.cxpChatTagName,
       eligibilityParams: {
-        productId: this.getEffectiveProductId(supportTopicId),
+        productId: this.getEffectiveProductId(),
         supportPlanType: this.supportPlanType,
         supportTopicId: supportTopicId,
         language: this.chatLanguage,
@@ -201,17 +218,24 @@ export class CXPChatCallerService {
     }
   }
 
-  private getEffectiveProductId(supportTopicId: string):string {
-    if(supportTopicId && !isNaN(Number(supportTopicId))) {
-      //Supplied support topic id was numerical. We are still using old support topic id's.
-      return this.pesId;
+  private getEffectiveProductId():string {
+    if(this.suppliedSapProductId) {
+      return this.suppliedSapProductId;
     }
     else {
-      //Supplied support topic id was not a numerical value. We are using sap support topic id's.
-      return this.sapProductId;
-    }
+      if(this.configuredSapProductId) {
+        return this.configuredSapProductId;
+      }
+      else {
+        if(this.suppliedPesId) {
+          return this.suppliedPesId;
+        }
+        else {
+          return this.configuredPesId;
+        }
+      }
+    }    
   }
-
 
   /**
    * @param supportTopicId  Support Topic id for which the chat is being initiated for.
@@ -223,7 +247,7 @@ export class CXPChatCallerService {
     let input = {
       tagName: this.cxpChatTagName,
       eligibilityParams: {
-        productId: this.getEffectiveProductId(supportTopicId),
+        productId: this.getEffectiveProductId(),
         supportTopicId: supportTopicId,
         language: this.chatLanguage,
         subscriptionId: this._resourceService.subscriptionId
@@ -237,7 +261,7 @@ export class CXPChatCallerService {
       createTicket: true,
       ticketInformation: {
         subscriptionId: this._resourceService.subscriptionId,
-        productId: this.getEffectiveProductId(supportTopicId),
+        productId: this.getEffectiveProductId(),
         supportTopicId: supportTopicId,
         title: this.caseSubject,
         resourceId: this._resourceService.resource.id
