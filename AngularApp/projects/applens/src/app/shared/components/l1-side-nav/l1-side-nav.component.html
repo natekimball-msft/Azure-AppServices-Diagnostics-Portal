@@ -36,7 +36,7 @@
 </ng-template>
 
 <ng-template #sideSubItem let-item="item">
-  <div class="side-item side-sub-item" (click)="clickSideItem(item)" type="button" (keyup.enter)="clickSideItem(item)" tabindex="0"
+  <div class="side-item" [ngClass]="{'side-sub-item': isExpand}" (click)="clickSideItem(item)" type="button" (keyup.enter)="clickSideItem(item)" tabindex="0"
     [attr.aria-label]="item.displayName" [class.highlight-side-item]="currentHightLightItem === item.type">
     <img [src]="item.iconPath" [alt]="item.displayName">
     <div *ngIf="isExpand" class="ml-3">{{item.displayName}}</div>
