@@ -36,7 +36,8 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
     pesId : string = "";
     sapProductId: string = "";
 
-    supportTopicId : string = "";    
+    supportTopicId : string = "";
+    sapSupportTopicId:string = "";
 
     customQueryParametersForBingSearch : string = "";
 
@@ -56,6 +57,7 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
         super(telemetryService);
         this.isPublic = config && config.isPublic;
         this.supportTopicId = this._supportTopicService.supportTopicId;
+        this.sapSupportTopicId = this._supportTopicService.sapSupportTopicId;
         this.deepSearchConfig = new DocumentSearchConfiguration();;
         const subscription = this._activatedRoute.queryParamMap.subscribe(qParams => {
             this.searchTerm = qParams.get('searchTerm') === null ? "" || this.searchTerm : qParams.get('searchTerm');
@@ -363,11 +365,34 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
             this.sapProductId = sapProductId;
         });
     }
+
+    public getEffectiveProductId():string{
+        if(this.sapProductId){
+            return this.sapProductId;
+        }
+        else if(this.pesId){
+            return this.pesId;
+        }
+        else{
+            return '';
+        }
+    }
+
+    public getEffectiveSupportTopicId():string{
+        if(this.sapSupportTopicId){
+            return this.sapSupportTopicId;
+        }
+        else if(this.supportTopicId){
+            return this.supportTopicId;
+        } else {
+            return '';
+        }
+    }
     
     checkIfDeepSearchIsEnabled () {
 
-        var deepSearchObservable = this.isPublic ? this._contentService.IsDeepSearchEnabled(this.pesId, this.supportTopicId) :
-                                                   this._documentsSearchService.IsEnabled(this.pesId) 
+        var deepSearchObservable = this.isPublic ? this._contentService.IsDeepSearchEnabled(this.getEffectiveProductId(), this.getEffectiveSupportTopicId()) :
+                                                   this._documentsSearchService.IsEnabled(this.getEffectiveProductId()) 
 
         
         let checkStatusTask = deepSearchObservable.pipe( map((res) => res), 

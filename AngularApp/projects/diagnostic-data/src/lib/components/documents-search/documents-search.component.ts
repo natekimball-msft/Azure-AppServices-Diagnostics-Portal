@@ -88,9 +88,16 @@ export class DocumentsSearchComponent extends DataRenderBaseComponent  implement
     });
   }
 
+  getEffectiveProductId() {
+    if (this.sapProductId) {
+      return this.sapProductId;
+    }
+    return this.pesId;
+  }
+
   checkIfEnabled () {
     let checkStatusTask = this._documentsSearchService
-                         .IsEnabled(this.pesId)
+                         .IsEnabled(this.getEffectiveProductId())
                          .pipe( map((res) => res), 
                                 retryWhen(errors => {
                                 let numRetries = 0;
