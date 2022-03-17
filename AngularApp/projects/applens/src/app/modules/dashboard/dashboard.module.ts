@@ -156,10 +156,7 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
             },
             {
                 path: 'docs',
-                component: ApplensDocsComponent,
-                data: {
-                    showTitle: false
-                }
+                component: ApplensDocsComponent
             },
             {
                 path: 'gists/:gist',
@@ -303,11 +300,17 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
                     },
                     {
                         path: 'monitoring',
-                        component: TabMonitoringComponent
+                        component: TabMonitoringComponent,
+                        data: {
+                            tabKey: TabKey.Monitoring
+                        }
                     },
                     {
                         path: 'analytics',
-                        component: TabAnalyticsDashboardComponent
+                        component: TabAnalyticsDashboardComponent,
+                        data: {
+                            tabKey: TabKey.Analytics
+                        }
                     },
                     {
                         path: 'monitoring/edit',

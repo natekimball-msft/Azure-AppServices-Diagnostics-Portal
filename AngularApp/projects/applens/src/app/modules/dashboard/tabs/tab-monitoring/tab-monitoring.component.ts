@@ -4,6 +4,8 @@ import { ActivatedRoute, Params } from '@angular/router';
 import { ApplensDiagnosticService } from '../../services/applens-diagnostic.service';
 import { DiagnosticService } from 'diagnostic-data';
 import * as momentNs from 'moment';
+import { IButtonStyles } from 'office-ui-fabric-react';
+import { BehaviorSubject } from 'rxjs-compat';
 
 const moment = momentNs;
 
@@ -30,9 +32,13 @@ export class TabMonitoringComponent implements OnInit {
 
   reportName: string = "";
   detectorId: string;
-  private dataSourceMapping: Map<string, string> = new Map<string, string>([
+  private monitoringDataSourceMapping: Map<string, string> = new Map<string, string>([
     ["All", "0"],
-    ["Applens", "1"],
+    ["Applens",  "1"],
+    ["Azure Portal", "2"]
+  ]);
+  private analyticsDataSourceMapping: Map<string, string> = new Map<string, string>([
+    ["Applens",  "1"],
     ["Azure Portal", "2"]
   ]);
   dataSourceKeys: string[];
@@ -46,18 +52,33 @@ export class TabMonitoringComponent implements OnInit {
     ["Last Month", "720"]
   ]);
   timeRangeKeys: string[];
-  selectedTimeRange: string = "Last Week";
-  private timeRangeInHours: string = "168";
+  selectedTimeRange: string = "Last 24 hours";
+  private timeRangeInHours: string = "24";
 
   endTime: momentNs.Moment = moment.utc();
   startTime: momentNs.Moment = this.endTime.clone().subtract(7, 'days');
 
   error: any;
 
+  buttonStyle: IButtonStyles = {
+    root: {
+      color: "#323130",
+      borderRadius: "12px",
+      marginTop: "8px",
+      background: "rgba(0, 120, 212, 0.1)",
+      fontSize: "13",
+      fontWeight: "600",
+      height: "80%"
+    }
+  }
+
+  openTimePickerSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
+
   ngOnInit() {
     this.getMonitoringResponse();
     this.getDetectorResponse();
-    this.dataSourceKeys = Array.from(this.dataSourceMapping.keys());
+    this.selectedDataSource  = this.statisticsType === StatisticsType.Analytics ? "Applens" : "All";
+    this.dataSourceKeys = this.statisticsType === StatisticsType.Analytics ? Array.from(this.analyticsDataSourceMapping.keys()) : Array.from(this.monitoringDataSourceMapping.keys());
     this.timeRangeKeys = Array.from(this.timeRangeMapping.keys());
   }
 
@@ -92,7 +113,8 @@ export class TabMonitoringComponent implements OnInit {
 
   setDataSource(selectedDataSource: string) {
     this.selectedDataSource = selectedDataSource;
-    this.dataSourceFlag = this.dataSourceMapping.get(selectedDataSource);
+    this.dataSourceFlag = this.monitoringDataSourceMapping.get(selectedDataSource);
+    this.refresh();
   }
 
   setTimeRange(selectedTimeRange: string) {
@@ -100,5 +122,6 @@ export class TabMonitoringComponent implements OnInit {
     this.timeRangeInHours = this.timeRangeMapping.get(selectedTimeRange);
     let timeRangeInDays: number = parseInt(this.timeRangeInHours) / 24;
     this.startTime = this.endTime.clone().subtract(timeRangeInDays, 'days');
+    this.refresh();
   }
 }

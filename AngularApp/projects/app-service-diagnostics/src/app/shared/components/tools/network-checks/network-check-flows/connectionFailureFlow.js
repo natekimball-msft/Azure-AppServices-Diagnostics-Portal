@@ -19,17 +19,23 @@ export var connectionFailureFlow = {
             return;
         }
 
+        var isLinuxOrContainer = siteInfo.kind.includes("linux") || siteInfo.kind.includes("container");
+
         var dnsSettings = [];
-        isContinue = await checkDnsSettingV2Async(siteInfo, diagProvider, flowMgr, isKuduAccessiblePromise, dnsSettings);
-        if (!isContinue) {
-            return;
+        if (!isLinuxOrContainer) {
+            isContinue = await checkDnsSettingV2Async(siteInfo, diagProvider, flowMgr, isKuduAccessiblePromise, dnsSettings);
+            if (!isContinue) {
+                return;
+            }
         }
+
         await checkAppSettingsAsync(siteInfo, diagProvider, flowMgr);
-        if (siteInfo.kind.includes("linux") || siteInfo.kind.includes("container")) {
+        if (isLinuxOrContainer) {
             // linux and container based app is not supported by connectivity check yet
             flowMgr.addView(new CommonWordings().connectivityCheckUnsupported.get());
             return;
         }
+        
         checkNetworkConfigAndConnectivity(siteInfo, diagProvider, flowMgr, isKuduAccessiblePromise, dnsSettings);
 
     }

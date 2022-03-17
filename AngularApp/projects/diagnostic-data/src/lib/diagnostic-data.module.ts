@@ -113,6 +113,8 @@ import { CheckStepComponent } from './components/step-views/check-step-view/chec
 import { CheckComponent, ConvertLevelToHealthStatusPipe } from './components/step-views/check-step-view/check.component';
 import {SolutionOrchestratorComponent} from "./components/solution-orchestrator/solution-orchestrator.component";
 import { ButtonStepComponent } from './components/step-views/button-step-view/button-step.component';
+import { FabCoachmarkModule } from './modules/fab-coachmark/coachmark.module';
+import { FabTeachingBubbleModule } from './modules/fab-teachingbubble/teachingbubble.module';
 import { HighChartsHoverService } from './services/highcharts-hover.service';
 import { RouterModule } from '@angular/router';
 import { FabDataTableComponent } from './components/fab-data-table/fab-data-table.component';
@@ -120,6 +122,7 @@ import { FabCardComponent } from './components/fab-card/fab-card.component';
 import { SolutionsPanelComponent } from './components/solutions-panel/solutions-panel.component';
 import { DetectorTimePickerComponent } from './components/detector-time-picker/detector-time-picker.component';
 import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-feedback.component';
+import { GenericBreadcrumbService } from './services/generic-breadcrumb.service';
 
 @NgModule({
   imports: [
@@ -134,6 +137,8 @@ import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-fee
     FabIconModule,
     FabChoiceGroupModule,
     FabSearchBoxModule,
+    FabCoachmarkModule,
+    FabTeachingBubbleModule,
     FabCommandBarModule,
     FabDropdownModule,
     InViewportModule,
@@ -243,6 +248,9 @@ import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-fee
     ConvertLevelToHealthStatusPipe,
     GetDropdownOptionsPipe,
     SolutionOrchestratorComponent,
+    FabCoachmarkModule,
+    FabTeachingBubbleModule,
+    FabTabComponent,
     FabricFeedbackComponent,
     FabDataTableComponent,
     DetectorTimePickerComponent
@@ -258,6 +266,7 @@ export class DiagnosticDataModule {
         GenericThemeService,
         GenericContentService,
         GenericDocumentsSearchService,
+        GenericBreadcrumbService,
         { provide: DIAGNOSTIC_DATA_CONFIG, useValue: config },
         CXPChatService,
         KustoTelemetryService,
