@@ -11,6 +11,7 @@ export class ResourceService {
   public templateFileName: string;
   public azureCommImpactedServicesList: string;
   public pesId: string;
+  public sapProductId:string;
   public staticSelfHelpContent: string;
   public altIcons: { [path: string]: string };
   public displayName: string;
@@ -28,6 +29,7 @@ export class ResourceService {
     this.versionPrefix = inputs.versionPrefix;
     this.azureCommImpactedServicesList = inputs.azureCommImpactedServicesList;
     this.pesId = inputs.pesId;
+    this.sapProductId = inputs.sapProductId;
     this.staticSelfHelpContent = inputs.staticSelfHelpContent;
     this.altIcons = inputs.altIcons;
     this.displayName = inputs.displayName;
@@ -50,6 +52,13 @@ export class ResourceService {
   public getPesId(): Observable<string>{
     if (this.pesId){
       return Observable.of(this.pesId);
+    }
+    return Observable.of(null);
+  }
+
+  public getSapProductId(): Observable<string>{
+    if (this.sapProductId){
+      return Observable.of(this.sapProductId);
     }
     return Observable.of(null);
   }

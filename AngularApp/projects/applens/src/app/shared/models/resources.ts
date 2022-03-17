@@ -59,6 +59,7 @@ export interface ResourceServiceInputs {
     armResource: ArmResource;
     azureCommImpactedServicesList: string;
     pesId: string;
+    sapProductId:string;
     staticSelfHelpContent: string;
     altIcons?: { [path: string]: string };
     searchSuffix: string;
@@ -77,6 +78,7 @@ export const DEFAULT_RESOURCE_SERVICE_INPUTS: ResourceServiceInputs = {
     armResource: null,
     azureCommImpactedServicesList: '',
     pesId: '',
+    sapProductId:'',
     staticSelfHelpContent: '',
     searchSuffix: 'AZURE'
 };
