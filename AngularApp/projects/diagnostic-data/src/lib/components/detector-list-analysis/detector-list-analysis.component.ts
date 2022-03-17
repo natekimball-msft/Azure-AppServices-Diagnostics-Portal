@@ -439,7 +439,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
 
 
 
-    renderInsightsFromSearch(downTime: DownTime) {        
+    renderInsightsFromSearch(downTime: DownTime) {
         this._resourceService.getPesId().subscribe(pesId => {
             if (!((this.isPublic && detectorSearchEnabledPesIds.findIndex(x => x == pesId) < 0) || (!this.isPublic && detectorSearchEnabledPesIdsInternal.findIndex(x => x == pesId) < 0))) {
                 this.searchId = uuid();

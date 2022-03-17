@@ -20,7 +20,7 @@ export class TabCommonComponent implements OnInit {
   // graduationEnabled: boolean = false;
   TabKey = TabKey;
 
-  constructor(private _router: Router, private _activatedRoute: ActivatedRoute, private _diagnosticApiService: DiagnosticApiService, private resourceService: ResourceService) {
+  constructor(private _router: Router, private _activatedRoute: ActivatedRoute, private _diagnosticApiService: DiagnosticApiService, private resourceService: ResourceService,) {
     this._activatedRoute.firstChild.data.subscribe(data => {
       const key:string = data["tabKey"];
       this.selectedTabKey = key;

@@ -44,6 +44,7 @@ export class TabDataComponent implements OnInit {
 
       this.analysisMode = this._route.snapshot.data['analysisMode'];
     });
+
     if (this._detectorControlService.isInternalView){
       this.internalExternalText = this.internalViewText;
     }

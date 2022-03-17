@@ -1197,6 +1197,7 @@ export class OnboardingFlowComponent implements OnInit {
     }
 
     this.setTargetBranch();
+
     if (this.mode == DevelopMode.Create) {
       this.PRTitle = `Creating ${this.id}`;
     }
