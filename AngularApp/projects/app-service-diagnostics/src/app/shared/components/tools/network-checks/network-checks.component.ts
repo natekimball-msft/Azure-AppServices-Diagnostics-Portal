@@ -68,7 +68,7 @@ export class NetworkCheckComponent implements OnInit, AfterViewInit {
             var queryParams = _route.snapshot.queryParams;
             if (queryParams["redirectFrom"] === "supportTopic") {
                 this.supportTopic = queryParams["supportTopic"];
-            }            
+            }
             if (this.supportTopic || queryParams["redirectFrom"] === "referrer") {
                 this.width = '100vw';
                 this.height = '100vh';
