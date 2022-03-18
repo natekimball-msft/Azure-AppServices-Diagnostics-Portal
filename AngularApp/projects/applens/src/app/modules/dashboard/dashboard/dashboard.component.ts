@@ -10,7 +10,7 @@ import { SearchService } from '../services/search.service';
 import { environment } from '../../../../environments/environment';
 import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
 import { ObserverService } from '../../../shared/services/observer.service';
-import { ICommandBarProps, PanelType, IBreadcrumbProps, IBreadcrumbItem } from 'office-ui-fabric-react';
+import { ICommandBarProps, PanelType, IBreadcrumbProps, IBreadcrumbItem, ITooltipHostProps } from 'office-ui-fabric-react';
 import { ApplensGlobal } from '../../../applens-global';
 import { L2SideNavType } from '../l2-side-nav/l2-side-nav';
 import { l1SideNavCollapseWidth, l1SideNavExpandWidth } from '../../../shared/components/l1-side-nav/l1-side-nav';
@@ -67,6 +67,14 @@ export class DashboardComponent implements OnDestroy {
     itemLink: {
       fontSize:"14px",
     },
+  }
+  breadcrumbTooltipHostProps: IBreadcrumbProps['tooltipHostProps'] = {
+    styles: {
+      root: {
+        fontWeight: "400",
+        color: "#256ccf",
+      }
+    }
   }
 
   constructor(public resourceService: ResourceService, private _detectorControlService: DetectorControlService,
