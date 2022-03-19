@@ -65,6 +65,7 @@ export interface ResourceServiceInputs {
     searchSuffix: string;
     emergingIssuesICMLookupEnabled?: boolean;
     displayName?: string;
+    overviewPageMetricsId?: string;
 }
 
 export const RESOURCE_SERVICE_INPUTS = new InjectionToken<ResourceServiceInputs>('ResourceServiceInputs');
