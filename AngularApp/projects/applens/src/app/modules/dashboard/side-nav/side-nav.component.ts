@@ -127,7 +127,6 @@ export class SideNavComponent implements OnInit {
 
   ngOnInit() {
     this.initializeDetectors();
-
     this.getCurrentRoutePath();
 
     this._router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(event => {
@@ -201,10 +200,8 @@ export class SideNavComponent implements OnInit {
         });
 
         this.categories.push(new CollapsibleMenuItem("All detectors", "", () => {this.navigateTo("alldetectors");},() => { return this.currentRoutePath && this.currentRoutePath.join('/') === `alldetectors`;} , null, false, null));
-        this.categories.push(new CollapsibleMenuItem("Analysis", "", null, null, null, false, this.analysisTypes));
+        this.categories.push(new CollapsibleMenuItem("Analysis", "", null, null, null, true, this.analysisTypes));
         this.categories = this.categories.sort((a, b) => a.label === 'Uncategorized' ? 1 : (a.label > b.label ? 1 : -1));
-
-        console.log("Categories before gists", this.categories);
 
         this.detectorsLoading = false;
         this._telemetryService.logPageView(TelemetryEventNames.SideNavigationLoaded, {});
@@ -236,7 +233,7 @@ export class SideNavComponent implements OnInit {
           category.forEach(c => {
             let categoryMenuItem = this.gists.find((cat: CollapsibleMenuItem) => cat.label === c);
             if (!categoryMenuItem) {
-              categoryMenuItem = new CollapsibleMenuItem(c, "", null, null, null, true);
+              categoryMenuItem = new CollapsibleMenuItem(c, "", null, null, null, false);
               this.gists.push(categoryMenuItem);
             }
 
