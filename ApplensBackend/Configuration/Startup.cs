@@ -74,6 +74,8 @@ namespace AppLensV3
             services.AddMemoryCache();
             services.AddMvc();
 
+            GenericCertLoader.Instance.Initialize();
+
             GraphTokenService.Instance.Initialize(Configuration);
             KustoTokenRefreshService.Instance.Initialize(Configuration);
 
