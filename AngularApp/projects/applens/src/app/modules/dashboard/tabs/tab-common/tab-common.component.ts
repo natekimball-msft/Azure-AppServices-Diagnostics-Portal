@@ -17,7 +17,7 @@ import { Tab, TabKey } from '../tab-key';
 export class TabCommonComponent implements OnInit {
   selectedTabKey: string;
   enabledDetectorDevelopment: boolean = true;
-  // graduationEnabled: boolean = false;
+  graduationEnabled: boolean = false;
   TabKey = TabKey;
 
   constructor(private _router: Router, private _activatedRoute: ActivatedRoute, private _diagnosticApiService: DiagnosticApiService, private resourceService: ResourceService,) {
@@ -32,9 +32,9 @@ export class TabCommonComponent implements OnInit {
       this.enabledDetectorDevelopment = enabledDetectorDevelopment;
     });
     //hide commit history
-    // this._diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(config => {
-    //   this.graduationEnabled = (config.graduationEnabled);// ? {display: "none"} : {};
-    // });
+    this._diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(config => {
+      this.graduationEnabled = (config.graduationEnabled);// ? {display: "none"} : {};
+    });
     this._router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(e => {
       const key:string = this._activatedRoute.firstChild.snapshot.data["tabKey"];
       this.selectedTabKey = key;
