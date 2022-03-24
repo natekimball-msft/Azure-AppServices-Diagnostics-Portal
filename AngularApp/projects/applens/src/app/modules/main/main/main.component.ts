@@ -5,7 +5,7 @@ import {
   ResourceServiceInputs, ResourceType, ResourceTypeState, ResourceServiceInputsJsonResponse
 } from '../../../shared/models/resources';
 import { HttpClient } from '@angular/common/http';
-import { DropdownMenuItemType, IDropdownOption, IDropdownProps } from 'office-ui-fabric-react';
+import { DropdownMenuItemType, IDropdownOption, IDropdownProps, PanelType } from 'office-ui-fabric-react';
 import { BehaviorSubject } from 'rxjs';
 import { DataTableResponseObject, DetectorControlService, HealthStatus } from 'diagnostic-data';
 import { AdalService } from 'adal-angular4';
@@ -25,6 +25,16 @@ export class MainComponent implements OnInit {
   showCaseCleansingOption = false;
   selectedResourceType: ResourceTypeState;
   resourceName: string;
+  openResourceTypePanel: boolean = false;
+  resourceTypeList: any = [];
+  type: PanelType = PanelType.custom;
+  width: string = "850px";
+  panelStyles: any = {
+    root: {
+      marginTop: '50px',
+    }
+  }
+
   defaultResourceTypes: ResourceTypeState[] = [
     {
       resourceType: null,
@@ -49,7 +59,7 @@ export class MainComponent implements OnInit {
       displayName: 'Container App',
       enabled: true,
       caseId: false
-    },    
+    },
     {
       resourceType: null,
       resourceTypeLabel: 'Virtual machine Id',
@@ -114,22 +124,53 @@ export class MainComponent implements OnInit {
       });
     });
 
+    this.resourceTypeList = [
+        {name: "App", imgSrc: "assets/img/Azure-WebApps-Logo.png"},
+        {name: "Linux App", imgSrc: "assets/img/Azure-Tux-Logo.png"},
+        {name: "Function App", imgSrc: "assets/img/Azure-Functions-Logo.png"},
+        {name: "Logic App", imgSrc: "assets/img/Azure-LogicAppsPreview-Logo.svg"},
+        {name: "App Service Environment",  imgSrc: "assets/img/ASE-Logo.jpg"},
+        {name: "Virtual Machine", imgSrc: "assets/img/Icon-compute-21-Virtual-Machine.svg"},
+        {name:  "Container App", imgSrc: "assets/img/Azure-ContainerApp-Logo.png"}];
+
     // TODO: Use this to restrict access to routes that don't match a supported resource type
     this._http.get<ResourceServiceInputsJsonResponse>('assets/enabledResourceTypes.json').subscribe(jsonResponse => {
       this.enabledResourceTypes = <ResourceServiceInputs[]>jsonResponse.enabledResourceTypes;
-      // this.enabledResourceTypes.forEach(type => {
-      //   const searchSuffix = type.searchSuffix;
-      //   if (searchSuffix && searchSuffix.length > 0 && !this.resourceTypes.find(resource => resource.displayName && searchSuffix && resource.displayName.toLowerCase() === searchSuffix.toLowerCase())) {
-      //     this.resourceTypes.push({
-      //       resourceType: null,
-      //       resourceTypeLabel: 'ARM resource ID',
-      //       routeName: (name) => `${name}`,
-      //       displayName: `${searchSuffix}`,
-      //       enabled: true,
-      //       caseId: false
-      //     });
-      //   }
-      // });      
+      this.enabledResourceTypes.forEach(type => {
+        const searchSuffix = type.searchSuffix;
+        if (searchSuffix && searchSuffix.length > 0 && !this.resourceTypes.find(resource => resource.displayName && searchSuffix && resource.displayName.toLowerCase() === searchSuffix.toLowerCase())) {
+          this.resourceTypes.push({
+            resourceType: null,
+            resourceTypeLabel: 'ARM resource ID',
+            routeName: (name) => `${name}`,
+            displayName: `${searchSuffix}`,
+            enabled: true,
+            caseId: false
+          });
+        }
+      });
+
+      const list = this.enabledResourceTypes.filter(type => this.defaultResourceTypes.findIndex(defaultResource => defaultResource.displayName === type.displayName) === -1);
+
+      list.sort((a,b) => {
+        return a.displayName.localeCompare(b.displayName);
+      })
+
+      list.forEach(resource => {
+        this.resourceTypes.push({
+          resourceType: resource.resourceType,
+          resourceTypeLabel: 'ARM resource ID',
+          routeName: (name) => `${name}`,
+          displayName: `${resource.displayName}`,
+          enabled: true,
+          caseId: false
+        });
+
+        if (this.resourceTypeList.findIndex(item => item.name.toLowerCase() === resource.displayName.toLowerCase()) < 0)
+        {
+            this.resourceTypeList.push({name: resource.displayName, imgSrc: resource? resource.imgSrc: ""})
+        }
+      });
 
       this._userInfoService.getRecentResources().subscribe(userInfo => {
         if (userInfo && userInfo.resources) {
@@ -147,6 +188,15 @@ export class MainComponent implements OnInit {
     this.userGivenName = this._adalService.userInfo.profile.given_name;
 
   }
+
+  openResourcePanel()
+  {
+      this.openResourceTypePanel = true;
+  }
+
+  dismissedHandler() {
+    this.openResourceTypePanel = false;
+ }
 
   selectResourceType(type: ResourceTypeState) {
     if (type.enabled) {
@@ -203,7 +253,7 @@ export class MainComponent implements OnInit {
 
     //If it is ARM resource id
     //if (this.defaultResourceTypes.findIndex(resource => this.selectedResourceType.displayName === resource.displayName) === -1) {
-    if (this.selectedResourceType.displayName === "ARM Resource ID") {  
+    if (this.selectedResourceType.displayName === "ARM Resource ID") {
       this.resourceName = this.normalizeArmUriForRoute(this.resourceName, this.enabledResourceTypes);
     } else {
       this.errorMessage = "";
@@ -215,7 +265,7 @@ export class MainComponent implements OnInit {
       window.location.href = `https://azuresupportcenter.msftcloudes.com/caseoverview?srId=${this.resourceName}`;
     }
 
-    
+
     this._detectorControlService.setCustomStartEnd(this._detectorControlService.startTime,this._detectorControlService.endTime);
 
     let timeParams = {
@@ -244,6 +294,7 @@ export class MainComponent implements OnInit {
   openTimePicker() {
     this.openTimePickerSubject.next(true);
   }
+
 
   private generateDataTable(recentResources: RecentResource[]) {
 
