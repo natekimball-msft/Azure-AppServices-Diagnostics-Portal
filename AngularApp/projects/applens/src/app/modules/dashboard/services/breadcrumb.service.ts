@@ -33,6 +33,7 @@ export class BreadcrumbService {
     public navigate(item: BreadcrumbNavigationItem) {
         const copiedList = [...this.breadcrumbList];
         const itemIndex = copiedList.findIndex(i => i.name === item.name);
+        let routingParams ={};
         if(itemIndex === 0) {
             this.resetBreadCrumbSubject();
         } else if(itemIndex > 0) {
@@ -40,22 +41,22 @@ export class BreadcrumbService {
             const removeItemCount = copiedList.length - itemIndex;
             copiedList.splice(itemIndex, removeItemCount);
             this.breadcrumbSubject.next(copiedList);
+            routingParams = copiedList[itemIndex]
         }
-
 
         const queryParams = this._activatedRoute.snapshot.queryParams;
         if (item.name === "Home" && item.id == undefined) {
-            this._router.navigate([this.resourceId], { queryParamsHandling: "merge" });
+            this._router.navigate([this.resourceId], { queryParams: routingParams });
             return;
         }
 
         if (item && item.isDetector) {
-            this._router.navigate([`${this.resourceId}/detectors/${item.id}`], { queryParamsHandling: "merge" });
+            this._router.navigate([`${this.resourceId}/detectors/${item.id}`], { queryParams: routingParams });
             return;
         }
 
         if (item && !item.isDetector) {
-            this._router.navigate([`${this.resourceId}/analysis/${item.id}`], { queryParamsHandling: "merge" });
+            this._router.navigate([`${this.resourceId}/analysis/${item.id}`], { queryParams: routingParams });
             return;
         }
     }

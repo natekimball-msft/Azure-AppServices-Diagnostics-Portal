@@ -945,9 +945,10 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     }
   }
 
-    private updateBreadcrumb(queryParams?:any) {
+    private updateBreadcrumb() {
         if(this.isPublic || this.withinGenie) return;
 
+        const queryParams = this._activatedRoute.snapshot.queryParams;
         this._genericBreadcrumbService.updateBreadCrumbSubject({
             name: this.analysisName,
             id: this.analysisId,
