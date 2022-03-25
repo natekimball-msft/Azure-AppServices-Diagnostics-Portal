@@ -945,13 +945,14 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     }
   }
 
-    private updateBreadcrumb() {
+    private updateBreadcrumb(queryParams) {
         if(this.isPublic || this.withinGenie) return;
 
         this._genericBreadcrumbService.updateBreadCrumbSubject({
             name: this.analysisName,
             id: this.analysisId,
-            isDetector: false
+            isDetector: false,
+            queryParams: queryParams
         });
     }
 }

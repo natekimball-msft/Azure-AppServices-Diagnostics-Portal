@@ -45,17 +45,17 @@ export class BreadcrumbService {
 
         const queryParams = this._activatedRoute.snapshot.queryParams;
         if (item.name === "Home" && item.id == undefined) {
-            this._router.navigate([this.resourceId], { queryParamsHandling: "preserve" });
+            this._router.navigate([this.resourceId], { queryParamsHandling: "merge" });
             return;
         }
 
         if (item && item.isDetector) {
-            this._router.navigate([`${this.resourceId}/detectors/${item.id}`], { queryParamsHandling: "preserve" });
+            this._router.navigate([`${this.resourceId}/detectors/${item.id}`], { queryParamsHandling: "merge" });
             return;
         }
 
         if (item && !item.isDetector) {
-            this._router.navigate([`${this.resourceId}/analysis/${item.id}`], { queryParamsHandling: "preserve" });
+            this._router.navigate([`${this.resourceId}/analysis/${item.id}`], { queryParamsHandling: "merge" });
             return;
         }
     }
