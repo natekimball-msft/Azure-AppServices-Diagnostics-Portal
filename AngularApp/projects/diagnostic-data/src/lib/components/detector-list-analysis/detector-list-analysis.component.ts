@@ -872,7 +872,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                         //TODO, For D&S blade, need to add a service to find category and navigate to detector
                         if (viewModel.model.startTime != null && viewModel.model.endTime != null) {
                             this.analysisContainsDowntime().subscribe(containsDowntime => {
-                                this._detectorControl.setCustomStartEnd(viewModel.model.startTime, viewModel.model.endTime);
+                               this._detectorControl.setCustomStartEnd(viewModel.model.startTime, viewModel.model.endTime);
                                 //Todo, detector control service should able to read and infer TimePickerOptions from startTime and endTime
                                 this._detectorControl.updateTimePickerInfo({
                                     selectedKey: TimePickerOptions.Custom,
@@ -945,7 +945,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     }
   }
 
-    private updateBreadcrumb(queryParams) {
+    private updateBreadcrumb(queryParams?:any) {
         if(this.isPublic || this.withinGenie) return;
 
         this._genericBreadcrumbService.updateBreadCrumbSubject({
