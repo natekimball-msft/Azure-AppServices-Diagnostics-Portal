@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { BreadcrumbNavigationItem } from "diagnostic-data";
+import { BreadcrumbNavigationItem, DetectorControlService, TimePickerOptions } from "diagnostic-data";
 import { BehaviorSubject } from "rxjs";
 import { ApplensDiagnosticService } from "./applens-diagnostic.service";
 
@@ -16,7 +16,7 @@ export class BreadcrumbService {
     private get breadcrumbList() {
         return this.breadcrumbSubject.getValue();
     }
-    constructor(private _router: Router, private _diagnosticService: ApplensDiagnosticService, private _activatedRoute: ActivatedRoute) {
+    constructor(private _router: Router, private _diagnosticService: ApplensDiagnosticService, private _activatedRoute: ActivatedRoute, private _detectorControl: DetectorControlService) {
         this.resourceId = this._diagnosticService.resourceId;
     }
 
@@ -38,13 +38,24 @@ export class BreadcrumbService {
             this.resetBreadCrumbSubject();
         } else if(itemIndex > 0) {
             //Remove all items includes the one you clicked
+            routingParams = copiedList[itemIndex].queryParams;
             const removeItemCount = copiedList.length - itemIndex;
             copiedList.splice(itemIndex, removeItemCount);
             this.breadcrumbSubject.next(copiedList);
-            routingParams = copiedList[itemIndex]
         }
 
-        const queryParams = this._activatedRoute.snapshot.queryParams;
+        if (!!routingParams["startTime"] && !!routingParams["endTime"])
+        {
+            this._detectorControl.setCustomStartEnd(routingParams["startTime"], routingParams["endTime"]);
+            //Todo, detector control service should able to read and infer TimePickerOptions from startTime and endTime
+            this._detectorControl.updateTimePickerInfo({
+                selectedKey: TimePickerOptions.Custom,
+                selectedText: TimePickerOptions.Custom,
+                startDate: new Date(routingParams["startTime"]),
+                endDate: new Date(routingParams["endTime"])
+            });
+        }
+
         if (item.name === "Home" && item.id == undefined) {
             this._router.navigate([this.resourceId], { queryParams: routingParams });
             return;
