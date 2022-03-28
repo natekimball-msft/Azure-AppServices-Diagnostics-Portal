@@ -18,6 +18,7 @@ import { ApplensGlobal } from '../../../applens-global';
 export class ApplensHeaderComponent implements OnInit {
   userPhotoSource: string = "";
   showCallout: boolean = false;
+  applensLogo: string = "../../../../assets/img/Applens-Logo.svg";
   resourceInfo: ResourceInfo = new ResourceInfo();
   envTag: string = "";
   searchValue: string = "";
