@@ -29,7 +29,7 @@ import { GenericResourceService } from '../../services/generic-resource-service'
 import { zoomBehaviors } from '../../models/time-series';
 import * as momentNs from 'moment';
 const moment = momentNs;
-import { PanelType } from 'office-ui-fabric-react';
+import { ILinkProps, PanelType } from 'office-ui-fabric-react';
 import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.service';
 
 const WAIT_TIME_IN_SECONDS_TO_ALLOW_DOWNTIME_INTERACTION: number = 58;
@@ -871,8 +871,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                     } else {
                         //TODO, For D&S blade, need to add a service to find category and navigate to detector
                         if (viewModel.model.startTime != null && viewModel.model.endTime != null) {
-                            this.analysisContainsDowntime().subscribe(containsDowntime => {
-                               this._detectorControl.setCustomStartEnd(viewModel.model.startTime, viewModel.model.endTime);
+                                this._detectorControl.setCustomStartEnd(viewModel.model.startTime, viewModel.model.endTime);
                                 //Todo, detector control service should able to read and infer TimePickerOptions from startTime and endTime
                                 this._detectorControl.updateTimePickerInfo({
                                     selectedKey: TimePickerOptions.Custom,
@@ -882,7 +881,6 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                                 });
                                 this.updateBreadcrumb();
                                 this._router.navigate([`../../detectors/${detectorId}`], { relativeTo: this._activatedRoute });
-                            });
                         }
                         else {
                             this.updateBreadcrumb();
@@ -890,6 +888,29 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                         }
                     }
                 }
+            }
+        }
+    }
+
+    queryParams = {};
+    linkStyle: ILinkProps['styles'] = {
+        root: {
+          padding: '10px'
+        }
+    }
+
+    public selectDetectorNewTab(viewModel: any) {
+        if (viewModel != null && viewModel.model.metadata.id) {
+            let detectorId = viewModel.model.metadata.id;
+
+            if (detectorId !== "") {
+                let paramString = "";
+                Object.keys(this.queryParams).forEach(x => {
+                    paramString = paramString === "" ? `${paramString}${x}=${this.queryParams[x]}` : `${paramString}&${x}=${this.queryParams[x]}`;
+                });
+                const linkAddress = `${this._router.url.split('/analysis/')[0]}/detectors/${detectorId}?${paramString}`;
+
+                window.open(linkAddress, '_blank');
             }
         }
     }
