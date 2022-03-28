@@ -16,7 +16,7 @@ export class CacheService {
     private inFlightObservables: Map<string, Subject<any>> = new Map<string, Subject<any>>();
 
     // This is useful to enable if you are trying to test and make sure this service is working properly
-    private enableConsoleLogging: boolean = true;
+    private enableConsoleLogging: boolean = false;
 
     constructor(private _telemetryService: TelemetryService) { }
 
@@ -58,7 +58,7 @@ export class CacheService {
     }
 
     private log(message: string, color: string) {
-        if (this.enableConsoleLogging) {
+        if (this.enableConsoleLogging && !environment.production) {
             console.log(message, color);
         }
     }
