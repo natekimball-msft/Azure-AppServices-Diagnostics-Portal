@@ -46,7 +46,7 @@ export class BreadcrumbService {
 
         if (!!routingParams["startTime"] && !!routingParams["endTime"])
         {
-            this._detectorControl.setCustomStartEnd(routingParams["startTime"], routingParams["endTime"]);
+            this._detectorControl.setCustomStartEnd(routingParams["startTime"], routingParams["endTime"], "BreadCrumbControl");
             //Todo, detector control service should able to read and infer TimePickerOptions from startTime and endTime
             this._detectorControl.updateTimePickerInfo({
                 selectedKey: TimePickerOptions.Custom,
