@@ -900,8 +900,6 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
           padding: '10px'
         }
     }
-    linkAddress: ILinkProps['href'] = "";
-    linkTarget: ILinkProps['target'] = "_blank";
 
     public selectDetectorNewTab(viewModel: any) {
         if (viewModel != null && viewModel.model.metadata.id) {
@@ -912,9 +910,9 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                 Object.keys(this.queryParams).forEach(x => {
                     paramString = paramString === "" ? `${paramString}${x}=${this.queryParams[x]}` : `${paramString}&${x}=${this.queryParams[x]}`;
                 });
-                this.linkAddress = `${this._router.url.split('/analysis/')[0]}/detectors/${detectorId}?${paramString}`;
+                const linkAddress = `${this._router.url.split('/analysis/')[0]}/detectors/${detectorId}?${paramString}`;
 
-                window.open(this.linkAddress, '_blank');
+                window.open(linkAddress, '_blank');
             }
         }
     }

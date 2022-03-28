@@ -369,8 +369,6 @@ export class DetectorListComponent extends DataRenderBaseComponent {
 
   
   queryParams = {};
-  // linkTarget: ILinkProps['target'] = "_blank";
-  // linkAddress: ILinkProps['href'] = "";
   linkStyle: ILinkProps['styles'] = {
     root: {
       padding: '10px'
@@ -425,15 +423,6 @@ export class DetectorListComponent extends DataRenderBaseComponent {
       let targetDetector = viewModel.model.metadata.id;
 
       if (targetDetector !== "") {
-        // const clickDetectorEventProperties = {
-        //   'ChildDetectorName': viewModel.model.title,
-        //   'ChildDetectorId': viewModel.model.metadata.id,
-        //   'IsExpanded': true,
-        //   'Status': viewModel.model.status,
-        // };
-
-        // // Log children detectors click
-        // this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
          const queryParams = this._activatedRoute.snapshot.queryParams;
          const resourceId = this._diagnosticService.resourceId;
 
