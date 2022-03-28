@@ -31,8 +31,6 @@ import * as momentNs from 'moment';
 const moment = momentNs;
 import { ILinkProps, PanelType } from 'office-ui-fabric-react';
 import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.service';
-import { UriUtilities } from '../../utilities/uri-utilities';
-import { ResourceService } from 'projects/applens/src/app/shared/services/resource.service';
 
 const WAIT_TIME_IN_SECONDS_TO_ALLOW_DOWNTIME_INTERACTION: number = 58;
 const PERCENT_CHILD_DETECTORS_COMPLETED_TO_ALLOW_DOWNTIME_INTERACTION: number = 0.9;

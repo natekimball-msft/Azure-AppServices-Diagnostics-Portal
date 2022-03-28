@@ -22,7 +22,6 @@ import { PortalActionGenericService } from '../../services/portal-action.service
 import { UriUtilities } from '../../utilities/uri-utilities';
 import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.service';
 import { ILinkProps } from 'office-ui-fabric-react';
-import { ResourceService } from 'projects/applens/src/app/shared/services/resource.service';
 import { SolutionService } from '../../services/solution.service';
 
 
@@ -67,7 +66,7 @@ export class DetectorListComponent extends DataRenderBaseComponent {
   loading = LoadingStatus.Loading;
 
   constructor(private _diagnosticService: DiagnosticService, protected telemetryService: TelemetryService, private _detectorControl: DetectorControlService, private _solutionService: SolutionService,
-    private parseResourceService: ParseResourceService, private resourceService: ResourceService, @Inject(DIAGNOSTIC_DATA_CONFIG) private config: DiagnosticDataConfig, private _router: Router,
+    private parseResourceService: ParseResourceService, @Inject(DIAGNOSTIC_DATA_CONFIG) private config: DiagnosticDataConfig, private _router: Router,
     private _activatedRoute: ActivatedRoute, private _portalActionService: PortalActionGenericService, private _breadcrumbService : GenericBreadcrumbService) {
     super(telemetryService);
     this.isPublic = this.config && this.config.isPublic;
