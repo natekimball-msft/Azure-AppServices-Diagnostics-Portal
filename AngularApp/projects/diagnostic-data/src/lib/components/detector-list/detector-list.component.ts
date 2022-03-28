@@ -22,7 +22,6 @@ import { PortalActionGenericService } from '../../services/portal-action.service
 import { UriUtilities } from '../../utilities/uri-utilities';
 import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.service';
 import { ILinkProps } from 'office-ui-fabric-react';
-import { ResourceService } from 'projects/applens/src/app/shared/services/resource.service';
 import { SolutionService } from '../../services/solution.service';
 
 
@@ -67,7 +66,7 @@ export class DetectorListComponent extends DataRenderBaseComponent {
   loading = LoadingStatus.Loading;
 
   constructor(private _diagnosticService: DiagnosticService, protected telemetryService: TelemetryService, private _detectorControl: DetectorControlService, private _solutionService: SolutionService,
-    private parseResourceService: ParseResourceService, private resourceService: ResourceService, @Inject(DIAGNOSTIC_DATA_CONFIG) private config: DiagnosticDataConfig, private _router: Router,
+    private parseResourceService: ParseResourceService, @Inject(DIAGNOSTIC_DATA_CONFIG) private config: DiagnosticDataConfig, private _router: Router,
     private _activatedRoute: ActivatedRoute, private _portalActionService: PortalActionGenericService, private _breadcrumbService : GenericBreadcrumbService) {
     super(telemetryService);
     this.isPublic = this.config && this.config.isPublic;
@@ -369,8 +368,6 @@ export class DetectorListComponent extends DataRenderBaseComponent {
 
   
   queryParams = {};
-  linkTarget: ILinkProps['target'] = "_blank";
-  linkAddress: ILinkProps['href'] = "";
   linkStyle: ILinkProps['styles'] = {
     root: {
       padding: '10px'
@@ -391,7 +388,7 @@ export class DetectorListComponent extends DataRenderBaseComponent {
         // Log children detectors click
         this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
         this.queryParams = UriUtilities.removeChildDetectorStartAndEndTime(this._activatedRoute.snapshot.queryParams);
-        if (targetDetector === 'appchanges' && !this.isPublic) {
+        if (targetDetector === 'appchanges' && this.isPublic) {
           this._portalActionService.openChangeAnalysisBlade(this._detectorControl.startTimeString, this._detectorControl.endTimeString);
         } else {
           if (this.isPublic && !(this.overrideResourceUri == "")){
@@ -419,47 +416,21 @@ export class DetectorListComponent extends DataRenderBaseComponent {
     }
   }
 
+
   public selectDetectorNewTab(viewModel: DetectorViewModeWithInsightInfo) {
     if (viewModel != null && viewModel.model.metadata.id) {
       let targetDetector = viewModel.model.metadata.id;
 
       if (targetDetector !== "") {
-        const clickDetectorEventProperties = {
-          'ChildDetectorName': viewModel.model.title,
-          'ChildDetectorId': viewModel.model.metadata.id,
-          'IsExpanded': true,
-          'Status': viewModel.model.status,
-        };
+         const queryParams = this._activatedRoute.snapshot.queryParams;
+         const resourceId = this._diagnosticService.resourceId;
 
-        // Log children detectors click
-        this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
-        this.queryParams = UriUtilities.removeChildDetectorStartAndEndTime(this._activatedRoute.snapshot.queryParams);
-        if (targetDetector === 'appchanges' && !this.isPublic) {
-          this._portalActionService.openChangeAnalysisBlade(this._detectorControl.startTimeString, this._detectorControl.endTimeString);
-        } else {
-          if (this.isPublic) {
-            const url = this._router.url.split("?")[0];
-            const routeUrl = url.endsWith("/overview") ? `../detectors/${targetDetector}` : `../../detectors/${targetDetector}`;
-            let paramString = "";
-            Object.keys(this.queryParams).forEach(x => {
-              paramString = paramString === "" ? `${paramString}${x}=${this.queryParams[x]}` : `${paramString}&${x}=${this.queryParams[x]}`;
-            });
-            this.linkAddress = `${routeUrl}?${paramString}`;
-          } else {
-            const resourceId = this._diagnosticService.resourceId;
-
-            this._breadcrumbService.updateBreadCrumbSubject({
-              name: this.detectorName,
-              id: this.detector,
-              isDetector: true
-            });
-            let paramString = "";
-            Object.keys(this.queryParams).forEach(x => {
-              paramString = paramString === "" ? `${paramString}${x}=${this.queryParams[x]}` : `${paramString}&${x}=${this.queryParams[x]}`;
-            });
-            this.linkAddress = this.overrideResourceUri == "" ? `${resourceId}/detectors/${targetDetector}?${paramString}` : `${this.overrideResourceUri}/detectors/${targetDetector}?${paramString}`;
-          }
-        }
+         let paramString = "";
+         Object.keys(queryParams).forEach(x => {
+           paramString = paramString === "" ? `${paramString}${x}=${queryParams[x]}` : `${paramString}&${x}=${queryParams[x]}`;
+         });
+         const linkAddress = this.overrideResourceUri == "" ? `${resourceId}/detectors/${targetDetector}?${paramString}` : `${this.overrideResourceUri}/detectors/${targetDetector}?${paramString}`;
+         window.open(linkAddress, '_blank');
       }
     }
   }
