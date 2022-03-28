@@ -336,7 +336,6 @@ export class DetectorControlService {
       this.timePickerStrSub.next(`${st} to ${et}`);
     }
   }
-
 }
 
 export interface DurationSelector {
