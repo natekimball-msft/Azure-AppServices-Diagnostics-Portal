@@ -58,7 +58,7 @@ export class CacheService {
     }
 
     private log(message: string, color: string) {
-        if (this.enableConsoleLogging && !environment.production) {
+        if (this.enableConsoleLogging) {
             console.log(message, color);
         }
     }
