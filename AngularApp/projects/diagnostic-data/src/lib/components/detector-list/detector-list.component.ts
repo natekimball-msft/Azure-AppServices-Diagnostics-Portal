@@ -369,8 +369,8 @@ export class DetectorListComponent extends DataRenderBaseComponent {
 
   
   queryParams = {};
-  linkTarget: ILinkProps['target'] = "_blank";
-  linkAddress: ILinkProps['href'] = "";
+  // linkTarget: ILinkProps['target'] = "_blank";
+  // linkAddress: ILinkProps['href'] = "";
   linkStyle: ILinkProps['styles'] = {
     root: {
       padding: '10px'
@@ -391,7 +391,7 @@ export class DetectorListComponent extends DataRenderBaseComponent {
         // Log children detectors click
         this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
         this.queryParams = UriUtilities.removeChildDetectorStartAndEndTime(this._activatedRoute.snapshot.queryParams);
-        if (targetDetector === 'appchanges' && !this.isPublic) {
+        if (targetDetector === 'appchanges' && this.isPublic) {
           this._portalActionService.openChangeAnalysisBlade(this._detectorControl.startTimeString, this._detectorControl.endTimeString);
         } else {
           if (this.isPublic && !(this.overrideResourceUri == "")){
@@ -425,42 +425,24 @@ export class DetectorListComponent extends DataRenderBaseComponent {
       let targetDetector = viewModel.model.metadata.id;
 
       if (targetDetector !== "") {
-        const clickDetectorEventProperties = {
-          'ChildDetectorName': viewModel.model.title,
-          'ChildDetectorId': viewModel.model.metadata.id,
-          'IsExpanded': true,
-          'Status': viewModel.model.status,
-        };
+        // const clickDetectorEventProperties = {
+        //   'ChildDetectorName': viewModel.model.title,
+        //   'ChildDetectorId': viewModel.model.metadata.id,
+        //   'IsExpanded': true,
+        //   'Status': viewModel.model.status,
+        // };
 
-        // Log children detectors click
-        this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
-        this.queryParams = UriUtilities.removeChildDetectorStartAndEndTime(this._activatedRoute.snapshot.queryParams);
-        if (targetDetector === 'appchanges' && !this.isPublic) {
-          this._portalActionService.openChangeAnalysisBlade(this._detectorControl.startTimeString, this._detectorControl.endTimeString);
-        } else {
-          if (this.isPublic) {
-            const url = this._router.url.split("?")[0];
-            const routeUrl = url.endsWith("/overview") ? `../detectors/${targetDetector}` : `../../detectors/${targetDetector}`;
-            let paramString = "";
-            Object.keys(this.queryParams).forEach(x => {
-              paramString = paramString === "" ? `${paramString}${x}=${this.queryParams[x]}` : `${paramString}&${x}=${this.queryParams[x]}`;
-            });
-            this.linkAddress = `${routeUrl}?${paramString}`;
-          } else {
-            const resourceId = this._diagnosticService.resourceId;
+        // // Log children detectors click
+        // this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
+         const queryParams = this._activatedRoute.snapshot.queryParams;
+         const resourceId = this._diagnosticService.resourceId;
 
-            this._breadcrumbService.updateBreadCrumbSubject({
-              name: this.detectorName,
-              id: this.detector,
-              isDetector: true
-            });
-            let paramString = "";
-            Object.keys(this.queryParams).forEach(x => {
-              paramString = paramString === "" ? `${paramString}${x}=${this.queryParams[x]}` : `${paramString}&${x}=${this.queryParams[x]}`;
-            });
-            this.linkAddress = this.overrideResourceUri == "" ? `${resourceId}/detectors/${targetDetector}?${paramString}` : `${this.overrideResourceUri}/detectors/${targetDetector}?${paramString}`;
-          }
-        }
+         let paramString = "";
+         Object.keys(queryParams).forEach(x => {
+           paramString = paramString === "" ? `${paramString}${x}=${queryParams[x]}` : `${paramString}&${x}=${queryParams[x]}`;
+         });
+         const linkAddress = this.overrideResourceUri == "" ? `${resourceId}/detectors/${targetDetector}?${paramString}` : `${this.overrideResourceUri}/detectors/${targetDetector}?${paramString}`;
+         window.open(linkAddress, '_blank');
       }
     }
   }

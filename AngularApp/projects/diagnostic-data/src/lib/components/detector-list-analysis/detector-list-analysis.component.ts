@@ -906,60 +906,15 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     public selectDetectorNewTab(viewModel: any) {
         if (viewModel != null && viewModel.model.metadata.id) {
             let detectorId = viewModel.model.metadata.id;
-            let categoryName = "";
-
-            if (viewModel.model.metadata.category) {
-                categoryName = viewModel.model.metadata.category.replace(/\s/g, '');
-            }
-            else {
-                // For uncategorized detectors:
-                // If it is home page, redirect to availability category. Otherwise stay in the current category page.
-                categoryName = this._router.url.split('/')[11] ? this._router.url.split('/')[11] : "availabilityandperformance";
-            }
 
             if (detectorId !== "") {
-                const clickDetectorEventProperties = {
-                    'ChildDetectorName': viewModel.model.title,
-                    'ChildDetectorId': viewModel.model.metadata.id,
-                    'IsExpanded': true,
-                    'Status': viewModel.model.status,
-                    'SearchMode': this.searchMode
-                };
+                let paramString = "";
+                Object.keys(this.queryParams).forEach(x => {
+                    paramString = paramString === "" ? `${paramString}${x}=${this.queryParams[x]}` : `${paramString}&${x}=${this.queryParams[x]}`;
+                });
+                this.linkAddress = `${this._router.url.split('/analysis/')[0]}/detectors/${detectorId}?${paramString}`;
 
-                // Log children detectors click
-                this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
-                this.queryParams = UriUtilities.removeChildDetectorStartAndEndTime(this._activatedRoute.snapshot.queryParams);
-
-                if (detectorId === 'appchanges' && !this._detectorControl.internalClient) {
-                    this.portalActionService.openChangeAnalysisBlade(this._detectorControl.startTimeString, this._detectorControl.endTimeString);
-                } else {
-                    //TODO, For D&S blade, need to add a service to find category and navigate to detector
-                    if (viewModel.model.startTime != null && viewModel.model.endTime != null) {
-
-                        this._detectorControl.setCustomStartEnd(viewModel.model.startTime, viewModel.model.endTime);
-                        //Todo, detector control service should able to read and infer TimePickerOptions from startTime and endTime
-                        this._detectorControl.updateTimePickerInfo({
-                            selectedKey: TimePickerOptions.Custom,
-                            selectedText: TimePickerOptions.Custom,
-                            startDate: new Date(viewModel.model.startTime),
-                            endDate: new Date(viewModel.model.endTime)
-                        });
-                        this.updateBreadcrumb();
-                        let paramString = "";
-                        Object.keys(this.queryParams).forEach(x => {
-                            paramString = paramString === "" ? `${paramString}${x}=${this.queryParams[x]}` : `${paramString}&${x}=${this.queryParams[x]}`;
-                        });
-                        this.linkAddress = `${this._router.url.split('/analysis/')[0]}/detectors/${detectorId}?${paramString}`;
-                    }
-                    else {
-                        this.updateBreadcrumb();
-                        let paramString = "";
-                        Object.keys(this.queryParams).forEach(x => {
-                            paramString = paramString === "" ? `${paramString}${x}=${this.queryParams[x]}` : `${paramString}&${x}=${this.queryParams[x]}`;
-                        });
-                        this.linkAddress = `${this._router.url.split('/analysis/')[0]}/detectors/${detectorId}?${paramString}`;
-                    }
-                }
+                window.open(this.linkAddress, '_blank');
             }
         }
     }

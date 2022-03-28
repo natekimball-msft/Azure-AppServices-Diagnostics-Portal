@@ -69,7 +69,7 @@
                             (onClick)="openSolutionPanel(viewModel)"
                             contentStyle="border-radius: 2px;font-size: 13px;">View Solutions</fab-primary-button>
                             <fab-link (onClick)="selectDetector(viewModel)">View details</fab-link>
-                            <fab-link *ngIf="!isPublic" (mouseenter)="selectDetectorNewTab(viewModel)" [target]="linkTarget" [href]="linkAddress">[Open in new tab]</fab-link>
+                            <fab-link *ngIf="!isPublic" (onClick)="selectDetectorNewTab(viewModel)" [styles]="linkStyle">[Open in new tab]</fab-link>
                         </div>
                       </div>
                     </fab-card>
@@ -206,7 +206,7 @@
                     <div footer>
                       <div style="margin-bottom:15px;">
                         <fab-link (onClick)="selectDetector(viewModel)">View details</fab-link>
-                        <fab-link *ngIf="!isPublic" (mouseenter)="selectDetectorNewTab(viewModel)" [target]="linkTarget" [href]="linkAddress" [styles]="linkStyle">[Open in new tab]</fab-link>
+                        <fab-link *ngIf="!isPublic" (onClick)="selectDetectorNewTab(viewModel)" [styles]="linkStyle">[Open in new tab]</fab-link>
                       </div>
                     </div>
                   </fab-card>
@@ -237,7 +237,7 @@
                   <div footer>
                     <div style="margin-bottom: 12px;">
                       <fab-link (onClick)="selectDetector(viewModel)">View details</fab-link>
-                      <fab-link *ngIf="!isPublic" (mouseenter)="selectDetectorNewTab(viewModel)" [target]="linkTarget" [href]="linkAddress">[Open in new tab]</fab-link>
+                      <fab-link *ngIf="!isPublic" (onClick)="selectDetectorNewTab(viewModel)" [styles]="linkStyle">[Open in new tab]</fab-link>
                     </div>
                   </div>
                 </fab-card>
