@@ -4,7 +4,7 @@ import { catchError } from 'rxjs/operators';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Component, Pipe, PipeTransform, Inject, Optional } from '@angular/core';
 import {
-  DetectorListRendering, DetectorMetaData, DetectorResponse, DiagnosticData, HealthStatus
+  DetectorListRendering, DetectorMetaData, DetectorResponse, DetectorType, DiagnosticData, HealthStatus
 } from '../../models/detector';
 import { LoadingStatus } from '../../models/loading';
 import { StatusStyles } from '../../models/styles';
@@ -21,6 +21,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PortalActionGenericService } from '../../services/portal-action.service';
 import { UriUtilities } from '../../utilities/uri-utilities';
 import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.service';
+import { ILinkProps } from 'office-ui-fabric-react';
+import { ResourceService } from 'projects/applens/src/app/shared/services/resource.service';
+import { SolutionService } from '../../services/solution.service';
 
 
 
@@ -63,7 +66,9 @@ export class DetectorListComponent extends DataRenderBaseComponent {
   solutionTitle: string = "";
   loading = LoadingStatus.Loading;
 
-  constructor(private _diagnosticService: DiagnosticService, protected telemetryService: TelemetryService, private _detectorControl: DetectorControlService, private parseResourceService: ParseResourceService, @Inject(DIAGNOSTIC_DATA_CONFIG) private config: DiagnosticDataConfig, private _router: Router, private _activatedRoute: ActivatedRoute, private _portalActionService: PortalActionGenericService, private _breadcrumbService : GenericBreadcrumbService) {
+  constructor(private _diagnosticService: DiagnosticService, protected telemetryService: TelemetryService, private _detectorControl: DetectorControlService, private _solutionService: SolutionService,
+    private parseResourceService: ParseResourceService, private resourceService: ResourceService, @Inject(DIAGNOSTIC_DATA_CONFIG) private config: DiagnosticDataConfig, private _router: Router,
+    private _activatedRoute: ActivatedRoute, private _portalActionService: PortalActionGenericService, private _breadcrumbService : GenericBreadcrumbService) {
     super(telemetryService);
     this.isPublic = this.config && this.config.isPublic;
   }
@@ -201,6 +206,45 @@ export class DetectorListComponent extends DataRenderBaseComponent {
     return true;
   }
 
+  public openBladeDiagnoseDetectorId(viewModel, type: DetectorType = DetectorType.Detector) {
+    if (viewModel != null && viewModel.model.metadata.id) {
+      let detector = viewModel.model.metadata.id;
+      let category = "";
+
+      if (viewModel.model.metadata.category) {
+          category = viewModel.model.metadata.category.replace(/\s/g, '');
+      }
+      else {
+          // For uncategorized detectors:
+          // If it is home page, redirect to availability category. Otherwise stay in the current category page.
+          category = this._router.url.split('/')[11] ? this._router.url.split('/')[11] : "availabilityandperformance";
+      }
+
+    const bladeInfo = {
+        title: category,
+        detailBlade: 'SCIFrameBlade',
+        extension: 'WebsitesExtension',
+        detailBladeInputs: {
+            id: this.overrideResourceUri,
+            categoryId: category,
+            optionalParameters: [{
+                key: "categoryId",
+                value: category
+            },
+            {
+                key: "detectorId",
+                value: detector
+            },
+            {
+                key: "detectorType",
+                value: type
+            }]
+        }
+    };
+    this._solutionService.GoToBlade(this.overrideResourceUri, bladeInfo);
+    }
+  }
+
 
   //Get from detector-list-analysis
   startDetectorRendering(detectorList: DetectorMetaData[]) {
@@ -323,6 +367,15 @@ export class DetectorListComponent extends DataRenderBaseComponent {
     return insightInfo;
   }
 
+  
+  queryParams = {};
+  linkTarget: ILinkProps['target'] = "_blank";
+  linkAddress: ILinkProps['href'] = "";
+  linkStyle: ILinkProps['styles'] = {
+    root: {
+      padding: '10px'
+    }
+  }
   public selectDetector(viewModel: DetectorViewModeWithInsightInfo) {
     if (viewModel != null && viewModel.model.metadata.id) {
       let targetDetector = viewModel.model.metadata.id;
@@ -337,17 +390,61 @@ export class DetectorListComponent extends DataRenderBaseComponent {
 
         // Log children detectors click
         this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
-        const queryParams = UriUtilities.removeChildDetectorStartAndEndTime(this._activatedRoute.snapshot.queryParams);
+        this.queryParams = UriUtilities.removeChildDetectorStartAndEndTime(this._activatedRoute.snapshot.queryParams);
+        if (targetDetector === 'appchanges' && !this.isPublic) {
+          this._portalActionService.openChangeAnalysisBlade(this._detectorControl.startTimeString, this._detectorControl.endTimeString);
+        } else {
+          if (this.isPublic && !(this.overrideResourceUri == "")){
+            this.openBladeDiagnoseDetectorId(viewModel);
+          }
+          else if (this.isPublic) {
+            const url = this._router.url.split("?")[0];
+            const routeUrl = url.endsWith("/overview") ? `../detectors/${targetDetector}` : `../../detectors/${targetDetector}`;
+            this._router.navigate([routeUrl], {
+              queryParams: this.queryParams,
+              relativeTo: this._activatedRoute
+            });
+          }
+           else {
+            const resourceId = this._diagnosticService.resourceId;
+            this._breadcrumbService.updateBreadCrumbSubject({
+              name: this.detectorName,
+              id: this.detector,
+              isDetector: true
+            });
+            this._router.navigate([`${resourceId}/detectors/${targetDetector}`], { queryParams: this.queryParams });
+          }
+        }
+      }
+    }
+  }
+
+  public selectDetectorNewTab(viewModel: DetectorViewModeWithInsightInfo) {
+    if (viewModel != null && viewModel.model.metadata.id) {
+      let targetDetector = viewModel.model.metadata.id;
+
+      if (targetDetector !== "") {
+        const clickDetectorEventProperties = {
+          'ChildDetectorName': viewModel.model.title,
+          'ChildDetectorId': viewModel.model.metadata.id,
+          'IsExpanded': true,
+          'Status': viewModel.model.status,
+        };
+
+        // Log children detectors click
+        this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
+        this.queryParams = UriUtilities.removeChildDetectorStartAndEndTime(this._activatedRoute.snapshot.queryParams);
         if (targetDetector === 'appchanges' && !this.isPublic) {
           this._portalActionService.openChangeAnalysisBlade(this._detectorControl.startTimeString, this._detectorControl.endTimeString);
         } else {
           if (this.isPublic) {
             const url = this._router.url.split("?")[0];
             const routeUrl = url.endsWith("/overview") ? `../detectors/${targetDetector}` : `../../detectors/${targetDetector}`;
-            this._router.navigate([routeUrl], {
-              queryParams: queryParams,
-              relativeTo: this._activatedRoute
+            let paramString = "";
+            Object.keys(this.queryParams).forEach(x => {
+              paramString = paramString === "" ? `${paramString}${x}=${this.queryParams[x]}` : `${paramString}&${x}=${this.queryParams[x]}`;
             });
+            this.linkAddress = `${routeUrl}?${paramString}`;
           } else {
             const resourceId = this._diagnosticService.resourceId;
 
@@ -356,7 +453,11 @@ export class DetectorListComponent extends DataRenderBaseComponent {
               id: this.detector,
               isDetector: true
             });
-            this._router.navigate([`${resourceId}/detectors/${targetDetector}`], { queryParams: queryParams });
+            let paramString = "";
+            Object.keys(this.queryParams).forEach(x => {
+              paramString = paramString === "" ? `${paramString}${x}=${this.queryParams[x]}` : `${paramString}&${x}=${this.queryParams[x]}`;
+            });
+            this.linkAddress = this.overrideResourceUri == "" ? `${resourceId}/detectors/${targetDetector}?${paramString}` : `${this.overrideResourceUri}/detectors/${targetDetector}?${paramString}`;
           }
         }
       }
