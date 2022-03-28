@@ -176,6 +176,7 @@ export class DetectorControlService {
   }
 
   public setCustomStartEnd(start?: string, end?: string, refreshInstanceId?: string): void {
+    console.log("1. setCustomStart with start, end, invocationId", start, end, refreshInstanceId);
     this.timeRangeDefaulted = false;
     this._duration = null;
     let startTime, endTime: momentNs.Moment;
@@ -188,7 +189,7 @@ export class DetectorControlService {
       else {
         endTime = moment.utc(end);
       }
-
+      console.log("2. Has Start and End");
     } else if (start) {
       startTime = moment.utc(start);
       if (moment.duration(moment.utc().diff(startTime.clone().add(1, 'days'))).asMinutes() < 16) {
@@ -216,12 +217,19 @@ export class DetectorControlService {
     if (this.getTimeDurationError(start, end) === '') {
       this._startTime = startTime;
       this._endTime = endTime;
+      console.log("3. No error for time duration");
       if (!refreshInstanceId)
       {
+        console.log("4. refreshInstanceId emtpy,", !refreshInstanceId, refreshInstanceId);
         this._refreshData("V3ControlRefresh");
+      }
+      else
+      {
+        console.log("5. refreshInstanceId not emtpy,", !refreshInstanceId, refreshInstanceId);
       }
     }
     else {
+        console.log("3. has error for time duration");
       this.timeRangeDefaulted = true;
       if (this.timeRangeErrorString === 'Selected time duration must be at least 15 minutes.') {
         this.timeRangeErrorString = 'Time range set to a 15 minutes duration. Selected time duration was less than 15 minutes.';
@@ -253,6 +261,8 @@ export class DetectorControlService {
           this._startTime = this._endTime.clone().subtract(1, 'days');
         }
       }
+
+      console.log("4. has to refresh with V3ControlRefresh");
       this._refreshData("V3ControlRefresh");
     }
   }

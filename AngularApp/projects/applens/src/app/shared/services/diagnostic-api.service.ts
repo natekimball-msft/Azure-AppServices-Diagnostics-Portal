@@ -40,6 +40,8 @@ export class DiagnosticApiService {
     if (additionalQueryParams != undefined) {
       path += additionalQueryParams;
     }
+
+    console.log("Getdetector with path, refresh", path, refresh);
     return this.invoke<DetectorResponse>(path, HttpMethod.POST, body, true, refresh, true, internalView);
   }
 
@@ -403,7 +405,7 @@ export class DiagnosticApiService {
     return request;
     // return this.get(`api/recent/${userId}`);
   }
-  
+
   public updateUserSetting(userSettings: UserSetting):Observable<UserSetting> {
     let url = `${this.diagnosticApi}api/usersetting`;
     let request = this._httpClient.post<UserSetting>(url,userSettings, {
