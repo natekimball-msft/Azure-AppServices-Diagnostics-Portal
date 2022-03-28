@@ -57,17 +57,17 @@ export class BreadcrumbService {
         }
 
         if (item.name === "Home" && item.id == undefined) {
-            this._router.navigate([this.resourceId], { queryParams: routingParams });
+            this._router.navigate([this.resourceId], {  relativeTo: this._activatedRoute, queryParams: routingParams });
             return;
         }
 
         if (item && item.isDetector) {
-            this._router.navigate([`${this.resourceId}/detectors/${item.id}`], { queryParams: routingParams });
+            this._router.navigate([`${this.resourceId}/detectors/${item.id}`], { relativeTo: this._activatedRoute , queryParams: routingParams });
             return;
         }
 
         if (item && !item.isDetector) {
-            this._router.navigate([`${this.resourceId}/analysis/${item.id}`], { queryParams: routingParams });
+            this._router.navigate([`${this.resourceId}/analysis/${item.id}`], { relativeTo: this._activatedRoute , queryParams: routingParams });
             return;
         }
     }
