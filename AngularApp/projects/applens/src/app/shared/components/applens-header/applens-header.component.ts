@@ -28,7 +28,7 @@ export class ApplensHeaderComponent implements OnInit {
     }
   };
 
-  constructor(private _adalService: AdalService,  private _diagnosticApiService: DiagnosticApiService, private _activatedRoute: ActivatedRoute, private _router: Router, @Optional() public _searchService?: SearchService, @Optional() private _applensGlobal?: ApplensGlobal) { }
+  constructor(private _adalService: AdalService,  private _diagnosticApiService: DiagnosticApiService, private _activatedRoute: ActivatedRoute, private _router: Router, @Optional() public _searchService?: SearchService, private _applensGlobal?: ApplensGlobal) { }
 
   ngOnInit() {
 
