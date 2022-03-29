@@ -38,7 +38,7 @@ export class BreadcrumbService {
             this.resetBreadCrumbSubject();
         } else if(itemIndex > 0) {
             //Remove all items includes the one you clicked
-            routingParams = copiedList[itemIndex].queryParams;
+            routingParams = copiedList[itemIndex].queryParams != undefined? copiedList[itemIndex].queryParams: routingParams;
             const removeItemCount = copiedList.length - itemIndex;
             copiedList.splice(itemIndex, removeItemCount);
             this.breadcrumbSubject.next(copiedList);
