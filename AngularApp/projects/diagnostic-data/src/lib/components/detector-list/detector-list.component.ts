@@ -366,7 +366,7 @@ export class DetectorListComponent extends DataRenderBaseComponent {
     return insightInfo;
   }
 
-  
+
   queryParams = {};
   linkStyle: ILinkProps['styles'] = {
     root: {
@@ -404,11 +404,15 @@ export class DetectorListComponent extends DataRenderBaseComponent {
           }
            else {
             const resourceId = this._diagnosticService.resourceId;
-            this._breadcrumbService.updateBreadCrumbSubject({
-              name: this.detectorName,
-              id: this.detector,
-              isDetector: true
-            });
+            if (!this.isPublic)
+            {
+                this._breadcrumbService.updateBreadCrumbSubject({
+                    name: this.detectorName,
+                    id: this.detector,
+                    isDetector: true,
+                   queryParams: this._activatedRoute.snapshot.queryParams
+                });
+            }
             this._router.navigate([`${resourceId}/detectors/${targetDetector}`], { queryParams: this.queryParams });
           }
         }
