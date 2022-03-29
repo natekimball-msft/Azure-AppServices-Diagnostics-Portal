@@ -53,10 +53,13 @@ namespace AppLensV3
 
             services.AddSingleton(Configuration);
 
+            GenericCertLoader.Instance.Initialize();
+
             services.AddSingleton<IObserverClientService, SupportObserverClientService>();
             services.AddSingleton<IDiagnosticClientService, DiagnosticClient>();
             services.AddSingleton<IGithubClientService, GithubClientService>();
-            services.AddSingleton<IKustoQueryService, KustoQueryService>();
+            //services.AddSingleton<IKustoQueryService, KustoQueryService>();
+            services.AddSingleton<IKustoQueryService, KustoSDKClientQueryService>();
             services.AddSingleton<IOutageCommunicationService, OutageCommunicationService>();
             services.AddSingleton<ILocalDevelopmentClientService, LocalDevelopmentClientService>();
             services.AddSingleton<IEmailNotificationService, EmailNotificationService>();
@@ -74,10 +77,8 @@ namespace AppLensV3
             services.AddMemoryCache();
             services.AddMvc();
 
-            GenericCertLoader.Instance.Initialize();
-
             GraphTokenService.Instance.Initialize(Configuration);
-            KustoTokenRefreshService.Instance.Initialize(Configuration);
+            //KustoTokenRefreshService.Instance.Initialize(Configuration);
 
             // If we are using runtime host directly
             DiagnosticClientToken.Instance.Initialize(Configuration);

@@ -30,6 +30,8 @@ namespace AppLensV3.Helpers
         internal const int TokenRefreshIntervalInMs = 10 * 60 * 1000;   // 10 minutes
         internal const string DefaultKustoEndpoint = "https://wawswus.kusto.windows.net";
         internal const string KustoApiEndpointFormat = "https://{0}.kusto.windows.net:443/v1/rest/query";
+        internal const string AADKustoResource = "https://wawswus.kusto.windows.net";
+        internal const int DefaultQueryTimeoutInSeconds = 60;
     }
 
     internal static class GraphConstants

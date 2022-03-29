@@ -95,7 +95,7 @@ namespace AppLensV3.Services
                 .Replace("{END_TIME}", endTimeStr)
                 .Replace("{SUBSCRIPTION}", subscription);
 
-            DataTable dt = await _kustoQueryService.ExecuteQueryAsync("Icmcluster", "ACM.Backend", kustoQuery);
+            DataTable dt = await _kustoQueryService.ExecuteQueryAsync("Icmcluster", "ACM.Backend", kustoQuery, "GetOutageForSubscription", startTime, endTime);
 
             List<Communication> commsList = new List<Communication>();
 
@@ -152,7 +152,7 @@ namespace AppLensV3.Services
 
         private async Task<Communication> GetEmergingIssueAsyncInternal()
         {
-            DataTable dt = await _kustoQueryService.ExecuteQueryAsync("Icmcluster", "IcmDataWarehouse", emergingIssuesQuery);
+            DataTable dt = await _kustoQueryService.ExecuteQueryAsync("Icmcluster", "IcmDataWarehouse", emergingIssuesQuery, "GetEmergingIssuesQuery", DateTime.UtcNow.AddDays(-7), DateTime.UtcNow);
             if (dt == null || dt.Rows == null || dt.Rows.Count == 0)
             {
                 return null;
