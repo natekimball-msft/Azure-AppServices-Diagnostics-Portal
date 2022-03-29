@@ -62,13 +62,11 @@ export class BreadcrumbService {
         }
 
         if (item && item.isDetector) {
-            console.log("breadcrumb navigate to detector", `${this.resourceId}/detectors/${item.id}`, routingParams);
             this._router.navigate([`${this.resourceId}/detectors/${item.id}`], { queryParams: routingParams });
             return;
         }
 
         if (item && !item.isDetector) {
-            console.log("breadcrumb navigate to analysis", `${this.resourceId}/analysis/${item.id}`, routingParams);
             this._router.navigate([`${this.resourceId}/analysis/${item.id}`], { queryParams: routingParams });
             return;
         }
