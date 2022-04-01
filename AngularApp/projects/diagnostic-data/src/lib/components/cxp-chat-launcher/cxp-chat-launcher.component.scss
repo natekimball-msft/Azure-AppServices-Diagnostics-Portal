@@ -69,7 +69,7 @@ $zIndex: 99;
 
 .cxpChat-ConfContainer {
     background: $chatBubble-color;
-    color: white;
+    color: var(--bodyBackground);
     font-size: 14px;
     padding: 5px;
     z-index: $zIndex;
@@ -82,7 +82,7 @@ $zIndex: 99;
 
 .cxpChat-CloseIcon {
     cursor: pointer;
-    color: white;
+    color: var(--bodyBackground);
     margin-right: 4px;
 }
 
@@ -118,7 +118,7 @@ $zIndex: 99;
 }
 
 label {
-    color: white;
+    color: var(--bodyBackground);
     margin-left: 3px;
     margin-bottom: 0px;
 }
@@ -150,7 +150,7 @@ hr {
 }
 
 .default-button {
-    background-color: white;
+    background-color: var(--bodyBackground);
     color: $chatBubble-color;
     font-weight: bold;
     margin-left: 0px;
@@ -158,7 +158,7 @@ hr {
     padding-right: 35px;
     &:enabled:focus,
     &:enabled:hover {
-        color: white;
+        color: var(--bodyBackground);
         background-color: $primary-color;
     }
     &:disabled {
@@ -186,7 +186,7 @@ hr {
 .cxpChat-ChangeIcon:hover > .fa + .fa {
     display: inherit;
     color: #ba141a;
-    background-color: white;
+    background-color: var(--bodyBackground);
     margin-top: 5px;
     margin-right: 0px;
 }

@@ -24,7 +24,7 @@
     line-height: 22px;
     display: flex;
     align-items: center;
-    color: #323130;
+    color: var(--sectionTitle);
 }
 
 .solution-description {
@@ -47,5 +47,5 @@
 
     /* Light Theme / Text colors / Primary */
 
-    color: #323130;
+    color: var(--sectionTitle);
 }

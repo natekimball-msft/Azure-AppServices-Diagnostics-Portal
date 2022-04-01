@@ -4,6 +4,8 @@ import {AadAuthGuard} from './shared/auth/aad-auth-guard.service';
 import { environment } from '../environments/environment';
 import { initializeIcons } from 'office-ui-fabric-react/lib/Icons';
 import { GenericThemeService } from 'diagnostic-data';
+import { UserSettingService } from './modules/dashboard/services/user-setting.service';
+import { ApplensThemeService } from './shared/services/applens-theme.service';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +16,7 @@ export class AppComponent implements OnInit{
 
   env = environment;
   showBanner = true;
-  constructor(private _adalService: AdalService, public _authGuardService: AadAuthGuard, public _themeService: GenericThemeService) {
+  constructor(private _adalService: AdalService, public _authGuardService: AadAuthGuard, public _themeService: ApplensThemeService, private _userSettingService: UserSettingService) {
     if (environment.adal.enabled){
       this._adalService.init({
         clientId: environment.adal.clientId,
@@ -24,6 +26,10 @@ export class AppComponent implements OnInit{
         cacheLocation: 'localStorage'
        });
     }
+
+    this._userSettingService.currentThemeSub.subscribe(theme =>{
+        this._themeService.setActiveTheme(theme);
+    })
   }
 
   ngOnInit() {

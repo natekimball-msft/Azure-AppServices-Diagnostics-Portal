@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { AdalService } from "adal-angular4";
 import { map, catchError } from "rxjs/operators";
-import { of } from "rxjs";
+import { BehaviorSubject, of } from "rxjs";
 import { RecentResource, UserSetting, } from "../../../shared/models/user-setting";
 import { DiagnosticApiService } from "../../../shared/services/diagnostic-api.service";
 
@@ -10,13 +10,26 @@ const maxRecentResourceLength = 5;
 export class UserSettingService {
     userSetting: UserSetting;
     userId: string = "";
+    currentTheme: string="light";
+    currentViewMode: string="smarter";
+    currentThemeSub: BehaviorSubject<string> = new BehaviorSubject<string>("light");
+    currentViewModeSub: BehaviorSubject<string> = new BehaviorSubject<string>("smarter");
+
     constructor(private _diagnosticApiService: DiagnosticApiService, private _adalService: AdalService) {
-        const alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
+        const alias = !!this._adalService.userInfo.profile && !!this._adalService.userInfo.profile.upn ? this._adalService.userInfo.profile.upn : '';
         this.userId = alias.replace('@microsoft.com', '');
+
+        if (this.userId != "")
+        {
+            this.getUserSetting();
+        }
     }
 
     getUserSetting() {
-        if (this.userSetting) {
+        const alias = !!this._adalService.userInfo.profile && !!this._adalService.userInfo.profile.upn ? this._adalService.userInfo.profile.upn : '';
+        this.userId = alias.replace('@microsoft.com', '');
+
+        if (!!this.userSetting) {
             return of(this.userSetting);
         }
 
@@ -36,7 +49,15 @@ export class UserSettingService {
         this.updateUserSetting(recentResource, this.addRecentResource);
     }
 
-    updateUserSetting(item: any, fn: UpdateUserSettingCallBack) {
+    updateThemeAndView(updatedUserSetting: UserSetting)
+    {
+        this.currentTheme = updatedUserSetting.theme;
+            this.currentThemeSub.next(this.currentTheme);
+            this.currentViewMode = updatedUserSetting.viewMode;
+            this.currentViewModeSub.next(this.currentViewMode);
+    }
+
+    public updateUserSetting(item: any, fn: UpdateUserSettingCallBack) {
         this.getUserSetting().pipe(catchError(error => {
             if (error.status === 404) {
                 const userSetting = new UserSetting(this.userId);
@@ -44,12 +65,30 @@ export class UserSettingService {
             }
             throw error;
         })).subscribe(userSetting => {
-            const newUserSetting = fn(item, userSetting);
-            this._diagnosticApiService.updateUserSetting(newUserSetting).subscribe(setting => {
+            const updatedUserSetting = fn(item, userSetting);
+
+            this._diagnosticApiService.updateUserSetting(updatedUserSetting).subscribe(setting => {
                 this.userSetting = setting;
             })
         });
     }
+
+    updateUserPanelSetting(item: any)
+    {
+        this.updateUserSetting(item, this.updatePanelUserSettingCallBack);
+    }
+
+   updatePanelUserSettingCallBack(item: any, userSettings: UserSetting): UserSetting {
+    const newUserSetting = { ...userSettings };
+    if (item != null)
+    {
+        newUserSetting.expandAnalysisCheckCard = item.expandCheckCard;
+        newUserSetting.theme = item.theme;
+        newUserSetting.viewMode = item.viewMode;
+    }
+
+    return newUserSetting;
+  }
 
     private addRecentResource(newResource: RecentResource, userSetting: UserSetting) {
         const newUserSetting = { ...userSetting };
@@ -63,7 +102,7 @@ export class UserSettingService {
         res.unshift(newResource);
 
         newUserSetting.resources = res;
-        return newUserSetting;
+      return newUserSetting;
     }
 }
 

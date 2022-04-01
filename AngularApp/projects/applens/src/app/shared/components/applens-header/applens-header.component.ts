@@ -8,6 +8,7 @@ import { ResourceInfo } from '../../models/resources';
 import { UserSetting } from '../../models/user-setting';
 import { DiagnosticApiService } from '../../services/diagnostic-api.service';
 import { ApplensGlobal } from '../../../applens-global';
+import { ApplensThemeService } from '../../services/applens-theme.service';
 
 
 @Component({
@@ -31,11 +32,15 @@ export class ApplensHeaderComponent implements OnInit {
     }
   };
   expandCheckCard: boolean = false;
+  darkThemeChecked: boolean = false;
+  smartViewChecked: boolean = false;
   //Only If user changed setting, then send request to backend
   userSettingChanged: boolean = false;
+  expandAnalysisChanged: boolean = false;
+  themeChanged: boolean = false;
+  viewModeChanged: boolean = false;
 
-  constructor(private _adalService: AdalService,  private _diagnosticApiService: DiagnosticApiService, private _activatedRoute: ActivatedRoute, private _userSettingService: UserSettingService, private _router: Router, @Optional() public _searchService?: SearchService, @Optional() private _applensGlobal?: ApplensGlobal) { }
-
+  constructor(private _adalService: AdalService,  private _diagnosticApiService: DiagnosticApiService, private _activatedRoute: ActivatedRoute, private _userSettingService: UserSettingService, private _router: Router, private _themeService: ApplensThemeService, @Optional() public _searchService?: SearchService, @Optional() private _applensGlobal?: ApplensGlobal) { }
 
   ngOnInit() {
     const alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
@@ -54,7 +59,10 @@ export class ApplensHeaderComponent implements OnInit {
     }
 
     this._userSettingService.getUserSetting().subscribe(userSettings => {
-        this.expandCheckCard = userSettings ? userSettings.expandAnalysisCheckCard : false;});
+        this.expandCheckCard = userSettings ? userSettings.expandAnalysisCheckCard : false;
+        this.darkThemeChecked = userSettings && userSettings.theme.toLowerCase() == "dark" ? true : false;
+        this.smartViewChecked = userSettings && userSettings.viewMode.toLowerCase() == "smarter" ? true : false;
+    });
 
     this._diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
       this.envTag = `(${env})`;
@@ -66,19 +74,33 @@ export class ApplensHeaderComponent implements OnInit {
   }
 
   toggleExpandCheckCard(event: { checked: boolean }) {
-    this.userSettingChanged = true;
+    this.expandAnalysisChanged = !this.expandAnalysisChanged;
+    this.userSettingChanged = this.expandAnalysisChanged || this.themeChanged || this.viewModeChanged;
     this.expandCheckCard = event.checked;
   }
 
-  //Can add more updated userSetting into it
-  private updateUserSetting() {
-    this._userSettingService.updateUserSetting(this.expandCheckCard, this.updateUserSettingCallBack);
+  toggleTheme(event: { checked: boolean }) {
+    this.themeChanged = !this.themeChanged;
+    this.userSettingChanged = this.expandAnalysisChanged || this.themeChanged || this.viewModeChanged;
+    this.darkThemeChecked = event.checked;
   }
 
-  private updateUserSettingCallBack(expandAnalysisCard: boolean, userSettings: UserSetting): UserSetting {
-    const newUserSetting = { ...userSettings };
-    newUserSetting.expandAnalysisCheckCard = expandAnalysisCard;
-    return newUserSetting;
+  toggleViewMode(event: { checked: boolean }) {
+    this.viewModeChanged = !this.viewModeChanged;
+    this.userSettingChanged = this.expandAnalysisChanged || this.themeChanged || this.viewModeChanged;
+    this.smartViewChecked = !event.checked;
+  }
+
+  //Can add more updated userSetting into it
+  private updateUserSettingsFromPanel() {
+    const themeStr = this.darkThemeChecked ? "dark" : "light";
+    const updatedSettings = {
+        expandAnalysisCheckCard: this.expandCheckCard,
+        theme:  themeStr,
+        viewMode: this.smartViewChecked ?  "smarter" : "waterfall"
+    };
+    this._themeService.setActiveTheme(themeStr);
+    this._userSettingService.updateUserPanelSetting(updatedSettings);
   }
 
   openCallout() {
@@ -86,9 +108,7 @@ export class ApplensHeaderComponent implements OnInit {
   }
 
   applyUserSettingChange() {
-    if(this.userSettingChanged) {
-      this.updateUserSetting();
-    }
+    this.updateUserSettingsFromPanel();
     this.showCallout = false;
   }
 

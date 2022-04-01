@@ -24,7 +24,7 @@
 
 .info-item-value {
     //flex: 1 0 auto;
-    color: #323130;
+    color: var(--sectionTitle);
     flex: 0 0 400px;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -42,5 +42,5 @@
 }
 
 .observer-link > a:focus {
-    border: 1px solid black;
+    border: 1px solid var(--sectionTitle);
 }

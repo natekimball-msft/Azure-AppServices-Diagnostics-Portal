@@ -68,7 +68,7 @@
 .btn-create {
     background-color: #1ea4fff2;
     border: none;
-    color: white;
+    color: var(--bodyBackground);
     padding: 3px 8px;
     font-size: 16px;
     cursor: pointer;
@@ -79,7 +79,7 @@
 .btn-add {
     background-color: green;
     border: none;
-    color: white;
+    color: var(--bodyBackground);
     padding: 0px 4px;
     font-size: 11px;
     cursor: pointer;

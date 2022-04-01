@@ -3,7 +3,7 @@
 body {
     margin: 0;
     padding: 0;
-    background: #ddd;
+    background: var(--bodyBackground);
     font-size: 16px;
     color: #222;
     font-family: "Roboto", sans-serif;
@@ -21,7 +21,7 @@ body {
 
 .onboarding-container {
     height: 100%;
-    background-color: white;
+    background-color: var(--bodyBackground);
     margin-top: 10px;
 }
 
@@ -61,7 +61,7 @@ body {
     padding-left: 10px;
     padding-right: 10px;
     border-radius: 10px;
-    color: white;
+    color: var(--bodyBackground);
     cursor: pointer;
 }
 
@@ -111,7 +111,7 @@ body {
 }
 
 .compilation-detailed-output-container {
-    display: flex; 
+    display: flex;
     flex-flow: column nowrap;
     align-items: flex-start;
 }
@@ -178,7 +178,7 @@ body {
     background-color: #2f6b87;
     height: 25px;
     margin-bottom: 10px;
-    color: white;
+    color: var(--bodyBackground);
     font-size: 12px;
 }
 
@@ -192,7 +192,7 @@ body {
     padding-left: 10px;
     padding-right: 10px;
     border-radius: 5px;
-    color: white;
+    color: var(--bodyBackground);
 }
 
 .invocation-title.active {
@@ -253,7 +253,7 @@ input[type="submit"] {
     height: 32px;
     border: none;
     border-radius: 2px;
-    color: #fff;
+    color: var(--bodyBackground);
     font-family: "Roboto", sans-serif;
     font-weight: 500;
     transition: 0.1s ease;
@@ -303,7 +303,7 @@ input[type="submit"]:active {
     box-shadow: 0px 5px 11px -2px rgba(0, 0, 0, 0.18), 0px 4px 12px -7px rgba(0, 0, 0, 0.15);
     opacity: 0;
     transition: 0.2s;
-    color: white;
+    color: var(--bodyBackground);
 }
 
 .buttons:nth-last-of-type(1) {
@@ -338,7 +338,7 @@ span.rotate {
     padding: 5px 7px;
     margin-right: 10px;
     border-radius: 2px;
-    color: #fff;
+    color: var(--bodyBackground);
     font: 500 12px Roboto;
     white-space: nowrap;
     position: absolute;
@@ -370,12 +370,12 @@ span.rotate {
 }
 
 .publishAccessDenied .modal-header {
-    background-color: rgb(240,240,240);
+    background-color: var(--bodyBackground);
     border-bottom: 1px solid #dcdcdc;
 }
 .publishAccessDenied .modal-header .modal-logo {
     display: inline-block;
-    vertical-align: top; 
+    vertical-align: top;
     margin-right: 20px;
 }
 .publishAccessDenied .modal-header .modal-title-container {

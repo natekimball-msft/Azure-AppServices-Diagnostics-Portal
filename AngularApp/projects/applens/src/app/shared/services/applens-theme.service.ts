@@ -98,7 +98,5 @@ export class ApplensThemeService {
         if (!!this._activatedRoute && !!this._activatedRoute.snapshot && !!this._activatedRoute.snapshot.queryParams && !!this._activatedRoute.snapshot.queryParams['theme']) {
             this.currentThemeValue = this._activatedRoute.snapshot.queryParams['theme'].toLocaleLowerCase();
         }
-
-        this.setActiveThemeWithQueryParam(this.currentThemeValue);
     }
 }
