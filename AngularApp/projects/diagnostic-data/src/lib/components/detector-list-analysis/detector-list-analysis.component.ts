@@ -892,7 +892,6 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
         }
     }
 
-    queryParams = {};
     linkStyle: ILinkProps['styles'] = {
         root: {
           padding: '10px'
@@ -902,11 +901,12 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     public selectDetectorNewTab(viewModel: any) {
         if (viewModel != null && viewModel.model.metadata.id) {
             let detectorId = viewModel.model.metadata.id;
+            const queryParams = this._activatedRoute.snapshot.queryParams;
 
             if (detectorId !== "") {
                 let paramString = "";
-                Object.keys(this.queryParams).forEach(x => {
-                    paramString = paramString === "" ? `${paramString}${x}=${this.queryParams[x]}` : `${paramString}&${x}=${this.queryParams[x]}`;
+                Object.keys(queryParams).forEach(x => {
+                    paramString = paramString === "" ? `${paramString}${x}=${queryParams[x]}` : `${paramString}&${x}=${queryParams[x]}`;
                 });
                 const linkAddress = `${this._router.url.split('/analysis/')[0]}/detectors/${detectorId}?${paramString}`;
 
