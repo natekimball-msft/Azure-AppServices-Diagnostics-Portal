@@ -62,6 +62,13 @@ export class ApplensDiagnosticService {
       internalClient);
   }
 
+  getDetectorMetaData(id: string): Observable<DetectorMetaData> {
+    return this.getDetectors().pipe(map(metaDatas => {
+      const data = metaDatas.find(m => m.id.toLowerCase() === id.toLowerCase());
+      return data;
+    }));
+  }
+
   getDetectorsWithExtendDefinition(internalClient: boolean = true): Observable<ExtendDetectorMetaData[]> {
     let resourceId = this._resourceService.getCurrentResourceId(true);
     if (!resourceId.startsWith('/')) resourceId = '/' + resourceId;
@@ -112,6 +119,13 @@ export class ApplensDiagnosticService {
       this._resourceService.versionPrefix,
       this._resourceService.getCurrentResourceId(true),
       null);
+  }
+
+  getGistMetaData(id: string): Observable<DetectorMetaData> {
+    return this.getGists().pipe(map(metaDatas => {
+      const data = metaDatas.find(m => m.id.toLowerCase() === id.toLowerCase());
+      return data;
+    }));
   }
 
 
@@ -197,7 +211,7 @@ export class ApplensDiagnosticService {
     return this._diagnosticApi.getBranches(resourceId);
   }
 
-  merge(branch: string, detectorName: string, resourceUri: string){
+  merge(branch: string, detectorName: string, resourceUri: string) {
     return this._diagnosticApi.merge(branch, detectorName, this.resourceId)
   }
 
@@ -205,11 +219,11 @@ export class ApplensDiagnosticService {
     return this._diagnosticApi.getDevopsConfig(resourceProviderType);
   }
 
-  getDetectorDevelopmentEnv(): Observable<string>{
+  getDetectorDevelopmentEnv(): Observable<string> {
     return this._diagnosticApi.getDetectorDevelopmentEnv();
   }
 
-  getPPEHostname(): Observable<string>{
+  getPPEHostname(): Observable<string> {
     return this._diagnosticApi.getPPEHostname();
   }
 
