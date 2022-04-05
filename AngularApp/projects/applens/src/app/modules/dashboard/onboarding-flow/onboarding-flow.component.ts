@@ -4,11 +4,12 @@ import {
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
-import {concat,
+import {
+  concat,
   forkJoin
   , Observable, of
 } from 'rxjs';
-import { flatMap, map, tap,switchMap } from 'rxjs/operators'
+import { flatMap, map, tap, switchMap } from 'rxjs/operators'
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Package } from '../../../shared/models/package';
 import { GithubApiService } from '../../../shared/services/github-api.service';
@@ -29,6 +30,7 @@ import { BehaviorSubject } from 'rxjs';
 import { Commit } from '../../../shared/models/commit';
 import { ApplensCommandBarService } from '../services/applens-command-bar.service';
 import { DevopsConfig } from '../../../shared/models/devopsConfig';
+import { ApplensGlobal } from '../../../applens-global';
 
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
@@ -212,7 +214,7 @@ export class OnboardingFlowComponent implements OnInit {
 
   buttonStyle: IButtonStyles = {
     root: {
-    //  color: "#323130",
+      //  color: "#323130",
       borderRadius: "12px",
       marginTop: "8px",
       background: "rgba(0, 120, 212, 0.1)",
@@ -224,7 +226,7 @@ export class OnboardingFlowComponent implements OnInit {
   branchButtonDisabled = false;
   branchButtonStyle: IButtonStyles = {
     root: {
-   //   color: "#323130",
+      //   color: "#323130",
       borderRadius: "12px",
       marginTop: "8px",
       background: "rgba(0, 120, 212, 0.1)",
@@ -311,7 +313,7 @@ export class OnboardingFlowComponent implements OnInit {
     private diagnosticApiService: ApplensDiagnosticService, private _diagnosticApi: DiagnosticApiService, private resourceService: ResourceService,
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
     public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute,
-    private _applensCommandBarService: ApplensCommandBarService, private _router: Router, private _themeService: GenericThemeService) {
+    private _applensCommandBarService: ApplensCommandBarService, private _router: Router, private _themeService: GenericThemeService, private _applensGlobal: ApplensGlobal) {
     this.lightOptions = {
       theme: 'vs',
       language: 'csharp',
@@ -325,16 +327,16 @@ export class OnboardingFlowComponent implements OnInit {
     };
 
     this.darkOptions = {
-        theme: 'vs-dark',
-        language: 'csharp',
-        fontSize: 14,
-        automaticLayout: true,
-        scrollBeyondLastLine: false,
-        minimap: {
-          enabled: false
-        },
-        folding: true
-      };
+      theme: 'vs-dark',
+      language: 'csharp',
+      fontSize: 14,
+      automaticLayout: true,
+      scrollBeyondLastLine: false,
+      minimap: {
+        enabled: false
+      },
+      folding: true
+    };
 
     this.editorOptions = this.lightOptions;
     this.buildOutput = [];
@@ -358,7 +360,7 @@ export class OnboardingFlowComponent implements OnInit {
     this.publishAccessControlResponse = {};
   }
 
-  updateDataSources(event: string){
+  updateDataSources(event: string) {
     console.log(event);
   }
 
@@ -433,23 +435,23 @@ export class OnboardingFlowComponent implements OnInit {
     this.diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(devopsConfig => {
       this.detectorGraduation = devopsConfig.graduationEnabled;
       this.DevopsConfig = new DevopsConfig(devopsConfig);
-
-      this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
-      this.saveButtonVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
-      this.commitHistoryVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? {display: "none"} : {};
       this.commitHistoryLink = (devopsConfig.folderPath === "/") ? `https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=${devopsConfig.folderPath}${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&_a=history` : `https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=${devopsConfig.folderPath}/${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&_a=history`;
+
+      this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? { display: "none" } : {};
+      this.saveButtonVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? { display: "none" } : {};
+      this.commitHistoryVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? { display: "none" } : {};
+
 
       this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
 
       this.defaultBranch = "MainMVP";
 
-      this._themeService.currentThemeSub.subscribe((theme) =>
-      {
-          this.editorOptions = theme == "dark" ? this.darkOptions : this.lightOptions;
+      this._themeService.currentThemeSub.subscribe((theme) => {
+        this.editorOptions = theme == "dark" ? this.darkOptions : this.lightOptions;
       })
 
       if (this.detectorGraduation)
-       this.getBranchList();
+        this.getBranchList();
 
       if (!this.initialized) {
         this.initialize();
@@ -462,10 +464,10 @@ export class OnboardingFlowComponent implements OnInit {
         this.diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
           this.PPELink = `${this.PPEHostname}${this._router.url}`
           this.isProd = env === "Prod";
-          if (this.isProd && this.detectorGraduation){
+          if (this.isProd && this.detectorGraduation) {
             this.redirectTimer = setInterval(() => {
               this.PPERedirectTimer = this.PPERedirectTimer - 1;
-              if (this.PPERedirectTimer === 0){
+              if (this.PPERedirectTimer === 0) {
                 window.location.href = this.PPELink;
                 clearInterval(this.redirectTimer);
               }
@@ -523,17 +525,17 @@ export class OnboardingFlowComponent implements OnInit {
       else {
         var targetBranch = this.gistMode ? `dev/${this.userName.split("@")[0]}/gist/${this.id.toLowerCase()}` : `dev/${this.userName.split("@")[0]}/detector/${this.id.toLowerCase()}`;
         // if a branch is present via query params, default to that branch.
-        if (this.branchInput != undefined && this.branchInput != '' && this.mode == DevelopMode.Edit)  {
+        if (this.branchInput != undefined && this.branchInput != '' && this.mode == DevelopMode.Edit) {
           this.Branch = this.branchInput;
           this.displayBranch = this.Branch;
           this.tempBranch = this.Branch;
         } else {
-        this.Branch = this.targetInShowBranches(targetBranch) ? targetBranch : this.showBranches[0].key;
-        this.displayBranch = this.Branch;
-        this.tempBranch = this.Branch;
+          this.Branch = this.targetInShowBranches(targetBranch) ? targetBranch : this.showBranches[0].key;
+          this.displayBranch = this.Branch;
+          this.tempBranch = this.Branch;
+        }
+        this.updateBranch();
       }
-      this.updateBranch();
-    }
     });
 
   }
@@ -651,7 +653,7 @@ export class OnboardingFlowComponent implements OnInit {
     this.gistDialogHidden = true;
   }
 
-  openCommitHistory(){
+  openCommitHistory() {
     window.open(this.commitHistoryLink);
   }
 
@@ -1228,8 +1230,8 @@ export class OnboardingFlowComponent implements OnInit {
     return match;
   }
 
-  setTargetBranch(){
-    var targetBranch = this.gistMode ?  `dev/${this.userName.split("@")[0]}/gist/${this.id.toLowerCase()}` : `dev/${this.userName.split("@")[0]}/detector/${this.id.toLowerCase()}` ;
+  setTargetBranch() {
+    var targetBranch = this.gistMode ? `dev/${this.userName.split("@")[0]}/gist/${this.id.toLowerCase()}` : `dev/${this.userName.split("@")[0]}/detector/${this.id.toLowerCase()}`;
 
     if (this.Branch === this.defaultBranch && this.targetInShowBranches(targetBranch)) {
       this.Branch = targetBranch;
@@ -1432,7 +1434,7 @@ export class OnboardingFlowComponent implements OnInit {
   saveTempId: string = "";
   saveFailMessage: string = "";
 
-  saveDetectorCode(){
+  saveDetectorCode() {
     this.setTargetBranch();
 
     this.saveButtonText = "Saving";
@@ -1444,7 +1446,7 @@ export class OnboardingFlowComponent implements OnInit {
 
     let file = [this.codeCompletionEnabled ? this.code.replace(codePrefix, "") : this.code];
 
-    if (this.mode != DevelopMode.Create){
+    if (this.mode != DevelopMode.Create) {
       this.saveTempId = this.id;
     }
     else {
@@ -1477,10 +1479,10 @@ export class OnboardingFlowComponent implements OnInit {
 
 
     DetectorObservable.subscribe(_ => {
-        this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx&version=GB${this.Branch}`;
-        this.saveSuccess = true;
-        this.postSave();
-        this._applensCommandBarService.refreshPage();
+      this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx&version=GB${this.Branch}`;
+      this.saveSuccess = true;
+      this.postSave();
+      this._applensCommandBarService.refreshPage();
     }, err => {
       this.saveFailed = true;
       this.postSave();
@@ -1494,14 +1496,14 @@ export class OnboardingFlowComponent implements OnInit {
     this.enableRunButton();
   }
 
-  postSave(){
+  postSave() {
     this.saveButtonText = "Save";
     this.enableSaveButton();
   }
 
   saveIcon: any = { iconName: 'Save' };
 
-  disableSaveButton(){
+  disableSaveButton() {
     this.saveButtonDisabled = true;
     this.saveIcon = {
       iconName: 'Save',
@@ -1628,6 +1630,7 @@ export class OnboardingFlowComponent implements OnInit {
     let detectorFile: Observable<string>;
     this.recommendedUtterances = [];
     this.utteranceInput = "";
+    
     if (this.detectorGraduation && this.mode == DevelopMode.Edit && this.branchInput != undefined && this.branchInput != '') {
       this.Branch = this.branchInput;
     }
@@ -1656,6 +1659,7 @@ export class OnboardingFlowComponent implements OnInit {
         this.fileName = "new.csx";
         this.startTime = this._detectorControlService.startTime;
         this.endTime = this._detectorControlService.endTime;
+        this._applensGlobal.updateHeader(this.gistMode ? "Create Gist" : "Create Detector");
         break;
       }
       case DevelopMode.Edit: {
@@ -1670,6 +1674,16 @@ export class OnboardingFlowComponent implements OnInit {
         }
         this.startTime = this._detectorControlService.startTime;
         this.endTime = this._detectorControlService.endTime;
+        if (this.gistMode) {
+          this.diagnosticApiService.getGistMetaData(this.id).subscribe(metaData => {
+            if (metaData) this._applensGlobal.updateHeader(metaData.name);
+          });
+        } else {
+          this.diagnosticApiService.getDetectorMetaData(this.id).subscribe(metaData => {
+            if (metaData) this._applensGlobal.updateHeader(metaData.name);
+
+          });
+        }
         break;
       }
       case DevelopMode.EditMonitoring: {
@@ -1685,6 +1699,7 @@ export class OnboardingFlowComponent implements OnInit {
     }
 
     let configuration = of(null);
+    this.codeLoaded = false;
     if (this.id.toLowerCase() !== '') {
       if (!this.detectorGraduation) {
         configuration = this.githubService.getConfiguration(this.id.toLowerCase()).pipe(
@@ -1703,13 +1718,13 @@ export class OnboardingFlowComponent implements OnInit {
           }));
       }
       else {
-        configuration =  this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/package.json`, this.Branch, this.resourceId).pipe(map(config => {
-            let c: object = JSON.parse(config)
-            c['dependencies'] = c['dependencies'] || {};
+        configuration = this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/package.json`, this.Branch, this.resourceId).pipe(map(config => {
+          let c: object = JSON.parse(config)
+          c['dependencies'] = c['dependencies'] || {};
 
-            this.configuration = c;
-            return this.configuration['dependencies'];
-          }));
+          this.configuration = c;
+          return this.configuration['dependencies'];
+        }));
       }
     }
     else {
@@ -1720,7 +1735,7 @@ export class OnboardingFlowComponent implements OnInit {
 
     forkJoin(detectorFile, configuration, this.diagnosticApiService.getGists()).subscribe(res => {
       this.codeLoaded = true;
-      if (!this.code)
+      // if (!this.code)
       this.code = this.addCodePrefix(res[0]);
       this.originalCode = this.code;
       if (res[1] !== null) {
@@ -1753,7 +1768,7 @@ export class OnboardingFlowComponent implements OnInit {
     return false;
   }
 
-  ngOnDestroy(){
+  ngOnDestroy() {
     clearInterval(this.redirectTimer);
   }
 }
