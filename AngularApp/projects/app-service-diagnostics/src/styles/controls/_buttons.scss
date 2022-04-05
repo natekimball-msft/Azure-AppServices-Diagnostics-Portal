@@ -6,7 +6,7 @@
     cursor: pointer;
     background-image: none;
     border: 1px solid transparent;
-    color: $body-bg-color;
+    color: var(--bodyBackground);
     background-color: $primary-color;
 }
 
@@ -67,7 +67,7 @@
     margin-right: 1px!important;
     margin-left:5px!important;
     min-width: 0px!important;
-    background-color: white;
+    background-color: var(--bodyBackground);
 }
 
 .button-block{

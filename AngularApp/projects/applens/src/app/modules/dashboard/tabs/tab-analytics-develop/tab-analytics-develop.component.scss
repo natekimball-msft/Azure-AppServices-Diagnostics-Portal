@@ -12,5 +12,5 @@ li .reportlink {
 .nav>li .reportlink:hover {
     text-decoration: underline!important;
     color : rgb(108, 2, 247)!important;
-    background-color: white
+    background-color: var(--bodyBackground);
 }

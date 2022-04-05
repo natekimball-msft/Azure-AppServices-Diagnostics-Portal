@@ -23,8 +23,7 @@ import { UriUtilities } from '../../utilities/uri-utilities';
 import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.service';
 import { ILinkProps } from 'office-ui-fabric-react';
 import { SolutionService } from '../../services/solution.service';
-
-
+import { GenericUserSettingService } from '../../services/generic-user-setting.service';
 
 @Component({
   selector: 'detector-list',
@@ -64,10 +63,11 @@ export class DetectorListComponent extends DataRenderBaseComponent {
   allSolutions: Solution[] = [];
   solutionTitle: string = "";
   loading = LoadingStatus.Loading;
+  expandIssuedChecks: boolean = false;
 
   constructor(private _diagnosticService: DiagnosticService, protected telemetryService: TelemetryService, private _detectorControl: DetectorControlService, private _solutionService: SolutionService,
     private parseResourceService: ParseResourceService, @Inject(DIAGNOSTIC_DATA_CONFIG) private config: DiagnosticDataConfig, private _router: Router,
-    private _activatedRoute: ActivatedRoute, private _portalActionService: PortalActionGenericService, private _breadcrumbService : GenericBreadcrumbService) {
+    private _activatedRoute: ActivatedRoute, private _portalActionService: PortalActionGenericService, private _breadcrumbService : GenericBreadcrumbService, private _genericUserSettingsService:GenericUserSettingService) {
     super(telemetryService);
     this.isPublic = this.config && this.config.isPublic;
   }
@@ -76,6 +76,9 @@ export class DetectorListComponent extends DataRenderBaseComponent {
     super.processData(data);
     this.renderingProperties = <DetectorListRendering>data.renderingProperties;
     this.getResponseFromResource();
+    this._genericUserSettingsService.getExpandAnalysisCheckCard().subscribe(expandIssuedChecks => {
+      this.expandIssuedChecks = expandIssuedChecks;
+    })
   }
 
   private getResponseFromResource() {
