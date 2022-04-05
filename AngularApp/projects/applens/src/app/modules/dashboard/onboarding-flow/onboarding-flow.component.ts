@@ -1630,9 +1630,7 @@ export class OnboardingFlowComponent implements OnInit {
     let detectorFile: Observable<string>;
     this.recommendedUtterances = [];
     this.utteranceInput = "";
-    // if (this.detectorGraduation){
-    //   this.commitHistoryLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&_a=history` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&_a=history`;
-    // }
+    
     if (this.detectorGraduation && this.mode == DevelopMode.Edit && this.branchInput != undefined && this.branchInput != '') {
       this.Branch = this.branchInput;
     }
