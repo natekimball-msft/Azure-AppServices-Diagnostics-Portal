@@ -20,7 +20,8 @@
     </div>
 
     <div *ngIf="userPhotoSource !== ''" class="user-photo-container" (click)="openCallout()" (keyup.enter)="openCallout()" tabindex="0">
-      <img [src]="userPhotoSource" alt="User Profile Photo" class="avatar header-img">
+      <span class="image-label"> New! </span>
+      <img id="userId" [src]="userPhotoSource" alt="User Profile Photo" class="avatar header-img">
     </div>
   </nav>
 </header>

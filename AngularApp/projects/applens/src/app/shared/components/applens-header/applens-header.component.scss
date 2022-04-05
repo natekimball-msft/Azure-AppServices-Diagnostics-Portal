@@ -76,3 +76,9 @@
 .user-photo-container :hover {
     cursor: pointer;
 }
+
+.image-label {
+    font-style: italic;
+    color: var(--imageLabel);
+    font-weight: bold;
+}
