@@ -5,7 +5,7 @@ body {
     padding: 0;
     background: var(--bodyBackground);
     font-size: 16px;
-    color: #222;
+    color: var(--bodyText);
     font-family: "Roboto", sans-serif;
     font-weight: 300;
 }
@@ -17,6 +17,8 @@ body {
 .view-container {
     width: 100%;
     height: inherit;
+    color: var(--bodyText);
+    background: var(--bodyBackground);
 }
 
 .onboarding-container {
@@ -34,7 +36,7 @@ body {
     width: 175px;
     height: 37px;
     border-radius: 25px;
-    color: white;
+    color: var(--bodyBackground);
     text-decoration: none;
     background-color: #6a61fa;
     box-sizing: border-box;

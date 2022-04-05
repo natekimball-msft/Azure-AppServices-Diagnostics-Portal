@@ -1,6 +1,6 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
@@ -115,6 +115,8 @@ export class OnboardingFlowComponent implements OnInit {
   hideModal: boolean = true;
   fileName: string;
   editorOptions: any;
+  lightOptions: any;
+  darkOptions: any;
   code: string;
   originalCode: string;
   reference: object = {};
@@ -309,8 +311,8 @@ export class OnboardingFlowComponent implements OnInit {
     private diagnosticApiService: ApplensDiagnosticService, private _diagnosticApi: DiagnosticApiService, private resourceService: ResourceService,
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
     public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute,
-    private _applensCommandBarService: ApplensCommandBarService, private _router: Router) {
-    this.editorOptions = {
+    private _applensCommandBarService: ApplensCommandBarService, private _router: Router, private _themeService: GenericThemeService) {
+    this.lightOptions = {
       theme: 'vs',
       language: 'csharp',
       fontSize: 14,
@@ -322,6 +324,19 @@ export class OnboardingFlowComponent implements OnInit {
       folding: true
     };
 
+    this.darkOptions = {
+        theme: 'vs-dark',
+        language: 'csharp',
+        fontSize: 14,
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+        minimap: {
+          enabled: false
+        },
+        folding: true
+      };
+
+    this.editorOptions = this.lightOptions;
     this.buildOutput = [];
     this.detailedCompilationTraces = [];
     this.localDevButtonDisabled = false;
@@ -427,6 +442,11 @@ export class OnboardingFlowComponent implements OnInit {
       this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
 
       this.defaultBranch = "MainMVP";
+
+      this._themeService.currentThemeSub.subscribe((theme) =>
+      {
+          this.editorOptions = theme == "dark" ? this.darkOptions : this.lightOptions;
+      })
 
       if (this.detectorGraduation)
        this.getBranchList();
