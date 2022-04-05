@@ -1,10 +1,10 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
-import {concat, 
+import {concat,
   forkJoin
   , Observable, of
 } from 'rxjs';
@@ -107,7 +107,7 @@ export class OnboardingFlowComponent implements OnInit {
   @Input() startTime: momentNs.Moment = moment.utc().subtract(1, 'days');
   @Input() endTime: momentNs.Moment = moment.utc();
   @Input() gistMode: boolean = false;
-  @Input() branchInput: string = ''; 
+  @Input() branchInput: string = '';
   DevelopMode = DevelopMode;
   HealthStatus = HealthStatus;
   PanelType = PanelType;
@@ -115,6 +115,8 @@ export class OnboardingFlowComponent implements OnInit {
   hideModal: boolean = true;
   fileName: string;
   editorOptions: any;
+  lightOptions: any;
+  darkOptions: any;
   code: string;
   originalCode: string;
   reference: object = {};
@@ -210,7 +212,7 @@ export class OnboardingFlowComponent implements OnInit {
 
   buttonStyle: IButtonStyles = {
     root: {
-      color: "#323130",
+    //  color: "#323130",
       borderRadius: "12px",
       marginTop: "8px",
       background: "rgba(0, 120, 212, 0.1)",
@@ -222,7 +224,7 @@ export class OnboardingFlowComponent implements OnInit {
   branchButtonDisabled = false;
   branchButtonStyle: IButtonStyles = {
     root: {
-      color: "#323130",
+   //   color: "#323130",
       borderRadius: "12px",
       marginTop: "8px",
       background: "rgba(0, 120, 212, 0.1)",
@@ -268,15 +270,15 @@ export class OnboardingFlowComponent implements OnInit {
 
   dataSources: IDropdownOption[] = [
     {
-      key: "1", 
+      key: "1",
       text: "Applens"
-    }, 
+    },
     {
-      key: "2", 
+      key: "2",
       text: "Portal"
-    }, 
+    },
     {
-      key: "0", 
+      key: "0",
       text: "All"
     }
   ];
@@ -308,9 +310,9 @@ export class OnboardingFlowComponent implements OnInit {
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService,
     private diagnosticApiService: ApplensDiagnosticService, private _diagnosticApi: DiagnosticApiService, private resourceService: ResourceService,
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
-    public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute, 
-    private _applensCommandBarService: ApplensCommandBarService, private _router: Router) {
-    this.editorOptions = {
+    public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute,
+    private _applensCommandBarService: ApplensCommandBarService, private _router: Router, private _themeService: GenericThemeService) {
+    this.lightOptions = {
       theme: 'vs',
       language: 'csharp',
       fontSize: 14,
@@ -322,6 +324,19 @@ export class OnboardingFlowComponent implements OnInit {
       folding: true
     };
 
+    this.darkOptions = {
+        theme: 'vs-dark',
+        language: 'csharp',
+        fontSize: 14,
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+        minimap: {
+          enabled: false
+        },
+        folding: true
+      };
+
+    this.editorOptions = this.lightOptions;
     this.buildOutput = [];
     this.detailedCompilationTraces = [];
     this.localDevButtonDisabled = false;
@@ -428,6 +443,11 @@ export class OnboardingFlowComponent implements OnInit {
 
       this.defaultBranch = "MainMVP";
 
+      this._themeService.currentThemeSub.subscribe((theme) =>
+      {
+          this.editorOptions = theme == "dark" ? this.darkOptions : this.lightOptions;
+      })
+
       if (this.detectorGraduation)
        this.getBranchList();
 
@@ -471,7 +491,7 @@ export class OnboardingFlowComponent implements OnInit {
   getBranchList() {
     this.optionsForSingleChoice = [];
     this.showBranches = [];
-    this.resourceId = this.resourceId == undefined || this.resourceId == '' ? this.resourceService.getCurrentResourceId() : this.resourceId;  
+    this.resourceId = this.resourceId == undefined || this.resourceId == '' ? this.resourceService.getCurrentResourceId() : this.resourceId;
     this.diagnosticApiService.getBranches(this.resourceId).subscribe(branches => {
       var branchRegEx = new RegExp(`^dev\/.*\/detector\/${this.id}$`, "i");
       branches.forEach(option => {
@@ -515,7 +535,7 @@ export class OnboardingFlowComponent implements OnInit {
       this.updateBranch();
     }
     });
-  
+
   }
 
   internalExternalToggle() {
@@ -661,7 +681,7 @@ export class OnboardingFlowComponent implements OnInit {
 
   showGistCode: boolean = false;
   displayGistCode = "";
-  
+
   gistDropdownWidth: IDropdownProps['styles'] = {
     root: {
       width: '200px'
@@ -1445,16 +1465,16 @@ export class OnboardingFlowComponent implements OnInit {
     }
     */
 
-    
+
     let title = [`/${this.saveTempId}/${this.saveTempId}.csx`];
 
-    
-    
+
+
 
     let link = this.gistMode ? `${this.PPEHostname}/${this.resourceId}/gists/${this.saveTempId.toLowerCase()}?branchInput=${this.Branch}` : `${this.PPEHostname}/${this.resourceId}/detectors/${this.saveTempId.toLowerCase()}/edit?branchInput=${this.Branch}`;
-    
+
     const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, file, title, `${commitMessageStart} ${this.saveTempId.toLowerCase()}`, commitType, this.resourceId);
-    
+
 
     DetectorObservable.subscribe(_ => {
         this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx&version=GB${this.Branch}`;
@@ -1610,7 +1630,7 @@ export class OnboardingFlowComponent implements OnInit {
     this.utteranceInput = "";
     if (this.detectorGraduation && this.mode == DevelopMode.Edit && this.branchInput != undefined && this.branchInput != '') {
       this.Branch = this.branchInput;
-    } 
+    }
     if (this.detectorGraduation && this.mode != DevelopMode.Create) {
       this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/metadata.json`, this.Branch, this.resourceId).subscribe(res => {
         this.allUtterances = JSON.parse(res).utterances;
@@ -1691,7 +1711,7 @@ export class OnboardingFlowComponent implements OnInit {
             return this.configuration['dependencies'];
           }));
       }
-    } 
+    }
     else {
       if (!('dependencies' in this.configuration)) {
         this.configuration['dependencies'] = {};
