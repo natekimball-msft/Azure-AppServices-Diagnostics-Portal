@@ -11,4 +11,5 @@ export interface BreadcrumbNavigationItem {
     name: string;
     id?: string;
     isDetector?: boolean;
+    queryParams?: any;
 }

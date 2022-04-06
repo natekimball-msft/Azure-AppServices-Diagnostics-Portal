@@ -29,8 +29,10 @@ import { GenericResourceService } from '../../services/generic-resource-service'
 import { zoomBehaviors } from '../../models/time-series';
 import * as momentNs from 'moment';
 const moment = momentNs;
-import { PanelType } from 'office-ui-fabric-react';
+
+import { ILinkProps, PanelType } from 'office-ui-fabric-react';
 import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.service';
+import { GenericUserSettingService } from '../../services/generic-user-setting.service';
 
 const WAIT_TIME_IN_SECONDS_TO_ALLOW_DOWNTIME_INTERACTION: number = 58;
 const PERCENT_CHILD_DETECTORS_COMPLETED_TO_ALLOW_DOWNTIME_INTERACTION: number = 0.9;
@@ -121,12 +123,13 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     solutionPanelType: PanelType = PanelType.custom;
     solutionPanelOpenSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
     solutionTitle: string = "";
+    expandIssuedAnalysisChecks: boolean = false;
 
     constructor(public _activatedRoute: ActivatedRoute, private _router: Router,
         private _diagnosticService: DiagnosticService, private _detectorControl: DetectorControlService,
         protected telemetryService: TelemetryService, public _appInsightsService: AppInsightsQueryService,
         private _supportTopicService: GenericSupportTopicService, protected _globals: GenieGlobals, private _solutionService: SolutionService,
-        @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, private portalActionService: PortalActionGenericService, private _resourceService: GenericResourceService, private _genericBreadcrumbService: GenericBreadcrumbService) {
+        @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, private portalActionService: PortalActionGenericService, private _resourceService: GenericResourceService, private _genericBreadcrumbService: GenericBreadcrumbService, private _genericUserSettingsService:GenericUserSettingService) {
         super(telemetryService);
         this.isPublic = config && config.isPublic;
 
@@ -169,6 +172,10 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                 }
             });
         }
+
+        this._genericUserSettingsService.getExpandAnalysisCheckCard().subscribe(expandAnalysisCheckCard => {
+            this.expandIssuedAnalysisChecks = expandAnalysisCheckCard;
+        })
 
         this.startTime = this._detectorControl.startTime;
         this.endTime = this._detectorControl.endTime;
@@ -590,7 +597,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                             this.successfulViewModels.push(successViewModel);
                         }
                     }
-                    
+
                     return {
                         'ChildDetectorName': this.detectorViewModels[index].title,
                         'ChildDetectorId': this.detectorViewModels[index].metadata.id,
@@ -871,7 +878,6 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                     } else {
                         //TODO, For D&S blade, need to add a service to find category and navigate to detector
                         if (viewModel.model.startTime != null && viewModel.model.endTime != null) {
-                            this.analysisContainsDowntime().subscribe(containsDowntime => {
                                 this._detectorControl.setCustomStartEnd(viewModel.model.startTime, viewModel.model.endTime);
                                 //Todo, detector control service should able to read and infer TimePickerOptions from startTime and endTime
                                 this._detectorControl.updateTimePickerInfo({
@@ -882,7 +888,6 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                                 });
                                 this.updateBreadcrumb();
                                 this._router.navigate([`../../detectors/${detectorId}`], { relativeTo: this._activatedRoute });
-                            });
                         }
                         else {
                             this.updateBreadcrumb();
@@ -890,6 +895,29 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                         }
                     }
                 }
+            }
+        }
+    }
+
+    linkStyle: ILinkProps['styles'] = {
+        root: {
+          padding: '10px'
+        }
+    }
+
+    public selectDetectorNewTab(viewModel: any) {
+        if (viewModel != null && viewModel.model.metadata.id) {
+            let detectorId = viewModel.model.metadata.id;
+            const queryParams = this._activatedRoute.snapshot.queryParams;
+
+            if (detectorId !== "") {
+                let paramString = "";
+                Object.keys(queryParams).forEach(x => {
+                    paramString = paramString === "" ? `${paramString}${x}=${queryParams[x]}` : `${paramString}&${x}=${queryParams[x]}`;
+                });
+                const linkAddress = `${this._router.url.split('/analysis/')[0]}/detectors/${detectorId}?${paramString}`;
+
+                window.open(linkAddress, '_blank');
             }
         }
     }
@@ -927,19 +955,33 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
         }, 4000);
     }
 
-    openSolutionPanel(title: string) {
-        this.solutionTitle = title;
+  openSolutionPanel(viewModel: any) {
+    if (viewModel != null && viewModel.model!= null && viewModel.model.title)
+    {
+        let title:string = viewModel.model.title;
+        let detectorId: string = (viewModel.model.metadata != null) && (viewModel.model.metadata.id != null) ? viewModel.model.metadata.id : "";
+        let status: string = viewModel.model.status != null ? JSON.stringify(viewModel.model.status): "";
         this.allSolutions = this.allSolutionsMap.get(title);
+        this.solutionTitle = title;
         this.solutionPanelOpenSubject.next(true);
+        this.logEvent("ViewSolutionPanelButtonClicked", {
+            SolutionTitle: title,
+            DetectorId: detectorId,
+            Status: status,
+            SearchMode: this.searchMode
+          });
     }
+  }
 
     private updateBreadcrumb() {
         if(this.isPublic || this.withinGenie) return;
 
+        const queryParams = this._activatedRoute.snapshot.queryParams;
         this._genericBreadcrumbService.updateBreadCrumbSubject({
             name: this.analysisName,
             id: this.analysisId,
-            isDetector: false
+            isDetector: false,
+            queryParams: queryParams
         });
     }
 }

@@ -15,10 +15,13 @@
           </label>
           <div id="landing-page-service-type">
             <fab-dropdown [options]="fabDropdownOptions" [defaultSelectedKey]="defaultResourceTypes[0].displayName"
-              (onChange)="selectDropdownKey($event)" [styles]="fabDropdownStyles" [ariaLabel]="'Service Type'"></fab-dropdown>
+              (onChange)="selectDropdownKey($event)" [styles]="fabDropdownStyles" [ariaLabel]="'Service Type'">
+            </fab-dropdown>
           </div>
         </div>
-        <div class="section">
+        <div class="view-resource-link"><a tabindex="0" (click)="openResourcePanel()">View all supported resource
+            types</a></div>
+        <div class="section" style="margin-top: 15px;">
           <label for="landing-page-resource">
             {{selectedResourceType.resourceTypeLabel}} <span class="required">*</span>
           </label>
@@ -35,13 +38,13 @@
           <label for="landing-page-time-picker">Time range (UTC)</label>
           <div id="landing-page-time-picker" (click)="openTimePicker()" class="time-picker"
             (keydown.enter)="openTimePicker()" tabindex="0" aria-label="Choose time range">
-            <span style="color: #605E5C;">{{timePickerStr}}</span>
+            <span class="time-picker-str">{{timePickerStr}}</span>
             <fab-icon iconName="ChevronDown" ariaLabel="ChevronDown"></fab-icon>
           </div>
         </div>
 
         <div class="section">
-          <fab-primary-button contentStyle="border-radius: 2px;" [disabled]="disableSubmitButton" (click)="onSubmit()">
+          <fab-primary-button contentStyle="border-radius: 2px; border:1px solid #EDEBE9;" [disabled]="disableSubmitButton" (click)="onSubmit()">
             Continue</fab-primary-button>
         </div>
       </div>
@@ -85,8 +88,6 @@
       </div>
     </div>
 
-
-
     <div class="col-md-6" *ngIf="showCaseCleansingOption">
       <a (click)="caseCleansingNavigate()">Review case tagging</a>
     </div>
@@ -101,3 +102,27 @@
 <ng-template #noRecentResource>
   <tr>No Recent Resource</tr>
 </ng-template>
+
+
+<fab-panel [isOpen]="openResourceTypePanel == true" [type]="type" [customWidth]="width" [isHiddenOnDismiss]="true"
+  [styles]="panelStyles" [isLightDismiss]="true" [hasCloseButton]="true" [closeButtonAriaLabel]="'close'"
+  (onDismiss)="dismissedHandler()">
+  <div>
+    <div class="resource-content-container">
+      <div>
+        <div style="margin-bottom: 10px">
+          <div
+            style="position: absolute; left:25px; right: 32px; top:0px; height: 32px; font-family: 'segoe UI'; font-size: 20px; line-height: 24px; font-weight: 630;display: flex; align-items: flex-end"
+            tabindex="0" aria-label="Suppored resource types">
+            Supported Resource Types</div>
+        </div>
+        <div class="resource-content" style="margin-left:20px;font-size:16px">
+          <div *ngFor="let item of resourceTypeList">
+            <img [src]="item.imgSrc" style="height: 15px;width: 15px;" [alt]="item.type" class="mr-3" />
+            {{item.name}}&nbsp;
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</fab-panel>

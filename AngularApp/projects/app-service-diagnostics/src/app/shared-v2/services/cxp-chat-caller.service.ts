@@ -81,32 +81,10 @@ export class CXPChatCallerService {
     if(!supportTopicIdToCheck) {
       return false;
     }
-    if (!this.isChatSupported) {
-      this.logChatEligibilityCheck(supportTopicIdToCheck, 'CXPChatEnabled', 'false');
-      return false;
-    }
 
-    if ((this.supportedSapSupportTopicIds.length === 1 && this.supportedSapSupportTopicIds[0] === '*') || (this.supportedSupportTopicIds.length === 1 && this.supportedSupportTopicIds[0] === '*')) {
-      return true;
-    }
-    else {
-      supportTopicIdToCheck = supportTopicIdToCheck.toLowerCase();
-      let returnValue: boolean = false;
-
-      this.supportedSapSupportTopicIds.some((curSapSupportTopicId:string) => {
-        returnValue = (supportTopicIdToCheck === curSapSupportTopicId || curSapSupportTopicId === '*');
-        return returnValue;
-      });
-
-      //Keeping this part too since we are supporting both SapSupportTopicId's and non SapSupportTopicId's.
-      if(!returnValue) {
-        this.supportedSupportTopicIds.some((currValue: string) => {
-          returnValue = (supportTopicIdToCheck === currValue || currValue === '*');
-          return returnValue;
-        });
-      }
-      return returnValue;
-    }
+    //We always assume that a support topic is enabled for CXP chat as long as we have a valid support topic.
+    //Chat can be disabled specifically within the CXP system.
+    return true;    
   }
 
    /**

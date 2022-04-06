@@ -4,7 +4,7 @@ import { catchError } from 'rxjs/operators';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Component, Pipe, PipeTransform, Inject, Optional } from '@angular/core';
 import {
-  DetectorListRendering, DetectorMetaData, DetectorResponse, DiagnosticData, HealthStatus
+  DetectorListRendering, DetectorMetaData, DetectorResponse, DetectorType, DiagnosticData, HealthStatus
 } from '../../models/detector';
 import { LoadingStatus } from '../../models/loading';
 import { StatusStyles } from '../../models/styles';
@@ -21,8 +21,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PortalActionGenericService } from '../../services/portal-action.service';
 import { UriUtilities } from '../../utilities/uri-utilities';
 import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.service';
-
-
+import { ILinkProps } from 'office-ui-fabric-react';
+import { SolutionService } from '../../services/solution.service';
+import { GenericUserSettingService } from '../../services/generic-user-setting.service';
 
 @Component({
   selector: 'detector-list',
@@ -62,8 +63,11 @@ export class DetectorListComponent extends DataRenderBaseComponent {
   allSolutions: Solution[] = [];
   solutionTitle: string = "";
   loading = LoadingStatus.Loading;
+  expandIssuedChecks: boolean = false;
 
-  constructor(private _diagnosticService: DiagnosticService, protected telemetryService: TelemetryService, private _detectorControl: DetectorControlService, private parseResourceService: ParseResourceService, @Inject(DIAGNOSTIC_DATA_CONFIG) private config: DiagnosticDataConfig, private _router: Router, private _activatedRoute: ActivatedRoute, private _portalActionService: PortalActionGenericService, private _breadcrumbService : GenericBreadcrumbService) {
+  constructor(private _diagnosticService: DiagnosticService, protected telemetryService: TelemetryService, private _detectorControl: DetectorControlService, private _solutionService: SolutionService,
+    private parseResourceService: ParseResourceService, @Inject(DIAGNOSTIC_DATA_CONFIG) private config: DiagnosticDataConfig, private _router: Router,
+    private _activatedRoute: ActivatedRoute, private _portalActionService: PortalActionGenericService, private _breadcrumbService : GenericBreadcrumbService, private _genericUserSettingsService:GenericUserSettingService) {
     super(telemetryService);
     this.isPublic = this.config && this.config.isPublic;
   }
@@ -72,6 +76,9 @@ export class DetectorListComponent extends DataRenderBaseComponent {
     super.processData(data);
     this.renderingProperties = <DetectorListRendering>data.renderingProperties;
     this.getResponseFromResource();
+    this._genericUserSettingsService.getExpandAnalysisCheckCard().subscribe(expandIssuedChecks => {
+      this.expandIssuedChecks = expandIssuedChecks;
+    })
   }
 
   private getResponseFromResource() {
@@ -201,6 +208,45 @@ export class DetectorListComponent extends DataRenderBaseComponent {
     return true;
   }
 
+  public openBladeDiagnoseDetectorId(viewModel, type: DetectorType = DetectorType.Detector) {
+    if (viewModel != null && viewModel.model.metadata.id) {
+      let detector = viewModel.model.metadata.id;
+      let category = "";
+
+      if (viewModel.model.metadata.category) {
+          category = viewModel.model.metadata.category.replace(/\s/g, '');
+      }
+      else {
+          // For uncategorized detectors:
+          // If it is home page, redirect to availability category. Otherwise stay in the current category page.
+          category = this._router.url.split('/')[11] ? this._router.url.split('/')[11] : "availabilityandperformance";
+      }
+
+    const bladeInfo = {
+        title: category,
+        detailBlade: 'SCIFrameBlade',
+        extension: 'WebsitesExtension',
+        detailBladeInputs: {
+            id: this.overrideResourceUri,
+            categoryId: category,
+            optionalParameters: [{
+                key: "categoryId",
+                value: category
+            },
+            {
+                key: "detectorId",
+                value: detector
+            },
+            {
+                key: "detectorType",
+                value: type
+            }]
+        }
+    };
+    this._solutionService.GoToBlade(this.overrideResourceUri, bladeInfo);
+    }
+  }
+
 
   //Get from detector-list-analysis
   startDetectorRendering(detectorList: DetectorMetaData[]) {
@@ -323,6 +369,13 @@ export class DetectorListComponent extends DataRenderBaseComponent {
     return insightInfo;
   }
 
+
+  queryParams = {};
+  linkStyle: ILinkProps['styles'] = {
+    root: {
+      padding: '10px'
+    }
+  }
   public selectDetector(viewModel: DetectorViewModeWithInsightInfo) {
     if (viewModel != null && viewModel.model.metadata.id) {
       let targetDetector = viewModel.model.metadata.id;
@@ -337,36 +390,73 @@ export class DetectorListComponent extends DataRenderBaseComponent {
 
         // Log children detectors click
         this.logEvent(TelemetryEventNames.ChildDetectorClicked, clickDetectorEventProperties);
-        const queryParams = UriUtilities.removeChildDetectorStartAndEndTime(this._activatedRoute.snapshot.queryParams);
-        if (targetDetector === 'appchanges' && !this.isPublic) {
+        this.queryParams = UriUtilities.removeChildDetectorStartAndEndTime(this._activatedRoute.snapshot.queryParams);
+        if (targetDetector === 'appchanges' && this.isPublic) {
           this._portalActionService.openChangeAnalysisBlade(this._detectorControl.startTimeString, this._detectorControl.endTimeString);
         } else {
-          if (this.isPublic) {
+          if (this.isPublic && !(this.overrideResourceUri == "")){
+            this.openBladeDiagnoseDetectorId(viewModel);
+          }
+          else if (this.isPublic) {
             const url = this._router.url.split("?")[0];
             const routeUrl = url.endsWith("/overview") ? `../detectors/${targetDetector}` : `../../detectors/${targetDetector}`;
             this._router.navigate([routeUrl], {
-              queryParams: queryParams,
+              queryParams: this.queryParams,
               relativeTo: this._activatedRoute
             });
-          } else {
+          }
+           else {
             const resourceId = this._diagnosticService.resourceId;
-
-            this._breadcrumbService.updateBreadCrumbSubject({
-              name: this.detectorName,
-              id: this.detector,
-              isDetector: true
-            });
-            this._router.navigate([`${resourceId}/detectors/${targetDetector}`], { queryParams: queryParams });
+            if (!this.isPublic)
+            {
+                this._breadcrumbService.updateBreadCrumbSubject({
+                    name: this.detectorName,
+                    id: this.detector,
+                    isDetector: true,
+                   queryParams: this._activatedRoute.snapshot.queryParams
+                });
+            }
+            this._router.navigate([`${resourceId}/detectors/${targetDetector}`], { queryParams: this.queryParams });
           }
         }
       }
     }
   }
 
-  openSolutionPanel(title: string) {
-    this.allSolutions = this.allSolutionsMap.get(title);
-    this.solutionTitle = `${title} Solution`;
-    this.solutionPanelOpenSubject.next(true);
+
+  public selectDetectorNewTab(viewModel: DetectorViewModeWithInsightInfo) {
+    if (viewModel != null && viewModel.model.metadata.id) {
+      let targetDetector = viewModel.model.metadata.id;
+
+      if (targetDetector !== "") {
+         const queryParams = this._activatedRoute.snapshot.queryParams;
+         const resourceId = this._diagnosticService.resourceId;
+
+         let paramString = "";
+         Object.keys(queryParams).forEach(x => {
+           paramString = paramString === "" ? `${paramString}${x}=${queryParams[x]}` : `${paramString}&${x}=${queryParams[x]}`;
+         });
+         const linkAddress = this.overrideResourceUri == "" ? `${resourceId}/detectors/${targetDetector}?${paramString}` : `${this.overrideResourceUri}/detectors/${targetDetector}?${paramString}`;
+         window.open(linkAddress, '_blank');
+      }
+    }
+  }
+
+  openSolutionPanel(viewModel: DetectorViewModeWithInsightInfo) {
+    if (viewModel != null && viewModel.model!= null && viewModel.model.title)
+    {
+        let title:string = viewModel.model.title;
+        let detectorId: string = (viewModel.model.metadata != null) && (viewModel.model.metadata.id != null) ? viewModel.model.metadata.id : "";
+        let status: string = viewModel.model.status != null ? JSON.stringify(viewModel.model.status): "";
+        this.allSolutions = this.allSolutionsMap.get(title);
+        this.solutionTitle = `${title} Solution`;
+        this.solutionPanelOpenSubject.next(true);
+        this.logEvent("ViewSolutionPanelButtonClicked", {
+            SolutionTitle: title,
+            DetectorId: detectorId,
+            Status: status
+          });
+    }
   }
 }
 

@@ -52,7 +52,7 @@
                 [title]="'Observations and Solutions (' + issueDetectedViewModels.length + ')'">
                 <collapsible-list-item body>
                   <div *ngFor="let viewModel of issueDetectedViewModels" style="margin-bottom: 8px;">
-                    <fab-card [expanded]="false" [isExpandable]="!!viewModel.insightDescription" [isAlign]="true">
+                    <fab-card [expanded]="!isPublic" [isExpandable]="!!viewModel.insightDescription" [isAlign]="true">
                       <div header>
                         <div style="display: flex;align-items: center;min-height: 40px;">
                           <status-icon class="mr-3" [status]="viewModel.model.status"></status-icon>
@@ -61,14 +61,15 @@
                         <div style="margin: 12px 0px 16px 0px;" [attr.aria-label]="viewModel.insightTitle">{{viewModel.insightTitle}}</div>
                       </div>
                       <div body>
-                        <markdown [data]="viewModel.insightDescription"></markdown>
+                        <markdown-text [markdownData]="viewModel.insightDescription"></markdown-text>
                       </div>
                       <div footer>
                         <div style="display: flex;align-items: center;margin-bottom:15px;">
                           <fab-primary-button *ngIf="allSolutionsMap.has(viewModel.model.title)" contentClass="mr-5"
-                            (onClick)="openSolutionPanel(viewModel.model.title)"
+                            (onClick)="openSolutionPanel(viewModel)"
                             contentStyle="border-radius: 2px;font-size: 13px;">View Solutions</fab-primary-button>
-                          <fab-link (onClick)="selectDetector(viewModel)">View details</fab-link>
+                            <fab-link (onClick)="selectDetector(viewModel)">View details</fab-link>
+                            <fab-link *ngIf="!isPublic" (onClick)="selectDetectorNewTab(viewModel)" [styles]="linkStyle">[Open in new tab]</fab-link>
                         </div>
                       </div>
                     </fab-card>
@@ -205,6 +206,7 @@
                     <div footer>
                       <div style="margin-bottom:15px;">
                         <fab-link (onClick)="selectDetector(viewModel)">View details</fab-link>
+                        <fab-link *ngIf="!isPublic" (onClick)="selectDetectorNewTab(viewModel)" [styles]="linkStyle">[Open in new tab]</fab-link>
                       </div>
                     </div>
                   </fab-card>
@@ -218,7 +220,7 @@
       <div class="list-item-wrapper" *ngIf="failedLoadingViewModels.length > 0">
         <collapsible-list-fabric [collapsed]="false" [title]="'Failed Loading Checks (' + failedLoadingViewModels.length + ')'">
           <collapsible-list-item body>
-      
+
             <div class="list-text">
               <div *ngFor="let viewModel of failedLoadingViewModels" style="margin-bottom: 8px;">
                 <fab-card [isExpandable]="false" [isAlign]="true">
@@ -234,17 +236,17 @@
                   </div>
                   <div footer>
                     <div style="margin-bottom: 12px;">
-                      <fab-link (onClick)="selectDetector(viewModel)">View details
-                      </fab-link>
+                      <fab-link (onClick)="selectDetector(viewModel)">View details</fab-link>
+                      <fab-link *ngIf="!isPublic" (onClick)="selectDetectorNewTab(viewModel)" [styles]="linkStyle">[Open in new tab]</fab-link>
                     </div>
                   </div>
                 </fab-card>
               </div>
             </div>
-      
+
           </collapsible-list-item>
         </collapsible-list-fabric>
-      
+
       </div>
     </div>
 

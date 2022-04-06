@@ -3,7 +3,7 @@ import { Subscription, Observable } from 'rxjs';
 import { Component, OnDestroy, OnInit, Pipe, PipeTransform } from '@angular/core';
 import { ResourceService } from '../../../shared/services/resource.service';
 import * as momentNs from 'moment';
-import { DetectorControlService, FeatureNavigationService, DetectorMetaData, DetectorType, BreadcrumbNavigationItem } from 'diagnostic-data';
+import { DetectorControlService, FeatureNavigationService, DetectorMetaData, DetectorType, BreadcrumbNavigationItem, GenericThemeService } from 'diagnostic-data';
 import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
 import { Router, ActivatedRoute, NavigationExtras, NavigationEnd, Params } from '@angular/router';
 import { SearchService } from '../services/search.service';
@@ -18,6 +18,7 @@ import { filter } from 'rxjs/operators';
 import { StartupService } from '../../../shared/services/startup.service';
 import { UserInfo } from '../user-detectors/user-detectors.component';
 import { BreadcrumbService } from '../services/breadcrumb.service';
+import { UserSettingService } from '../services/user-setting.service';
 
 @Component({
   selector: 'dashboard',
@@ -77,24 +78,12 @@ export class DashboardComponent implements OnDestroy {
 
   constructor(public resourceService: ResourceService, private startupService: StartupService,  private _detectorControlService: DetectorControlService,
     private _router: Router, private _activatedRoute: ActivatedRoute, private _navigator: FeatureNavigationService,
-    private _diagnosticService: ApplensDiagnosticService, private _adalService: AdalService, public _searchService: SearchService, private _diagnosticApiService: DiagnosticApiService, private _observerService: ObserverService, public _applensGlobal: ApplensGlobal, private _startupService: StartupService, private _resourceService: ResourceService, private _breadcrumbService: BreadcrumbService) {
+    private _diagnosticService: ApplensDiagnosticService, private _adalService: AdalService, public _searchService: SearchService, private _diagnosticApiService: DiagnosticApiService, private _observerService: ObserverService, public _applensGlobal: ApplensGlobal, private _startupService: StartupService, private _resourceService: ResourceService, private _breadcrumbService: BreadcrumbService, private _userSettingsService: UserSettingService, private _themeService: GenericThemeService) {
     this.contentHeight = (window.innerHeight - 50) + 'px';
 
     this.navigateSub = this._navigator.OnDetectorNavigate.subscribe((detector: string) => {
       if (detector) {
         this._router.navigate([`./detectors/${detector}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge' });
-
-        this._diagnosticService.getDetectors().subscribe(detectors => {
-          // this.detectors = detectors;
-          // let detectorMetaData: DetectorMetaData = detectors.find(d => d.id.toLowerCase() === detector.toLowerCase());
-          // if (detectorMetaData) {
-          //   if (detectorMetaData.type === DetectorType.Detector) {
-          //     this._router.navigate([`./detectors/${detector}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge' });
-          //   } else if (detectorMetaData.type === DetectorType.Analysis) {
-          //     this._router.navigate([`./analysis/${detector}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge' });
-          //   }
-          // }
-        });
       }
     });
 
@@ -147,6 +136,14 @@ export class DashboardComponent implements OnDestroy {
     if (!!this._activatedRoute && !!this._activatedRoute.snapshot && !!this._activatedRoute.snapshot.queryParams && !!this._activatedRoute.snapshot.queryParams['l']) {
       this._diagnosticApiService.effectiveLocale = this._activatedRoute.snapshot.queryParams['l'].toString().toLowerCase();
     }
+
+    this._userSettingsService.getUserSetting().subscribe(userInfo => {
+        if(!!userInfo && userInfo.theme !="")
+        {
+            this._themeService.setActiveTheme(userInfo.theme.toLowerCase());
+
+        }
+    });
 
     let serviceInputs = this._startupService.getInputs();
     this.resourceReady = this.resourceService.getCurrentResource();

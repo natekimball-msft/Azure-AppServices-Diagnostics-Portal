@@ -5,6 +5,7 @@ import { Communication, CommunicationStatus } from '../../models/communication';
 import { CommsService } from '../../services/comms.service';
 import { MessageBarType, PanelType } from 'office-ui-fabric-react';
 import { GenieGlobals } from '../../services/genie.service';
+import { GenericThemeService } from '../../services/generic-theme.service';
 const moment = momentNs;
 
 @Component({
@@ -18,8 +19,7 @@ export class CommAlertComponent implements OnInit {
     private resolvedAlertTitle: string =
         'An Azure service outage that was impacting this subscription was recently resolved. (Issue : {title})';
     private azureServiceCommList: Communication[];
-    private activeIssueMessageBarBGColor : string = 'rgb(253, 231, 233)';
-    private resolvedIssueMessageBarBGColor : string = 'rgb(255, 244, 206)';
+    private resolvedIssueMessageBarBGColor : string = 'rgb(255 244 206)';
 
     @Input() autoExpand: boolean = false;
     commAlertTitle: string;
@@ -32,7 +32,7 @@ export class CommAlertComponent implements OnInit {
     isPublic: boolean;
     type: PanelType = PanelType.custom;
     width: string = "850px";
-    
+
     messageBarStyles: any = {
         root: {
             height: '49px',
@@ -46,14 +46,22 @@ export class CommAlertComponent implements OnInit {
         }
     }
 
-    constructor(private commsService: CommsService, @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig,private genieGlobals:GenieGlobals) {
-        this.commAlertToShow = null;
+    constructor(private commsService: CommsService, private _themeService: GenericThemeService, @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig,private genieGlobals:GenieGlobals) {
         this.commAlertTitle = '';
         this.isPublic = config.isPublic;
         this.azureServiceCommList = [];
     }
 
     ngOnInit() {
+        this._themeService.currentThemeSub.subscribe(() => {
+            this.messageBarStyles = {
+                root: {
+                    height: '49px',
+                    backgroundColor: this._themeService.getPropertyValue("--resolvedIssueMessageBarBGColor")
+                }
+            }
+
+        });
 
         this.commsService.getServiceHealthCommunications().subscribe((commsList: Communication[]) => {
             this.azureServiceCommList = commsList;
@@ -68,7 +76,10 @@ export class CommAlertComponent implements OnInit {
                 if (commAlert.status === CommunicationStatus.Active) {
                     this.commAlertTitle = this.activeAlertTitle;
                     this.commAlertStatus = MessageBarType.error;
-                    this.messageBarStyles.root.backgroundColor = this.activeIssueMessageBarBGColor;
+
+                    this._themeService.currentThemeSub.subscribe(() => {
+                        this.messageBarStyles.root.backgroundColor = this._themeService.getPropertyValue("--activeIssueMessageBarBGColor");
+                    });
                 } else {
                     this.commAlertTitle = this.resolvedAlertTitle;
                 }

@@ -5,7 +5,7 @@
 
 .active-tab {
   color: rgb(68, 68, 68);
-  background-color: #fff !important;
+  background-color: var(--bodyBackground) !important;
   border: 1px solid #ddd;
   border-bottom-color: transparent;
 }
