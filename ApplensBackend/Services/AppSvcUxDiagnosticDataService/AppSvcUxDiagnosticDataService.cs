@@ -70,16 +70,14 @@ namespace AppLensV3.Services.AppSvcUxDiagnosticDataService
         private async Task<SubscriptionPropertiesDictionary> GetSubscriptionProperties()
         {
             SubscriptionPropertiesDictionary sd = null;
-            //            const string _appServiceDiagnosticsLocationPlacementIdQuery = @"
-            //ClientTelemetryNew
-            //| project TIMESTAMP, action, actionModifier, data
-            //| where TIMESTAMP >= ago(45d) and action == ""diagnostic-data"" and actionModifier == ""SubscriptionProperties""
-            //| extend data = tolower(data)
-            //| parse data with *""subscriptionid="" SubscriptionId "";subscriptionlocationplacementid="" LocationPlacementId "";"" *
-            //| summarize by SubscriptionId, LocationPlacementId";
-            const string _appServiceDiagnosticsLocationPlacementIdQuery = @"RoleInstanceHeartbeat | where TIMESTAMP >= ago(1h) and TIMESTAMP <= ago(30m) | count";
-            //var results = await _kustoClient.ExecuteQueryAsync("appsvcux", "APPSvcUx", _appServiceDiagnosticsLocationPlacementIdQuery, "GetLocationPlacementId", DateTime.UtcNow.AddDays(-45), DateTime.UtcNow);
-            var results = await _kustoClient.ExecuteQueryAsync("wawscusdiagleader.centralus", "wawsprod", _appServiceDiagnosticsLocationPlacementIdQuery, "GetLocationPlacementId", DateTime.UtcNow.AddDays(-45), DateTime.UtcNow);
+            const string _appServiceDiagnosticsLocationPlacementIdQuery = @"
+            ExtTelemetry 
+            | where TIMESTAMP >= ago(45d) and extension == 'WebsitesExtension' and action == 'diagnostic-data' and actionModifier == 'SubscriptionProperties'
+            | project TIMESTAMP, action, actionModifier, data
+            | where data has 'subscriptionLocationPlacementId' and data has 'subscriptionId'
+            | parse data with * 'subscriptionId"":""' SubscriptionId:string '"",""subscriptionLocationPlacementId"":""' LocationPlacementId:string '"",""' *
+            | summarize take_any(data) by SubscriptionId, LocationPlacementId";
+            var results = await _kustoClient.ExecuteQueryAsync("azportalpartner", "AzurePortal", _appServiceDiagnosticsLocationPlacementIdQuery, "GetLocationPlacementId", DateTime.UtcNow.AddDays(-45), DateTime.UtcNow, 120);
 
             if (results.Rows.Count > 0)
             {
