@@ -4,9 +4,9 @@ using System.Data;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AppLensV3.Helpers;
+using Kusto.Cloud.Platform.Data;
 using Kusto.Data;
 using Kusto.Data.Common;
-using Kusto.Cloud.Platform.Data;
 using Microsoft.Extensions.Configuration;
 
 namespace AppLensV3.Services
@@ -34,21 +34,21 @@ namespace AppLensV3.Services
             kustoApiQueryEndpoint = KustoApiEndpoint + ":443";
 
             userAssignedMSIClientId = $"{configuration["Kusto:UserAssignedMSIClientId"]}";
-            if (!string.IsNullOrWhiteSpace(userAssignedMSIClientId))
+            if (!string.IsNullOrWhiteSpace(userAssignedMSIClientId) && !IsRunningLocal)
             {
                 useCertBasedTokenAcquisition = false;
             }
             else
             {
                 useCertBasedTokenAcquisition = !string.IsNullOrWhiteSpace($"{configuration.GetValue(typeof(string), "Kusto:CertBasedClientId", string.Empty)}") &&
-                    !string.IsNullOrWhiteSpace($"{configuration.GetValue(typeof(string), "Kusto:CertBasedAADAuthorityUri", string.Empty)}") &&
+                    !string.IsNullOrWhiteSpace($"{configuration.GetValue(typeof(string), "Kusto:CertBasedAADTenantId", string.Empty)}") &&
                     !string.IsNullOrWhiteSpace($"{configuration.GetValue(typeof(string), "Kusto:TokenRequestorCertSubjectName", string.Empty)}");
 
                 if (useCertBasedTokenAcquisition)
                 {
                     CertBasedAuthOptions = new KustoCertBasedAuthOptions(
                         clientId: $"{configuration.GetValue(typeof(string), "Kusto:CertBasedClientId")}",
-                        aadAuthorityUri: $"{configuration.GetValue(typeof(string), "Kusto:CertBasedAADAuthorityUri")}",
+                        aadTenantId: $"{configuration.GetValue(typeof(string), "Kusto:CertBasedAADTenantId")}",
                         tokenRequestorCertSubjectName: $"{configuration.GetValue(typeof(string), "Kusto:TokenRequestorCertSubjectName")}"
                         );
                 }
@@ -57,16 +57,16 @@ namespace AppLensV3.Services
                     if (!string.IsNullOrWhiteSpace($"{configuration.GetValue(typeof(string), "Kusto:ClientId", string.Empty)}") &&
                     !string.IsNullOrWhiteSpace($"{configuration.GetValue(typeof(string), "Kusto:AppKey", string.Empty)}"))
                     {
-                        string tenantDomainUri = $"{configuration.GetValue(typeof(string), "Kusto:AppKeyTenantDomainUri", string.Empty)}";
-                        if (string.IsNullOrWhiteSpace(tenantDomainUri))
+                        string tenantDomainId = $"{configuration.GetValue(typeof(string), "Kusto:AppKeyTenantId", string.Empty)}";
+                        if (string.IsNullOrWhiteSpace(tenantDomainId))
                         {
-                            tenantDomainUri = KustoConstants.MicrosoftTenantAuthorityUrl;
+                            tenantDomainId = KustoConstants.MicrosoftTenantAuthorityId;
                         }
 
                         AppKeyBasedAuthOptions = new KustoApplicationKeyBasedAuthOptions(
                             clientId: $"{configuration.GetValue(typeof(string), "Kusto:ClientId", string.Empty)}",
                             applicationKey: $"{configuration.GetValue(typeof(string), "Kusto:AppKey", string.Empty)}",
-                            aadAuthorityUri: tenantDomainUri);
+                            aadAuthorityId: tenantDomainId);
                     }
                 }
             }
@@ -97,9 +97,16 @@ namespace AppLensV3.Services
             }
         }
 
+        private bool IsRunningLocal
+        {
+            get
+            {
+                return string.IsNullOrWhiteSpace(System.Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME"));
+            }
+        }
         private string GetClientIdentifyingName()
         {
-            return $"{System.Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME") ?? "LocalMachine"}|{System.Environment.GetEnvironmentVariable("COMPUTERNAME") ?? System.Environment.MachineName}";
+            return IsRunningLocal ? $"LocalMachine|{System.Environment.MachineName}" : $"{System.Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME")}|{System.Environment.GetEnvironmentVariable("COMPUTERNAME") ?? System.Environment.MachineName}";
         }
 
         private ICslQueryProvider Client(string cluster, string database)
@@ -111,7 +118,7 @@ namespace AppLensV3.Services
                 {
                     ApplicationNameForTracing = GetClientIdentifyingName()
                 };
-                if (!string.IsNullOrWhiteSpace(userAssignedMSIClientId))
+                if (!string.IsNullOrWhiteSpace(userAssignedMSIClientId) && !IsRunningLocal)
                 {
                     connectionStringBuilder = connectionStringBuilder.WithAadUserManagedIdentity(userAssignedMSIClientId);
                 }
@@ -123,7 +130,7 @@ namespace AppLensV3.Services
                             applicationClientId: CertBasedAuthOptions.ClientId,
                             applicationCertificateSubjectDistinguishedName: GenericCertLoader.Instance.GetCertBySubjectName(CertBasedAuthOptions.TokenRequestorCertSubjectName).Subject,
                             applicationCertificateIssuerDistinguishedName: GenericCertLoader.Instance.GetCertBySubjectName(CertBasedAuthOptions.TokenRequestorCertSubjectName).IssuerName.Name,
-                            authority: CertBasedAuthOptions.AADAuthorityUri);
+                            authority: CertBasedAuthOptions.AADTenantId);
                     }
                     else
                     {
@@ -132,7 +139,7 @@ namespace AppLensV3.Services
                             connectionStringBuilder = connectionStringBuilder.WithAadApplicationKeyAuthentication(
                                 applicationClientId:AppKeyBasedAuthOptions.ClientId,
                                 applicationKey: AppKeyBasedAuthOptions.ApplicationKey,
-                                authority: AppKeyBasedAuthOptions.AADAuthorityUri);
+                                authority: AppKeyBasedAuthOptions.AADAuthorityId);
                         }
                         else
                         {
@@ -206,16 +213,16 @@ namespace AppLensV3.Services
 
         private class KustoCertBasedAuthOptions
         {
-            public KustoCertBasedAuthOptions(string clientId, string aadAuthorityUri, string tokenRequestorCertSubjectName)
+            public KustoCertBasedAuthOptions(string clientId, string aadTenantId, string tokenRequestorCertSubjectName)
             {
                 if (string.IsNullOrWhiteSpace(clientId))
                 {
                     throw new ArgumentNullException(paramName: nameof(clientId), message: "AAD client id cannot be null or empty.");
                 }
 
-                if (string.IsNullOrWhiteSpace(aadAuthorityUri))
+                if (string.IsNullOrWhiteSpace(aadTenantId))
                 {
-                    throw new ArgumentNullException(paramName: nameof(aadAuthorityUri), message: "AAD domain uri cannot be null or empty.");
+                    throw new ArgumentNullException(paramName: nameof(aadTenantId), message: "AAD domain uri cannot be null or empty.");
                 }
 
                 if (string.IsNullOrWhiteSpace(tokenRequestorCertSubjectName))
@@ -224,7 +231,7 @@ namespace AppLensV3.Services
                 }
 
                 ClientId = clientId;
-                AADAuthorityUri = aadAuthorityUri;
+                AADTenantId = aadTenantId;
                 TokenRequestorCertSubjectName = tokenRequestorCertSubjectName;
             }
 
@@ -232,12 +239,12 @@ namespace AppLensV3.Services
 
             public string ClientId { get; }
 
-            public string AADAuthorityUri { get; }
+            public string AADTenantId { get; }
         }
 
         private class KustoApplicationKeyBasedAuthOptions
         {
-            public KustoApplicationKeyBasedAuthOptions(string clientId, string applicationKey, string aadAuthorityUri)
+            public KustoApplicationKeyBasedAuthOptions(string clientId, string applicationKey, string aadAuthorityId)
             {
                 if (string.IsNullOrWhiteSpace(clientId))
                 {
@@ -249,13 +256,13 @@ namespace AppLensV3.Services
                     throw new ArgumentNullException(paramName: nameof(applicationKey), message: "Secret used to aquire AAD token cannot be null or empty.");
                 }
 
-                if (string.IsNullOrWhiteSpace(aadAuthorityUri))
+                if (string.IsNullOrWhiteSpace(aadAuthorityId))
                 {
-                    throw new ArgumentNullException(paramName: nameof(aadAuthorityUri), message: "AAD domain uri cannot be null or empty.");
+                    throw new ArgumentNullException(paramName: nameof(aadAuthorityId), message: "AAD domain uri cannot be null or empty.");
                 }
 
                 ClientId = clientId;
-                AADAuthorityUri = aadAuthorityUri;
+                AADAuthorityId = aadAuthorityId;
                 ApplicationKey = applicationKey;
             }
 
@@ -263,7 +270,7 @@ namespace AppLensV3.Services
 
             public string ClientId { get; }
 
-            public string AADAuthorityUri { get; }
+            public string AADAuthorityId { get; }
         }
     }
 }
