@@ -24,6 +24,7 @@ import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.serv
 import { ILinkProps } from 'office-ui-fabric-react';
 import { SolutionService } from '../../services/solution.service';
 import { GenericUserSettingService } from '../../services/generic-user-setting.service';
+import { UserSetting } from 'projects/applens/src/app/shared/models/user-setting';
 
 @Component({
   selector: 'detector-list',
@@ -64,12 +65,19 @@ export class DetectorListComponent extends DataRenderBaseComponent {
   solutionTitle: string = "";
   loading = LoadingStatus.Loading;
   expandIssuedChecks: boolean = false;
+  isWaterfallViewMode: boolean = false;
 
   constructor(private _diagnosticService: DiagnosticService, protected telemetryService: TelemetryService, private _detectorControl: DetectorControlService, private _solutionService: SolutionService,
     private parseResourceService: ParseResourceService, @Inject(DIAGNOSTIC_DATA_CONFIG) private config: DiagnosticDataConfig, private _router: Router,
     private _activatedRoute: ActivatedRoute, private _portalActionService: PortalActionGenericService, private _breadcrumbService : GenericBreadcrumbService, private _genericUserSettingsService:GenericUserSettingService) {
     super(telemetryService);
     this.isPublic = this.config && this.config.isPublic;
+
+    this._genericUserSettingsService.isWaterfallViewSub.subscribe(isWaterfallViewMode =>
+    {
+        this.isWaterfallViewMode = isWaterfallViewMode;
+    });
+
   }
 
   protected processData(data: DiagnosticData) {
@@ -78,7 +86,12 @@ export class DetectorListComponent extends DataRenderBaseComponent {
     this.getResponseFromResource();
     this._genericUserSettingsService.getExpandAnalysisCheckCard().subscribe(expandIssuedChecks => {
       this.expandIssuedChecks = expandIssuedChecks;
-    })
+    });
+
+    this._genericUserSettingsService.isWaterfallViewMode().subscribe(isWaterfallViewMode =>
+    {
+        this.isWaterfallViewMode = isWaterfallViewMode;
+    });
   }
 
   private getResponseFromResource() {
