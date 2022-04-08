@@ -21,7 +21,8 @@ export const allowV3PResourceTypeList: { type: string, allowSwitchBack: boolean 
     { type: "microsoft.app/containerapps", allowSwitchBack: false },
     { type: "microsoft.servicefabric/clusters", allowSwitchBack: false },
     { type: "microsoft.resourceconnector/appliances", allowSwitchBack: false },
-    { type: "microsoft.batch/batchaccounts", allowSwitchBack: false }
+    { type: "microsoft.batch/batchaccounts", allowSwitchBack: false },
+    { type: "microsoft.Web/staticsites", allowSwitchBack: false }
 ];
 
 
