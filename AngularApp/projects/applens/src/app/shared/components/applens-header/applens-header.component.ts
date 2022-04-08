@@ -1,7 +1,7 @@
 import { Component, Injector, OnInit, Optional } from '@angular/core';
 import { ActivatedRoute, NavigationExtras, Router } from '@angular/router';
 import { AdalService } from 'adal-angular4';
-import { ISearchBoxProps } from 'office-ui-fabric-react';
+import { IChoiceGroupOption, ISearchBoxProps } from 'office-ui-fabric-react';
 import { SearchService } from '../../../modules/dashboard/services/search.service';
 import { UserSettingService } from '../../../modules/dashboard/services/user-setting.service';
 import { ResourceInfo } from '../../models/resources';
@@ -39,6 +39,11 @@ export class ApplensHeaderComponent implements OnInit {
   expandAnalysisChanged: boolean = false;
   themeChanged: boolean = false;
   viewModeChanged: boolean = false;
+  selectedKey: string = "smarter";
+  choiceGroupOptions: IChoiceGroupOption[] = [
+    { key: 'smarter', text: 'Smart Grouping', onClick: () => { this.smartViewChecked = true; this.selectedKey = "smarter"; } },
+    { key: 'waterfall', text: 'Waterfall', onClick: () => { this.smartViewChecked = false; this.selectedKey = "waterfall"; } }
+  ];
 
   constructor(private _adalService: AdalService,  private _diagnosticApiService: DiagnosticApiService, private _activatedRoute: ActivatedRoute, private _userSettingService: UserSettingService, private _router: Router, private _themeService: ApplensThemeService, @Optional() public _searchService?: SearchService, @Optional() private _applensGlobal?: ApplensGlobal) { }
 
