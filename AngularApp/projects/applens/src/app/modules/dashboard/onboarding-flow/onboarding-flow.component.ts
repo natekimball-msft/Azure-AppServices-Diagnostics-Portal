@@ -167,6 +167,10 @@ export class OnboardingFlowComponent implements OnInit {
   gistVersion: string;
   latestGistVersion: string = "";
   gistName: string;
+  pastGistEvent: string;
+  pastGistVersionEvent: string;
+  refreshGistButtonDisabled: boolean = true;
+  refreshGistListButtonIcon: any = { iconName: 'Refresh' };
   gistsDropdownOptions: IDropdownOption[] = [];
   gistVersionOptions: IDropdownOption[] = [];
   gistUpdateTitle
@@ -635,7 +639,8 @@ export class OnboardingFlowComponent implements OnInit {
     window.open(this.commitHistoryLink);
   }
 
-  updateGistVersionOptions(event: string) {
+  updateGistVersionOptions(event: string) {    
+    this.pastGistEvent = event;
     this.gistName = event["option"].text;
     this.gistVersionOptions = [];
     this.latestGistVersion = "";
@@ -650,6 +655,10 @@ export class OnboardingFlowComponent implements OnInit {
           }));
           this.gistVersionOptions = tempList.reverse();
           if (this.gistVersionOptions.length > 10) { this.gistVersionOptions = this.gistVersionOptions.slice(0, 10); }
+          if (this.pastGistVersionEvent !== undefined) 
+          {
+            this.gistVersionOnChange(this.pastGistVersionEvent);             
+          }
         });
     }
     else {
@@ -669,6 +678,8 @@ export class OnboardingFlowComponent implements OnInit {
   };
 
   gistVersionOnChange(event: string) {
+    this.refreshGistButtonDisabled = false;
+    this.pastGistVersionEvent = event;
     this.temporarySelection[event["option"]["title"]]['version'] = event["option"]["key"];
 
     this.githubService.getCommitContent(event["option"]["title"], this.temporarySelection[event["option"]["title"]]['version']).subscribe(x => {
