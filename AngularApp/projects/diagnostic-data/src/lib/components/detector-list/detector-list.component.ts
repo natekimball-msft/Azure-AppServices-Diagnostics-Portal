@@ -24,7 +24,6 @@ import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.serv
 import { ILinkProps } from 'office-ui-fabric-react';
 import { SolutionService } from '../../services/solution.service';
 import { GenericUserSettingService } from '../../services/generic-user-setting.service';
-import { UserSetting } from 'projects/applens/src/app/shared/models/user-setting';
 
 @Component({
   selector: 'detector-list',
