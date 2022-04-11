@@ -64,7 +64,7 @@ export class DetectorListComponent extends DataRenderBaseComponent {
         if (error === "") {
           this.resourceType = this.parseResourceService.resourceType;
           this.imgSrc = this.parseResourceService.resource.imgSrc;
-          
+
           if(this.isPublic){
             this.resourceText = `Showing diagnostics from the dependent resource type: ${this.resourceType}`;
           } else {
@@ -86,9 +86,12 @@ export class DetectorListComponent extends DataRenderBaseComponent {
 
   private getDetectorResponses() {
     this._diagnosticService.getDetectors(this.overrideResourceUri).subscribe(detectors => {
+     console.log("step1, detectors, rendering", detectors,  this.renderingProperties,  this.renderingProperties.detectorIds);
       this.detectorMetaData = detectors.filter(detector => this.renderingProperties.detectorIds.indexOf(detector.id) >= 0);
+      console.log("step2, detectorMetaData", this.detectorMetaData);
       this.detectorViewModels = this.detectorMetaData.map(detector => this.getDetectorViewModel(detector, this.renderingProperties.additionalParams, this.overrideResourceUri));
 
+      console.log("step3, detectorViewModels", this.detectorViewModels);
       const requests: Observable<any>[] = [];
       this.detectorViewModels.forEach((metaData, index) => {
         requests.push((<Observable<DetectorResponse>>metaData.request).pipe(
