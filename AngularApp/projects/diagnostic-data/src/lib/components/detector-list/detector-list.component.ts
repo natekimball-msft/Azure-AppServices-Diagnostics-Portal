@@ -267,8 +267,11 @@ export class DetectorListComponent extends DataRenderBaseComponent {
     const requests: Observable<any>[] = [];
 
     this.detectorMetaData = detectorList.filter(detector => this.renderingProperties.detectorIds.indexOf(detector.id) >= 0);
+    console.log("step1: detectorMetaData", this.detectorMetaData);
     this.detectorViewModels = this.detectorMetaData.map(detector => this.getDetectorViewModel(detector, this.renderingProperties.additionalParams, this.overrideResourceUri));
+    console.log("step2: detectorViewModels", this.detectorViewModels);
     this.detectorViewModelsWaterfall = this.detectorViewModels;
+    console.log("step3: detectoviewModelsWaterfall", this.detectorViewModelsWaterfall);
     if (this.detectorViewModels.length === 0) {
       this.loading = LoadingStatus.Success;
     }
