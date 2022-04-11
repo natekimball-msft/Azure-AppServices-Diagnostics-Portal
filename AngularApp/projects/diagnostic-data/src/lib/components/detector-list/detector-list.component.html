@@ -22,7 +22,7 @@
 </div>
 
 <ng-container *ngIf="!isPublic&&isWaterfallViewMode else smartViewContainer">
-  <div class="detector-container" *ngFor="let viewModel of detectorViewModels">
+  <div class="detector-container" *ngFor="let viewModel of detectorViewModelsWaterfall">
     <div class="detector-header" (click)="toggleDetectorHeaderStatus(viewModel)"
       (keyup.enter)="toggleDetectorHeaderStatus(viewModel)" tabindex="0" role="button"
       attr.aria-expanded="{{viewModel.expanded}}" attr.aria-label="Detector title {{viewModel.title}}">

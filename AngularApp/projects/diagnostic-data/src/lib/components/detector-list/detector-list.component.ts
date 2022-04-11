@@ -44,6 +44,7 @@ export class DetectorListComponent extends DataRenderBaseComponent {
   detectorName: string = "";
   detectorMetaData: DetectorMetaData[];
   detectorViewModels: DetectorViewModel[] = [];
+  detectorViewModelsWaterfall: DetectorViewModel[] = [];
   HealthStatus = HealthStatus;
   private childDetectorsEventProperties = {};
   overrideResourceUri: string = "";
@@ -267,6 +268,7 @@ export class DetectorListComponent extends DataRenderBaseComponent {
 
     this.detectorMetaData = detectorList.filter(detector => this.renderingProperties.detectorIds.indexOf(detector.id) >= 0);
     this.detectorViewModels = this.detectorMetaData.map(detector => this.getDetectorViewModel(detector, this.renderingProperties.additionalParams, this.overrideResourceUri));
+    this.detectorViewModelsWaterfall = this.detectorViewModels;
     if (this.detectorViewModels.length === 0) {
       this.loading = LoadingStatus.Success;
     }
