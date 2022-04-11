@@ -13,6 +13,8 @@ namespace AppLensV3
 
         public static GenericCertLoader Instance => _instance.Value;
 
+        private ConcurrentDictionary<string, X509Certificate2> _certCollection = new ConcurrentDictionary<string, X509Certificate2>(StringComparer.OrdinalIgnoreCase);
+
         /// <summary>
         /// Load certificates from current-user store in memory.
         /// </summary>
@@ -22,12 +24,11 @@ namespace AppLensV3
             certStore.Open(OpenFlags.ReadOnly);
             try
             {
-                //Look up only valid certificates that have not expired.
+                // Look up only valid certificates that have not expired.
                 ProcessCertCollection(certStore.Certificates.Find(X509FindType.FindByTimeValid, DateTime.UtcNow, true));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                //DiagnosticsETWProvider.Instance.LogRuntimeHostMessage($"Error: {ex.Message} occurred while trying to load certs. Stack Trace: {ex.StackTrace} ");
                 throw;
             }
             finally
@@ -36,21 +37,71 @@ namespace AppLensV3
                 {
                     certStore.Close();
                 }
+
                 certStore.Dispose();
             }
         }
-
-        private ConcurrentDictionary<string, X509Certificate2> _certCollection = new ConcurrentDictionary<string, X509Certificate2>(StringComparer.OrdinalIgnoreCase);
 
         public void Initialize()
         {
             DateTime invocationStartTime = DateTime.UtcNow;
             LoadCertsFromFromUserStore();
-
-            //DiagnosticsETWProvider.Instance.LogRuntimeHostMessage(
-            //    $"GenericCertLoader: Took {Convert.ToInt64((DateTime.UtcNow - invocationStartTime).TotalMilliseconds)} milliseconds to load all certificates from user store. Total certificates loaded: {_certCollection.Count}."
-            //    );
         }
+
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+        /// <summary>
+        /// Lookup a certificate matching the supplied subject name from in-memory collection.
+        /// </summary>
+        /// <param name="subjectName">Subject name to match</param>
+        /// <returns>X509Certificate2 object matching the supplied subject name. KeyNotFoundException if none is found.</returns>
+        public X509Certificate2 GetCertBySubjectName(string subjectName)
+        {
+            if (!string.IsNullOrWhiteSpace(subjectName))
+            {
+                if (!subjectName.StartsWith("CN=", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    subjectName = $"CN={subjectName}";
+                }
+
+                if (_certCollection.TryGetValue(subjectName, out X509Certificate2 requestedCert))
+                {
+                    return requestedCert;
+                }
+
+                RetryLoadRequestedCertBySubjectName(subjectName);
+
+                return _certCollection.TryGetValue(subjectName, out X509Certificate2 requestedCertRetry) ? requestedCertRetry : throw new KeyNotFoundException($"Certificate matching {subjectName} subject name was not found. Please validate the subject name.");
+            }
+            else
+            {
+                throw new ArgumentNullException(paramName: nameof(subjectName), message: "Subject name is null or empty. Please supply a valid subject name to lookup");
+            }
+        }
+#pragma warning restore CA1303
+
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+        /// <summary>
+        /// Lookup a certificate matching the supplied thumbprint from in-memory collection.
+        /// </summary>
+        /// <param name="thumbprint">Thumbprint to match.</param>
+        /// <returns>X509Certificate2 object matching the supplied subject name.
+        /// Throws a KeyNotFoundException if no certificate matching the thumbprint is found.</returns>
+        public X509Certificate2 GetCertByThumbprint(string thumbprint)
+        {
+            if (string.IsNullOrWhiteSpace(thumbprint))
+            {
+                throw new ArgumentNullException(paramName: nameof(thumbprint), message: "Thumbprint is null or empty. Please supply a valid thumbprint to lookup");
+            }
+
+            var certToRetrun = _certCollection.Values.Where(cert => cert.Thumbprint.Equals(thumbprint, StringComparison.OrdinalIgnoreCase))?.FirstOrDefault();
+            if (certToRetrun == null)
+            {
+                RetryLoadRequestedCertByThumbprint(thumbprint);
+            }
+
+            return _certCollection.Values.Where(cert => cert.Thumbprint.Equals(thumbprint, StringComparison.OrdinalIgnoreCase))?.First() ?? throw new KeyNotFoundException(message: $"Certificate matching the {thumbprint} thumbprint was not found. Please validate the thumbprint.");
+        }
+#pragma warning restore CA1303
 
         private string GetSubjectNameForSearchInStore(string subjectName)
         {
@@ -75,10 +126,8 @@ namespace AppLensV3
                 {
                     if (!_certCollection.ContainsKey(currCert.Subject))
                     {
-                        if (_certCollection.TryAdd(currCert.Subject, currCert))
-                        {
-                            //DiagnosticsETWProvider.Instance.LogRuntimeHostMessage($"Successfully loaded cert Thumbprint:{currCert.Thumbprint} Subjectname:{currCert.Subject} CertType:{(currCert.HasPrivateKey ? "PFX" : "CER")} isRetry:{isRetry}");
-                        }
+                        // To do: Log a message indicating which certificate was sucessfully loaded.
+                        _certCollection.TryAdd(currCert.Subject, currCert);
                     }
                 }
             }
@@ -115,59 +164,5 @@ namespace AppLensV3
                 }
             }
         }
-
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
-        /// <summary>
-        /// Lookup a certificate matching the supplied subject name from in-memory collection.
-        /// </summary>
-        /// <param name="subjectName">Subject name to match</param>
-        /// <returns>X509Certificate2 object matching the supplied subject name. KeyNotFoundException if none is found.</returns>
-        public X509Certificate2 GetCertBySubjectName(string subjectName)
-        {
-            if (!string.IsNullOrWhiteSpace(subjectName))
-            {
-                if (!subjectName.StartsWith("CN=", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    subjectName = $"CN={subjectName}";
-                }
-                if (_certCollection.TryGetValue(subjectName, out X509Certificate2 requestedCert))
-                {
-                    return requestedCert;
-                }
-
-                RetryLoadRequestedCertBySubjectName(subjectName);
-
-                return _certCollection.TryGetValue(subjectName, out X509Certificate2 requestedCertRetry) ? requestedCertRetry : throw new KeyNotFoundException($"Certificate matching {subjectName} subject name was not found. Please validate the subject name.");
-            }
-            else
-            {
-                throw new ArgumentNullException(paramName: nameof(subjectName), message: "Subject name is null or empty. Please supply a valid subject name to lookup");
-            }
-        }
-#pragma warning restore CA1303
-
-
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
-        /// <summary>
-        /// Lookup a certificate matching the supplied thumbprint from in-memory collection.
-        /// </summary>
-        /// <param name="thumbprint">Thumbprint to match.</param>
-        /// <returns>X509Certificate2 object matching the supplied subject name.
-        /// Throws a KeyNotFoundException if no certificate matching the thumbprint is found.</returns>
-        public X509Certificate2 GetCertByThumbprint(string thumbprint)
-        {
-            if (string.IsNullOrWhiteSpace(thumbprint))
-            {
-                throw new ArgumentNullException(paramName: nameof(thumbprint), message: "Thumbprint is null or empty. Please supply a valid thumbprint to lookup");
-            }
-            var certToRetrun = _certCollection.Values.Where(cert => cert.Thumbprint.Equals(thumbprint, StringComparison.OrdinalIgnoreCase))?.FirstOrDefault();
-            if (certToRetrun == null)
-            {
-                RetryLoadRequestedCertByThumbprint(thumbprint);
-            }
-            return _certCollection.Values.Where(cert => cert.Thumbprint.Equals(thumbprint, StringComparison.OrdinalIgnoreCase))?.First() ?? throw new KeyNotFoundException(message: $"Certificate matching the {thumbprint} thumbprint was not found. Please validate the thumbprint.");
-        }
-#pragma warning restore CA1303
-
     }
 }
