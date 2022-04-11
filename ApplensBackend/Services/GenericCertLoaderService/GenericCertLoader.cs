@@ -15,10 +15,16 @@ namespace AppLensV3
 
         private ConcurrentDictionary<string, X509Certificate2> _certCollection = new ConcurrentDictionary<string, X509Certificate2>(StringComparer.OrdinalIgnoreCase);
 
+        public void Initialize()
+        {
+            DateTime invocationStartTime = DateTime.UtcNow;
+            LoadCertsFromFromUserStore();
+        }
+
         /// <summary>
         /// Load certificates from current-user store in memory.
         /// </summary>
-        public void LoadCertsFromFromUserStore()
+        private void LoadCertsFromFromUserStore()
         {
             X509Store certStore = new X509Store(StoreName.My, StoreLocation.CurrentUser);
             certStore.Open(OpenFlags.ReadOnly);
@@ -40,12 +46,6 @@ namespace AppLensV3
 
                 certStore.Dispose();
             }
-        }
-
-        public void Initialize()
-        {
-            DateTime invocationStartTime = DateTime.UtcNow;
-            LoadCertsFromFromUserStore();
         }
 
 #pragma warning disable CA1303 // Do not pass literals as localized parameters

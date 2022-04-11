@@ -12,14 +12,15 @@ namespace AppLensV3
     {
         private IConfiguration _config;
         private static readonly Lazy<TokenRequestorFromPFXService> instance = new Lazy<TokenRequestorFromPFXService>(() => new TokenRequestorFromPFXService());
+
         public static TokenRequestorFromPFXService Instance => instance.Value;
 
         public static readonly string TokenServiceName = "PFXTokenRequestorService";
 
         public void Initialize(IConfiguration config)
         {
-            //Empty for now, keeping it here for any startup operation that may be required later.
-            //e.g.. Prefetch the token for any specific provider based ont the config.
+            // Empty for now, keeping it here for any startup operation that may be required later.
+            // e.g.. Prefetch the token for any specific provider based ont the config.
             _config = config;
         }
 
@@ -27,116 +28,10 @@ namespace AppLensV3
         /// Retrieves a ConfidentialClientApplication corresponding to the certificate.
         /// </summary>
         /// <param name="certificateSubjectName">Subject name of the certificate that is configured as trusted on the AAD app.</param>
-        /// <returns></returns>
+        /// <returns>IConfidentialClientApplication that can be used to request tokens.</returns>
         public IConfidentialClientApplication GetClientApp(string certificateSubjectName)
             => string.IsNullOrWhiteSpace(certificateSubjectName) ? null
             : TokenRequestorFromPFXService.Instance.certToClientAppMap.TryGetValue(certificateSubjectName, out IConfidentialClientApplication cApp) ? cApp : null;
-
-        /// <summary>
-        /// Holds the ConfidentialClientApplication per AAD app.
-        /// The assumption is that a certificate is not reused with multiple AAD apps (i.e.. a certficate is configured against only one AAD app as trusted).
-        /// </summary>
-        private ConcurrentDictionary<string, IConfidentialClientApplication> certToClientAppMap = new ConcurrentDictionary<string, IConfidentialClientApplication>(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// Holds the token cache.
-        /// </summary>
-        private ConcurrentDictionary<TokenCacheKey, TokenCacheValue> tokenCache = new ConcurrentDictionary<TokenCacheKey, TokenCacheValue>();
-
-        /// <summary>
-        /// Adds a new entry in the token cache if one does not already exist for the token.
-        /// Also creates and configures a ConfidentialClientApplicationBuilder for the corresponding CertificateSubjectName if one is not already present.
-        /// </summary>
-        /// <param name="cacheKey">Object of type TokenCacheKey that uniquely identifies a token.</param>
-        /// <param name="certificateSubjectName">Subject name of the certificate that is configured as trusted on the AAD app.</param>
-        /// <returns>true if the item was successfully added, false otherwise.</returns>
-        private async Task<bool> TryAddTokenCacheItemAsync(TokenCacheKey cacheKey, string certificateSubjectName)
-        {
-            try
-            {
-                await AddTokenCacheItemAsync(cacheKey, certificateSubjectName);
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Adds a new entry in the token cache if one does not already exist for the token.
-        /// Also creates and configures a ConfidentialClientApplicationBuilder for the corresponding CertificateSubjectName if one is not already present.
-        /// </summary>
-        /// <param name="cacheKey">Object of type TokenCacheKey that uniquely identifies a token.</param>
-        /// <param name="certificateSubjectName">Subject name of the certificate that is configured as trusted on the AAD app.</param>
-        /// <returns>Returns a 2-tuple. First element being the token cache key and the second is the token cache value. These are the objects that were added to the token cache collection.</returns>
-        private async Task<Tuple<TokenCacheKey, TokenCacheValue>> AddTokenCacheItemAsync(TokenCacheKey cacheKey, string certificateSubjectName)
-        {
-            #region Validate params
-            if (cacheKey == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(cacheKey), message: "Please supply a valid token cache key.");
-            }
-
-            if (string.IsNullOrWhiteSpace(certificateSubjectName))
-            {
-                throw new ArgumentNullException(paramName: nameof(certificateSubjectName), message: "Certificate subject name is null or empty. Please supply a valid subject name to lookup.");
-            }
-            #endregion
-
-            if (!certificateSubjectName.StartsWith("CN=", StringComparison.CurrentCultureIgnoreCase))
-            {
-                certificateSubjectName = $"CN={certificateSubjectName}";
-            }
-            certificateSubjectName = certificateSubjectName.ToUpperInvariant();
-
-            if (!Instance.certToClientAppMap.ContainsKey(certificateSubjectName))
-            {
-                DateTime invocationStartTime = DateTime.UtcNow;
-                string exceptionType = string.Empty;
-                string exceptionDetails = string.Empty;
-                string message = string.Empty;
-                try
-                {
-                    IConfidentialClientApplication cApp = ConfidentialClientApplicationBuilder.Create(cacheKey.ClientId)
-                                                      .WithCertificate(GenericCertLoader.Instance.GetCertBySubjectName(certificateSubjectName))
-                                                      .WithAuthority(cacheKey.AadTenantDomainUri, validateAuthority: true)
-                                                      .Build();
-
-                    Instance.certToClientAppMap.TryAdd(certificateSubjectName, cApp);
-                }
-                catch (Exception ex)
-                {
-                    exceptionType = ex.GetType().ToString();
-                    exceptionDetails = ex.ToString();
-                    message = $"ConfidentialClientApplication build status : Failed. ClientId: {cacheKey.ClientId} Tenant:{cacheKey.AadTenantDomainUri} CertificateSubjectName:{certificateSubjectName}";
-
-                    //DiagnosticsETWProvider.Instance.LogTokenRefreshSummary(
-                    //    Source: TokenServiceName,
-                    //    Message: message,
-                    //    LatencyInMilliseconds: Convert.ToInt64((DateTime.UtcNow - invocationStartTime).TotalMilliseconds),
-                    //    StartTime: invocationStartTime.ToString("HH:mm:ss.fff"),
-                    //    EndTime: DateTime.UtcNow.ToString("HH:mm:ss.fff"),
-                    //    ExceptionType: exceptionType,
-                    //    ExceptionDetails: exceptionDetails);
-
-                    throw;
-                }
-
-                //DiagnosticsETWProvider.Instance.LogTokenRefreshSummary(
-                //        Source: TokenServiceName,
-                //        Message: "ConfidentialClientApplication build status : Successful. ClientId: {cacheKey.ClientId} Tenant:{cacheKey.TargetAadTenant} CertificateSubjectName:{certificateSubjectName}",
-                //        LatencyInMilliseconds: Convert.ToInt64((DateTime.UtcNow - invocationStartTime).TotalMilliseconds),
-                //        StartTime: invocationStartTime.ToString("HH:mm:ss.fff"),
-                //        EndTime: DateTime.UtcNow.ToString("HH:mm:ss.fff"),
-                //        ExceptionType: exceptionType,
-                //        ExceptionDetails: exceptionDetails);
-            }
-
-            TokenCacheValue cacheValue = new TokenCacheValue(cacheKey.ClientId, cacheKey.Audience, certificateSubjectName);
-            Instance.tokenCache.TryAdd(cacheKey, cacheValue);
-            return new Tuple<TokenCacheKey, TokenCacheValue>(cacheKey, cacheValue);
-        }
 
         /// <summary>
         /// Gets the authorization token from AAD by passing it the certificate.
@@ -167,11 +62,126 @@ namespace AppLensV3
 
             return string.Empty;
         }
-    }
 
+        /// <summary>
+        /// Holds the ConfidentialClientApplication per AAD app.
+        /// The assumption is that a certificate is not reused with multiple AAD apps (i.e.. a certficate is configured against only one AAD app as trusted).
+        /// </summary>
+        private ConcurrentDictionary<string, IConfidentialClientApplication> certToClientAppMap = new ConcurrentDictionary<string, IConfidentialClientApplication>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Holds the token cache.
+        /// </summary>
+        private ConcurrentDictionary<TokenCacheKey, TokenCacheValue> tokenCache = new ConcurrentDictionary<TokenCacheKey, TokenCacheValue>();
+
+        /// <summary>
+        /// Adds a new entry in the token cache if one does not already exist for the token.
+        /// Also creates and configures a ConfidentialClientApplicationBuilder for the corresponding CertificateSubjectName if one is not already present.
+        /// </summary>
+        /// <param name="cacheKey">Object of type TokenCacheKey that uniquely identifies a token.</param>
+        /// <param name="certificateSubjectName">Subject name of the certificate that is configured as trusted on the AAD app.</param>
+        /// <returns>true if the item was successfully added, false otherwise.</returns>
+        private async Task<bool> TryAddTokenCacheItemAsync(TokenCacheKey cacheKey, string certificateSubjectName)
+        {
+            try
+            {
+                await AddTokenCacheItemAsync(cacheKey, certificateSubjectName);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Adds a new entry in the token cache if one does not already exist for the token.
+        /// Also creates and configures a ConfidentialClientApplicationBuilder for the corresponding CertificateSubjectName if one is not already present.
+        /// </summary>
+        /// <param name="cacheKey">Object of type TokenCacheKey that uniquely identifies a token.</param>
+        /// <param name="certificateSubjectName">Subject name of the certificate that is configured as trusted on the AAD app.</param>
+        /// <returns>Returns a 2-tuple. First element being the token cache key and the second is the token cache value. These are the objects that were added to the token cache collection.</returns>
+        private async Task<Tuple<TokenCacheKey, TokenCacheValue>> AddTokenCacheItemAsync(TokenCacheKey cacheKey, string certificateSubjectName)
+        {
+            #region Validate params
+            if (cacheKey == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(cacheKey), message: "Please supply a valid token cache key.");
+            }
+
+            if (string.IsNullOrWhiteSpace(certificateSubjectName))
+            {
+                throw new ArgumentNullException(paramName: nameof(certificateSubjectName), message: "Certificate subject name is null or empty. Please supply a valid subject name to lookup.");
+            }
+            #endregion
+
+            if (!certificateSubjectName.StartsWith("CN=", StringComparison.CurrentCultureIgnoreCase))
+            {
+                certificateSubjectName = $"CN={certificateSubjectName}";
+            }
+
+            certificateSubjectName = certificateSubjectName.ToUpperInvariant();
+
+            if (!Instance.certToClientAppMap.ContainsKey(certificateSubjectName))
+            {
+                try
+                {
+                    IConfidentialClientApplication cApp = ConfidentialClientApplicationBuilder.Create(cacheKey.ClientId)
+                                                      .WithCertificate(GenericCertLoader.Instance.GetCertBySubjectName(certificateSubjectName))
+                                                      .WithAuthority(cacheKey.AadTenantDomainUri, validateAuthority: true)
+                                                      .Build();
+
+                    Instance.certToClientAppMap.TryAdd(certificateSubjectName, cApp);
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+
+            TokenCacheValue cacheValue = new TokenCacheValue(cacheKey.ClientId, cacheKey.Audience, certificateSubjectName);
+            Instance.tokenCache.TryAdd(cacheKey, cacheValue);
+            return new Tuple<TokenCacheKey, TokenCacheValue>(cacheKey, cacheValue);
+        }
+    }
 
     public class TokenCacheValue
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TokenCacheValue"/> class. Provides methods to acquire AAD tokens with support for in-memory token caching and auto referesh.</summary>
+        /// <param name="clientId">Client Id of the AAD app that is to be contacted to issue the token.</param>
+        /// <param name="audience">Target resource to whom the token will be sent to. Ensure the audience also includes required scope. The default scope is "{ResourceIdUri/.default}".
+        /// <br/>e.g.. https://msazurecloud.onmicrosoft.com/azurediagnostic/.default </param>
+        /// <param name="certificateSubjectName">Subject name of the certificate that is configured as trusted on the AAD app.</param>
+        public TokenCacheValue(string clientId, string audience, string certificateSubjectName)
+        {
+            if (string.IsNullOrWhiteSpace(clientId))
+            {
+                throw new ArgumentNullException(paramName: nameof(clientId), message: "Failed to create TokenCacheValue. Please supply a client id for the AAD app from where the token should be requested.");
+            }
+
+            if (string.IsNullOrWhiteSpace(audience))
+            {
+                throw new ArgumentNullException(paramName: nameof(audience), message: "Failed to create TokenCacheValue. Please supply a resource id to whom the token will be sent to.");
+            }
+
+            if (string.IsNullOrWhiteSpace(certificateSubjectName))
+            {
+                throw new ArgumentNullException(paramName: nameof(certificateSubjectName), message: "Failed to create TokenCacheValue. Certificate subject name is null or empty. Please supply a valid subject name to lookup.");
+            }
+
+            ClientId = clientId;
+            Audience = audience;
+
+            if (!certificateSubjectName.StartsWith("CN=", StringComparison.CurrentCultureIgnoreCase))
+            {
+                certificateSubjectName = $"CN={certificateSubjectName}";
+            }
+
+            CertificateSubjectName = certificateSubjectName.ToUpperInvariant();
+        }
+
         /// <summary>
         /// Client Id of the AAD app that is to be contacted to issue the token.
         /// </summary>
@@ -200,7 +210,6 @@ namespace AppLensV3
         /// <returns>Raw result after contacting AAD and acquiring the auth token.</returns>
         private async Task<AuthenticationResult> GetAuthenticationResultRawAsync()
         {
-
             IConfidentialClientApplication cApp = TokenRequestorFromPFXService.Instance.GetClientApp(this.CertificateSubjectName);
             if (cApp == null)
             {
@@ -211,26 +220,18 @@ namespace AppLensV3
 
             try
             {
-                //This method should auto use token cache. As long as the token is valid, calls will not go out to AAD. Tokens are auto refreshed.
+                // This method should auto use token cache. As long as the token is valid, calls will not go out to AAD. Tokens are auto refreshed.
                 AuthResult = await cApp.AcquireTokenForClient(new string[] { this.Audience })
                     .WithSendX5C(true)
                     .ExecuteAsync().ConfigureAwait(true);
 
                 return this.AuthResult;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                //DiagnosticsETWProvider.Instance.LogTokenRefreshSummary(
-                //        Source: TokenRequestorFromPFXService.TokenServiceName,
-                //        Message: $"Token retrieval status : Failed.  ClientId: {ClientId} Audience:{this.Audience} CertificateSubjectName:{this.CertificateSubjectName}",
-                //        LatencyInMilliseconds: Convert.ToInt64((DateTime.UtcNow - invocationStartTime).TotalMilliseconds),
-                //        StartTime: invocationStartTime.ToString("HH:mm:ss.fff"),
-                //        EndTime: DateTime.UtcNow.ToString("HH:mm:ss.fff"),
-                //        ExceptionType: ex.GetType().ToString(),
-                //        ExceptionDetails: ex.ToString());
+                // To do: Add logging
                 throw;
             }
-
         }
 
         /// <summary>
@@ -244,42 +245,6 @@ namespace AppLensV3
         /// </summary>
         /// <returns>Auth token string formatted to use in HTTP authorization header without any additional manipulations.</returns>
         public async Task<string> GetAuthorizationTokenAsync() => (await this.GetAuthenticationResultRawAsync()).CreateAuthorizationHeader();
-
-        /// <summary>
-        /// Creates an instance of TokenCacheValue object. Provides methods to acquire AAD tokens with support for in-memory token caching and auto referesh.
-        /// </summary>
-        /// <param name="clientId">Client Id of the AAD app that is to be contacted to issue the token.</param>
-        /// <param name="audience">Target resource to whom the token will be sent to. Ensure the audience also includes required scope. The default scope is "{ResourceIdUri/.default}".
-        /// <br/>e.g.. https://msazurecloud.onmicrosoft.com/azurediagnostic/.default </param>
-        /// <param name="certificateSubjectName">Subject name of the certificate that is configured as trusted on the AAD app.</param>
-        public TokenCacheValue(string clientId, string audience, string certificateSubjectName)
-        {
-            if (string.IsNullOrWhiteSpace(clientId))
-            {
-                throw new ArgumentNullException(paramName: nameof(clientId), message: "Failed to create TokenCacheValue. Please supply a client id for the AAD app from where the token should be requested.");
-            }
-
-            if (string.IsNullOrWhiteSpace(audience))
-            {
-                throw new ArgumentNullException(paramName: nameof(audience), message: "Failed to create TokenCacheValue. Please supply a resource id to whom the token will be sent to.");
-            }
-
-            if (string.IsNullOrWhiteSpace(certificateSubjectName))
-            {
-                throw new ArgumentNullException(paramName: nameof(certificateSubjectName), message: "Failed to create TokenCacheValue. Certificate subject name is null or empty. Please supply a valid subject name to lookup.");
-            }
-
-
-            ClientId = clientId;
-            Audience = audience;
-
-            if (!certificateSubjectName.StartsWith("CN=", StringComparison.CurrentCultureIgnoreCase))
-            {
-                certificateSubjectName = $"CN={certificateSubjectName}";
-            }
-            CertificateSubjectName = certificateSubjectName.ToUpperInvariant();
-        }
-
     }
 
     /// <summary>
