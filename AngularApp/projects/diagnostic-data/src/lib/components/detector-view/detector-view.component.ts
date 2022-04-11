@@ -19,6 +19,7 @@ import { IChoiceGroupOption } from 'office-ui-fabric-react/lib/components/Choice
 import { IDropdownOption } from 'office-ui-fabric-react/lib/components/Dropdown';
 import { IIconProps } from 'office-ui-fabric-react/lib/components/Icon';
 import { filter } from 'rxjs/operators';
+import { GenericUserSettingService } from '../../services/generic-user-setting.service';
 
 const moment = momentNs;
 const minSupportedDowntimeDuration: number = 10;
@@ -177,7 +178,7 @@ export class DetectorViewComponent implements OnInit {
   private isLegacy: boolean;
 
   constructor(@Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, private telemetryService: TelemetryService,
-    private detectorControlService: DetectorControlService, private _supportTopicService: GenericSupportTopicService, private _cxpChatService: CXPChatService, protected _route: ActivatedRoute, private versionService: VersionService, private _router: Router) {
+    private detectorControlService: DetectorControlService, private _supportTopicService: GenericSupportTopicService, private _cxpChatService: CXPChatService, protected _route: ActivatedRoute, private versionService: VersionService, private _router: Router, private _genericUserSettingsService: GenericUserSettingService) {
     this.isPublic = config && config.isPublic;
     this.feedbackButtonLabel = this.isPublic ? 'Send Feedback' : 'Rate Detector';
   }
@@ -229,7 +230,17 @@ export class DetectorViewComponent implements OnInit {
     this.detectorResponseSubject.subscribe((data: DetectorResponse) => {
       let metadata: DetectorMetaData = data ? data.metadata : null;
       // this.detectorDataLocalCopy = data;
+
       this.detectorDataLocalCopy = this.mergeDetectorListResponse(data);
+
+      this._genericUserSettingsService.isWaterfallViewMode().subscribe(isWaterfallViewMode =>
+        {
+            if (isWaterfallViewMode && !this.isPublic)
+            {
+                this.detectorDataLocalCopy = data;
+            }
+        });
+
       if (data) {
         this.detectorEventProperties = {
           'StartTime': this.startTime.toISOString(),
@@ -773,12 +784,13 @@ export class DetectorViewComponent implements OnInit {
 
   //Merge all child detectors and put it into last place
   private mergeDetectorListResponse(response: DetectorResponse):DetectorResponse {
+
     if(!response || !response.dataset || !response.dataset.find(d => d.renderingProperties.type === RenderingType.DetectorList)) return response;
 
     const mergedResponse = {...response};
     let lastIndex = 0;
     const detectorIds:string[] = [];
-
+    console.log("mergedresponse orignial response", response);
     for(let i = 0;i < response.dataset.length;i++){
       const data = response.dataset[i];
       const isVisible = (<Rendering>data.renderingProperties).isVisible;
@@ -799,6 +811,7 @@ export class DetectorViewComponent implements OnInit {
     }
 
     mergedResponse.dataset = dataSet;
+    console.log("mergedresponse", detectorMetaData.renderingProperties.detectorIds, mergedResponse);
     return mergedResponse;
   }
 
