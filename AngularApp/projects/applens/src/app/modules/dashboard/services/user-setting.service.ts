@@ -14,6 +14,7 @@ export class UserSettingService {
     currentViewMode: string="smarter";
     currentThemeSub: BehaviorSubject<string> = new BehaviorSubject<string>("light");
     currentViewModeSub: BehaviorSubject<string> = new BehaviorSubject<string>("smarter");
+    isWaterfallViewSub: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
     constructor(private _diagnosticApiService: DiagnosticApiService, private _adalService: AdalService) {
         const alias = !!this._adalService.userInfo.profile && !!this._adalService.userInfo.profile.upn ? this._adalService.userInfo.profile.upn : '';
@@ -21,7 +22,9 @@ export class UserSettingService {
 
         if (this.userId != "")
         {
-            this.getUserSetting();
+            this.getUserSetting().subscribe((userSetting) => {
+                this.userSetting = userSetting;
+            });
         }
     }
 
@@ -43,6 +46,10 @@ export class UserSettingService {
 
     getExpandAnalysisCheckCard() {
         return this.getUserSetting().pipe(map(userSetting => userSetting.expandAnalysisCheckCard));
+    }
+
+    isWaterfallViewMode() {
+        return this.getUserSetting().pipe(map(userSetting => {return userSetting.viewMode == "waterfall"}));
     }
 
     updateRecentResource(recentResource: RecentResource) {
