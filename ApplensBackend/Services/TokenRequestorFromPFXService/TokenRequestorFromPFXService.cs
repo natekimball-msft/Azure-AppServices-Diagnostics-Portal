@@ -2,8 +2,6 @@
 using Microsoft.Identity.Client;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace AppLensV3
@@ -183,25 +181,37 @@ namespace AppLensV3
         }
 
         /// <summary>
-        /// Client Id of the AAD app that is to be contacted to issue the token.
+        /// Gets or Sets Client Id of the AAD app that is to be contacted to issue the token.
         /// </summary>
         private string ClientId { get; set; }
 
         /// <summary>
-        /// Target resource to whom the token will be sent to. Ensure the audience also includes required scope. The default scope is "{ResourceIdUri/.default}".
+        /// Gets or Sets the Audience of the target resource to whom the token will be sent to. Ensure the audience also includes required scope. The default scope is "{ResourceIdUri/.default}".
         /// <br/>e.g.. https://msazurecloud.onmicrosoft.com/azurediagnostic/.default
         /// </summary>
         private string Audience { get; set; }
 
         /// <summary>
-        /// Subject name of the certificate that is configured as trusted on the AAD app.
+        /// Gets or Sets the Subject name of the certificate that is configured as trusted on the AAD app.
         /// </summary>
         private string CertificateSubjectName { get; set; }
 
         /// <summary>
-        /// Raw result after contacting AAD and acquiring the auth token.
+        /// Gets or Sets raw result after contacting AAD and acquiring the auth token.
         /// </summary>
         private AuthenticationResult AuthResult { get; set; }
+
+        /// <summary>
+        /// Get the raw authorization token string.
+        /// </summary>
+        /// <returns>Raw authoization token string.</returns>
+        public async Task<string> GetAuthorizationTokenRawAsync() => (await this.GetAuthenticationResultRawAsync()).AccessToken;
+
+        /// <summary>
+        /// Get the authorization token string that can be directly used in an HTTP call. The returned value is appended with a Bearer idnetifier.
+        /// </summary>
+        /// <returns>Auth token string formatted to use in HTTP authorization header without any additional manipulations.</returns>
+        public async Task<string> GetAuthorizationTokenAsync() => (await this.GetAuthenticationResultRawAsync()).CreateAuthorizationHeader();
 
         /// <summary>
         /// Retrieves the correct ConfidentialClientApplication corresponding to the certificate and contacts AAD to acquire a new auth token.
@@ -229,22 +239,10 @@ namespace AppLensV3
             }
             catch (Exception)
             {
-                // To do: Add logging
+                // TODO: Add logging
                 throw;
             }
         }
-
-        /// <summary>
-        /// Get the raw authorization token string.
-        /// </summary>
-        /// <returns>Raw authoization token string.</returns>
-        public async Task<string> GetAuthorizationTokenRawAsync() => (await this.GetAuthenticationResultRawAsync()).AccessToken;
-
-        /// <summary>
-        /// Get the authorization token string that can be directly used in an HTTP call. The returned value is appended with a Bearer idnetifier.
-        /// </summary>
-        /// <returns>Auth token string formatted to use in HTTP authorization header without any additional manipulations.</returns>
-        public async Task<string> GetAuthorizationTokenAsync() => (await this.GetAuthenticationResultRawAsync()).CreateAuthorizationHeader();
     }
 
     /// <summary>
@@ -253,23 +251,7 @@ namespace AppLensV3
     public class TokenCacheKey : IEquatable<TokenCacheKey>
     {
         /// <summary>
-        /// Client Id of the AAD app that is to be contacted to issue the token.
-        /// </summary>
-        public string ClientId { get; private set; }
-
-        /// <summary>
-        /// Domain Uri for the AAD Tenant.
-        /// </summary>
-        public Uri AadTenantDomainUri { get; private set; }
-
-        /// <summary>
-        /// Target resource to whom the token will be sent to. Ensure the audience also includes required scope. The default scope is "{ResourceIdUri/.default}".
-        /// <br/>e.g.. https://msazurecloud.onmicrosoft.com/azurediagnostic/.default
-        /// </summary>
-        public string Audience { get; private set; }    //Implement this as a List<string> instead of a single string entry.    
-
-        /// <summary>
-        /// Creates an instance of TokenCacheKey object
+        /// Initializes a new instance of the <see cref="TokenCacheKey"/> class.
         /// </summary>
         /// <param name="clientId">Client Id of the AAD app that is to be contacted to issue the token.</param>
         /// <param name="aadTenantDomainUri">URI of the AAD tenant in which the AAD app resides.
@@ -292,17 +274,57 @@ namespace AppLensV3
             {
                 throw new ArgumentNullException(paramName: nameof(aadTenantDomainUri), message: "Failed to create TokenCacheKey. Please supply an AAD domain uri where the AAD app is located.");
             }
+
             ClientId = clientId;
             Audience = audience;
             AadTenantDomainUri = aadTenantDomainUri;
-
         }
 
+        /// <summary>
+        /// Gets client Id of the AAD app that is to be contacted to issue the token.
+        /// </summary>
+        public string ClientId { get; private set; }
+
+        /// <summary>
+        /// Gets domain Uri for the AAD Tenant.
+        /// </summary>
+        public Uri AadTenantDomainUri { get; private set; }
+
+        /// <summary>
+        /// Gets target resource to whom the token will be sent to. Ensure the audience also includes required scope. The default scope is "{ResourceIdUri/.default}".
+        /// <br/>e.g.. https://msazurecloud.onmicrosoft.com/azurediagnostic/.default
+        /// </summary>
+        public string Audience { get; private set; } // Implement this as a List<string> instead of a single string entry.
+
+        public static bool operator ==(TokenCacheKey obj1, TokenCacheKey obj2)
+        {
+            if (ReferenceEquals(obj1, obj2))
+            {
+                return true;
+            }
+
+            if (ReferenceEquals(obj1, null))
+            {
+                return false;
+            }
+
+            return obj1.Equals(obj2);
+        }
+
+        public static bool operator !=(TokenCacheKey obj1, TokenCacheKey obj2) => !(obj1 == obj2);
+
+        public static bool Equals(TokenCacheKey left, TokenCacheKey right)
+        {
+            return left == right;
+        }
+
+        /// <inheritdoc/>
         bool IEquatable<TokenCacheKey>.Equals(TokenCacheKey other)
         {
             return this.Equals(other);
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object other)
         {
             try
@@ -311,10 +333,12 @@ namespace AppLensV3
                 {
                     return true;
                 }
+
                 if (ReferenceEquals(other, null))
                 {
                     return false;
                 }
+
                 if (other is TokenCacheKey)
                 {
                     TokenCacheKey castedOther = other as TokenCacheKey;
@@ -327,7 +351,6 @@ namespace AppLensV3
                 {
                     return false;
                 }
-
             }
             catch (Exception)
             {
@@ -335,27 +358,10 @@ namespace AppLensV3
             }
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return ClientId.GetHashCode(StringComparison.OrdinalIgnoreCase) & AadTenantDomainUri.GetHashCode() & Audience.GetHashCode(StringComparison.OrdinalIgnoreCase);
-        }
-
-        public static bool operator ==(TokenCacheKey obj1, TokenCacheKey obj2)
-        {
-            if (ReferenceEquals(obj1, obj2))
-                return true;
-
-            if (ReferenceEquals(obj1, null))
-                return false;
-
-            return obj1.Equals(obj2);
-        }
-
-        public static bool operator !=(TokenCacheKey obj1, TokenCacheKey obj2) => !(obj1 == obj2);
-
-        public static bool Equals(TokenCacheKey left, TokenCacheKey right)
-        {
-            return left == right;
         }
     }
 }

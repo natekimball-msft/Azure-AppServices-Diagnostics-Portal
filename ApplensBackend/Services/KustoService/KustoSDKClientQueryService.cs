@@ -8,78 +8,19 @@ using Kusto.Cloud.Platform.Data;
 using Kusto.Data;
 using Kusto.Data.Common;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace AppLensV3.Services
 {
     public class KustoSDKClientQueryService : IKustoQueryService
     {
-        private readonly bool useCertBasedTokenAcquisition = false;
+        private readonly IKustoAuthProvider kustoAuthDetails = null;
 
         private static ConcurrentDictionary<Tuple<string, string>, ICslQueryProvider> QueryProviderMapping;
-
-        private string userAssignedMSIClientId = string.Empty;
 
         private string aadKustoResource = string.Empty;
 
         private string kustoApiQueryEndpoint = string.Empty;
-
-        public KustoSDKClientQueryService(IConfiguration configuration)
-        {
-            aadKustoResource = $"{configuration["Kusto:AADKustoResource"]}";
-            if (string.IsNullOrWhiteSpace(aadKustoResource))
-            {
-                aadKustoResource = KustoConstants.AADKustoResource;
-            }
-
-            kustoApiQueryEndpoint = KustoApiEndpoint + ":443";
-
-            userAssignedMSIClientId = $"{configuration["Kusto:UserAssignedMSIClientId"]}";
-            if (!string.IsNullOrWhiteSpace(userAssignedMSIClientId) && !IsRunningLocal)
-            {
-                useCertBasedTokenAcquisition = false;
-            }
-            else
-            {
-                useCertBasedTokenAcquisition = !string.IsNullOrWhiteSpace($"{configuration.GetValue(typeof(string), "Kusto:CertBasedClientId", string.Empty)}") &&
-                    !string.IsNullOrWhiteSpace($"{configuration.GetValue(typeof(string), "Kusto:CertBasedAADTenantId", string.Empty)}") &&
-                    !string.IsNullOrWhiteSpace($"{configuration.GetValue(typeof(string), "Kusto:TokenRequestorCertSubjectName", string.Empty)}");
-
-                if (useCertBasedTokenAcquisition)
-                {
-                    CertBasedAuthOptions = new KustoCertBasedAuthOptions(
-                        clientId: $"{configuration.GetValue(typeof(string), "Kusto:CertBasedClientId")}",
-                        aadTenantId: $"{configuration.GetValue(typeof(string), "Kusto:CertBasedAADTenantId")}",
-                        tokenRequestorCertSubjectName: $"{configuration.GetValue(typeof(string), "Kusto:TokenRequestorCertSubjectName")}"
-                        );
-                }
-                else
-                {
-                    if (!string.IsNullOrWhiteSpace($"{configuration.GetValue(typeof(string), "Kusto:ClientId", string.Empty)}") &&
-                    !string.IsNullOrWhiteSpace($"{configuration.GetValue(typeof(string), "Kusto:AppKey", string.Empty)}"))
-                    {
-                        string tenantDomainId = $"{configuration.GetValue(typeof(string), "Kusto:AppKeyTenantId", string.Empty)}";
-                        if (string.IsNullOrWhiteSpace(tenantDomainId))
-                        {
-                            tenantDomainId = KustoConstants.MicrosoftTenantAuthorityId;
-                        }
-
-                        AppKeyBasedAuthOptions = new KustoApplicationKeyBasedAuthOptions(
-                            clientId: $"{configuration.GetValue(typeof(string), "Kusto:ClientId", string.Empty)}",
-                            applicationKey: $"{configuration.GetValue(typeof(string), "Kusto:AppKey", string.Empty)}",
-                            aadAuthorityId: tenantDomainId);
-                    }
-                }
-            }
-
-            if (QueryProviderMapping == null)
-            {
-                QueryProviderMapping = new ConcurrentDictionary<Tuple<string, string>, ICslQueryProvider>();
-            }
-        }
-
-        private KustoCertBasedAuthOptions CertBasedAuthOptions { get; } = null;
-
-        private KustoApplicationKeyBasedAuthOptions AppKeyBasedAuthOptions { get; } = null;
 
         private string KustoApiEndpoint
         {
@@ -104,60 +45,26 @@ namespace AppLensV3.Services
                 return string.IsNullOrWhiteSpace(System.Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME"));
             }
         }
-        private string GetClientIdentifyingName()
-        {
-            return IsRunningLocal ? $"LocalMachine|{System.Environment.MachineName}" : $"{System.Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME")}|{System.Environment.GetEnvironmentVariable("COMPUTERNAME") ?? System.Environment.MachineName}";
-        }
 
-        private ICslQueryProvider Client(string cluster, string database)
+        public KustoSDKClientQueryService(IConfiguration configuration, IKustoAuthProvider kustoAuthProvider)
         {
-            var key = Tuple.Create(cluster, database);
-            if (!QueryProviderMapping.ContainsKey(key))
+            kustoAuthDetails = kustoAuthProvider;
+
+            aadKustoResource = $"{configuration["Kusto:AADKustoResource"]}";
+            if (string.IsNullOrWhiteSpace(aadKustoResource))
             {
-                KustoConnectionStringBuilder connectionStringBuilder = new KustoConnectionStringBuilder(kustoApiQueryEndpoint.Replace("{cluster}", cluster), database)
-                {
-                    ApplicationNameForTracing = GetClientIdentifyingName()
-                };
-                if (!string.IsNullOrWhiteSpace(userAssignedMSIClientId) && !IsRunningLocal)
-                {
-                    connectionStringBuilder = connectionStringBuilder.WithAadUserManagedIdentity(userAssignedMSIClientId);
-                }
-                else
-                {
-                    if (useCertBasedTokenAcquisition && CertBasedAuthOptions != null)
-                    {
-                        connectionStringBuilder = connectionStringBuilder.WithAadApplicationSubjectAndIssuerAuthentication(
-                            applicationClientId: CertBasedAuthOptions.ClientId,
-                            applicationCertificateSubjectDistinguishedName: GenericCertLoader.Instance.GetCertBySubjectName(CertBasedAuthOptions.TokenRequestorCertSubjectName).Subject,
-                            applicationCertificateIssuerDistinguishedName: GenericCertLoader.Instance.GetCertBySubjectName(CertBasedAuthOptions.TokenRequestorCertSubjectName).IssuerName.Name,
-                            authority: CertBasedAuthOptions.AADTenantId);
-                    }
-                    else
-                    {
-                        if (AppKeyBasedAuthOptions != null)
-                        {
-                            connectionStringBuilder = connectionStringBuilder.WithAadApplicationKeyAuthentication(
-                                applicationClientId:AppKeyBasedAuthOptions.ClientId,
-                                applicationKey: AppKeyBasedAuthOptions.ApplicationKey,
-                                authority: AppKeyBasedAuthOptions.AADAuthorityId);
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException("Attempt to create kusto client with invalid configuration. At least one of the auth configuration (User assigned MSI, SN+I, AppKey) must be configured.");
-                        }
-                    }
-                }
-
-                var queryProvider = Kusto.Data.Net.Client.KustoClientFactory.CreateCslQueryProvider(connectionStringBuilder);
-                if (!QueryProviderMapping.TryAdd(key, queryProvider))
-                {
-                    queryProvider.Dispose();
-                }
+                aadKustoResource = KustoConstants.AADKustoResource;
             }
 
-            return QueryProviderMapping[key];
+            kustoApiQueryEndpoint = KustoApiEndpoint + ":443";
+
+            if (QueryProviderMapping == null)
+            {
+                QueryProviderMapping = new ConcurrentDictionary<Tuple<string, string>, ICslQueryProvider>();
+            }
         }
 
+        /// <inheritdoc/>
         public async Task<DataTable> ExecuteQueryAsync(string cluster, string database, string query, string operationName, DateTime? startTime = null, DateTime? endTime = null, int timeoutSeconds = KustoConstants.DefaultQueryTimeoutInSeconds)
         {
             if (string.IsNullOrWhiteSpace(cluster))
@@ -211,66 +118,58 @@ namespace AppLensV3.Services
             return datatable;
         }
 
-        private class KustoCertBasedAuthOptions
+        private string GetClientIdentifyingName()
         {
-            public KustoCertBasedAuthOptions(string clientId, string aadTenantId, string tokenRequestorCertSubjectName)
-            {
-                if (string.IsNullOrWhiteSpace(clientId))
-                {
-                    throw new ArgumentNullException(paramName: nameof(clientId), message: "AAD client id cannot be null or empty.");
-                }
-
-                if (string.IsNullOrWhiteSpace(aadTenantId))
-                {
-                    throw new ArgumentNullException(paramName: nameof(aadTenantId), message: "AAD domain uri cannot be null or empty.");
-                }
-
-                if (string.IsNullOrWhiteSpace(tokenRequestorCertSubjectName))
-                {
-                    throw new ArgumentNullException(paramName: nameof(tokenRequestorCertSubjectName), message: "Certificate subject name to use for aquiring AAD token cannot be null or empty.");
-                }
-
-                ClientId = clientId;
-                AADTenantId = aadTenantId;
-                TokenRequestorCertSubjectName = tokenRequestorCertSubjectName;
-            }
-
-            public string TokenRequestorCertSubjectName { get; }
-
-            public string ClientId { get; }
-
-            public string AADTenantId { get; }
+            return IsRunningLocal ? $"LocalMachine|{System.Environment.MachineName}" : $"{System.Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME")}|{System.Environment.GetEnvironmentVariable("COMPUTERNAME") ?? System.Environment.MachineName}";
         }
 
-        private class KustoApplicationKeyBasedAuthOptions
+        private ICslQueryProvider Client(string cluster, string database)
         {
-            public KustoApplicationKeyBasedAuthOptions(string clientId, string applicationKey, string aadAuthorityId)
+            var key = Tuple.Create(cluster, database);
+            if (!QueryProviderMapping.ContainsKey(key))
             {
-                if (string.IsNullOrWhiteSpace(clientId))
+                KustoConnectionStringBuilder connectionStringBuilder = new KustoConnectionStringBuilder(kustoApiQueryEndpoint.Replace("{cluster}", cluster), database)
                 {
-                    throw new ArgumentNullException(paramName: nameof(clientId), message: "AAD client id cannot be null or empty.");
+                    ApplicationNameForTracing = GetClientIdentifyingName()
+                };
+                if (kustoAuthDetails.AuthScheme == KustoAuthSchemes.UserAssignedManagedIdentity)
+                {
+                    connectionStringBuilder = connectionStringBuilder.WithAadUserManagedIdentity(kustoAuthDetails.AuthDetails.ClientId);
+                }
+                else
+                {
+                    if (kustoAuthDetails.AuthScheme == KustoAuthSchemes.CertBasedToken)
+                    {
+                        connectionStringBuilder = connectionStringBuilder.WithAadApplicationSubjectAndIssuerAuthentication(
+                            applicationClientId: kustoAuthDetails.AuthDetails.ClientId,
+                            applicationCertificateSubjectDistinguishedName: GenericCertLoader.Instance.GetCertBySubjectName(kustoAuthDetails.AuthDetails.TokenRequestorCertSubjectName).Subject,
+                            applicationCertificateIssuerDistinguishedName: GenericCertLoader.Instance.GetCertBySubjectName(kustoAuthDetails.AuthDetails.TokenRequestorCertSubjectName).IssuerName.Name,
+                            authority: kustoAuthDetails.AuthDetails.TenantId);
+                    }
+                    else
+                    {
+                        if (kustoAuthDetails.AuthScheme == KustoAuthSchemes.AppKey)
+                        {
+                            connectionStringBuilder = connectionStringBuilder.WithAadApplicationKeyAuthentication(
+                                applicationClientId: kustoAuthDetails.AuthDetails.ClientId,
+                                applicationKey: kustoAuthDetails.AuthDetails.AppKey,
+                                authority: kustoAuthDetails.AuthDetails.TenantId);
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Attempt to create kusto client with invalid configuration. At least one of the auth configuration (User assigned MSI, SN+I, AppKey) must be configured.");
+                        }
+                    }
                 }
 
-                if (string.IsNullOrWhiteSpace(applicationKey))
+                var queryProvider = Kusto.Data.Net.Client.KustoClientFactory.CreateCslQueryProvider(connectionStringBuilder);
+                if (!QueryProviderMapping.TryAdd(key, queryProvider))
                 {
-                    throw new ArgumentNullException(paramName: nameof(applicationKey), message: "Secret used to aquire AAD token cannot be null or empty.");
+                    queryProvider.Dispose();
                 }
-
-                if (string.IsNullOrWhiteSpace(aadAuthorityId))
-                {
-                    throw new ArgumentNullException(paramName: nameof(aadAuthorityId), message: "AAD domain uri cannot be null or empty.");
-                }
-
-                ClientId = clientId;
-                AADAuthorityId = aadAuthorityId;
-                ApplicationKey = applicationKey;
             }
 
-            public string ApplicationKey { get; }
-
-            public string ClientId { get; }
-
-            public string AADAuthorityId { get; }
+            return QueryProviderMapping[key];
         }
     }
 }

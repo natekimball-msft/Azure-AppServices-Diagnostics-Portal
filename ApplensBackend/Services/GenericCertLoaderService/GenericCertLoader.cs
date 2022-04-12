@@ -126,7 +126,7 @@ namespace AppLensV3
                 {
                     if (!_certCollection.ContainsKey(currCert.Subject))
                     {
-                        // To do: Log a message indicating which certificate was sucessfully loaded.
+                        // TODO: Log a message indicating which certificate was sucessfully loaded.
                         _certCollection.TryAdd(currCert.Subject, currCert);
                     }
                 }
