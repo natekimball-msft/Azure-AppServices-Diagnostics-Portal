@@ -8,7 +8,7 @@
       <div class="resource-info">
         <img *ngIf="resourceInfo.imgSrc" class="header-img ml-3" [src]="resourceInfo.imgSrc" [alt]="resourceInfo.searchSuffix">
         <span *ngIf="resourceInfo.resourceName" class="ml-3" style="font-weight: 600;">{{resourceInfo.resourceName}}</span>
-        <span *ngIf="resourceInfo.searchSuffix" class="ml-3" style="color: #605E5C;">{{resourceInfo.searchSuffix}}</span>
+        <span *ngIf="resourceInfo.searchSuffix" class="ml-3" style="color: var(--summaryText);">{{resourceInfo.searchSuffix}}</span>
         <div *ngIf="resourceInfo.resourceName" class='resource-summary' (click)="openResourceInfoModal()">
           <i class="fa fa-info-circle" aria-hidden="true"></i>
         </div>
@@ -19,8 +19,21 @@
       <fab-search-box (onSearch)="triggerSearch()" [value]="searchValue" [styles]="searchStyles" [placeholder]="'Describe your problem and hit enter'" (onChange)="updateSearchValue($event)"></fab-search-box>
     </div>
 
-    <div *ngIf="userPhotoSource !== ''" style="margin-right: 16px;">
-      <img [src]="userPhotoSource" alt="User Profile Photo" class="avatar header-img">
+    <div *ngIf="userPhotoSource !== ''" class="user-photo-container" (click)="openCallout()" (keyup.enter)="openCallout()" tabindex="0">
+      <span class="image-label"> New! </span>
+      <img id="userId" [src]="userPhotoSource" alt="User Profile Photo" class="avatar header-img">
     </div>
   </nav>
 </header>
+
+<div *ngIf="showCallout" class="header-callout">
+  <div class="user-setting-section" style="height: 80%;">
+    <!-- <fab-toggle [onnText]="'Expand'" [offText]="'Collapse'" [label]="'Expand Analysis Card'" [checked]="expandCheckCard" (onChange)="toggleExpandCheckCard($event)"></fab-toggle> -->
+    <fab-toggle [onnText]="'Dark'" [offText]="'Light'" [label]="'Dark Theme'" [checked]="darkThemeChecked" (onChange)="toggleTheme($event)"></fab-toggle>
+    <!-- <fab-toggle [onnText]="'Waterfall'" [offText]="'Smarter'" [label]="'Detector View Mode'" [checked]="!smartViewChecked" (onChange)="toggleViewMode($event)"></fab-toggle> -->
+  </div>
+  <div class="user-setting-section" style="border-top: 1px solid gray;">
+    <fab-primary-button (onClick)="applyUserSettingChange()" contentClass="mr-5">Apply</fab-primary-button>
+    <fab-default-button (onClick)="cancelUserSettingChange()">Cancel</fab-default-button>
+  </div>
+</div>

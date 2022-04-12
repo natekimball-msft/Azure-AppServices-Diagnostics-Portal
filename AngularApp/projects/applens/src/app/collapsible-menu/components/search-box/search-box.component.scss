@@ -54,3 +54,8 @@ input {
     font-size: 13px;
     padding: 3px 0px 3px 5px;
 }
+
+
+input-group {
+    border: 1px solid var(--inputGroupBorder);
+}

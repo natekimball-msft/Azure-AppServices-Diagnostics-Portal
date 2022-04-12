@@ -7,11 +7,11 @@ a:active {
 }
 .selected {
   background-color: #cfd8dc !important;
-  color: white;
+  color: var(--bodyBackground);
 }
 .selected {
   background-color: #cfd8dc !important;
-  color: white;
+  color: var(--bodyBackground);
 }
 .commits-table {
   margin: 0 0 2em 0;

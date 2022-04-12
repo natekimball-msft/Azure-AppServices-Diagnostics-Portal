@@ -2,7 +2,7 @@
     border: 1px solid #bbbbbb;
     cursor: pointer;
     padding: 10px;
-    background-color: var(--bodyBackgroundColor);
+    background-color: var(--bodyBackground);
     overflow-wrap: break-word;
     box-shadow: 0px 1.6px 3.6px rgba(0, 0, 0, 0.132), 0px 0.3px 0.9px rgba(0, 0, 0, 0.108);
 }
@@ -12,7 +12,7 @@
 }
 
 .article-link {
-    color:  #605e5c
+    color:  var(--summaryText);
 }
 
 .article-heading {
@@ -33,7 +33,7 @@ br{
     border: 1px solid #bbbbbb;
     cursor: pointer;
     padding: 10px 30px;
-    background-color: var(--bodyBackgroundColor);
+    background-color: var(--bodyBackground);
     margin: -4px 10px 0px 0px;
     overflow-wrap: break-word;
     box-shadow: 0px 1.6px 3.6px rgba(0, 0, 0, 0.132), 0px 0.3px 0.9px rgba(0, 0, 0, 0.108);
@@ -65,14 +65,14 @@ br{
     border: 1px solid #bbbbbb;
     cursor: pointer;
     padding: 10px;
-    background-color: var(--bodyBackgroundColor);
+    background-color: var(--bodyBackground);
     margin: 10px 0px;
     overflow-wrap: break-word;
     box-shadow: 0px 1.6px 3.6px rgba(0, 0, 0, 0.132), 0px 0.3px 0.9px rgba(0, 0, 0, 0.108);
  }
 
 .article-link {
-    color:  #605e5c
+    color:  var(--summaryText);
 }
 
 .solutions-small-card-outer{

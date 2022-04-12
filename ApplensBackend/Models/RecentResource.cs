@@ -15,14 +15,26 @@ namespace AppLensV3.Models
         [JsonProperty(PropertyName = "resources")]
         public List<RecentResource> Resources;
 
+        [JsonProperty(PropertyName = "theme")]
+        public string Theme;
+
+        [JsonProperty(PropertyName = "viewMode")]
+        public string ViewMode;
+
         [JsonProperty(PropertyName = "PartitionKey")]
         public string PartitionKey;
 
-        public UserSetting(string id, List<RecentResource> resources)
+       [JsonProperty(PropertyName = "expandAnalysisCheckCard")]
+       public bool ExpandAnalysisCheckCard { get; set; }
+
+        public UserSetting(string id, List<RecentResource> resources, string theme="light", string viewMode="smarter", bool expandAnalysisCheckCard = false)
         {
             Id = id;
             Resources = resources;
             PartitionKey = UserSettingConstant.PartitionKey;
+            Theme = theme;
+            ViewMode = viewMode;
+            ExpandAnalysisCheckCard = expandAnalysisCheckCard;
         }
     }
 

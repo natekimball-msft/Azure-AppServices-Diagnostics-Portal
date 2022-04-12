@@ -44,20 +44,22 @@
 .comm-info-label{
     font-weight: 100;
     font-size: 12px;
+    color:var(--commIssueTitle);
 }
 .issue-title{
     font-size: 18px;
-    color: #3c3c3c;
+    color: var(--commIssueTitle);
     margin-top:0px;
 }
 .comm-info-data{
     font-size: 14px;
-    color: #3c3c3c;
+    color: var(--commIssueTitle);
     margin-top:0px;
 }
 .comm-active .comm-title {
     background-color:#ffdede;
 }
+
 .comm-active .comm-info-label{
     color: #ab0000;
 }
@@ -69,4 +71,8 @@
 }
 .view-more {
     cursor: pointer;
+}
+
+.comm-panel-title {
+    color:var(--commIssueTitle);
 }

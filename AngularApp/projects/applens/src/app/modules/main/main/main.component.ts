@@ -7,7 +7,7 @@ import {
 import { HttpClient } from '@angular/common/http';
 import { DropdownMenuItemType, IDropdownOption, IDropdownProps, PanelType } from 'office-ui-fabric-react';
 import { BehaviorSubject } from 'rxjs';
-import { DataTableResponseObject, DetectorControlService, HealthStatus } from 'diagnostic-data';
+import { DataTableResponseObject, DetectorControlService, GenericThemeService, HealthStatus } from 'diagnostic-data';
 import { AdalService } from 'adal-angular4';
 import { UserSettingService } from '../../dashboard/services/user-setting.service';
 import { RecentResource } from '../../../shared/models/user-setting';
@@ -102,7 +102,7 @@ export class MainComponent implements OnInit {
   table: RecentResourceDisplay[];
   applensDocs = applensDocs;
 
-  constructor(private _router: Router, private _http: HttpClient, private _detectorControlService: DetectorControlService, private _adalService: AdalService, private _userInfoService: UserSettingService) {
+  constructor(private _router: Router, private _http: HttpClient, private _detectorControlService: DetectorControlService, private _adalService: AdalService, private _userInfoService: UserSettingService, private _themeService: GenericThemeService) {
     this.endTime = moment.utc();
     this.startTime = this.endTime.clone().add(-1, 'days');
     this.inIFrame = window.parent !== window;
@@ -171,14 +171,7 @@ export class MainComponent implements OnInit {
             this.resourceTypeList.push({name: resource.displayName, imgSrc: resource? resource.imgSrc: ""})
         }
       });
-
-      this._userInfoService.getRecentResources().subscribe(userInfo => {
-        if (userInfo && userInfo.resources) {
-          this.table = this.generateDataTable(userInfo.resources);
-        }
-      });
     });
-
 
     this._detectorControlService.timePickerStrSub.subscribe(s => {
       this.timePickerStr = s;
@@ -186,7 +179,16 @@ export class MainComponent implements OnInit {
     });
 
     this.userGivenName = this._adalService.userInfo.profile.given_name;
+    this._userInfoService.getUserSetting().subscribe(userInfo => {
+        if (userInfo && userInfo.resources) {
+          this.table = this.generateDataTable(userInfo.resources);
+        }
 
+        if(userInfo && userInfo.theme.toLowerCase() == "dark")
+        {
+            this._themeService.setActiveTheme("dark");
+        }
+      });
   }
 
   openResourcePanel()
