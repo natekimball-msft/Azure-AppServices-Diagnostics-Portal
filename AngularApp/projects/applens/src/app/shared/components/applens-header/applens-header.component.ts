@@ -68,7 +68,7 @@ export class ApplensHeaderComponent implements OnInit {
         this.expandCheckCard = userSettings ? userSettings.expandAnalysisCheckCard : false;
         this.darkThemeChecked = userSettings && userSettings.theme.toLowerCase() == "dark" ? true : false;
         this.smartViewChecked = userSettings && userSettings.viewMode.toLowerCase() == "smarter" ? true : false;
-        this.selectedKey = this.smartViewChecked ?  "smarter" : "waterfall";
+        this.selectedKey = userSettings && userSettings.viewMode.toLowerCase() == "smarter" ?  "smarter" : "waterfall";
     });
 
     this._diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
