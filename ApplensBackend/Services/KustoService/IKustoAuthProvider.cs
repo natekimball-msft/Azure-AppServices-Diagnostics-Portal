@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using System.Configuration;
+using Microsoft.Extensions.Configuration;
 
 namespace AppLensV3.Services
 {
@@ -34,73 +36,75 @@ namespace AppLensV3.Services
     public interface IKustoAuthProvider
     {
         /// <summary>
-        /// Gets the current auth scheme to use.
-        /// If user assigned managed identity is configured and the app is running on cloud, it will take precedence.
-        /// Else, if configured, CertAuth scheme will be used to acquire token via SN+I.
-        /// If both the user assigned managed identity and cert token auth are not configured, the default scheme to use is AppKey.
-        /// </summary>
-        KustoAuthSchemes AuthScheme { get; }
-
-        /// <summary>
         /// Gets configuration details to support the corresponding auth scheme.
         /// </summary>
-        IKustoAuthOptions AuthDetails { get; }
+        KustoAuthOptions AuthDetails { get; }
     }
 
+    /// <inheritdoc/>
     public class KustoAuthProvider : IKustoAuthProvider
     {
-        private readonly IKustoAuthOptions appKeyAuth = null;
-        private readonly IKustoAuthOptions certTokenAuth = null;
-        private readonly IKustoAuthOptions userManagedIdentityAuth = null;
+        private const string SectionName = "Kusto";
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KustoAuthProvider"/> class.
+        /// </summary>
+        /// <param name="configuration">Configuration object injected via DI.</param>
         public KustoAuthProvider(IConfiguration configuration)
         {
-            appKeyAuth = new KustoAppKeyBasedAuthOptions();
-            configuration.GetSection(KustoAppKeyBasedAuthOptions.ConfigHierarchy).Bind(appKeyAuth);
+            AuthDetails = new KustoAuthOptions();
+            configuration.GetSection(SectionName).Bind(AuthDetails);
 
-            certTokenAuth = new KustoCertBasedAuthOptions();
-            configuration.GetSection(KustoCertBasedAuthOptions.ConfigHierarchy).Bind(certTokenAuth);
-
-            userManagedIdentityAuth = new KustoUserManagedIdentityAuthOptions();
-            configuration.GetSection(KustoUserManagedIdentityAuthOptions.ConfigHierarchy).Bind(userManagedIdentityAuth);
-
-            if (userManagedIdentityAuth.Enabled && !string.IsNullOrWhiteSpace(userManagedIdentityAuth.ClientId) && !IsRunningLocal)
+            switch (AuthDetails.AuthScheme)
             {
-                AuthScheme = KustoAuthSchemes.UserAssignedManagedIdentity;
-                AuthDetails = userManagedIdentityAuth;
-            }
-            else
-            {
-                if (certTokenAuth.Enabled && !string.IsNullOrWhiteSpace(certTokenAuth.ClientId) &&
-                    !string.IsNullOrWhiteSpace(certTokenAuth.TenantId) && !string.IsNullOrWhiteSpace(certTokenAuth.TokenRequestorCertSubjectName))
-                {
-                    AuthScheme = KustoAuthSchemes.CertBasedToken;
-                    AuthDetails = certTokenAuth;
-                }
-                else
-                {
-                    if (appKeyAuth.Enabled && !string.IsNullOrWhiteSpace(appKeyAuth.ClientId) &&
-                        !string.IsNullOrWhiteSpace(appKeyAuth.TenantId) && !string.IsNullOrWhiteSpace(appKeyAuth.AppKey))
-                    {
-                        AuthScheme = KustoAuthSchemes.AppKey;
-                        AuthDetails = appKeyAuth;
-                    }
-                }
+                case KustoAuthSchemes.UserAssignedManagedIdentity:
+                    ThrowIfEmpty("ClientId", AuthDetails.ClientId, KustoAuthSchemes.UserAssignedManagedIdentity);
+
+                    AuthDetails.TenantId = string.Empty;
+                    AuthDetails.AppKey = string.Empty;
+                    AuthDetails.TokenRequestorCertSubjectName = string.Empty;
+                    break;
+                case KustoAuthSchemes.CertBasedToken:
+                    ThrowIfEmpty("ClientId", AuthDetails.ClientId, KustoAuthSchemes.CertBasedToken);
+                    ThrowIfEmpty("TenantId", AuthDetails.TenantId, KustoAuthSchemes.CertBasedToken);
+                    ThrowIfEmpty("TokenRequestorCertSubjectName", AuthDetails.TokenRequestorCertSubjectName, KustoAuthSchemes.CertBasedToken);
+
+                    AuthDetails.AppKey = string.Empty;
+                    break;
+                case KustoAuthSchemes.AppKey:
+                    ThrowIfEmpty("ClientId", AuthDetails.ClientId, KustoAuthSchemes.AppKey);
+                    ThrowIfEmpty("TenantId", AuthDetails.TenantId, KustoAuthSchemes.AppKey);
+                    ThrowIfEmpty("AppKey", AuthDetails.AppKey, KustoAuthSchemes.AppKey);
+
+                    AuthDetails.TokenRequestorCertSubjectName = string.Empty;
+                    break;
+                default:
+                    AuthDetails = GetEmptyAuthDetails();
+                    break;
             }
         }
 
         /// <inheritdoc/>
-        public KustoAuthSchemes AuthScheme { get; private set; } = KustoAuthSchemes.None;
+        public KustoAuthOptions AuthDetails { get; private set; } = null;
 
-        /// <inheritdoc/>
-        public IKustoAuthOptions AuthDetails { get; private set; } = null;
-
-        private bool IsRunningLocal
+        private void ThrowIfEmpty(string paramName, string paramValue, KustoAuthSchemes authScheme)
         {
-            get
+            if (string.IsNullOrWhiteSpace(paramValue))
             {
-                return string.IsNullOrWhiteSpace(System.Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME"));
+                throw new ArgumentNullException(paramName: paramName, message: $"{paramName} cannot be empty for {authScheme} auth scheme");
             }
+        }
+
+        private KustoAuthOptions GetEmptyAuthDetails()
+        {
+            return new KustoAuthOptions()
+            {
+                AuthScheme = KustoAuthSchemes.None,
+                ClientId = string.Empty,
+                TenantId = string.Empty,
+                AppKey = string.Empty,
+                TokenRequestorCertSubjectName = string.Empty
+            };
         }
     }
 }

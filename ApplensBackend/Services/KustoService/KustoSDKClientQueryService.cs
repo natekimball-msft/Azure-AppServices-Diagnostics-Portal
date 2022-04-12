@@ -14,7 +14,7 @@ namespace AppLensV3.Services
 {
     public class KustoSDKClientQueryService : IKustoQueryService
     {
-        private readonly IKustoAuthProvider kustoAuthDetails = null;
+        private readonly IKustoAuthProvider authProvider = null;
 
         private static ConcurrentDictionary<Tuple<string, string>, ICslQueryProvider> QueryProviderMapping;
 
@@ -48,7 +48,7 @@ namespace AppLensV3.Services
 
         public KustoSDKClientQueryService(IConfiguration configuration, IKustoAuthProvider kustoAuthProvider)
         {
-            kustoAuthDetails = kustoAuthProvider;
+            authProvider = kustoAuthProvider;
 
             aadKustoResource = $"{configuration["Kusto:AADKustoResource"]}";
             if (string.IsNullOrWhiteSpace(aadKustoResource))
@@ -132,28 +132,28 @@ namespace AppLensV3.Services
                 {
                     ApplicationNameForTracing = GetClientIdentifyingName()
                 };
-                if (kustoAuthDetails.AuthScheme == KustoAuthSchemes.UserAssignedManagedIdentity)
+                if (authProvider.AuthDetails.AuthScheme == KustoAuthSchemes.UserAssignedManagedIdentity)
                 {
-                    connectionStringBuilder = connectionStringBuilder.WithAadUserManagedIdentity(kustoAuthDetails.AuthDetails.ClientId);
+                    connectionStringBuilder = connectionStringBuilder.WithAadUserManagedIdentity(authProvider.AuthDetails.ClientId);
                 }
                 else
                 {
-                    if (kustoAuthDetails.AuthScheme == KustoAuthSchemes.CertBasedToken)
+                    if (authProvider.AuthDetails.AuthScheme == KustoAuthSchemes.CertBasedToken)
                     {
                         connectionStringBuilder = connectionStringBuilder.WithAadApplicationSubjectAndIssuerAuthentication(
-                            applicationClientId: kustoAuthDetails.AuthDetails.ClientId,
-                            applicationCertificateSubjectDistinguishedName: GenericCertLoader.Instance.GetCertBySubjectName(kustoAuthDetails.AuthDetails.TokenRequestorCertSubjectName).Subject,
-                            applicationCertificateIssuerDistinguishedName: GenericCertLoader.Instance.GetCertBySubjectName(kustoAuthDetails.AuthDetails.TokenRequestorCertSubjectName).IssuerName.Name,
-                            authority: kustoAuthDetails.AuthDetails.TenantId);
+                            applicationClientId: authProvider.AuthDetails.ClientId,
+                            applicationCertificateSubjectDistinguishedName: GenericCertLoader.Instance.GetCertBySubjectName(authProvider.AuthDetails.TokenRequestorCertSubjectName).Subject,
+                            applicationCertificateIssuerDistinguishedName: GenericCertLoader.Instance.GetCertBySubjectName(authProvider.AuthDetails.TokenRequestorCertSubjectName).IssuerName.Name,
+                            authority: authProvider.AuthDetails.TenantId);
                     }
                     else
                     {
-                        if (kustoAuthDetails.AuthScheme == KustoAuthSchemes.AppKey)
+                        if (authProvider.AuthDetails.AuthScheme == KustoAuthSchemes.AppKey)
                         {
                             connectionStringBuilder = connectionStringBuilder.WithAadApplicationKeyAuthentication(
-                                applicationClientId: kustoAuthDetails.AuthDetails.ClientId,
-                                applicationKey: kustoAuthDetails.AuthDetails.AppKey,
-                                authority: kustoAuthDetails.AuthDetails.TenantId);
+                                applicationClientId: authProvider.AuthDetails.ClientId,
+                                applicationKey: authProvider.AuthDetails.AppKey,
+                                authority: authProvider.AuthDetails.TenantId);
                         }
                         else
                         {

@@ -59,8 +59,11 @@ namespace AppLensV3
             services.AddSingleton<IDiagnosticClientService, DiagnosticClient>();
             services.AddSingleton<IGithubClientService, GithubClientService>();
 
-            services.AddSingleton<IKustoAuthProvider, KustoAuthProvider>();
-            services.AddSingleton<IKustoQueryService, KustoSDKClientQueryService>();
+            if (Configuration.GetValue("Kusto:Enabled", false))
+            {
+                services.AddSingleton<IKustoAuthProvider, KustoAuthProvider>();
+                services.AddSingleton<IKustoQueryService, KustoSDKClientQueryService>();
+            }
 
             services.AddSingleton<IOutageCommunicationService, OutageCommunicationService>();
             services.AddSingleton<ILocalDevelopmentClientService, LocalDevelopmentClientService>();
