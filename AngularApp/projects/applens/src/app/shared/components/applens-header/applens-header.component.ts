@@ -9,6 +9,7 @@ import { UserSetting } from '../../models/user-setting';
 import { DiagnosticApiService } from '../../services/diagnostic-api.service';
 import { ApplensGlobal } from '../../../applens-global';
 import { ApplensThemeService } from '../../services/applens-theme.service';
+import { DetectorControlService } from 'diagnostic-data';
 
 
 @Component({
@@ -45,7 +46,7 @@ export class ApplensHeaderComponent implements OnInit {
     { key: 'waterfall', text: 'Waterfall', onClick: () => { this.smartViewChecked = false; this.selectedKey = "waterfall"; } }
   ];
 
-  constructor(private _adalService: AdalService,  private _diagnosticApiService: DiagnosticApiService, private _activatedRoute: ActivatedRoute, private _userSettingService: UserSettingService, private _router: Router, private _themeService: ApplensThemeService, @Optional() public _searchService?: SearchService, @Optional() private _applensGlobal?: ApplensGlobal) { }
+  constructor(private _adalService: AdalService,  private _diagnosticApiService: DiagnosticApiService, private _activatedRoute: ActivatedRoute, private _userSettingService: UserSettingService, private _router: Router, private _themeService: ApplensThemeService, private _detectorControlService: DetectorControlService, @Optional() public _searchService?: SearchService, @Optional() private _applensGlobal?: ApplensGlobal) { }
 
   ngOnInit() {
     const alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
@@ -115,6 +116,7 @@ export class ApplensHeaderComponent implements OnInit {
 
   applyUserSettingChange() {
     this.updateUserSettingsFromPanel();
+    this._detectorControlService.refresh("V3ControlRefresh");
     this.showCallout = false;
   }
 
