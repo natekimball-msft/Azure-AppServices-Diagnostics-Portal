@@ -57,7 +57,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     let subscriptionId = this._route.parent.snapshot.params['subscriptionid'];
     // allowlisting beta subscriptions for testing purposes
     this._isBetaSubscription = DemoSubscriptions.betaSubscriptions.indexOf(subscriptionId) >= 0;
-    // add logic for presenting initially to approximately 60% of Subscriptions:  percentageToRelease = .3 (1=100%)
+    // add logic for presenting initially to 100% of Subscriptions:  percentageToRelease = 1 (1=100%)
     let percentageToRelease = 1;
     // roughly split of percentageToRelease of subscriptions to use new feature.
     
