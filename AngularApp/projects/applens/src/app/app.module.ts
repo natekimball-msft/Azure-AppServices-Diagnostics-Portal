@@ -22,7 +22,7 @@ import { TokenInvalidComponent } from './shared/components/tokeninvalid/tokeninv
 import { AngularReactBrowserModule } from '@angular-react/core';
 import { ApplensAppinsightsTelemetryService } from './shared/services/applens-appinsights-telemetry.service';
 import { ApplensThemeService } from './shared/services/applens-theme.service';
-import { FabButtonModule, FabDialogModule, FabPanelModule } from '@angular-react/fabric';
+import { FabButtonModule, FabDialogModule, FabPanelModule, FabChoiceGroupModule } from '@angular-react/fabric';
 
 @Injectable()
 export class ValidResourceResolver implements Resolve<void>{
@@ -134,7 +134,8 @@ export const Routes = RouterModule.forRoot([
     SharedModule.forRoot(),
     FabPanelModule,
     FabDialogModule,
-    FabButtonModule
+    FabButtonModule,
+    FabChoiceGroupModule
   ],
   providers: [
     ValidResourceResolver,
