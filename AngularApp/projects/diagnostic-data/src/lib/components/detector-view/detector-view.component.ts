@@ -188,6 +188,7 @@ export class DetectorViewComponent implements OnInit {
         this.buttonStyle = {root:{display: "none"}};
     this.versionService.isLegacySub.subscribe(isLegacy => this.isLegacy = isLegacy);
     this._route.params.subscribe(p => {
+    console.log("load detector");
       this.loadDetector();
     });
 
@@ -228,18 +229,27 @@ export class DetectorViewComponent implements OnInit {
 
   protected loadDetector() {
     this.detectorResponseSubject.subscribe((data: DetectorResponse) => {
-      let metadata: DetectorMetaData = data ? data.metadata : null;
-      // this.detectorDataLocalCopy = data;
-
-      this.detectorDataLocalCopy = this.mergeDetectorListResponse(data);
-
-      this._genericUserSettingsService.isWaterfallViewMode().subscribe(isWaterfallViewMode =>
-        {
-            if (isWaterfallViewMode && !this.isPublic)
+      if (!this.isPublic)
+      {
+        this._genericUserSettingsService.isWaterfallViewMode().subscribe(isWaterfallViewMode =>
             {
-                this.detectorDataLocalCopy = data;
-            }
-        });
+                if (isWaterfallViewMode)
+                {
+                    this.detectorDataLocalCopy = data;
+                    console.log("Change copy to original", this.detectorDataLocalCopy);
+                }
+                else
+                {
+                    this.detectorDataLocalCopy = this.mergeDetectorListResponse(data);
+                    console.log("Change copy to merged", this.detectorDataLocalCopy);
+                }
+            });
+      }
+      else
+      {
+            this.detectorDataLocalCopy = this.mergeDetectorListResponse(data);
+      }
+
 
       if (data) {
         this.detectorEventProperties = {

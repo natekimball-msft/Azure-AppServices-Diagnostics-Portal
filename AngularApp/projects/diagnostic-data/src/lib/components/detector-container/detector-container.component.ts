@@ -108,6 +108,7 @@ export class DetectorContainerComponent implements OnInit {
       if (isValidUpdate && this.detectorName) {
         this.refreshInstanceIdSubscription = this.detectorControlService._refreshInstanceId.subscribe((instanceId) => {
           if (instanceId.toLowerCase() === this.detectorName.toLowerCase() || instanceId === "V3ControlRefresh") {
+              console.log("get refresh");
             this.refresh(true);
           }
         });
