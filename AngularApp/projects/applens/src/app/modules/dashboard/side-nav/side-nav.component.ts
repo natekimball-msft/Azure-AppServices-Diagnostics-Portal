@@ -272,6 +272,11 @@ export class SideNavComponent implements OnInit {
     }
   }
 
+  public trackByIndex(index: number, value: any)
+{
+  return index;
+}
+
 }
 
 @Pipe({
