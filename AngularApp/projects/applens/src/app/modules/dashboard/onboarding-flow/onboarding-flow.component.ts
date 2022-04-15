@@ -168,8 +168,8 @@ export class OnboardingFlowComponent implements OnInit {
   gistVersion: string;
   latestGistVersion: string = "";
   gistName: string;
-  pastGistEvent: string;
-  pastGistVersionEvent: string;
+  pastGistEvent: any;
+  pastGistVersionEvent: any;
   gistVersionChanged: boolean = false;
   applyGistButtonDisabled: boolean = true;
   refreshGistButtonDisabled: boolean = true;
@@ -692,7 +692,7 @@ export class OnboardingFlowComponent implements OnInit {
 
   gistVersionOnChange(event: string) {
     this.gistVersionChanged = true;
-    this.selectedKey !== event["option"]["key"] ? this.applyGistButtonDisabled = false : this.applyGistButtonDisabled = true;
+    this.applyGistButtonDisabled = this.selectedKey !== event["option"]["key"] ? false : true;
     this.pastGistVersionEvent = event;
     this.temporarySelection[event["option"]["title"]]['version'] = event["option"]["key"];
     this.displayGistSourceCode(event["option"]["title"], this.temporarySelection[event["option"]["title"]]['version']);
