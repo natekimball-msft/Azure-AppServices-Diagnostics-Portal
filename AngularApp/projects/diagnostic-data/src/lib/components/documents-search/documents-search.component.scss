@@ -33,7 +33,7 @@ a{
 .form-control{
     font-size: 16px;
     color: var(--bodyText);
-    background-color: var(--bodyBackgroundColor);
+    background-color: var(--bodyBackground);
 }
 
 .article-container {
@@ -46,7 +46,7 @@ a{
     border: 1px solid #bbbbbb;
     cursor: pointer;
     padding: 10px;
-    background-color: var(--bodyBackgroundColor);
+    background-color: var(--bodyBackground);
     margin: 10px 0px;
     max-height: 120px;
 }
@@ -57,7 +57,7 @@ a{
 }
 
 .article-link {
-    color:  #605e5c
+    color:  var(--summaryText);
 }
 
 .article-heading {

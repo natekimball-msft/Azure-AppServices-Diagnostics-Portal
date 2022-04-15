@@ -8,7 +8,7 @@
 /* You can add global styles to this file, and also import other style files */
 body {
   margin: 0px;
-  color: #323130;
+  color: var(--bodyText);
   //Use segoe UI in all components
   font-family: 'Segoe UI' !important;
 }
@@ -23,12 +23,12 @@ a:hover {
 }
 
 .sub-title {
-  color: #605E5C;
+  color: var(--summaryText);
 }
 
-.skin-purple-light .sidebar-menu > li:hover > a,
-.skin-purple-light .sidebar-menu > li.active > a {
-  background: #ececec;
+.skin-purple-light .sidebar-menu>li:hover>a,
+.skin-purple-light .sidebar-menu>li.active>a {
+  background: var(--bodyBackground)
 }
 
 .critical-color {
@@ -51,17 +51,17 @@ a:hover {
   color: #e0e0e0;
 }
 
-.info-modal{
-  max-width: 560px!important;
-  padding: 0px!important;
-  min-height: 160px!important;
+.info-modal {
+  max-width: 560px !important;
+  padding: 0px !important;
+  min-height: 160px !important;
   position: fixed;
 }
 
 .wide-modal {
-  max-width: 560px!important;
-  padding: 0px!important;
-  min-height: 160px!important;
+  max-width: 560px !important;
+  padding: 0px !important;
+  min-height: 160px !important;
 }
 
 .package-modal {
@@ -73,14 +73,16 @@ a:hover {
 .panel.with-nav-tabs .panel-heading.app-nav-bar {
   padding: 5px 5px 0 5px;
 }
+
 .panel.with-nav-tabs .nav-tabs {
   border-bottom: none;
 }
+
 .panel.with-nav-tabs .nav-justified {
   margin-bottom: -1px;
 }
 
-.nav > li > a {
+.nav>li>a {
   padding: 5px 15px;
 }
 
@@ -99,47 +101,53 @@ a:hover {
 
 /********************************************************************/
 /*** PANEL DEFAULT ***/
-.with-nav-tabs.panel-default .nav-tabs > li > a {
-  background-color: #eeeeee;
+.with-nav-tabs.panel-default .nav-tabs>li>a {
+  background-color: var(--bodyBackground);
 }
 
-.with-nav-tabs.panel-default .nav-tabs > li > a,
-.with-nav-tabs.panel-default .nav-tabs > li > a:hover,
-.with-nav-tabs.panel-default .nav-tabs > li > a:focus {
+.with-nav-tabs.panel-default .nav-tabs>li>a,
+.with-nav-tabs.panel-default .nav-tabs>li>a:hover,
+.with-nav-tabs.panel-default .nav-tabs>li>a:focus {
   color: rgb(49, 49, 49);
 }
-.with-nav-tabs.panel-default .nav-tabs > .open > a,
-.with-nav-tabs.panel-default .nav-tabs > .open > a:hover,
-.with-nav-tabs.panel-default .nav-tabs > .open > a:focus,
-.with-nav-tabs.panel-default .nav-tabs > li > a:hover,
-.with-nav-tabs.panel-default .nav-tabs > li > a:focus {
+
+.with-nav-tabs.panel-default .nav-tabs>.open>a,
+.with-nav-tabs.panel-default .nav-tabs>.open>a:hover,
+.with-nav-tabs.panel-default .nav-tabs>.open>a:focus,
+.with-nav-tabs.panel-default .nav-tabs>li>a:hover,
+.with-nav-tabs.panel-default .nav-tabs>li>a:focus {
   color: rgb(37, 37, 37);
-  background-color: rgb(233, 233, 233);
+  background-color: var(--bodyBackground);
   border-color: transparent;
 }
-.with-nav-tabs.panel-default .nav-tabs > li.active > a,
-.with-nav-tabs.panel-default .nav-tabs > li.active > a:hover,
-.with-nav-tabs.panel-default .nav-tabs > li.active > a:focus {
+
+.with-nav-tabs.panel-default .nav-tabs>li.active>a,
+.with-nav-tabs.panel-default .nav-tabs>li.active>a:hover,
+.with-nav-tabs.panel-default .nav-tabs>li.active>a:focus {
   color: rgb(26, 26, 26);
-  background-color: #fff;
+  background-color: var(--bodyBackground);
   border-color: #ddd;
   border-bottom-color: transparent;
 }
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu {
-  background-color: #f5f5f5;
+
+.with-nav-tabs.panel-default .nav-tabs>li.dropdown .dropdown-menu {
+  background-color: var(--bodyBackground);
   border-color: #ddd;
 }
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu > li > a {
+
+.with-nav-tabs.panel-default .nav-tabs>li.dropdown .dropdown-menu>li>a {
   color: #777;
 }
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu > li > a:hover,
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu > li > a:focus {
-  background-color: #ddd;
+
+.with-nav-tabs.panel-default .nav-tabs>li.dropdown .dropdown-menu>li>a:hover,
+.with-nav-tabs.panel-default .nav-tabs>li.dropdown .dropdown-menu>li>a:focus {
+  background-color: var(--bodyBackground);
 }
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu > .active > a,
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu > .active > a:hover,
-.with-nav-tabs.panel-default .nav-tabs > li.dropdown .dropdown-menu > .active > a:focus {
-  color: #fff;
+
+.with-nav-tabs.panel-default .nav-tabs>li.dropdown .dropdown-menu>.active>a,
+.with-nav-tabs.panel-default .nav-tabs>li.dropdown .dropdown-menu>.active>a:hover,
+.with-nav-tabs.panel-default .nav-tabs>li.dropdown .dropdown-menu>.active>a:focus {
+  color: var(--bodyBackground);
   background-color: #555;
 }
 
@@ -148,46 +156,50 @@ a:hover {
 }
 
 .skin-blue .wrapper {
-    background-color: #f0f0f0
+  background-color: var(--bodyBackground)
 }
 
-.publish-dialog{
+.publish-dialog {
   min-width: 70vw !important;
   min-height: 70vh !important;
+  background-color: var(--bodyBackground);
 }
 
 /* highchart container configuration */
 .highcharts-container {
-    overflow: visible !important;
-    width:100%!important;
-  }
+  overflow: visible !important;
+  width: 100% !important;
+}
 
 .highcharts-container svg {
-    overflow: visible !important;
-    width:100%!important;
+  overflow: visible !important;
+  width: 100% !important;
 }
 
 highcharts-chart {
-    overflow: visible!important;
+  overflow: visible !important;
 }
 
 fab-command-bar .ms-SearchBox {
-    border-width: 0px!important;
+  border-width: 0px !important;
 }
 
-.ms-CommandBar{
+.ms-CommandBar {
   padding: 0px !important;
 }
-.ms-CommandBar, .ms-Button--commandBar{
-  background-color: white!important;
+
+.ms-CommandBar,
+.ms-Button--commandBar {
+  background-color: var(--bodyBackground) !important;
 }
 
 .ms-Button--commandBar:hover {
-  background-color: rgba(85, 179, 255, 0.1)!important;
+  background-color: rgba(85, 179, 255, 0.1) !important;
 }
 
-.ms-CommandBar, .ms-Button--commandBar{
-  background-color: white!important;
+.ms-CommandBar,
+.ms-Button--commandBar {
+  background-color: var(--bodyBackground) !important;
 }
 
 .fab-command-bar-class {
@@ -196,10 +208,10 @@ fab-command-bar .ms-SearchBox {
   // padding: 0px !important;
   // margin-top: 16px;
   // height: 34px;
-  border-bottom: 1px solid rgb(204, 204, 204)!important;
-  font-size: 12px!important;
+  border-bottom: 1px solid rgb(204, 204, 204) !important;
+  font-size: 12px !important;
   height: 40px;
-  background-color: var(--bodyBackground)!important;
+  background-color: var(--bodyBackground) !important;
 }
 
 .fab-command-bar-class .ms-CommandBar {
@@ -210,4 +222,23 @@ fab-command-bar .ms-SearchBox {
   position: relative;
   top: 50px;
   height: calc(100% - 50px);
+}
+
+//Fix for markdown color
+code[class*=language-] {
+  color: var(--bodyText) !important;
+  background-color: var(--bodyBackground) !important;
+}
+
+pre {
+  background-color: var(--bodyBackground) !important;
+  color: var(--bodyText) !important;
+}
+
+code[class*=language-]>span.token.operator {
+  color: var(--bodyText) !important;
+}
+
+code[class*=language-]>span.token.punctuation {
+  color: var(--bodyText) !important;
 }

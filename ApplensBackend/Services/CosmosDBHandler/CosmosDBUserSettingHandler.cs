@@ -18,7 +18,7 @@ namespace AppLensV3.Services
             Inital(configration).Wait();
         }
 
-        public async Task<UserSetting> UpdateRecentResources(UserSetting userSetting)
+        public async Task<UserSetting> UpdateUserSettings(UserSetting userSetting)
         {
             return await UpdateUserInfoInternal(userSetting);
         }

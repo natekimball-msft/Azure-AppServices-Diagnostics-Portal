@@ -1,6 +1,6 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
@@ -30,6 +30,7 @@ import { BehaviorSubject } from 'rxjs';
 import { Commit } from '../../../shared/models/commit';
 import { ApplensCommandBarService } from '../services/applens-command-bar.service';
 import { DevopsConfig } from '../../../shared/models/devopsConfig';
+import { ApplensGlobal } from '../../../applens-global';
 
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
@@ -116,6 +117,8 @@ export class OnboardingFlowComponent implements OnInit {
   hideModal: boolean = true;
   fileName: string;
   editorOptions: any;
+  lightOptions: any;
+  darkOptions: any;
   code: string;
   originalCode: string;
   reference: object = {};
@@ -218,7 +221,7 @@ export class OnboardingFlowComponent implements OnInit {
 
   buttonStyle: IButtonStyles = {
     root: {
-      color: "#323130",
+      //  color: "#323130",
       borderRadius: "12px",
       marginTop: "8px",
       background: "rgba(0, 120, 212, 0.1)",
@@ -230,7 +233,7 @@ export class OnboardingFlowComponent implements OnInit {
   branchButtonDisabled = false;
   branchButtonStyle: IButtonStyles = {
     root: {
-      color: "#323130",
+      //   color: "#323130",
       borderRadius: "12px",
       marginTop: "8px",
       background: "rgba(0, 120, 212, 0.1)",
@@ -318,8 +321,8 @@ export class OnboardingFlowComponent implements OnInit {
     private diagnosticApiService: ApplensDiagnosticService, private _diagnosticApi: DiagnosticApiService, private resourceService: ResourceService,
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
     public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute,
-    private _applensCommandBarService: ApplensCommandBarService, private _router: Router) {
-    this.editorOptions = {
+    private _applensCommandBarService: ApplensCommandBarService, private _router: Router, private _themeService: GenericThemeService, private _applensGlobal: ApplensGlobal) {
+    this.lightOptions = {
       theme: 'vs',
       language: 'csharp',
       fontSize: 14,
@@ -331,6 +334,19 @@ export class OnboardingFlowComponent implements OnInit {
       folding: true
     };
 
+    this.darkOptions = {
+      theme: 'vs-dark',
+      language: 'csharp',
+      fontSize: 14,
+      automaticLayout: true,
+      scrollBeyondLastLine: false,
+      minimap: {
+        enabled: false
+      },
+      folding: true
+    };
+
+    this.editorOptions = this.lightOptions;
     this.buildOutput = [];
     this.detailedCompilationTraces = [];
     this.localDevButtonDisabled = false;
@@ -428,14 +444,20 @@ export class OnboardingFlowComponent implements OnInit {
       this.detectorGraduation = devopsConfig.graduationEnabled;
       this.DevopsConfig = new DevopsConfig(devopsConfig);
 
+      this.commitHistoryLink = (devopsConfig.folderPath === "/") ? `https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=${devopsConfig.folderPath}${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&_a=history` : `https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=${devopsConfig.folderPath}/${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&_a=history`;
+
       this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? { display: "none" } : {};
       this.saveButtonVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? { display: "none" } : {};
       this.commitHistoryVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? { display: "none" } : {};
-      this.commitHistoryLink = (devopsConfig.folderPath === "/") ? `https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=${devopsConfig.folderPath}${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&_a=history` : `https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=${devopsConfig.folderPath}/${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&_a=history`;
+
 
       this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
 
       this.defaultBranch = "MainMVP";
+
+      this._themeService.currentThemeSub.subscribe((theme) => {
+        this.editorOptions = theme == "dark" ? this.darkOptions : this.lightOptions;
+      })
 
       if (this.detectorGraduation)
         this.getBranchList();
@@ -1636,6 +1658,7 @@ export class OnboardingFlowComponent implements OnInit {
     let detectorFile: Observable<string>;
     this.recommendedUtterances = [];
     this.utteranceInput = "";
+    
     if (this.detectorGraduation && this.mode == DevelopMode.Edit && this.branchInput != undefined && this.branchInput != '') {
       this.Branch = this.branchInput;
     }
@@ -1664,6 +1687,7 @@ export class OnboardingFlowComponent implements OnInit {
         this.fileName = "new.csx";
         this.startTime = this._detectorControlService.startTime;
         this.endTime = this._detectorControlService.endTime;
+        this._applensGlobal.updateHeader(this.gistMode ? "Create Gist" : "Create Detector");
         break;
       }
       case DevelopMode.Edit: {
@@ -1678,6 +1702,16 @@ export class OnboardingFlowComponent implements OnInit {
         }
         this.startTime = this._detectorControlService.startTime;
         this.endTime = this._detectorControlService.endTime;
+        if (this.gistMode) {
+          this.diagnosticApiService.getGistMetaData(this.id).subscribe(metaData => {
+            if (metaData) this._applensGlobal.updateHeader(metaData.name);
+          });
+        } else {
+          this.diagnosticApiService.getDetectorMetaData(this.id).subscribe(metaData => {
+            if (metaData) this._applensGlobal.updateHeader(metaData.name);
+
+          });
+        }
         break;
       }
       case DevelopMode.EditMonitoring: {
@@ -1693,6 +1727,7 @@ export class OnboardingFlowComponent implements OnInit {
     }
 
     let configuration = of(null);
+    this.codeLoaded = false;
     if (this.id.toLowerCase() !== '') {
       if (!this.detectorGraduation) {
         configuration = this.githubService.getConfiguration(this.id.toLowerCase()).pipe(
@@ -1728,8 +1763,8 @@ export class OnboardingFlowComponent implements OnInit {
 
     forkJoin(detectorFile, configuration, this.diagnosticApiService.getGists()).subscribe(res => {
       this.codeLoaded = true;
-      if (!this.code)
-        this.code = this.addCodePrefix(res[0]);
+      // if (!this.code)
+      this.code = this.addCodePrefix(res[0]);
       this.originalCode = this.code;
       if (res[1] !== null) {
         this.gists = Object.keys(this.configuration['dependencies']);

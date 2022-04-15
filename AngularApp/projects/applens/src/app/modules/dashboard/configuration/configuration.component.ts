@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NgxSmartModalService } from 'ngx-smart-modal';
 import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
 import { GithubApiService } from '../../../shared/services/github-api.service';
+import { GenericThemeService } from 'diagnostic-data';
 
 @Component({
   selector: 'configuration',
@@ -10,14 +11,7 @@ import { GithubApiService } from '../../../shared/services/github-api.service';
 })
 export class ConfigurationComponent implements OnInit {
     editorOptions: any;
-    code:string;
-    showAlert:boolean;
-    alertClass: string;
-    alertMessage: string;
-    codeLoaded: boolean = false;
-
-  constructor(public ngxSmartModalService: NgxSmartModalService, private _diagnosticService: ApplensDiagnosticService, private githubService: GithubApiService) {
-    this.editorOptions = {
+    lightOptions: any  = {
         theme: 'vs',
         language: 'json',
         fontSize: 14,
@@ -27,11 +21,36 @@ export class ConfigurationComponent implements OnInit {
           enabled: false
         },
         folding: true
-      };
-      this.showAlert = false;
+    };
+
+    darkOptions: any  = {
+        theme: 'vs-dark',
+        language: 'json',
+        fontSize: 14,
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+        minimap: {
+          enabled: false
+        },
+        folding: true
+    };
+    code:string;
+    showAlert:boolean;
+    alertClass: string;
+    alertMessage: string;
+    codeLoaded: boolean = false;
+
+  constructor(public ngxSmartModalService: NgxSmartModalService, private _diagnosticService: ApplensDiagnosticService, private githubService: GithubApiService, private _themeService: GenericThemeService) {
+    this.editorOptions = this.lightOptions;
+    this.showAlert = false;
   }
 
   ngOnInit() {
+    this._themeService.currentThemeSub.subscribe((theme) =>
+    {
+        this.editorOptions = theme == "dark" ? this.darkOptions : this.lightOptions;
+    })
+
       this._diagnosticService.getKustoMappings().subscribe(resp => {
         this.codeLoaded = true;
         this.code = JSON.stringify(resp, null, 2);

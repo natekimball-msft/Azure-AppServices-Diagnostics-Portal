@@ -4,7 +4,7 @@
 .utterancestab {
     overflow: hidden;
     border: 1px solid #ccc;
-    background-color: #f1f1f1;
+    background-color: var(--solutionButtonBackground);
     cursor: pointer;
     transition: 0.3s;
     text-align: center;
@@ -13,7 +13,7 @@
 }
 
 .utterancestab:hover {
-    background-color: #ddd;
+    background-color: var(--proactiveTopMenuButton);
 }
 
 .utterancessection {
@@ -30,7 +30,7 @@
 }
 
 .utterances-text{
-    color: black;
+    color: var(--bodyText);
     word-wrap: break-word;
 }
 
@@ -51,12 +51,12 @@
 
 .utteranceslist-rec {
     list-style: none;
-    color: indigo;
+    color: var(--utterancesLink);
     font-size: 14px;
 }
 
 .utteranceslist-all {
-    color: indigo;
+    color: var(--utterancesLink);
     font-size: 14px;
 }
 
@@ -68,7 +68,7 @@
 .btn-create {
     background-color: #1ea4fff2;
     border: none;
-    color: white;
+    color: var(--bodyBackground);
     padding: 3px 8px;
     font-size: 16px;
     cursor: pointer;
@@ -79,7 +79,7 @@
 .btn-add {
     background-color: green;
     border: none;
-    color: white;
+    color: var(--bodyBackground);
     padding: 0px 4px;
     font-size: 11px;
     cursor: pointer;
@@ -126,6 +126,7 @@ td {
     width: 80% !important;
     display: inline!important;
     border: 1px solid grey;
+    color: black;
 }
 
 .custom-utterance-box {

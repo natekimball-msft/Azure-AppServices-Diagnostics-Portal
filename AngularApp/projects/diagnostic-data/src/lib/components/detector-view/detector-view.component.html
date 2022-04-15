@@ -22,7 +22,7 @@
   <div>isSystemInvoker: {{isSystemInvoker}}</div> -->
   <!-- <div>supportsDownTime {{supportsDownTime}}</div> -->
 
-  <div *ngIf="!hideDetectorControl">
+  <div *ngIf="!hideDetectorControl && !insideDetectorList">
     <ng-container *ngTemplateOutlet="detectorTimePickerPill"></ng-container>
   </div>
   <div *ngIf="isAnalysisView && supportsDownTime" class="ml-3">
