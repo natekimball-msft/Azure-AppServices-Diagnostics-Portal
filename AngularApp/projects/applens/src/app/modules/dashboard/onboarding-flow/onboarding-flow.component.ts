@@ -651,7 +651,7 @@ export class OnboardingFlowComponent implements OnInit {
   gistVersionChange() {
     var newGist;
     this.updateGistVersionOptions(this.pastGistEvent);
-    // updating the gistVersionOptions to mark with [in use] the new gist version being used and unmark the previous one
+    // updating the gistVersionOptions to taq with [in use] the new gist version being used and untag the previous one
     this.gistVersionOptions.forEach(element => {
       element.key === this.selectedKey ? element.text = `${element.text} [in use]` : element.key === this.configuration['dependencies'][this.gistName] ? element.text = element.text.split(' [', 1)[0] : element.text = element.text;
     });
