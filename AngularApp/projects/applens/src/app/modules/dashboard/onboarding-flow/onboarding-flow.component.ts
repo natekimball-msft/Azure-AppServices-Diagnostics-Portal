@@ -1468,7 +1468,7 @@ export class OnboardingFlowComponent implements OnInit {
     */
 
 
-    let title = [`/${this.saveTempId}/${this.saveTempId}.csx`];
+    let title = [`/${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx`];
 
 
 
