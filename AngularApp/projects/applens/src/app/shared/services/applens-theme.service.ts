@@ -28,7 +28,7 @@ export class ApplensThemeService {
 
     setActiveDomTheme(theme: Theme): void {
         this.active = theme;
-
+        this.currentThemeSub.next(theme.name);
         Object.keys(this.active.properties).forEach(property => {
             document.documentElement.style.setProperty(
                 property.toString(),
@@ -46,24 +46,20 @@ export class ApplensThemeService {
         if (highContrastKey === "" || highContrastKey === "0") {
             switch (theme.toLocaleLowerCase()) {
                 case 'dark':
-                    this.currentThemeSub.next('dark');
                     loadTheme(AzureThemeDark);
                     this.setActiveDomTheme(dark);
                     break;
                 default:
-                    this.currentThemeSub.next('light');
                     loadTheme(AzureThemeLight);
                     this.setActiveDomTheme(light);
                     break;
             }
         }
         else if (highContrastKey === "2") {
-            this.currentThemeSub.next('high-contrast-dark');
             loadTheme(AzureThemeHighContrastDark);
             this.setActiveDomTheme(highContrastDark);
         }
         else {
-            this.currentThemeSub.next('high-contrast-light');
             loadTheme(AzureThemeHighContrastLight);
             this.setActiveDomTheme(highContrastLight);
         }
@@ -98,7 +94,5 @@ export class ApplensThemeService {
         if (!!this._activatedRoute && !!this._activatedRoute.snapshot && !!this._activatedRoute.snapshot.queryParams && !!this._activatedRoute.snapshot.queryParams['theme']) {
             this.currentThemeValue = this._activatedRoute.snapshot.queryParams['theme'].toLocaleLowerCase();
         }
-
-        this.setActiveThemeWithQueryParam(this.currentThemeValue);
     }
 }

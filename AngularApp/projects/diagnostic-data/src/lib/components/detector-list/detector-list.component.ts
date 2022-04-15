@@ -23,8 +23,7 @@ import { UriUtilities } from '../../utilities/uri-utilities';
 import { GenericBreadcrumbService } from '../../services/generic-breadcrumb.service';
 import { ILinkProps } from 'office-ui-fabric-react';
 import { SolutionService } from '../../services/solution.service';
-
-
+import { GenericUserSettingService } from '../../services/generic-user-setting.service';
 
 @Component({
   selector: 'detector-list',
@@ -45,6 +44,7 @@ export class DetectorListComponent extends DataRenderBaseComponent {
   detectorName: string = "";
   detectorMetaData: DetectorMetaData[];
   detectorViewModels: DetectorViewModel[] = [];
+  detectorViewModelsWaterfall: DetectorViewModel[] = [];
   HealthStatus = HealthStatus;
   private childDetectorsEventProperties = {};
   overrideResourceUri: string = "";
@@ -64,18 +64,34 @@ export class DetectorListComponent extends DataRenderBaseComponent {
   allSolutions: Solution[] = [];
   solutionTitle: string = "";
   loading = LoadingStatus.Loading;
+  expandIssuedChecks: boolean = false;
+  isWaterfallViewMode: boolean = false;
 
   constructor(private _diagnosticService: DiagnosticService, protected telemetryService: TelemetryService, private _detectorControl: DetectorControlService, private _solutionService: SolutionService,
     private parseResourceService: ParseResourceService, @Inject(DIAGNOSTIC_DATA_CONFIG) private config: DiagnosticDataConfig, private _router: Router,
-    private _activatedRoute: ActivatedRoute, private _portalActionService: PortalActionGenericService, private _breadcrumbService : GenericBreadcrumbService) {
+    private _activatedRoute: ActivatedRoute, private _portalActionService: PortalActionGenericService, private _breadcrumbService : GenericBreadcrumbService, private _genericUserSettingsService:GenericUserSettingService) {
     super(telemetryService);
     this.isPublic = this.config && this.config.isPublic;
+
+    this._genericUserSettingsService.isWaterfallViewSub.subscribe(isWaterfallViewMode =>
+    {
+        this.isWaterfallViewMode = isWaterfallViewMode;
+    });
+
   }
 
   protected processData(data: DiagnosticData) {
     super.processData(data);
     this.renderingProperties = <DetectorListRendering>data.renderingProperties;
     this.getResponseFromResource();
+    this._genericUserSettingsService.getExpandAnalysisCheckCard().subscribe(expandIssuedChecks => {
+      this.expandIssuedChecks = expandIssuedChecks;
+    });
+
+    this._genericUserSettingsService.isWaterfallViewMode().subscribe(isWaterfallViewMode =>
+    {
+        this.isWaterfallViewMode = isWaterfallViewMode;
+    });
   }
 
   private getResponseFromResource() {
@@ -251,7 +267,10 @@ export class DetectorListComponent extends DataRenderBaseComponent {
     const requests: Observable<any>[] = [];
 
     this.detectorMetaData = detectorList.filter(detector => this.renderingProperties.detectorIds.indexOf(detector.id) >= 0);
+    let detectorMetaData1 = this.renderingProperties.detectorIds.filter(id => this.detectorMetaData.findIndex(metaData => metaData.id == id) >= 0);
+    detectorList.filter(detector => this.renderingProperties.detectorIds.indexOf(detector.id) >= 0);
     this.detectorViewModels = this.detectorMetaData.map(detector => this.getDetectorViewModel(detector, this.renderingProperties.additionalParams, this.overrideResourceUri));
+    this.detectorViewModelsWaterfall = this.detectorViewModels;
     if (this.detectorViewModels.length === 0) {
       this.loading = LoadingStatus.Success;
     }

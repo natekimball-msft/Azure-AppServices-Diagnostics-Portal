@@ -34,7 +34,7 @@ export class FabDataTableFilterComponent implements OnInit {
 
   buttonStyle: IButtonStyles = {
     root: {
-      color: "#323130",
+   //   color: "#323130",
       borderRadius: "12px",
       margin: " 0px 5px",
       background: "rgba(0, 120, 212, 0.1)",

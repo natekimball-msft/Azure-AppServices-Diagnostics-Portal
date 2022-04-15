@@ -33,7 +33,7 @@ export class AutohealingCustomActionComponent implements OnInit, OnChanges, Afte
 
   Diagnosers = [{ Name: 'Memory Dump', Enabled: true, Description: 'Collects memory dumps of the process and the child processes hosting your app and analyzes them for errors' },
   { Name: 'CLR Profiler', Enabled: true, Description: 'Profiles ASP.NET application code to identify exceptions and performance issues' },
-  { Name: 'CLR Profiler With Thread Stacks', Enabled: true, Description: 'Profiles ASP.NET application code to identify exceptions and performance issues and dumps stacks to identify deadlocks' },
+  { Name: 'CLR Profiler with Thread Stacks', Enabled: true, Description: 'Profiles ASP.NET application code to identify exceptions and performance issues and dumps stacks to identify deadlocks' },
   { Name: 'JAVA Memory Dump', Enabled: true, Description: 'Collects a binary memory dump using jMap of all java.exe processes running for this web app' },
   { Name: 'JAVA Thread Dump', Enabled: true, Description: 'Collects jStack output of all java.exe processes running for this app and analyzes the same' }];
   DiagnoserOptions = [
@@ -62,7 +62,7 @@ export class AutohealingCustomActionComponent implements OnInit, OnChanges, Afte
 
   makeDaasWarmupCall(): any {
     this._siteService.getSiteDaasInfoFromSiteMetadata().subscribe(siteDaasInfo => {
-      this._daasService.getInstances(siteDaasInfo, true).subscribe(resp => {
+      this._daasService.getDiagnosers(siteDaasInfo).subscribe(resp => {
         //do nothing with resp
       });
     });
@@ -168,7 +168,7 @@ export class AutohealingCustomActionComponent implements OnInit, OnChanges, Afte
   updateDaasAction(emitEvent: boolean) {
     if (this.validationResult.Validated) {
       this.updatedCustomAction.exe = daasConsolePath;
-      if (this.validationResult.SasUriAsAppSetting) {
+      if (this.validationResult.ConfiguredAsAppSetting) {
         this.updatedCustomAction.parameters = `-${this.diagnoserOption.option} "${this.diagnoser.Name}"`;
       } else {
         this.updatedCustomAction.parameters = this.validationResult.BlobSasUri.length > 0 ? `-${this.diagnoserOption.option} "${this.diagnoser.Name}" -BlobSasUri:"${this.validationResult.BlobSasUri}"` : `-${this.diagnoserOption.option} "${this.diagnoser.Name}"`;

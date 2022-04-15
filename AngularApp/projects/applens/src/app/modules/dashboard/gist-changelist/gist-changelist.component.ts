@@ -2,6 +2,7 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Commit } from '../../../shared/models/commit';
 import { ActivatedRoute } from '@angular/router';
 import { GithubApiService } from '../../../shared/services/github-api.service';
+import { GenericThemeService } from 'diagnostic-data';
 
 @Component({
   selector: 'gist-changelist',
@@ -22,8 +23,34 @@ export class GistChangelistComponent implements OnInit {
   currentSha: string;
   currentCode: string;
   initialized = false;
+  options: any;
+  lightOptions = {
+    theme: 'vs',
+    language: 'csharp',
+    fontSize: 14,
+    automaticLayout: true,
+    scrollBeyondLastLine: false,
+    minimap: {
+      enabled: false
+    },
+    folding: true
+  };
 
-  constructor(private _route: ActivatedRoute, private githubService: GithubApiService) { }
+  darkOptions = {
+    theme: 'vs-dark',
+    language: 'csharp',
+    fontSize: 14,
+    automaticLayout: true,
+    scrollBeyondLastLine: false,
+    minimap: {
+      enabled: false
+    },
+    folding: true
+  };
+
+  constructor(private _route: ActivatedRoute, private githubService: GithubApiService, private _themeService: GenericThemeService) {
+      this.options = this.lightOptions;
+   }
 
   setCodeDiffView(commit: Commit) {
     this.version = commit.sha;
@@ -40,6 +67,10 @@ export class GistChangelistComponent implements OnInit {
   ngOnChanges() {
     if(this.initialized){
       this.initialize();
+      this._themeService.currentThemeSub.subscribe((theme) =>
+      {
+          this.options = theme == "dark" ? this.darkOptions : this.lightOptions;
+      })
     }
   }
 
@@ -63,16 +94,4 @@ export class GistChangelistComponent implements OnInit {
       }
     });
   }
-
-  options = {
-    theme: 'vs',
-    language: 'csharp',
-    fontSize: 14,
-    automaticLayout: true,
-    scrollBeyondLastLine: false,
-    minimap: {
-      enabled: false
-    },
-    folding: true
-  };
 }

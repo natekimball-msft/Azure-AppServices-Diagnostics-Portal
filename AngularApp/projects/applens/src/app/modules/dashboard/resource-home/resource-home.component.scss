@@ -16,12 +16,12 @@ td, th {
 }
 
 .btn.is-selected {
-  color: white;
+  color: var(--bodyBackground);;
   background-color: #28F;
 }
 
 .btn {
-  background-color: white;
+  background-color: var(--bodyBackground);;
   color:#2288fc;
 }
 
@@ -40,7 +40,7 @@ td, th {
 }
 
 body {
-  background-color: #EBEEF3;
+  background-color: var(--bodyBackground);;
   box-sizing: border-box;
   font-family: "Helvetica", "Arial", "FreeSans", "Verdana", "Tahoma", "Lucida Sans", "Lucida Sans Unicode", "Luxi Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -74,7 +74,7 @@ body {
     margin: 0px 5px 5px 0px;
     border: 1px solid #cccccc;
     color:#595959;
-    background-color: #e9e9e9;
+    background-color: var(--bodyBackground);
 }
 
 .detectors-hint {
@@ -95,7 +95,7 @@ body {
 .flexed {
   display: inline-block;
   will-change: transform, flex-grow;
-  background: #F5F7F9;
+  background: var(--bodyBackground);
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.24);
   cursor: pointer;
   width: 31%;
@@ -209,7 +209,7 @@ body {
   border-radius: 2px;
   position: relative;
   overflow: hidden;
-  background-color: white;
+  background-color: var(--bodyBackground);;
 
   .top {
     padding: 20px;
@@ -229,7 +229,7 @@ body {
     width: 100%;
     height: 70%;
     border-bottom: 1px solid #E4E7EC;
-    background-color: white;
+    background-color: var(--bodyBackground);;
     margin: auto;
 
     transition: width 350ms cubic-bezier(.55,0,.1,1);
@@ -389,7 +389,7 @@ body {
 
 ///
 input[type='text'] {
-  background-color: #FCFCFC;
+  background-color: var(--bodyBackground);
   border: 1px solid #D8DCE1;
   line-height: 35px;
   border-radius: 2px;
@@ -434,7 +434,7 @@ input[type='button'] {
 }
 
 .search-input{
-  background-color: #FCFCFC;
+  background-color: var(--bodyBackground);
     border: 1px solid #D8DCE1;
     line-height: 55px;
     border-radius: 3px;
@@ -461,7 +461,7 @@ input[type='button'] {
 }
 
 .search-box-container{
-  width: 100%; 
+  width: 100%;
 }
 
 .search-box{

@@ -433,7 +433,8 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
         { provide: GenericResourceService, useExisting: ResourceService },
         { provide: SolutionService, useExisting: GenericSolutionService },
         { provide: GenieGlobals, useExisting: ApplensGlobals },
-        { provide: GenericBreadcrumbService, useExisting: BreadcrumbService }
+        { provide: GenericBreadcrumbService, useExisting: BreadcrumbService },
+        { provide: GenericUserSettingService, useExisting: UserSettingService }
     ],
     declarations: [DashboardComponent, SideNavComponent, ResourceMenuItemComponent, ResourceHomeComponent, OnboardingFlowComponent, SearchTermAdditionComponent,
         SearchMenuPipe, TabDataComponent, TabDevelopComponent, TabCommonComponent, TabDataSourcesComponent, TabMonitoringComponent,

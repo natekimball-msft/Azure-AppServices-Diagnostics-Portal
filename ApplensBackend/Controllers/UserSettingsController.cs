@@ -37,7 +37,7 @@ namespace AppLensV3.Controllers
         public async Task<IActionResult> CreateOrUpdateResources([FromBody] JToken body)
         {
             var userSetting = body.ToObject<UserSetting>();
-            var updatedUserSetting = await _cosmosDBHandler.UpdateRecentResources(userSetting);
+            var updatedUserSetting = await _cosmosDBHandler.UpdateUserSettings(userSetting);
             return Ok(updatedUserSetting);
         }
     }
