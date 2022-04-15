@@ -9,6 +9,11 @@ import { xAxisPlotBand, xAxisPlotBandStyles, zoomBehaviors, XAxisSelection } fro
 import { KeyValue } from '@angular/common';
 import { PointerEventObject } from 'highcharts';
 import { interval, Subscription } from 'rxjs';
+import { GenericThemeService } from '../../services/generic-theme.service';
+import { HighChartsHoverService } from '../../services/highcharts-hover.service';
+import highchartsDarkTheme from 'highcharts/themes/dark-unica';
+import highchartsHighContrastDarkTheme from 'highcharts/themes/high-contrast-dark';
+import highchartsHighContrastLightTheme from 'highcharts/themes/high-contrast-light';
 
 declare var require: any
 var Highcharts = require('highcharts'),
@@ -39,7 +44,9 @@ export class HighchartsGraphComponent implements OnInit {
     @Input() startTime: momentNs.Moment;
 
     @Input() endTime: momentNs.Moment;
+    public backgroundColor = "white";
 
+    public currentTheme: string = "light";
     private _xAxisPlotBands: xAxisPlotBand[] = null;
     @Input() public set xAxisPlotBands(value: xAxisPlotBand[]) {
         this._xAxisPlotBands = [];
@@ -467,10 +474,39 @@ export class HighchartsGraphComponent implements OnInit {
         }
     }
 
-    constructor(private detectorControlService: DetectorControlService, private el: ElementRef<HTMLElement>) {
+    private updateHighChartTheme(theme: string) {
+        if (!!theme && !!this.themeService && this.currentTheme && theme.toLocaleLowerCase() !== this.currentTheme) {
+            this.currentTheme = theme.toLocaleLowerCase();
+            switch (this.currentTheme) {
+                case 'dark':
+                    highchartsDarkTheme(Highcharts);
+                    break;
+                case 'high-contrast-light':
+                    highchartsHighContrastLightTheme(Highcharts);
+                    break;
+                case 'high-contrast-dark':
+                    highchartsHighContrastDarkTheme(Highcharts);
+                    break;
+                default:
+                    Highcharts.setOptions(Highcharts.getOptions());
+                    break;
+            }
+        }
+    }
+
+    constructor(private detectorControlService: DetectorControlService, private el: ElementRef<HTMLElement>, private highChartsHoverService: HighChartsHoverService, private themeService: GenericThemeService) {
+            // Update highchart theme based on ibiza theme attributes
+            this.themeService.currentThemeSub.subscribe((theme) => {
+                this.updateHighChartTheme(theme);
+            });
     }
 
     ngOnInit() {
+        this.backgroundColor = this.themeService.getPropertyValue("--bodyBackground");
+        this.initializeChart();
+    }
+
+    private initializeChart() {
         this._setOptions();
         this._updateOptions();
 
