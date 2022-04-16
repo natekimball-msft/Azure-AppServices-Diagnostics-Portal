@@ -12,6 +12,7 @@ import { interval, Subscription } from 'rxjs';
 import { GenericThemeService } from '../../services/generic-theme.service';
 import { HighChartsHoverService } from '../../services/highcharts-hover.service';
 import highchartsDarkTheme from 'highcharts/themes/dark-unica';
+import highchartsLightTheme from 'highcharts/themes/sand-signika';
 import highchartsHighContrastDarkTheme from 'highcharts/themes/high-contrast-dark';
 import highchartsHighContrastLightTheme from 'highcharts/themes/high-contrast-light';
 
@@ -45,6 +46,7 @@ export class HighchartsGraphComponent implements OnInit {
 
     @Input() endTime: momentNs.Moment;
     public backgroundColor = "white";
+    public bodyText = "black";
 
     public currentTheme: string = "light";
     private _xAxisPlotBands: xAxisPlotBand[] = null;
@@ -503,6 +505,7 @@ export class HighchartsGraphComponent implements OnInit {
 
     ngOnInit() {
         this.backgroundColor = this.themeService.getPropertyValue("--bodyBackground");
+        this.bodyText = this.themeService.getPropertyValue("--bodyText");
         this.initializeChart();
     }
 
@@ -721,7 +724,7 @@ export class HighchartsGraphComponent implements OnInit {
                 align: 'center',
                 layout: 'horizontal',
                 verticalAlign: 'bottom',
-                itemStyle: { "color": "#333", "cursor": "pointer", "fontSize": "12px", "textOverflow": "ellipsis", "font-weight": "normal", "font-family": " Arial, sans-serif" },
+                itemStyle: { "color": this.bodyText, "cursor": "pointer", "fontSize": "12px", "textOverflow": "ellipsis", "font-weight": "normal", "font-family": " Arial, sans-serif" },
                 itemMarginTop: 0,
                 itemMarginBottom: 0,
                 accessibility: {
@@ -750,7 +753,7 @@ export class HighchartsGraphComponent implements OnInit {
                 valueDecimals: 2,
                 useHTML: true,
                 outside: true,
-                backgroundColor: "white",
+                backgroundColor: this.backgroundColor,
             },
             navigation: {
                 buttonOptions: {
