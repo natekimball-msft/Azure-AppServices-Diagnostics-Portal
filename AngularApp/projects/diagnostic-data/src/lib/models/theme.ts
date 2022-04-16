@@ -39,6 +39,8 @@ export const light: Theme = {
         "--activeIssueMessageBarBGColor": 'rgb(253, 231, 233)',
         "--resolvedIssueMessageBarBGColor": 'rgb(255 244 206)',
         "--commIssueTitle": "#3c3c3c",
+        "--messageBarBackground": "#F0F6FF",
+        "--messageBarIconColor": "#015CDA",
         "--menuItemText": LightSemanticColors.text.body,
         "--bodyDivider": CommonSemanticColors.dividers.lineSeparator,
         "--bodyText": LightSemanticColors.text.body,
@@ -181,6 +183,8 @@ export const dark: Theme = {
         "--commIssueTitle": "white",
         "--activeIssueMessageBarBGColor": 'rgb(189 114 121)',
         "--resolvedIssueMessageBarBGColor": 'rgb(172 138 19)',
+        "--messageBarBackground": "#444649",
+        "--messageBarIconColor": "rgb(127 157 197)",
         "--utterancesLink":"#ab6dd8",
         "--bannerHovered": DarkSemanticColors.text.bodyHovered,
         "--borderBottom": DarkSemanticColors.background,
@@ -300,7 +304,7 @@ export const dark: Theme = {
         "--listUnderline": 'none',
         "--linkBorderStyle": 'dashed',
 
-        "--bodyBackground": DarkSemanticColors.background,
+        "--bodyBackground": "#1b1a19",
     }
 };
 
@@ -335,6 +339,8 @@ export const highContrastDark: Theme = {
         "--resolvedIssueMessageBarBGColor": 'rgb(172 138 19)',
         "--commIssueTitle": "white",
         "--imageLabel":"#45eb42",
+        "--messageBarBackground": "#444649",
+        "--messageBarIconColor": "rgb(127 157 197)",
         "--menuItemText": HighContrastDarkSemanticColors.text.hyperlink,
         "--borderBottom": HighContrastDarkSemanticColors.background,
         "--mainSiderBar":HighContrastDarkSemanticColors.background,
@@ -486,6 +492,8 @@ export const highContrastLight: Theme = {
         "--activeIssueMessageBarBGColor": 'rgb(253, 231, 233)',
         "--resolvedIssueMessageBarBGColor": 'rgb(255 244 206)',
         "--commIssueTitle": "#3c3c3c",
+        "--messageBarBackground": "#F0F6FF",
+        "--messageBarIconColor": "#015CDA",
         "--menuItemText": HighContrastLightSemanticColors.text.hyperlink,
         "--panelBorder": HighContrastLightSemanticColors.secondaryButton.rest.border,
         "--bodyDivider": CommonSemanticColors.dividers.lineSeparator,

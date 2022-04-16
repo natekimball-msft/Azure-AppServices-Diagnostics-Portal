@@ -60,7 +60,6 @@ export class CommAlertComponent implements OnInit {
                     backgroundColor: this._themeService.getPropertyValue("--resolvedIssueMessageBarBGColor")
                 }
             }
-
         });
 
         this.commsService.getServiceHealthCommunications().subscribe((commsList: Communication[]) => {
