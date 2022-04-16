@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { IMessageBarProps, MessageBarType, PanelType } from 'office-ui-fabric-react';
 import { Observable } from 'rxjs';
 import { DiagnosticDataConfig, DIAGNOSTIC_DATA_CONFIG } from '../../config/diagnostic-data-config';
+import { GenericThemeService } from '../../services/generic-theme.service';
 import { Solution } from '../solution/solution';
 
 @Component({
@@ -12,7 +13,7 @@ import { Solution } from '../solution/solution';
 })
 export class SolutionsPanelComponent implements OnInit {
 
-  constructor(private _activatedRoute:ActivatedRoute, @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig) {
+  constructor(private _activatedRoute:ActivatedRoute, private _themeService: GenericThemeService,  @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig) {
     this.isPublic = config && config.isPublic;
   }
 
@@ -38,6 +39,18 @@ export class SolutionsPanelComponent implements OnInit {
     this.isPanelOpenObservable.subscribe(isOpen => this.isOpen = isOpen);
     const routeParams = this._activatedRoute.root.firstChild.firstChild.firstChild.snapshot.params;
     this.resourceName = routeParams['resourcename'] || routeParams['resourceName'] || "";
+
+    this._themeService.currentThemeSub.subscribe(() => {
+        this.messageBarStyles = {
+            root: {
+                backgroundColor: this._themeService.getPropertyValue("--messageBarBackground"),
+                color: this._themeService.getPropertyValue("--bodyText"),
+            },
+            icon: {
+              color: this._themeService.getPropertyValue("--messageBarIconColor")
+            }
+        }
+    });
   }
 
   dismissPanel() {
