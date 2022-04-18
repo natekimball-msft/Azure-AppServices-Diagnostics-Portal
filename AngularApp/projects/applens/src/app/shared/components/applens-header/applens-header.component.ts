@@ -109,6 +109,7 @@ export class ApplensHeaderComponent implements OnInit {
     this._themeService.setActiveTheme(themeStr);
     this._userSettingService.isWaterfallViewSub.next(!this.smartViewChecked);
     this._userSettingService.updateUserPanelSetting(updatedSettings);
+    window.location.reload();
   }
 
   openCallout() {
