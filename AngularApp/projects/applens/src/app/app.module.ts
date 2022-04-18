@@ -23,6 +23,7 @@ import { AngularReactBrowserModule } from '@angular-react/core';
 import { ApplensAppinsightsTelemetryService } from './shared/services/applens-appinsights-telemetry.service';
 import { ApplensThemeService } from './shared/services/applens-theme.service';
 import { FabButtonModule, FabDialogModule, FabPanelModule } from '@angular-react/fabric';
+import { AppLensInterceptorService } from './shared/services/applens-http-interceptor.service';
 
 @Injectable()
 export class ValidResourceResolver implements Resolve<void>{
@@ -137,6 +138,11 @@ export const Routes = RouterModule.forRoot([
     FabButtonModule
   ],
   providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AppLensInterceptorService,
+      multi: true
+     },
     ValidResourceResolver,
     { provide: AppInsightsTelemetryService, useExisting: ApplensAppinsightsTelemetryService },
     AdalService,

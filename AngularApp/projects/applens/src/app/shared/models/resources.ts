@@ -15,6 +15,7 @@ export interface ResourceTypeState {
     resourceTypeLabel?: string;
     enabled: boolean;
     caseId: boolean;
+    durianEnabled: boolean;
 }
 
 export interface ActivatedResource {
@@ -66,6 +67,7 @@ export interface ResourceServiceInputs {
     emergingIssuesICMLookupEnabled?: boolean;
     displayName?: string;
     overviewPageMetricsId?: string;
+    durianEnabled: boolean;
 }
 
 export const RESOURCE_SERVICE_INPUTS = new InjectionToken<ResourceServiceInputs>('ResourceServiceInputs');
@@ -81,5 +83,6 @@ export const DEFAULT_RESOURCE_SERVICE_INPUTS: ResourceServiceInputs = {
     pesId: '',
     sapProductId:'',
     staticSelfHelpContent: '',
-    searchSuffix: 'AZURE'
+    searchSuffix: 'AZURE',
+    durianEnabled: false
 };

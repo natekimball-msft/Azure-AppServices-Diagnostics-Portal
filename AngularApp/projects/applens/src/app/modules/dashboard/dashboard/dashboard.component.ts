@@ -10,7 +10,7 @@ import { SearchService } from '../services/search.service';
 import { environment } from '../../../../environments/environment';
 import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
 import { ObserverService } from '../../../shared/services/observer.service';
-import { ICommandBarProps, PanelType, IBreadcrumbProps, IBreadcrumbItem, ITooltipHostProps } from 'office-ui-fabric-react';
+import { ICommandBarProps, PanelType, IBreadcrumbProps, IBreadcrumbItem, ITooltipHostProps, SpinnerSize, DialogType } from 'office-ui-fabric-react';
 import { ApplensGlobal } from '../../../applens-global';
 import { L2SideNavType } from '../l2-side-nav/l2-side-nav';
 import { l1SideNavCollapseWidth, l1SideNavExpandWidth } from '../../../shared/components/l1-side-nav/l1-side-nav';
@@ -18,6 +18,10 @@ import { filter } from 'rxjs/operators';
 import { StartupService } from '../../../shared/services/startup.service';
 import { UserInfo } from '../user-detectors/user-detectors.component';
 import { BreadcrumbService } from '../services/breadcrumb.service';
+import {AlertService} from '../../../shared/services/alert.service';
+import {AlertInfo, ConfirmationOption} from '../../../shared/models/alerts';
+import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.service';
+import { TelemetryEventNames } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
 
 @Component({
   selector: 'dashboard',
@@ -75,9 +79,27 @@ export class DashboardComponent implements OnDestroy {
     }
   }
 
+  accessError: string = '';
+  resourceName: string = null;
+  resourceType: string = null;
+  displayAlertDialog: boolean = false;
+  displayErrorInDialog: boolean = false;
+  errorInDialog: string = null;
+  showLoaderInDialog: boolean = false;
+  alertInfo: AlertInfo = null;
+  stillLoading: boolean = false;
+  loaderSize = SpinnerSize.large;
+  showDashboardContent: boolean = true;
+  alertDialogStyles = { main: { maxWidth: "70vw!important", minWidth: "40vw!important" } };
+  alertDialogProps = {isBlocking: true}
+  dialogType: DialogType = DialogType.normal;
+
   constructor(public resourceService: ResourceService, private startupService: StartupService,  private _detectorControlService: DetectorControlService,
     private _router: Router, private _activatedRoute: ActivatedRoute, private _navigator: FeatureNavigationService,
-    private _diagnosticService: ApplensDiagnosticService, private _adalService: AdalService, public _searchService: SearchService, private _diagnosticApiService: DiagnosticApiService, private _observerService: ObserverService, public _applensGlobal: ApplensGlobal, private _startupService: StartupService, private _resourceService: ResourceService, private _breadcrumbService: BreadcrumbService) {
+    private _diagnosticService: ApplensDiagnosticService, private _adalService: AdalService, public _searchService: SearchService,
+    private _diagnosticApiService: DiagnosticApiService, private _observerService: ObserverService, public _applensGlobal: ApplensGlobal,
+    private _startupService: StartupService, private _resourceService: ResourceService, private _breadcrumbService: BreadcrumbService,
+    private _alertService: AlertService, private _telemetryService: TelemetryService) {
     this.contentHeight = (window.innerHeight - 50) + 'px';
 
     this.navigateSub = this._navigator.OnDetectorNavigate.subscribe((detector: string) => {
@@ -94,6 +116,11 @@ export class DashboardComponent implements OnDestroy {
           //     this._router.navigate([`./analysis/${detector}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge' });
           //   }
           // }
+        },
+        (err) => {
+          let errobj = JSON.parse(err.error);
+          this.accessError = errobj.DetailText;
+          if (!this.CheckIsResourceUnrelatedError(errobj.DetailText)) this.navigateBackToHomePage();
         });
       }
     });
@@ -112,6 +139,18 @@ export class DashboardComponent implements OnDestroy {
         this._searchService.searchTerm = this._activatedRoute.snapshot.queryParams['searchTerm'];
         routeParams['searchTerm'] = this._activatedRoute.snapshot.queryParams['searchTerm'];
       }
+      if (!this._activatedRoute.queryParams['caseNumber']) {
+        this._diagnosticApiService.setCustomerCaseNumber(this._activatedRoute.snapshot.queryParams['caseNumber']);
+        routeParams['caseNumber'] = this._activatedRoute.snapshot.queryParams['caseNumber'];
+      }
+      if (!this._activatedRoute.queryParams['resourceName']) {
+        routeParams['resourceName'] = this._activatedRoute.snapshot.queryParams['resourceName'];
+        this.resourceName = this._activatedRoute.snapshot.queryParams['resourceName'];
+      }
+      if (!this._activatedRoute.queryParams['resourceType']) {
+        routeParams['resourceType'] = this._activatedRoute.snapshot.queryParams['resourceType'];
+        this.resourceType = this._activatedRoute.snapshot.queryParams['resourceType'];
+      }
 
       this._router.navigate([], { queryParams: routeParams, queryParamsHandling: 'merge', relativeTo: this._activatedRoute });
     }
@@ -128,9 +167,78 @@ export class DashboardComponent implements OnDestroy {
         this.displayName = userInfo.displayName;
       });
     }
+
+    this._alertService.getAlert().subscribe((alert: AlertInfo) => {
+      this.alertInfo = alert;
+      this.displayAlertDialog = true;
+      setTimeout(() => {
+        var elem = document.getElementsByClassName('ms-Dialog-title')[0] as HTMLElement;
+        if (elem) {
+          elem.focus();
+        }
+      }, 500);
+    });
+  }
+
+  resetDialogSuccessStatus(){
+    this.errorInDialog = null;
+    this.displayErrorInDialog = false;
+  }
+
+  CheckIsResourceUnrelatedError(detailText){
+    return detailText && detailText.includes("not in the subscription related");
+  }
+
+  handleUserResponse(userResponse: ConfirmationOption) {
+    let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
+    this._telemetryService.logEvent(TelemetryEventNames.ResourceOutOfScopeUserResponse, {userId: alias, url: this._router.url, userResponse: userResponse.label, caseNumber: this._diagnosticApiService.CustomerCaseNumber});
+    if (userResponse.value === 'yes') {
+      this.showLoaderInDialog = true;
+      this._diagnosticService.unrelatedResourceConfirmation().subscribe(() => {
+        this.showLoaderInDialog = false;
+        this.displayAlertDialog = false;
+        this.alertInfo = null;
+        this._router.navigate([], {queryParamsHandling: 'merge', relativeTo: this._activatedRoute});
+      },
+      (err) => {
+        this.showLoaderInDialog = false;
+        let error = err.message;
+        this.errorInDialog = error;
+        this.displayErrorInDialog = true;
+      });
+    }
+    else if (userResponse.value == 'no') {
+      this.accessError = this.alertInfo.details;
+      this.navigateBackToHomePage();
+    }
+  }
+
+  navigateBackToHomePage() {
+    let queryParams = {
+      caseNumber: this._diagnosticApiService.CustomerCaseNumber,
+      resourceName: this.resourceName,
+      resourceType: this.resourceType,
+      errorMessage: this.accessError
+    };
+    const queryString = new URLSearchParams(queryParams).toString();
+    window.location.href = "/?" + queryString;
   }
 
   ngOnInit() {
+    this.stillLoading = true;
+    this._diagnosticService.getDetectors().subscribe(detectors => {
+      this.stillLoading = false;
+    },
+    (err) => {
+      this.stillLoading = false;
+      this.showDashboardContent = false;
+      let errobj = JSON.parse(err.error);
+      this.accessError = errobj.DetailText;
+      if (!this.CheckIsResourceUnrelatedError(errobj.DetailText))
+      {
+        this.navigateBackToHomePage();
+      }
+    });
     this.title="";
     this._applensGlobal.headerTitleSubject.subscribe(title => {
       this.title = title;

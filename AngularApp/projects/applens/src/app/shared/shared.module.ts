@@ -25,6 +25,7 @@ import { FabButtonModule, FabDialogModule, FabPanelModule, FabSearchBoxModule } 
 import { L1SideNavComponent } from './components/l1-side-nav/l1-side-nav.component';
 import { UserSettingService } from '../modules/dashboard/services/user-setting.service';
 import { ApplensDocsComponent } from './components/applens-docs/applens-docs.component';
+import { AlertService } from './services/alert.service';
 
 @NgModule({
   imports: [
@@ -58,7 +59,8 @@ export class SharedModule {
         CacheService,
         AadAuthGuard,
         CaseCleansingApiService,
-        UserSettingService
+        UserSettingService,
+        AlertService
       ]
     }
   }

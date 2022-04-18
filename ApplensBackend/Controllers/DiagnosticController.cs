@@ -230,6 +230,11 @@ namespace AppLensV3.Controllers
                 Request.HttpContext.Response.Headers.Add(ScriptEtagHeader, response.Headers.GetValues(ScriptEtagHeader).First());
             }
 
+            if (response.Headers.Contains(AccessWarningHeader))
+            {
+                Request.HttpContext.Response.Headers.Add(AccessWarningHeader, response.Headers.GetValues(AccessWarningHeader).First());
+            }
+
             if (invokeHeaders.Path.EndsWith("/diagnostics/publish", StringComparison.OrdinalIgnoreCase) && detectorAuthorEmails.Count > 0 && Env.IsProduction())
             {
                 EmailNotificationService.SendPublishingAlert(invokeHeaders.ModifiedBy, detectorId, applensLink, detectorAuthorEmails);

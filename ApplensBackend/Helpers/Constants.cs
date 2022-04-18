@@ -66,6 +66,9 @@ namespace AppLensV3.Helpers
         public const string InternalViewHeader = "x-ms-internal-view";
         public const string ScriptEtagHeader = "diag-script-etag";
         public const string VerbHeader = "x-ms-verb";
+        public const string AccessWarningHeader = "x-ms-access-warning-message";
+        public const string CustomerCaseNumberHeader = "x-ms-customer-casenumber";
+        public const string UserTokenHeader = "x-ms-user-token";
         public const string IsTemporaryAccessHeader = "IsTemporaryAccess";
         public const string TemporaryAccessExpiresHeader = "TemporaryAccessExpires";
     }

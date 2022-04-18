@@ -138,7 +138,7 @@ namespace AppLensV3
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowAnyOrigin()
-                .WithExposedHeaders(new string[] { HeaderConstants.ScriptEtagHeader, HeaderConstants.IsTemporaryAccessHeader, HeaderConstants.TemporaryAccessExpiresHeader })
+                .WithExposedHeaders(new string[] { HeaderConstants.ScriptEtagHeader, HeaderConstants.IsTemporaryAccessHeader, HeaderConstants.TemporaryAccessExpiresHeader, HeaderConstants.AccessWarningHeader })
             );
 
             app.UseAuthentication();

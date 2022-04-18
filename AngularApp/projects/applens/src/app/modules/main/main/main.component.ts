@@ -5,7 +5,7 @@ import {
   ResourceServiceInputs, ResourceType, ResourceTypeState, ResourceServiceInputsJsonResponse
 } from '../../../shared/models/resources';
 import { HttpClient } from '@angular/common/http';
-import { DropdownMenuItemType, IDropdownOption, IDropdownProps, PanelType } from 'office-ui-fabric-react';
+import { DropdownMenuItemType, IDropdownOption, IDropdownProps, PanelType, SpinnerSize } from 'office-ui-fabric-react';
 import { BehaviorSubject } from 'rxjs';
 import { DataTableResponseObject, DetectorControlService, HealthStatus } from 'diagnostic-data';
 import { AdalService } from 'adal-angular4';
@@ -13,6 +13,7 @@ import { UserSettingService } from '../../dashboard/services/user-setting.servic
 import { RecentResource } from '../../../shared/models/user-setting';
 import { ResourceDescriptor } from 'diagnostic-data'
 import { applensDocs } from '../../../shared/utilities/applens-docs-constant';
+import {DiagnosticApiService} from '../../../shared/services/diagnostic-api.service';
 const moment = momentNs;
 
 @Component({
@@ -35,46 +36,59 @@ export class MainComponent implements OnInit {
     }
   }
 
+  displayLoader: boolean = false;
+  loaderSize = SpinnerSize.large;
+  caseNumberNeededForUser: boolean = false;
+  caseNumber: string = '';
+  accessErrorMessage: string = '';
+  userAccessErrorMessage: string = '';
+  displayUserAccessError: boolean = false;
+
   defaultResourceTypes: ResourceTypeState[] = [
     {
-      resourceType: null,
+      resourceType: "Microsoft.Web/sites",
       resourceTypeLabel: 'App name',
       routeName: (name) => `sites/${name}`,
       displayName: 'App Service',
       enabled: true,
-      caseId: false
+      caseId: false,
+      durianEnabled: true
     },
     {
-      resourceType: null,
+      resourceType: "Microsoft.Web/hostingEnvironments",
       resourceTypeLabel: 'ASE name',
       routeName: (name) => `hostingEnvironments/${name}`,
       displayName: 'App Service Environment',
       enabled: true,
-      caseId: false
+      caseId: false,
+      durianEnabled: false
     },
     {
-      resourceType: null,
+      resourceType: "Microsoft.Web/containerApps",
       resourceTypeLabel: 'Container App Name',
       routeName: (name) => `containerapps/${name}`,
       displayName: 'Container App',
       enabled: true,
-      caseId: false
+      caseId: false,
+      durianEnabled: false
     },
     {
-      resourceType: null,
+      resourceType: "Microsoft.Compute/virtualMachines",
       resourceTypeLabel: 'Virtual machine Id',
       routeName: (name) => this.getFakeArmResource('Microsoft.Compute', 'virtualMachines', name),
       displayName: 'Virtual Machine',
       enabled: true,
-      caseId: false
+      caseId: false,
+      durianEnabled: false
     },
     {
-      resourceType: null,
+      resourceType: "ARMResourceId",
       resourceTypeLabel: 'ARM Resource ID',
       routeName: (name) => `${name}`,
       displayName: 'ARM Resource ID',
       enabled: true,
-      caseId: false
+      caseId: false,
+      durianEnabled: false
    }
   ];
   resourceTypes: ResourceTypeState[] = [];
@@ -102,7 +116,7 @@ export class MainComponent implements OnInit {
   table: RecentResourceDisplay[];
   applensDocs = applensDocs;
 
-  constructor(private _router: Router, private _http: HttpClient, private _detectorControlService: DetectorControlService, private _adalService: AdalService, private _userInfoService: UserSettingService) {
+  constructor(private _router: Router, private _http: HttpClient, private _detectorControlService: DetectorControlService, private _adalService: AdalService, private _userInfoService: UserSettingService, private _diagnosticApiService: DiagnosticApiService, private _activatedRoute: ActivatedRoute) {
     this.endTime = moment.utc();
     this.startTime = this.endTime.clone().add(-1, 'days');
     this.inIFrame = window.parent !== window;
@@ -110,9 +124,43 @@ export class MainComponent implements OnInit {
     if (this.inIFrame) {
       this.resourceTypes = this.resourceTypes.filter(resourceType => !resourceType.caseId);
     }
+
+    if (this._activatedRoute.snapshot.queryParams['caseNumber']) {
+      this.caseNumber = this._activatedRoute.snapshot.queryParams['caseNumber'];
+    }
+    if (this._activatedRoute.snapshot.queryParams['resourceName']) {
+      this.resourceName = this._activatedRoute.snapshot.queryParams['resourceName'];
+    }
+    if (this._activatedRoute.snapshot.queryParams['errorMessage']) {
+      this.accessErrorMessage = this._activatedRoute.snapshot.queryParams['errorMessage'];
+    }
+    if (this._activatedRoute.snapshot.queryParams['resourceType']) {
+      this.selectedResourceType = this.resourceTypes.find(resourceType => resourceType.resourceType === this._activatedRoute.snapshot.queryParams['resourceType']);
+    }
+  }
+
+  fetchUserDetails() {
+    this.displayLoader = true;
+    this.userAccessErrorMessage = '';
+    this.displayUserAccessError = false;
+    this._diagnosticApiService.checkUserAccess().subscribe(res => {
+      if (res && res.Status == UserAccessStatus.CaseNumberNeeded) {
+        this.caseNumberNeededForUser = true;
+        this.displayLoader = false;
+      }
+      else {
+        this.displayLoader = false;
+      }
+    },(err) => {
+        let errobj = JSON.parse(err.error);
+        this.displayUserAccessError = true;
+        this.userAccessErrorMessage = errobj.DetailText;
+        this.displayLoader = false;
+    });
   }
 
   ngOnInit() {
+    this.fetchUserDetails();
     this.resourceTypes = [...this.defaultResourceTypes];
     this.selectedResourceType = this.resourceTypes[0];
 
@@ -140,12 +188,13 @@ export class MainComponent implements OnInit {
         const searchSuffix = type.searchSuffix;
         if (searchSuffix && searchSuffix.length > 0 && !this.resourceTypes.find(resource => resource.displayName && searchSuffix && resource.displayName.toLowerCase() === searchSuffix.toLowerCase())) {
           this.resourceTypes.push({
-            resourceType: null,
+            resourceType: type.resourceType,
             resourceTypeLabel: 'ARM resource ID',
             routeName: (name) => `${name}`,
             displayName: `${searchSuffix}`,
             enabled: true,
-            caseId: false
+            caseId: false,
+            durianEnabled: type.durianEnabled? type.durianEnabled: false
           });
         }
       });
@@ -163,7 +212,8 @@ export class MainComponent implements OnInit {
           routeName: (name) => `${name}`,
           displayName: `${resource.displayName}`,
           enabled: true,
-          caseId: false
+          caseId: false,
+          durianEnabled: resource.durianEnabled? resource.durianEnabled: false
         });
 
         if (this.resourceTypeList.findIndex(item => item.name.toLowerCase() === resource.displayName.toLowerCase()) < 0)
@@ -249,6 +299,8 @@ export class MainComponent implements OnInit {
   }
 
   onSubmit() {
+    this.caseNumber = this.caseNumber.trim();
+    this._diagnosticApiService.setCustomerCaseNumber(this.caseNumber);
     this.resourceName = this.resourceName.trim();
 
     //If it is ARM resource id
@@ -274,9 +326,14 @@ export class MainComponent implements OnInit {
     }
 
     let navigationExtras: NavigationExtras = {
-      queryParams: timeParams
+      queryParams: {
+        ...timeParams,
+        caseNumber: this.caseNumber,
+        resourceName: this.resourceName,
+        resourceType: this.selectedResourceType.resourceType
+      },
     }
-
+    
     if (this.errorMessage === '') {
       this._router.navigate([route], navigationExtras);
     }
@@ -362,6 +419,19 @@ interface RecentResourceDisplay extends RecentResource {
   name: string;
   imgSrc: string;
   type: string;
+}
+
+enum UserAccessStatus
+{
+  Unauthorized,
+  Forbidden,  
+  NotFound, 
+  BadRequest,  
+  ResourceNotRelatedToCase,  
+  RequestFailure,
+  SGMembershipNeeded,
+  CaseNumberNeeded,
+  HasAccess
 }
 
 
