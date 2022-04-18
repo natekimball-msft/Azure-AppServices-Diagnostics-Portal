@@ -171,6 +171,13 @@ export class OnboardingFlowComponent implements OnInit {
   gistVersion: string;
   latestGistVersion: string = "";
   gistName: string;
+  pastGistEvent: any;
+  pastGistVersionEvent: any;
+  gistVersionChanged: boolean = false;
+  applyGistButtonDisabled: boolean = true;
+  refreshGistButtonDisabled: boolean = true;
+  loadingGistVersions: boolean = false;
+  refreshGistListButtonIcon: any = { iconName: 'Refresh' };
   gistsDropdownOptions: IDropdownOption[] = [];
   gistVersionOptions: IDropdownOption[] = [];
   gistUpdateTitle
@@ -307,6 +314,7 @@ export class OnboardingFlowComponent implements OnInit {
   private emailRecipients: string = '';
   private _monacoEditor: monaco.editor.ICodeEditor = null;
   private _oldCodeDecorations: string[] = [];
+  selectedKey: string = '';
 
 
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService,
@@ -435,6 +443,7 @@ export class OnboardingFlowComponent implements OnInit {
     this.diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(devopsConfig => {
       this.detectorGraduation = devopsConfig.graduationEnabled;
       this.DevopsConfig = new DevopsConfig(devopsConfig);
+
       this.commitHistoryLink = (devopsConfig.folderPath === "/") ? `https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=${devopsConfig.folderPath}${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&_a=history` : `https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=${devopsConfig.folderPath}/${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&_a=history`;
 
       this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? { display: "none" } : {};
@@ -641,7 +650,11 @@ export class OnboardingFlowComponent implements OnInit {
 
   gistVersionChange() {
     var newGist;
-
+    this.updateGistVersionOptions(this.pastGistEvent);
+    // updating the gistVersionOptions to tag with [in use] the new gist version being used and untag the previous one
+    this.gistVersionOptions.forEach(element => {
+      element.key === this.selectedKey ? element.text = `${element.text} [in use]` : element.key === this.configuration['dependencies'][this.gistName] ? element.text = element.text.split(' [', 1)[0] : element.text = element.text;
+    });
     Object.keys(this.temporarySelection).forEach(id => {
       if (this.temporarySelection[id]['version'] !== this.configuration['dependencies'][id]) {
         this.configuration['dependencies'][id] = this.temporarySelection[id]['version'];
@@ -658,20 +671,26 @@ export class OnboardingFlowComponent implements OnInit {
   }
 
   updateGistVersionOptions(event: string) {
+    this.loadingGistVersions = true;
+    this.pastGistEvent = event;
     this.gistName = event["option"].text;
+    this.selectedKey = this.gistVersionChanged === false ? this.configuration['dependencies'][this.gistName] : this.pastGistVersionEvent["option"]["key"];
     this.gistVersionOptions = [];
     this.latestGistVersion = "";
-    var tempList = [];
+    var tempList: IDropdownProps['options'] = [];
     if (!this.detectorGraduation) {
       this.githubService.getChangelist(this.gistName)
         .subscribe((version: Commit[]) => {
-          version.forEach(v => tempList.push({
+          version.forEach((v, index) => tempList.push({
             key: String(`${v["sha"]}`),
-            text: String(`${v["author"]}: ${v["dateTime"]}`),
-            title: String(`${this.gistName}`)
+            text: String(`${v["author"]}: ${v["dateTime"]} ${v["sha"] === this.configuration['dependencies'][this.gistName] ? "[in use]" : ""}`),
+            title: String(`${this.gistName}`),
+            selected: index === 1
           }));
           this.gistVersionOptions = tempList.reverse();
-          if (this.gistVersionOptions.length > 10) { this.gistVersionOptions = this.gistVersionOptions.slice(0, 10); }
+          this.refreshGistButtonDisabled = false;
+          this.displayGistSourceCode(this.gistName, this.selectedKey);
+          this.loadingGistVersions = false;
         });
     }
     else {
@@ -687,15 +706,24 @@ export class OnboardingFlowComponent implements OnInit {
   gistDropdownWidth: IDropdownProps['styles'] = {
     root: {
       width: '200px'
-    }
+    },
+    dropdownItemsWrapper: {
+      maxHeight: '40vh'
+    },
   };
 
   gistVersionOnChange(event: string) {
+    this.gistVersionChanged = true;
+    this.applyGistButtonDisabled = this.selectedKey !== event["option"]["key"] ? false : true;
+    this.pastGistVersionEvent = event;
     this.temporarySelection[event["option"]["title"]]['version'] = event["option"]["key"];
+    this.displayGistSourceCode(event["option"]["title"], this.temporarySelection[event["option"]["title"]]['version']);
+  }
 
-    this.githubService.getCommitContent(event["option"]["title"], this.temporarySelection[event["option"]["title"]]['version']).subscribe(x => {
-      this.temporarySelection[event["option"]["title"]]['code'] = x;
-      this.showGistCode = true
+  displayGistSourceCode(gistName: string, gistVersion: string) {
+    this.githubService.getCommitContent(gistName, gistVersion).subscribe(x => {
+      this.temporarySelection[gistName]['code'] = x;
+      this.showGistCode = true;
       this.displayGistCode = x;
     });
   }
