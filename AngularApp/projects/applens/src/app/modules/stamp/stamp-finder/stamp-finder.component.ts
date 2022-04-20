@@ -44,8 +44,6 @@ export class StampFinderComponent implements OnInit {
   }
 
   navigateToStamp(matchingStamp: Observer.ObserverStampResponse) {
-    let stampSub = matchingStamp.details.prod_environment.subscription_id;
-    if (!stampSub) stampSub = "stampSubscription";
     let resourceArray: string[] = [
       'stamps', matchingStamp.name];
 
