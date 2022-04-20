@@ -173,7 +173,7 @@
     </fab-dialog-content>
   </fab-dialog>
 
-  <fab-dialog *ngIf="!detectorGraduation && gists.length > 0" [hidden]="gistDialogHidden"
+  <fab-dialog *ngIf="gists.length > 0" [hidden]="gistDialogHidden"
     (onDismiss)="dismissGistDialog()" [minWidth]="'80%'">
     <fab-dialog-content title="Gist Version">
       <div>
@@ -181,14 +181,29 @@
             <fab-dropdown label="Gist name" placeholder="Field value" [options]="gistsDropdownOptions"
               (onChange)="updateGistVersionOptions($event)" [styles]="gistDropdownWidth"></fab-dropdown>
         </div>
-        <div style="display: flex;">
+        <div style="display: flex; justify-content: space-between; align-items: end;">
+          <div style="display: flex;">
             <fab-dropdown [disabled]="!gistName" label="Gist version" (onChange)="gistVersionOnChange($event)"
-              placeholder="Field value" [options]="gistVersionOptions" [styles]="gistDropdownWidth">
-            </fab-dropdown>
-            <div style="padding-top: 27px; padding-left: 20px;">
-            <fab-primary-button text="Update" (onClick)="gistVersionChange()" contentClass="mr-3" >
-            </fab-primary-button>
+              placeholder="Field value" [options]="gistVersionOptions" [styles]="gistDropdownWidth" notifyOnReselect="true" [defaultSelectedKey]="selectedKey">
+            </fab-dropdown>             
+            <div *ngIf="!loadingGistVersions else loading">
+              <span style="padding-left:25px"></span>
             </div>
+            <ng-template #loading>
+              <div class="home-spinner" style="padding-top: 32px; padding-left: 5px">
+                <fab-spinner [ariaLabel]="'Loading Gist versions'"></fab-spinner>
+              </div>
+            </ng-template>    
+            <div style="padding-top: 27px; padding-left: 20px;">
+            <fab-primary-button [disabled]="applyGistButtonDisabled" text="Apply Gist version" (onClick)="gistVersionChange()" contentClass="mr-3" >
+            </fab-primary-button>
+           </div>
+          </div>
+          <div>
+            <fab-action-button contentStyle="padding-top: 27px;" type="button" [disabled]="refreshGistButtonDisabled" [iconProps]="refreshGistListButtonIcon" (click)="updateGistVersionOptions(pastGistEvent)">
+              Refresh gist version list
+              </fab-action-button>
+          </div>
         </div>
       </div>
       <div class="onboarding-container">
@@ -197,19 +212,7 @@
       </div>
     </fab-dialog-content>
   </fab-dialog>
-
-  <fab-dialog *ngIf="detectorGraduation && gists.length > 0" [hidden]="gistDialogHidden" (onDismiss)="dismissGistDialog()" [minWidth]="'80%'">
-    <fab-dialog-content title="Latest Gist Version" >
-      <fab-dropdown label="Gist name" placeholder="Field value"
-        [options]="gistsDropdownOptions" (onChange)="updateGistVersionOptions($event)"></fab-dropdown>
-      <div class="onboarding-container">
-        <ngx-monaco-editor [options]="editorOptions" [ngModel]="latestGistVersion" style="height:600px">
-            </ngx-monaco-editor>
-      </div>
-    </fab-dialog-content>
-  </fab-dialog>
-
-
+  
   <fab-panel [isOpen]="publishSuccess || publishFailed || saveSuccess || saveFailed" [isLightDismiss]="true" [type]="PanelType.custom"
     [customWidth]="'400px'" [isHiddenOnDismiss]="true" [hasCloseButton]="false" [closeButtonAriaLabel]="'close'"
     [styles]="submittedPanelStyles" [isBlocking]="false" (onDismissed)="dismissPublishSuccessHandler()"

@@ -111,9 +111,6 @@ import {
     FabTooltipModule,
     FabSpinButtonModule,
     FabTextFieldModule,
-    FabPeoplePickerModule,
-    FabTagPickerModule,
-    FabProgressIndicatorModule,
     FabContextualMenuModule,
     FabChoiceGroupModule
 } from '@angular-react/fabric';

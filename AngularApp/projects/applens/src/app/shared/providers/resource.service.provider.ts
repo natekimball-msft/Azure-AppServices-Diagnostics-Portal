@@ -4,6 +4,7 @@ import { ContainerAppService } from "../services/containerapp.service";
 import { AseService } from "../services/ase.service";
 import { ResourceService } from "../services/resource.service";
 import { ObserverService } from "../services/observer.service";
+import { StaticWebAppService } from "../services/staticwebapp.service";
 
 export let ResourceServiceFactory = (startupService: StartupService, observerService: ObserverService) => {
     let serviceInputs = startupService.getInputs();
@@ -22,6 +23,9 @@ export let ResourceServiceFactory = (startupService: StartupService, observerSer
         case 'Microsoft.Web/containerApps':
         case 'Microsoft.App/containerApps':
             service = new ContainerAppService(serviceInputs, observerService);
+            break;
+        case 'Microsoft.Web/staticSites':
+            service = new StaticWebAppService(serviceInputs, observerService);
             break;
         default:
             service = new ResourceService(serviceInputs);

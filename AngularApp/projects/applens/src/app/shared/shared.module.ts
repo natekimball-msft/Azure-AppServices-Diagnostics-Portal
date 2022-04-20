@@ -21,10 +21,11 @@ import { CaseCleansingApiService } from './services/casecleansing-api.service';
 import { ApplensBannerComponent } from './applens-banner/applens-preview-banner.component';
 import { ApplensHeaderComponent } from './components/applens-header/applens-header.component';
 import { ApplensDiagnosticService } from '../modules/dashboard/services/applens-diagnostic.service';
-import { FabButtonModule, FabCalloutModule, FabDialogModule, FabPanelModule, FabToggleModule, FabSearchBoxModule} from '@angular-react/fabric';
+import { FabButtonModule, FabCalloutModule, FabDialogModule, FabPanelModule, FabToggleModule, FabSearchBoxModule, FabChoiceGroupModule} from '@angular-react/fabric';
 import { L1SideNavComponent } from './components/l1-side-nav/l1-side-nav.component';
 import { UserSettingService } from '../modules/dashboard/services/user-setting.service';
 import { ApplensDocsComponent } from './components/applens-docs/applens-docs.component';
+import { StaticWebAppService } from './services/staticwebapp.service';
 
 @NgModule({
   imports: [
@@ -37,7 +38,8 @@ import { ApplensDocsComponent } from './components/applens-docs/applens-docs.com
     FabButtonModule,
     FabSearchBoxModule,
     FabCalloutModule,
-    FabToggleModule
+    FabToggleModule,
+    FabChoiceGroupModule
   ],
   declarations: [TreeViewComponent, LoginComponent, ApplensBannerComponent, L1SideNavComponent, ApplensHeaderComponent, ApplensDocsComponent],
   exports: [TreeViewComponent, ApplensBannerComponent, L1SideNavComponent, ApplensHeaderComponent, ApplensDocsComponent]
@@ -52,6 +54,7 @@ export class SharedModule {
         ResourceService,
         SiteService,
         ContainerAppService,
+        StaticWebAppService,
         AseService,
         ApplensGlobals,
         StartupService,

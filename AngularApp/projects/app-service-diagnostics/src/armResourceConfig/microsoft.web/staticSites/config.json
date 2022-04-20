@@ -1,22 +1,61 @@
 {
-	"homePageText": {
-		"title": "Static Web Apps Diagnostics",
-		"description": "Use Static Web Apps Diagnostics to investigate how your service is performing, diagnose issues, and discover how to improve its reliability. Select the problem category that best matches the information or tool that you're interested in:",
-		"searchBarPlaceHolder": "Search Static Web Apps Diagnostics"
-	},
-	"matchRegEx": "/Microsoft.Web/staticSites/",
-	"searchSuffix": "Static Web Apps",
-	"azureServiceName": "Static Web Apps",
-	"armApiConfig": {
-		"armApiVersion": "2019-01-14"
-	},
-	"isSearchEnabled": true,
-	"keystoneDetectorId": "",
-	"liveChatConfig": {
-		"isApplicableForLiveChat": false,
-		"supportTopicIds": []
-	},
-	"categories": [],
-	"pesId": "17265",
-	"sapProductId": "94a7406a-b31a-86f8-49f9-377d30047b25"
+  "homePageText": {
+    "title": "Static Web Apps Diagnostics",
+    "description": "Use Static Web Apps Diagnostics to investigate how your service is performing, diagnose issues, and discover how to improve its reliability. Select the problem category that best matches the information or tool that you're interested in:",
+    "searchBarPlaceHolder": "Search Static Web Apps Diagnostics"
+  },
+  "matchRegEx": "/Microsoft.Web/staticSites/",
+  "searchSuffix": "Static Web Apps",
+  "azureServiceName": "Static Web Apps",
+  "armApiConfig": {
+    "armApiVersion": "2021-03-01"
+  },
+  "isSearchEnabled": true,
+  "keystoneDetectorId": "",
+  "liveChatConfig": {
+    "isApplicableForLiveChat": false,
+    "supportTopicIds": []
+  },
+  "categories": [
+    {
+      "id": "availabilityandperformancestaticapp",
+      "name": "Availability and Performance",
+      "description": "Check your static web app's health and discover performance issues",
+      "keywords": [
+        "Service Down",
+        "Platform Health"
+      ],
+      "color": "rgb(208, 175, 239)",
+      "createFlowForCategory": true,
+      "chatEnabled": false,
+      "overviewDetectorId": ""
+    },
+    {
+      "id": "configurationandmanagementstaticapp",
+      "name": "Configuration and Management",
+      "description": "Find out your static web app features are misconfigured",
+      "keywords": [
+        "Auth"
+      ],
+      "color": "rgb(208, 175, 239)",
+      "createFlowForCategory": true,
+      "chatEnabled": false,
+      "overviewDetectorId": ""
+    },
+    {
+      "id": "contentdeploymentstaticapp",
+      "name": "Content Deployment",
+      "description": "Discover content deployment issues",
+      "keywords": [
+        "Deployment"
+      ],
+      "color": "rgb(208, 175, 239)",
+      "createFlowForCategory": true,
+      "chatEnabled": false,
+      "overviewDetectorId": ""
+    }
+  ],
+  "pesId": "17265",
+  "disableGenie": true,
+  "sapProductId": "94a7406a-b31a-86f8-49f9-377d30047b25"
 }
