@@ -9,7 +9,7 @@ import {
   forkJoin
   , Observable, of
 } from 'rxjs';
-import { flatMap, map, tap, switchMap } from 'rxjs/operators'
+import { flatMap, map } from 'rxjs/operators'
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Package } from '../../../shared/models/package';
 import { GithubApiService } from '../../../shared/services/github-api.service';
@@ -694,11 +694,26 @@ export class OnboardingFlowComponent implements OnInit {
         });
     }
     else {
-      this.diagnosticApiService.getDetectorCode(`${this.gistName}/${this.gistName}.csx`, this.defaultBranch, this.resourceId).subscribe(gistCode => {
-        this.latestGistVersion = gistCode;
-      });
+      this.diagnosticApiService.getDevopsChangeList(`${this.DevopsConfig.folderPath}/${this.gistName}/${this.gistName}.csx`, this.resourceId).subscribe((data:any[]) => {
+        data.forEach(version => {
+          let commitDate = version["author"]["date"];
+          let commitDateFormatted = moment(commitDate).format('MM/DD/YYYY');  
+          let authorAlias = version["author"]['email'].split("@")[0];
+          let displayText = String(`${authorAlias}: ${commitDateFormatted} ${version["commitId"] === this.configuration['dependencies'][this.gistName] ? "[in use]" : ""}`);
+          tempList.push({
+            key: String(`${version["commitId"]}`),
+            text: displayText,
+            title: String(`${this.gistName}`)
+          })
+        });
+      }); 
+      this.loadingGistVersions = false;
+      this.refreshGistButtonDisabled = false;
+      this.gistVersionOptions = tempList.reverse();
+      if (this.gistVersionOptions.length > 10) { this.gistVersionOptions = this.gistVersionOptions.slice(0, 10);       
     }
   }
+}
 
   showGistCode: boolean = false;
   displayGistCode = "";
@@ -710,6 +725,7 @@ export class OnboardingFlowComponent implements OnInit {
     dropdownItemsWrapper: {
       maxHeight: '40vh'
     },
+    
   };
 
   gistVersionOnChange(event: string) {
@@ -717,7 +733,16 @@ export class OnboardingFlowComponent implements OnInit {
     this.applyGistButtonDisabled = this.selectedKey !== event["option"]["key"] ? false : true;
     this.pastGistVersionEvent = event;
     this.temporarySelection[event["option"]["title"]]['version'] = event["option"]["key"];
-    this.displayGistSourceCode(event["option"]["title"], this.temporarySelection[event["option"]["title"]]['version']);
+    if (this.detectorGraduation) {
+      this.diagnosticApiService.getDevopsCommitContent(`${this.DevopsConfig.folderPath}/${event["option"]["title"]}/${event["option"]["title"]}.csx`, this.temporarySelection[event["option"]["title"]]['version'], this.resourceId).subscribe( x => {
+        this.temporarySelection[event["option"]["title"]]['code'] = x;
+        this.showGistCode = true;
+        this.displayGistCode = x;
+      })
+    } else {
+      this.displayGistSourceCode(event["option"]["title"], this.temporarySelection[event["option"]["title"]]['version']);
+    }
+    
   }
 
   displayGistSourceCode(gistName: string, gistVersion: string) {
@@ -727,7 +752,7 @@ export class OnboardingFlowComponent implements OnInit {
       this.displayGistCode = x;
     });
   }
-
+    
   disableRunButton() {
     this.runButtonDisabled = true;
     this.runButtonStyle = {
@@ -1612,28 +1637,24 @@ export class OnboardingFlowComponent implements OnInit {
     }
 
     let newPackage = this.UpdateConfiguration(queryResponse);
+    let update = of(null);
 
-    if (!this.detectorGraduation) {
-      let update = of(null);
+    if (this.detectorGraduation && newPackage.length > 0 ) {
+    // Get the commit id of each reference and the gist content.
+      update = forkJoin(newPackage.map(r => this.diagnosticApiService.getDevopsChangeList(r, this.resourceId).pipe(
+        map(c => this.configuration['dependencies'][r] = c[c.length - 1].commitId),
+        flatMap(v => this.diagnosticApiService.getDevopsCommitContent(`${this.DevopsConfig.folderPath}/${r}/${r}.csx`, v, this.resourceId).pipe(map(s => this.reference[r] = s ))))))
+    
+    } else {
       if (newPackage.length > 0) {
         update = forkJoin(newPackage.map(r => this.githubService.getChangelist(r).pipe(
           map(c => this.configuration['dependencies'][r] = c[c.length - 1].sha),
           flatMap(v => this.githubService.getCommitContent(r, v).pipe(map(s => this.reference[r] = s))))))
       }
-
-      update.subscribe(_ => {
-        this.publishingPackage = {
-          id: queryResponse.invocationOutput.metadata.id,
-          codeString: this.codeCompletionEnabled ? code.replace(codePrefix, "") : code,
-          committedByAlias: this.userName,
-          dllBytes: this.compilationPackage.assemblyBytes,
-          pdbBytes: this.compilationPackage.pdbBytes,
-          packageConfig: JSON.stringify(this.configuration),
-          metadata: JSON.stringify({ "utterances": this.allUtterances })
-        };
-      });
     }
-    else {
+
+    // update changes here 
+    update.subscribe(_ => {
       this.publishingPackage = {
         id: queryResponse.invocationOutput.metadata.id,
         codeString: this.codeCompletionEnabled ? code.replace(codePrefix, "") : code,
@@ -1643,7 +1664,7 @@ export class OnboardingFlowComponent implements OnInit {
         packageConfig: JSON.stringify(this.configuration),
         metadata: JSON.stringify({ "utterances": this.allUtterances })
       };
-    }
+    });
   }
 
   private showAlertBox(alertClass: string, message: string) {
@@ -1746,12 +1767,17 @@ export class OnboardingFlowComponent implements OnInit {
           }));
       }
       else {
-        configuration = this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/package.json`, this.Branch, this.resourceId).pipe(map(config => {
+        configuration = this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/package.json`, this.Branch, this.resourceId).pipe(
+          map(config => {
           let c: object = JSON.parse(config)
           c['dependencies'] = c['dependencies'] || {};
-
           this.configuration = c;
           return this.configuration['dependencies'];
+        }),
+         flatMap(dep => {
+          let keys = Object.keys(dep);
+          if (keys.length === 0) return of([]);
+          return forkJoin(Object.keys(dep).map(key => this.getGistCommitContent(key, dep[key])));
         }));
       }
     }
@@ -1760,7 +1786,7 @@ export class OnboardingFlowComponent implements OnInit {
         this.configuration['dependencies'] = {};
       }
     }
-
+    // For each gist listed in package.json, the commit content is set in the references map.
     forkJoin(detectorFile, configuration, this.diagnosticApiService.getGists()).subscribe(res => {
       this.codeLoaded = true;
       // if (!this.code)
@@ -1795,6 +1821,10 @@ export class OnboardingFlowComponent implements OnInit {
 
     return false;
   }
+
+   getGistCommitContent = (gistId, gistCommitVersion) => {
+     return this.diagnosticApiService.getDevopsCommitContent(`${this.DevopsConfig.folderPath}/${gistId}/${gistId}.csx`, gistCommitVersion, this.resourceId);   
+  };
 
   ngOnDestroy() {
     clearInterval(this.redirectTimer);
