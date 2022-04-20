@@ -577,6 +577,16 @@
             "azureCommImpactedServicesList": "",
             "searchSuffix": "VIRTUAL MACHINE SCALE SETS",
             "displayName": "Virtual Machine Scale Sets"
+        },
+        {
+            "service": "StampService",
+            "resourceType": "stamps",
+            "templateFileName": "HostingEnvironment",
+            "imgSrc": "assets/img/Cloud-Service-Logo.svg",
+            "versionPrefix": "v2/",
+            "azureCommImpactedServicesList": "appservice",
+            "emergingIssuesICMLookupEnabled": false,
+            "displayName": "Internal Stamp"
         }
     ]
 }

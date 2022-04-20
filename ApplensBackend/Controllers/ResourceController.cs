@@ -140,5 +140,31 @@ namespace AppLensV3
 
             return Ok(response);
         }
+
+        [HttpGet]
+        [Route("api/stamps/{stampName}")]
+        public async Task<IActionResult> GetStampBody(string stampName)
+        {
+            return await GetStampBodyInternal(stampName);
+        }
+
+        private async Task<IActionResult> GetStampBodyInternal(string stampName)
+        {
+            var stampDetailsTask = _observerService.GetStampBody(stampName);
+            var stampDetailsResponse = await stampDetailsTask;
+
+            var response = new
+            {
+                Name = stampName,
+                Details = stampDetailsResponse.Content
+            };
+
+            if (stampDetailsResponse.StatusCode == HttpStatusCode.NotFound)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
+        }
     }
 }

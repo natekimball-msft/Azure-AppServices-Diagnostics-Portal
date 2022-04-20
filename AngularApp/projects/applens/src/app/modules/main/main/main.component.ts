@@ -82,7 +82,15 @@ export class MainComponent implements OnInit {
       displayName: 'ARM Resource ID',
       enabled: true,
       caseId: false
-   }
+   },
+   {
+    resourceType: null,
+    resourceTypeLabel: 'Stamp name',
+    routeName: (name) => `stampfinder/${name}`,
+    displayName: 'Internal Stamp',
+    enabled: true,
+    caseId: false
+  }
   ];
   resourceTypes: ResourceTypeState[] = [];
 
@@ -138,7 +146,8 @@ export class MainComponent implements OnInit {
         {name: "Logic App", imgSrc: "assets/img/Azure-LogicAppsPreview-Logo.svg"},
         {name: "App Service Environment",  imgSrc: "assets/img/ASE-Logo.jpg"},
         {name: "Virtual Machine", imgSrc: "assets/img/Icon-compute-21-Virtual-Machine.svg"},
-        {name:  "Container App", imgSrc: "assets/img/Azure-ContainerApp-Logo.png"}];
+        {name:  "Container App", imgSrc: "assets/img/Azure-ContainerApp-Logo.png"},
+        {name:  "Internal Stamp", imgSrc: "assets/img/Cloud-Service-Logo.svg"}];
 
     // TODO: Use this to restrict access to routes that don't match a supported resource type
     this._http.get<ResourceServiceInputsJsonResponse>('assets/enabledResourceTypes.json').subscribe(jsonResponse => {
@@ -309,6 +318,9 @@ export class MainComponent implements OnInit {
 
     let rows: RecentResourceDisplay[];
     rows = recentResources.map(recentResource => {
+      if (recentResource.resourceUri.toLowerCase().includes("/stamps/")) {
+        return this.handleStampForRecentResource(recentResource);
+      }
       var descriptor = ResourceDescriptor.parseResourceUri(recentResource.resourceUri);
       const name = descriptor.resource;
       const type = `${descriptor.provider}/${descriptor.type}`.toLowerCase();
@@ -326,6 +338,27 @@ export class MainComponent implements OnInit {
       return display;
     });
     return rows;
+  }
+
+  private handleStampForRecentResource(recentResource: RecentResource) {
+    let stampName = null;
+    const resourceType = this.enabledResourceTypes.find(t => t.resourceType.toLocaleLowerCase() === "stamps");
+    let resourceUriRegExp = new RegExp('/infrastructure/stamps/([^/]+)', "i");
+    let resourceUri = recentResource.resourceUri;
+    if (!resourceUri.startsWith('/')) {
+      resourceUri = '/' + resourceUri;
+    }
+    var result = resourceUri.match(resourceUriRegExp);
+    if (result && result.length > 0) {
+      stampName = result[1];
+    }
+    return {
+      name: stampName,
+      imgSrc: resourceType ? resourceType.imgSrc : "",
+      type: resourceType ? resourceType.displayName : "",
+      kind: recentResource.kind,
+      resourceUri: recentResource.resourceUri.replace("infrastructure/stamps", "stamps")
+    }
   }
 
   //To do, Add a utility method to check kind and use in main.component and site.service

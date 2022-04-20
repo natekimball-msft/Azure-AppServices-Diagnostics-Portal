@@ -30,6 +30,23 @@ export class ValidResourceResolver implements Resolve<void>{
 
   resolve(route: ActivatedRouteSnapshot): Observable<any> {
     return this._http.get<any>('assets/enabledResourceTypes.json').pipe(map(response => {
+      let routePath = route.pathFromRoot
+                        .map(v => v.url.map(segment => segment.toString()).join('/'))
+                        .join('/');
+      if (routePath.toLowerCase().includes("/stamps/")) {
+        let enabledResourceTypes = <ResourceServiceInputs[]>response.enabledResourceTypes;
+        let matchingResourceInputs = enabledResourceTypes.find(t => t.resourceType.toLowerCase() === "stamps");
+        matchingResourceInputs.armResource = {
+          subscriptionId: "",
+          resourceGroup: "",
+          provider: "",
+          resourceTypeName: "stamps",
+          resourceName: route.params["stampName"]
+        }
+        this._startupService.setResource(matchingResourceInputs);
+        return matchingResourceInputs;
+      }
+
       let resource = <ArmResource>route.params;
       let type = `${resource.provider}/${resource.resourceTypeName}`
 
@@ -75,6 +92,10 @@ export const Routes = RouterModule.forRoot([
             loadChildren: './modules/staticwebapp/staticwebapp.module#StaticWebAppModule'
           },
           {
+            path: 'stampfinder/:stampName',
+            loadChildren: './modules/stamp/stamp.module#StampModule'
+          },
+          {
             path: 'icm/:incidentId',
             loadChildren: './modules/incidentassist/incidentassist.module#IncidentAssistModule'
           },
@@ -92,6 +113,11 @@ export const Routes = RouterModule.forRoot([
           },
           {
             path: 'subscriptions/:subscriptionId/resourceGroups/:resourceGroup/providers/:provider/:resourceTypeName/:resourceName',
+            loadChildren: './modules/dashboard/dashboard.module#DashboardModule',
+            resolve: { validResources: ValidResourceResolver }
+          },
+          {
+            path: 'stamps/:stampName',
             loadChildren: './modules/dashboard/dashboard.module#DashboardModule',
             resolve: { validResources: ValidResourceResolver }
           },

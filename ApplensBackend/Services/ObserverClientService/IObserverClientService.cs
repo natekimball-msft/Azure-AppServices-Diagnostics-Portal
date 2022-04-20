@@ -21,5 +21,7 @@ namespace AppLensV3
         Task<ObserverResponse> GetHostingEnvironmentPostBody(string name);
 
         Task<ObserverResponse> GetSitePostBody(string stamp, string site);
+
+        Task<ObserverResponse> GetStampBody(string stampName);
     }
 }

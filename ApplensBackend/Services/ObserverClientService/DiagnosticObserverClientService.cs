@@ -99,6 +99,24 @@ namespace AppLensV3
             };
         }
 
+        public Task<ObserverResponse> GetStampBody(string stampName)
+        {
+            return GetStampInternal(stampName);
+        }
+
+        private async Task<ObserverResponse> GetStampInternal(string stampName)
+        {
+            var path = $"stamps/{stampName}";
+            var stampDetailsResponse = await ExecuteDiagCall(path);
+            var contentJson = await stampDetailsResponse.Content.ReadAsStringAsync();
+            var content = JsonConvert.DeserializeObject(contentJson);
+            return new ObserverResponse
+            {
+                StatusCode = stampDetailsResponse.StatusCode,
+                Content = content
+            };
+        }
+
 
         private async Task<HttpResponseMessage> ExecuteDiagCall(string path)
         {
