@@ -39,7 +39,7 @@ namespace AppLensV3.Services
             string kustoQuery = _supportTopicsQuery
                 .Replace("{PRODUCTID}", productId);
 
-            DataTable dt = await _kustoQueryService.ExecuteQueryAsync("azsupportfollower.westus2", "AzureSupportability", kustoQuery);
+            DataTable dt = await _kustoQueryService.ExecuteQueryAsync("azsupportfollower.westus2", "AzureSupportability", kustoQuery, "GetSupportTopicList", DateTime.UtcNow.AddDays(-3), DateTime.UtcNow);
 
             List<SupportTopic> supportTopicsList = new List<SupportTopic>();
 

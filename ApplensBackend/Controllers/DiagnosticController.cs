@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using AppLensV3.Helpers;
 using AppLensV3.Services;
 using AppLensV3.Services.AppSvcUxDiagnosticDataService;
-using Kusto.Cloud.Platform.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
