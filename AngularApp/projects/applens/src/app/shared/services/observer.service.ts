@@ -60,6 +60,10 @@ export class ObserverService {
     return this._diagnosticApiService.get<Observer.ObserverSiteResponse>(`api/hostingEnvironments/${name}/postBody`);
   }
 
+  public getStamp(stampName: string): Observable<Observer.ObserverStampResponse> {
+    return this._diagnosticApiService.get<Observer.ObserverStampResponse>(`api/stamps/${stampName}`);
+  }
+
   private getSiteInfoWithSlot(site: Observer.ObserverSiteInfo): Observer.ObserverSiteInfo {
     const siteName = site.SiteName;
     let slot = '';

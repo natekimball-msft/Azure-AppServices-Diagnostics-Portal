@@ -5,6 +5,7 @@ import { AseService } from "../services/ase.service";
 import { ResourceService } from "../services/resource.service";
 import { ObserverService } from "../services/observer.service";
 import { StaticWebAppService } from "../services/staticwebapp.service";
+import {StampService} from "../services/stamp.service";
 
 export let ResourceServiceFactory = (startupService: StartupService, observerService: ObserverService) => {
     let serviceInputs = startupService.getInputs();
@@ -26,6 +27,9 @@ export let ResourceServiceFactory = (startupService: StartupService, observerSer
             break;
         case 'Microsoft.Web/staticSites':
             service = new StaticWebAppService(serviceInputs, observerService);
+            break;
+        case 'stamps':
+            service = new StampService(serviceInputs, observerService);
             break;
         default:
             service = new ResourceService(serviceInputs);

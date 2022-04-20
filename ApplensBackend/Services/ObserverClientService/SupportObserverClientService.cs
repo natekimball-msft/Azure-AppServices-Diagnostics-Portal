@@ -269,6 +269,26 @@ namespace AppLensV3
             return res;
         }
 
+        public async Task<ObserverResponse> GetStampBody(string stampName)
+        {
+            return await GetStampInternal(SupportObserverApiEndpoint + "stamps/" + stampName);
+        }
+
+        private async Task<ObserverResponse> GetStampInternal(string endpoint)
+        {
+            var request = new HttpRequestMessage()
+            {
+                RequestUri = new Uri(endpoint),
+                Method = HttpMethod.Get
+            };
+
+            request.Headers.Add("Authorization", await GetSupportObserverAccessToken());
+            var response = await _httpClient.SendAsync(request);
+
+            ObserverResponse res = await CreateObserverResponse(response, "GetStampBody");
+            return res;
+        }
+
         private async Task<ObserverResponse> CreateObserverResponse(HttpResponseMessage response, string apiName = "")
         {
             var observerResponse = new ObserverResponse();
