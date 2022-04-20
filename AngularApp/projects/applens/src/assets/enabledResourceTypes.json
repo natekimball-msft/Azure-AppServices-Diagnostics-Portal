@@ -582,12 +582,9 @@
             "service": "StampService",
             "resourceType": "stamps",
             "templateFileName": "HostingEnvironment",
-            "imgSrc": "assets/img/Azure-Ase-Logo.png",
+            "imgSrc": "assets/img/Cloud-Service-Logo.svg",
             "versionPrefix": "v2/",
             "azureCommImpactedServicesList": "appservice",
-            "pesId": "16536",
-            "staticSelfHelpContent": "microsoft.ase",
-            "searchSuffix": "AZURE APP SERVICE ENVIRONMENT",
             "emergingIssuesICMLookupEnabled": false,
             "displayName": "Internal Stamp"
         }
