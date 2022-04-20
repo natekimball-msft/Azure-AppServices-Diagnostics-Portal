@@ -54,7 +54,9 @@ export class DashboardContainerComponent implements OnInit {
 
         this.keys = Object.keys(this.resource);
         this.replaceResourceEmptyValue();
-        this.updateVentAndLinuxInfo();
+        if (!(serviceInputs.resourceType.toString().toLowerCase() == "stamps")) {
+          this.updateVentAndLinuxInfo();
+        }
       }
     });
   }

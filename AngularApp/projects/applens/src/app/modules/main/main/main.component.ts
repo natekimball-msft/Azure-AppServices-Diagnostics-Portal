@@ -82,7 +82,15 @@ export class MainComponent implements OnInit {
       displayName: 'ARM Resource ID',
       enabled: true,
       caseId: false
-   }
+   },
+   {
+    resourceType: null,
+    resourceTypeLabel: 'Stamp name',
+    routeName: (name) => `stampfinder/${name}`,
+    displayName: 'Internal Stamp',
+    enabled: true,
+    caseId: false
+  }
   ];
   resourceTypes: ResourceTypeState[] = [];
 
@@ -138,7 +146,8 @@ export class MainComponent implements OnInit {
         {name: "Logic App", imgSrc: "assets/img/Azure-LogicAppsPreview-Logo.svg"},
         {name: "App Service Environment",  imgSrc: "assets/img/ASE-Logo.jpg"},
         {name: "Virtual Machine", imgSrc: "assets/img/Icon-compute-21-Virtual-Machine.svg"},
-        {name:  "Container App", imgSrc: "assets/img/Azure-ContainerApp-Logo.png"}];
+        {name:  "Container App", imgSrc: "assets/img/Azure-ContainerApp-Logo.png"},
+        {name:  "Internal Stamp", imgSrc: "assets/img/Azure-WebApps-Logo.png"}];
 
     // TODO: Use this to restrict access to routes that don't match a supported resource type
     this._http.get<ResourceServiceInputsJsonResponse>('assets/enabledResourceTypes.json').subscribe(jsonResponse => {

@@ -141,4 +141,21 @@ namespace Observer {
         GeomasterName: string;
         GeomasterServiceAddress: string;
     }
+
+    export interface ObserverStampInfo {
+        Name: string;
+        SubscriptionId: string;
+        StampType: string;
+        DNS: string;
+        VIP: string;
+        DeploymentId: string;
+        Cluster: string;
+        IsFlexStamp: string;
+        GeoLocation: string;
+    }
+
+    export interface ObserverStampResponse {
+        name: string;
+        details: any;
+    }
   }
