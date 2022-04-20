@@ -318,6 +318,9 @@ export class MainComponent implements OnInit {
 
     let rows: RecentResourceDisplay[];
     rows = recentResources.map(recentResource => {
+      if (recentResource.resourceUri.toLowerCase().includes("/stamps/")) {
+        return this.handleStampForRecentResource(recentResource);
+      }
       var descriptor = ResourceDescriptor.parseResourceUri(recentResource.resourceUri);
       const name = descriptor.resource;
       const type = `${descriptor.provider}/${descriptor.type}`.toLowerCase();
@@ -335,6 +338,27 @@ export class MainComponent implements OnInit {
       return display;
     });
     return rows;
+  }
+
+  private handleStampForRecentResource(recentResource: RecentResource) {
+    let stampName = null;
+    const resourceType = this.enabledResourceTypes.find(t => t.resourceType.toLocaleLowerCase() === "stamps");
+    let resourceUriRegExp = new RegExp('/infrastructure/stamps/([^/]+)', "i");
+    let resourceUri = recentResource.resourceUri;
+    if (!resourceUri.startsWith('/')) {
+      resourceUri = '/' + resourceUri;
+    }
+    var result = resourceUri.match(resourceUriRegExp);
+    if (result && result.length > 0) {
+      stampName = result[1];
+    }
+    return {
+      name: stampName,
+      imgSrc: resourceType ? resourceType.imgSrc : "",
+      type: resourceType ? resourceType.displayName : "",
+      kind: recentResource.kind,
+      resourceUri: recentResource.resourceUri.replace("infrastructure/stamps", "stamps")
+    }
   }
 
   //To do, Add a utility method to check kind and use in main.component and site.service
