@@ -33,7 +33,7 @@ export class ValidResourceResolver implements Resolve<void>{
       let routePath = route.pathFromRoot
                         .map(v => v.url.map(segment => segment.toString()).join('/'))
                         .join('/');
-      if (routePath.includes("/stamps/")) {
+      if (routePath.toLowerCase().includes("/stamps/")) {
         let enabledResourceTypes = <ResourceServiceInputs[]>response.enabledResourceTypes;
         let matchingResourceInputs = enabledResourceTypes.find(t => t.resourceType.toLowerCase() === "stamps");
         matchingResourceInputs.armResource = {
