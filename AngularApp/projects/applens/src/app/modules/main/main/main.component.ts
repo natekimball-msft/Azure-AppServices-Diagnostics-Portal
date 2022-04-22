@@ -120,7 +120,7 @@ export class MainComponent implements OnInit {
     this.endTime = moment.utc();
     this.startTime = this.endTime.clone().add(-1, 'days');
     this.inIFrame = window.parent !== window;
-
+    
     if (this.inIFrame) {
       this.resourceTypes = this.resourceTypes.filter(resourceType => !resourceType.caseId);
     }
@@ -135,7 +135,14 @@ export class MainComponent implements OnInit {
       this.accessErrorMessage = this._activatedRoute.snapshot.queryParams['errorMessage'];
     }
     if (this._activatedRoute.snapshot.queryParams['resourceType']) {
-      this.selectedResourceType = this.resourceTypes.find(resourceType => resourceType.resourceType === this._activatedRoute.snapshot.queryParams['resourceType']);
+      let foundResourceType = this.defaultResourceTypes.find(resourceType => resourceType.resourceType === this._activatedRoute.snapshot.queryParams['resourceType']);
+      if (!foundResourceType) {
+        this.selectedResourceType = this.defaultResourceTypes.find(resourceType => resourceType.resourceType === "ARMResourceId");
+        this.resourceName = this._activatedRoute.snapshot.queryParams['resourceId'];
+      }
+      else {
+        this.selectedResourceType = foundResourceType;
+      }
     }
   }
 
@@ -162,6 +169,7 @@ export class MainComponent implements OnInit {
   ngOnInit() {
     this.fetchUserDetails();
     this.resourceTypes = [...this.defaultResourceTypes];
+    if (!this.selectedResourceType)
     this.selectedResourceType = this.resourceTypes[0];
 
     this.defaultResourceTypes.forEach(resource => {
@@ -328,9 +336,7 @@ export class MainComponent implements OnInit {
     let navigationExtras: NavigationExtras = {
       queryParams: {
         ...timeParams,
-        caseNumber: this.caseNumber,
-        resourceName: this.resourceName,
-        resourceType: this.selectedResourceType.resourceType
+        caseNumber: this.caseNumber
       },
     }
     

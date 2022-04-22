@@ -80,8 +80,6 @@ export class DashboardComponent implements OnDestroy {
   }
 
   accessError: string = '';
-  resourceName: string = null;
-  resourceType: string = null;
   displayAlertDialog: boolean = false;
   displayErrorInDialog: boolean = false;
   errorInDialog: string = null;
@@ -142,14 +140,6 @@ export class DashboardComponent implements OnDestroy {
       if (!this._activatedRoute.queryParams['caseNumber']) {
         this._diagnosticApiService.setCustomerCaseNumber(this._activatedRoute.snapshot.queryParams['caseNumber']);
         routeParams['caseNumber'] = this._activatedRoute.snapshot.queryParams['caseNumber'];
-      }
-      if (!this._activatedRoute.queryParams['resourceName']) {
-        routeParams['resourceName'] = this._activatedRoute.snapshot.queryParams['resourceName'];
-        this.resourceName = this._activatedRoute.snapshot.queryParams['resourceName'];
-      }
-      if (!this._activatedRoute.queryParams['resourceType']) {
-        routeParams['resourceType'] = this._activatedRoute.snapshot.queryParams['resourceType'];
-        this.resourceType = this._activatedRoute.snapshot.queryParams['resourceType'];
       }
 
       this._router.navigate([], { queryParams: routeParams, queryParamsHandling: 'merge', relativeTo: this._activatedRoute });
@@ -214,11 +204,13 @@ export class DashboardComponent implements OnDestroy {
   }
 
   navigateBackToHomePage() {
+    let resourceInfo = this._startupService.getResourceInfo();
     let queryParams = {
       caseNumber: this._diagnosticApiService.CustomerCaseNumber,
-      resourceName: this.resourceName,
-      resourceType: this.resourceType,
-      errorMessage: this.accessError
+      errorMessage: this.accessError,
+      resourceType: `${resourceInfo.provider}/${resourceInfo.resourceTypeName}`,
+      resourceName: resourceInfo.resourceName,
+      resourceId: this._resourceService.getCurrentResourceId()
     };
     const queryString = new URLSearchParams(queryParams).toString();
     window.location.href = "/?" + queryString;
