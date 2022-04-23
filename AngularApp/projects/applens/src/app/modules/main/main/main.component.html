@@ -4,7 +4,7 @@
   <div class="main-row" style="margin: 0px auto; width: 100%;margin-bottom: 15px;" *ngIf="displayLoader">
     <fab-spinner [size]="loaderSize" [label]="'Loading...'"></fab-spinner>
   </div>
-  <div class="main-row" style="margin: 0px auto; width: 100%;margin-bottom: 15px;" *ngIf="displayUserAccessError">
+  <div class="main-row" style="margin: 0 auto; width: 50%; text-align: center; margin-bottom: 15px; font-size: 18px; color: red;" *ngIf="displayUserAccessError">
     {{userAccessErrorMessage}}
   </div>
   <div class="main-row" style="margin: 0px auto;width: 1240px;" *ngIf="!displayLoader">

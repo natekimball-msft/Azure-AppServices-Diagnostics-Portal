@@ -159,7 +159,10 @@ export class MainComponent implements OnInit {
         this.displayLoader = false;
       }
     },(err) => {
-        let errobj = JSON.parse(err.error);
+      let errormsg = err.error;
+      errormsg = errormsg.replace(/\\"/g, '"');
+      errormsg = errormsg.replace(/\"/g, '"');
+        let errobj = JSON.parse(errormsg);
         this.displayUserAccessError = true;
         this.userAccessErrorMessage = errobj.DetailText;
         this.displayLoader = false;
