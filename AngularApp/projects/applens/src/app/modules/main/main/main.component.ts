@@ -40,6 +40,7 @@ export class MainComponent implements OnInit {
   loaderSize = SpinnerSize.large;
   caseNumberNeededForUser: boolean = false;
   caseNumber: string = '';
+  caseNumberValidationError: string = null;
   accessErrorMessage: string = '';
   userAccessErrorMessage: string = '';
   displayUserAccessError: boolean = false;
@@ -125,7 +126,7 @@ export class MainComponent implements OnInit {
       this.resourceTypes = this.resourceTypes.filter(resourceType => !resourceType.caseId);
     }
 
-    if (this._activatedRoute.snapshot.queryParams['caseNumber']) {
+    if (this._activatedRoute.snapshot.queryParams['caseNumber'] && this._activatedRoute.snapshot.queryParams['caseNumber'] !== "undefined") {
       this.caseNumber = this._activatedRoute.snapshot.queryParams['caseNumber'];
     }
     if (this._activatedRoute.snapshot.queryParams['resourceName']) {
@@ -143,6 +144,17 @@ export class MainComponent implements OnInit {
       else {
         this.selectedResourceType = foundResourceType;
       }
+    }
+  }
+
+  validateCaseNumber(){
+    if (this.caseNumber && this.caseNumber.length > 0 && isNaN(Number(this.caseNumber))){
+      this.caseNumberValidationError = "Case number should be a number";
+      return false;
+    }
+    else {
+      this.caseNumberValidationError = "";
+      return true;
     }
   }
 
@@ -311,6 +323,11 @@ export class MainComponent implements OnInit {
 
   onSubmit() {
     this.caseNumber = this.caseNumber.trim();
+    if (this.caseNumberNeededForUser && (this.selectedResourceType && this.selectedResourceType.durianEnabled)) {
+      if (!this.validateCaseNumber()){
+        return;
+      }
+    }
     this._diagnosticApiService.setCustomerCaseNumber(this.caseNumber);
     this.resourceName = this.resourceName.trim();
 
