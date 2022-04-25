@@ -581,7 +581,7 @@
         {
             "service": "StampService",
             "resourceType": "stamps",
-            "templateFileName": "HostingEnvironment",
+            "templateFileName": "StampService",
             "imgSrc": "assets/img/Cloud-Service-Logo.svg",
             "versionPrefix": "v2/",
             "azureCommImpactedServicesList": "appservice",
