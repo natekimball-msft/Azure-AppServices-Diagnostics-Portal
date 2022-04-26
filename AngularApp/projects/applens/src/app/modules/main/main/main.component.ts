@@ -148,8 +148,16 @@ export class MainComponent implements OnInit {
   }
 
   validateCaseNumber(){
+    if (!this.caseNumber || this.caseNumber.length < 12) {
+      this.caseNumberValidationError = "Case number too short";
+      return false;
+    }
+    if (this.caseNumber.length > 18) {
+      this.caseNumberValidationError = "Case number too long";
+      return false;
+    }
     if (this.caseNumber && this.caseNumber.length > 0 && isNaN(Number(this.caseNumber))){
-      this.caseNumberValidationError = "Case number should be a number";
+      this.caseNumberValidationError = "Case number should be a valid number";
       return false;
     }
     else {

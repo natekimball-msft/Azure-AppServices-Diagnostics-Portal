@@ -11,10 +11,15 @@ import { HealthStatus } from "diagnostic-data";
 })
 export class AppLensInterceptorService implements HttpInterceptor {
   accessWarningHeader: string = "x-ms-access-warning-message";
+  accessWarningMessage: string = "resource is not related to the case";
   constructor(private _alertService: AlertService) { }
 
   raiseAlert(event){
-    let message = event.headers.get(this.accessWarningHeader);
+    let errormsg = event.error;
+    errormsg = errormsg.replace(/\\"/g, '"');
+    errormsg = errormsg.replace(/\"/g, '"');
+    let errobj = JSON.parse(errormsg);
+    let message = errobj.DetailText;
     message = message.trim();
     if (message) {
       if (message[message.length-1] == '.') {
@@ -35,13 +40,10 @@ export class AppLensInterceptorService implements HttpInterceptor {
 
     return next.handle(req).pipe(map((event: HttpEvent<any>) => {
         if (event instanceof HttpResponse && event.url.includes("api/invoke")) {
-            if (event.status === 200 && event.headers.has(this.accessWarningHeader)) {
-                this.raiseAlert(event);
-            }
         }
         return event;
       }), catchError((error: HttpErrorResponse) => {
-        if (error.status === 403 && error.url.includes("api/invoke") && error.headers.has(this.accessWarningHeader)) {
+        if (error.status === 403 && error.url.includes("api/invoke") && error.error.includes(this.accessWarningMessage)) {
           this.raiseAlert(error);
         }
         return Observable.throw(error);

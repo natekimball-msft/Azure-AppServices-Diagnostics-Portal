@@ -118,7 +118,7 @@ export class DashboardComponent implements OnDestroy {
         (err) => {
           let errobj = JSON.parse(err.error);
           this.accessError = errobj.DetailText;
-          if (!this.CheckIsResourceUnrelatedError(errobj.DetailText)) this.navigateBackToHomePage();
+          if (!this.CheckIsResourceUnrelatedError(errobj.DetailText)){ this.navigateBackToHomePage(); }
         });
       }
     });
@@ -176,7 +176,7 @@ export class DashboardComponent implements OnDestroy {
   }
 
   CheckIsResourceUnrelatedError(detailText){
-    return detailText && detailText.includes("not in the subscription related");
+    return detailText && detailText.includes("resource is not related to the case");
   }
 
   handleUserResponse(userResponse: ConfirmationOption) {
@@ -188,7 +188,7 @@ export class DashboardComponent implements OnDestroy {
         this.showLoaderInDialog = false;
         this.displayAlertDialog = false;
         this.alertInfo = null;
-        this._router.navigate([], {queryParamsHandling: 'merge', relativeTo: this._activatedRoute});
+        location.reload();
       },
       (err) => {
         this.showLoaderInDialog = false;
