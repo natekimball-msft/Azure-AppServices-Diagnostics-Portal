@@ -1510,58 +1510,11 @@ export class OnboardingFlowComponent implements OnInit {
 
     let link = this.gistMode ? `${this.PPEHostname}/${this.resourceId}/gists/${this.publishingPackage.id}?branchInput=${this.Branch}` : `${this.PPEHostname}/${this.resourceId}/detectors/${this.publishingPackage.id}/edit?branchInput=${this.Branch}`;
     let description = `This Pull Request was created via AppLens. To make edits, go to ${link}`;
-    const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.publishingPackage.id}`, commitType, this.resourceId);
-
-    // DetectorObservable.subscribe(_ => {
-    //     this.publishSuccess = true;
-    //     this.postPublish();
-    //     this._applensCommandBarService.refreshPage();
-    // }, err => {
-    //   this.publishFailed = true;
-    //   this.postPublish();
-    // });
-
+    const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.publishingPackage.id} Author : ${this.userName}`, commitType, this.resourceId);
     
     this.saveButtonText = "Saving";
     this.publishDialogHidden = true;
     this.disableSaveButton();
-
-    // const commitType = this.mode == DevelopMode.Create ? "add" : "edit";
-    // const commitMessageStart = this.mode == DevelopMode.Create ? "Adding" : "Editing";
-
-    // let file = [this.codeCompletionEnabled ? this.code.replace(codePrefix, "") : this.code];
-
-    // if (this.mode != DevelopMode.Create) {
-    //   this.saveTempId = this.id;
-    // }
-    // else {
-    //   let def = new RegExp("(?<=Definition).*(?=\\])");
-    //   let idStatement = new RegExp("(?<=Id).*?(?=,)");
-    //   let dId = new RegExp("(?<=\").*(?=\")");
-    //   this.saveTempId = def.exec(file[0])[0];
-    //   this.saveTempId = idStatement.exec(this.saveTempId)[0];
-    //   this.saveTempId = dId.exec(this.saveTempId)[0];
-    //   this.Branch = `${this.Branch}${this.saveTempId}`;
-    // }
-
-    // this.idInSystem(this.saveTempId).subscribe(inSystem => {
-    //   if (this.mode == DevelopMode.Create && inSystem){
-    //     this.saveFailed = true;
-    //     this.saveFailMessage = "A detector with this ID already exists. Please enter a new ID"
-    //     this.postSave();
-    //     return;
-    //   }
-    // });
-
-
-    // let title = [`/${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx`];
-
-
-
-
-    // let link = this.gistMode ? `${this.PPEHostname}/${this.resourceId}/gists/${this.saveTempId.toLowerCase()}?branchInput=${this.Branch}` : `${this.PPEHostname}/${this.resourceId}/detectors/${this.saveTempId.toLowerCase()}/edit?branchInput=${this.Branch}`;
-
-    const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, file, title, `${commitMessageStart} ${this.saveTempId.toLowerCase()} Author : ${this.userName}`, commitType, this.resourceId);
 
 
     DetectorObservable.subscribe(_ => {
