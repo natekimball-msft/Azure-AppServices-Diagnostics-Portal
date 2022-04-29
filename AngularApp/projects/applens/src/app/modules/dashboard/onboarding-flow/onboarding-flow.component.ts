@@ -1489,6 +1489,7 @@ export class OnboardingFlowComponent implements OnInit {
   saveFailMessage: string = "";
 
   saveDetectorCode() {
+    this.setTargetBranch();
     this.publishDialogHidden = true;
 
     const commitType = this.mode == DevelopMode.Create ? "add" : "edit";
@@ -1520,11 +1521,7 @@ export class OnboardingFlowComponent implements OnInit {
     //   this.postPublish();
     // });
 
-
-
-
-    this.setTargetBranch();
-
+    
     this.saveButtonText = "Saving";
     this.publishDialogHidden = true;
     this.disableSaveButton();
@@ -1557,7 +1554,7 @@ export class OnboardingFlowComponent implements OnInit {
     // });
 
 
-    let title = [`/${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx`];
+    // let title = [`/${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx`];
 
 
 
@@ -1568,7 +1565,7 @@ export class OnboardingFlowComponent implements OnInit {
 
 
     DetectorObservable.subscribe(_ => {
-      this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx&version=GB${this.Branch}`;
+      this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.publishingPackage.id.toLowerCase()}/${this.publishingPackage.id.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.publishingPackage.id.toLowerCase()}/${this.publishingPackage.id.toLowerCase()}.csx&version=GB${this.Branch}`;
       this.saveSuccess = true;
       this.postSave();
       this._applensCommandBarService.refreshPage();
