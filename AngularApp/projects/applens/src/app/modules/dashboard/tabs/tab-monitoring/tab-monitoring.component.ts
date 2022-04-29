@@ -33,7 +33,7 @@ export class TabMonitoringComponent implements OnInit {
   reportName: string = "";
   detectorId: string;
   private monitoringDataSourceMapping: Map<string, string> = new Map<string, string>([
-    ["All", "0"],
+    ["All Prod", "0"],
     ["Applens",  "1"],
     ["Azure Portal", "2"],
     ["PPE", "3"]
