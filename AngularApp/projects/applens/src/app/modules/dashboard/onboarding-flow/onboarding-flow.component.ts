@@ -316,6 +316,7 @@ export class OnboardingFlowComponent implements OnInit {
   private _monacoEditor: monaco.editor.ICodeEditor = null;
   private _oldCodeDecorations: string[] = [];
   selectedKey: string = '';
+  isSaved: boolean = false;
 
 
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService, private detectorGistApiService: DetectorGistApiService,
@@ -1304,7 +1305,7 @@ export class OnboardingFlowComponent implements OnInit {
 
     this.setTargetBranch();
 
-    if (this.mode == DevelopMode.Create) {
+    if (this.mode == DevelopMode.Create && !this.isSaved) {
       this.PRTitle = `Creating ${this.id}`;
     }
     else {
@@ -1390,8 +1391,8 @@ export class OnboardingFlowComponent implements OnInit {
   gradPublish() {
     this.publishDialogHidden = true;
 
-    const commitType = this.mode == DevelopMode.Create ? "add" : "edit";
-    const commitMessageStart = this.mode == DevelopMode.Create ? "Adding" : "Editing";
+    const commitType = this.mode == DevelopMode.Create && !this.isSaved ? "add" : "edit";
+    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved ? "Adding" : "Editing";
 
     let gradPublishFiles: string[] = [
       this.publishingPackage.codeString,
@@ -1492,8 +1493,8 @@ export class OnboardingFlowComponent implements OnInit {
     this.setTargetBranch();
     this.publishDialogHidden = true;
 
-    const commitType = this.mode == DevelopMode.Create ? "add" : "edit";
-    const commitMessageStart = this.mode == DevelopMode.Create ? "Adding" : "Editing";
+    const commitType = this.mode == DevelopMode.Create && !this.isSaved ? "add" : "edit";
+    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved ? "Adding" : "Editing";
 
     let gradPublishFiles: string[] = [
       this.publishingPackage.codeString,
@@ -1521,6 +1522,7 @@ export class OnboardingFlowComponent implements OnInit {
       this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.publishingPackage.id.toLowerCase()}/${this.publishingPackage.id.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.publishingPackage.id.toLowerCase()}/${this.publishingPackage.id.toLowerCase()}.csx&version=GB${this.Branch}`;
       this.saveSuccess = true;
       this.postSave();
+      this.isSaved = true;
       this._applensCommandBarService.refreshPage();
     }, err => {
       this.saveFailed = true;
