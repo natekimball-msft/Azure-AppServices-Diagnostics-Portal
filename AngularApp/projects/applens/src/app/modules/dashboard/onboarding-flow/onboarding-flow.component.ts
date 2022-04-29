@@ -448,7 +448,7 @@ export class OnboardingFlowComponent implements OnInit {
       this.commitHistoryLink = (devopsConfig.folderPath === "/") ? `https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=${devopsConfig.folderPath}${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&_a=history` : `https://dev.azure.com/${devopsConfig.organization}/${devopsConfig.project}/_git/${devopsConfig.repository}?path=${devopsConfig.folderPath}/${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&_a=history`;
 
       this.deleteVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? { display: "none" } : {};
-      this.saveButtonVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? { display: "none" } : {};
+      this.saveButtonVisibilityStyle = !(this.detectorGraduation === true ) ? { display: "none" } : {};
       this.commitHistoryVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? { display: "none" } : {};
 
 
@@ -1490,50 +1490,35 @@ export class OnboardingFlowComponent implements OnInit {
 
   saveDetectorCode() {
     this.setTargetBranch();
-
-    this.saveButtonText = "Saving";
     this.publishDialogHidden = true;
-    this.disableSaveButton();
 
     const commitType = this.mode == DevelopMode.Create ? "add" : "edit";
     const commitMessageStart = this.mode == DevelopMode.Create ? "Adding" : "Editing";
 
-    let file = [this.codeCompletionEnabled ? this.code.replace(codePrefix, "") : this.code];
-
-    if (this.mode != DevelopMode.Create) {
-      this.saveTempId = this.id;
-    }
-    else {
-      let def = new RegExp("(?<=Definition).*(?=\\])");
-      let idStatement = new RegExp("(?<=Id).*?(?=,)");
-      let dId = new RegExp("(?<=\").*(?=\")");
-      this.saveTempId = def.exec(file[0])[0];
-      this.saveTempId = idStatement.exec(this.saveTempId)[0];
-      this.saveTempId = dId.exec(this.saveTempId)[0];
-      this.Branch = `${this.Branch}${this.saveTempId}`;
-    }
-
-    /*
-    if (this.mode == DevelopMode.Create && idInSystem(saveTempId)){
-      this.saveFailed = true;
-      this.saveFailMessage = "A detector with this ID already exists. Please enter a new ID"
-      postSave();
-    }
-    */
+    let gradPublishFiles: string[] = [
+      this.publishingPackage.codeString,
+      this.publishingPackage.metadata,
+      this.publishingPackage.packageConfig
+    ];
 
 
-    let title = [`/${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx`];
+    let gradPublishFileTitles: string[] = [
+      `/${this.publishingPackage.id.toLowerCase()}/${this.publishingPackage.id.toLowerCase()}.csx`,
+      `/${this.publishingPackage.id.toLowerCase()}/metadata.json`,
+      `/${this.publishingPackage.id.toLowerCase()}/package.json`
+    ];
 
-
-
-
-    let link = this.gistMode ? `${this.PPEHostname}/${this.resourceId}/gists/${this.saveTempId.toLowerCase()}?branchInput=${this.Branch}` : `${this.PPEHostname}/${this.resourceId}/detectors/${this.saveTempId.toLowerCase()}/edit?branchInput=${this.Branch}`;
-
-    const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, file, title, `${commitMessageStart} ${this.saveTempId.toLowerCase()} Author : ${this.userName}`, commitType, this.resourceId);
+    let link = this.gistMode ? `${this.PPEHostname}/${this.resourceId}/gists/${this.publishingPackage.id}?branchInput=${this.Branch}` : `${this.PPEHostname}/${this.resourceId}/detectors/${this.publishingPackage.id}/edit?branchInput=${this.Branch}`;
+    let description = `This Pull Request was created via AppLens. To make edits, go to ${link}`;
+    const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.publishingPackage.id} Author : ${this.userName}`, commitType, this.resourceId);
+    
+    this.saveButtonText = "Saving";
+    this.publishDialogHidden = true;
+    this.disableSaveButton();
 
 
     DetectorObservable.subscribe(_ => {
-      this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.saveTempId.toLowerCase()}/${this.saveTempId.toLowerCase()}.csx&version=GB${this.Branch}`;
+      this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.publishingPackage.id.toLowerCase()}/${this.publishingPackage.id.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.publishingPackage.id.toLowerCase()}/${this.publishingPackage.id.toLowerCase()}.csx&version=GB${this.Branch}`;
       this.saveSuccess = true;
       this.postSave();
       this._applensCommandBarService.refreshPage();
@@ -1548,6 +1533,10 @@ export class OnboardingFlowComponent implements OnInit {
     this.getBranchList();
     this.enablePublishButton();
     this.enableRunButton();
+  }
+
+  idInSystem(detectorId: string): Observable<boolean>{
+    return this._diagnosticApi.idExists(detectorId);
   }
 
   postSave() {
