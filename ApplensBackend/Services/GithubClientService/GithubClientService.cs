@@ -269,7 +269,7 @@ namespace AppLensV3
                 {
                     string author = commit.Item3.Split(new string[] { "CommittedBy :" }, StringSplitOptions.RemoveEmptyEntries).Last();
                     author = author.Replace("@microsoft.com", string.Empty, StringComparison.OrdinalIgnoreCase);
-                    string date = commit.Item2.ToString().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).First();
+                    string date = commit.Item2.ToString().Split(new char[] { '+' }, StringSplitOptions.RemoveEmptyEntries).First();
 
                     res.Add(new Models.Commit(currentSha, author, date, previousSha, changedFiles[i]));
                 }
