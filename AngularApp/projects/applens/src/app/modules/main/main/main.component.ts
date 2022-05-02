@@ -179,6 +179,12 @@ export class MainComponent implements OnInit {
         this.displayLoader = false;
       }
     },(err) => {
+      if (err.status === 404) {
+        //This means durian is not yet available on the backend
+        this.caseNumberNeededForUser = false;
+        this.displayLoader = false;
+        return;
+      }
       let errormsg = err.error;
       errormsg = errormsg.replace(/\\"/g, '"');
       errormsg = errormsg.replace(/\"/g, '"');
@@ -330,13 +336,13 @@ export class MainComponent implements OnInit {
   }
 
   onSubmit() {
-    this.caseNumber = this.caseNumber.trim();
     if (this.caseNumberNeededForUser && (this.selectedResourceType && this.selectedResourceType.durianEnabled)) {
+      this.caseNumber = this.caseNumber.trim();
       if (!this.validateCaseNumber()){
         return;
       }
+      this._diagnosticApiService.setCustomerCaseNumber(this.caseNumber);
     }
-    this._diagnosticApiService.setCustomerCaseNumber(this.caseNumber);
     this.resourceName = this.resourceName.trim();
 
     //If it is ARM resource id
@@ -364,7 +370,7 @@ export class MainComponent implements OnInit {
     let navigationExtras: NavigationExtras = {
       queryParams: {
         ...timeParams,
-        caseNumber: this.caseNumber
+        ...this.caseNumber? {caseNumber: this.caseNumber}: {}
       },
     }
     
