@@ -13,6 +13,7 @@ import { DirectionalHint } from 'office-ui-fabric-react';
 import { ResiliencyScoreReportHelper } from '../../../shared/utilities/resiliencyScoreReportHelper';
 import { BehaviorSubject } from 'rxjs';
 import { DemoSubscriptions } from '../../../betaSubscriptions';
+import { Sku } from '../../../shared/models/server-farm';
 
 @Component({
   selector: 'detector-command-bar',
@@ -46,9 +47,15 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   teachingBubbleCalloutProps = {
     directionalHint: DirectionalHint.bottomLeftEdge
   };
+  resourcePlatform: OperatingSystem = OperatingSystem.any;
+  resourceAppType: AppType = AppType.WebApp;
+  resourceSku: Sku = Sku.All;
 
   public _checkIsWindowsApp(): boolean {
-    let webSiteService = this._resourceService as WebSitesService;    
+    let webSiteService = this._resourceService as WebSitesService;   
+    this.resourcePlatform = webSiteService.platform;
+    this.resourceAppType = webSiteService.appType;
+    this.resourceSku = webSiteService.sku;
     return this._resourceService && this._resourceService instanceof WebSitesService
       && (webSiteService.platform === OperatingSystem.windows) && (webSiteService.appType === AppType.WebApp) && (webSiteService.sku > 8); //Only for Web App (Windows) in Standard or higher
   }
@@ -63,7 +70,14 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     
     let firstDigit = "0x" + subscriptionId.substr(0, 1);
     this.displayRPDFButton = ((16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease || this._isBetaSubscription) && this._checkIsWindowsApp();    
-    this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonDisplayed, { 'ResiliencyScoreButtonDisplayed': this.displayRPDFButton.toString(), 'SubscriptionId': this._route.parent.snapshot.params['subscriptionid'] });
+    const rSBDEventProperties = {
+      'ResiliencyScoreButtonDisplayed': this.displayRPDFButton.toString(),
+      'Subscription': this._route.parent.snapshot.params['subscriptionid'],
+      'Platform': this.resourcePlatform.toString(),
+      'AppType': this.resourceAppType.toString(),
+      'resourceSku': this.resourceAppType.toString(),
+    };
+    this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonDisplayed, rSBDEventProperties);
     const loggingError = new Error();
     this.gRPDFButtonDisabled = false;
     //Get showCoachMark value(string) from local storage (if exists), then convert to boolean   
@@ -102,7 +116,13 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     this.globals.openFeedback = !this.globals.openFeedback;
   }
 
-  generateResiliencyPDF() {
+  generateResiliencyPDF() {    
+    let sT = new Date();    
+    const rSEventProperties = {
+      'Subscription': this._route.parent.snapshot.params['subscriptionid'],
+      'TimeClicked': sT.toUTCString()
+    };    
+    this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonClicked, rSEventProperties);
     // Once the button is clicked no need to show Coachmark anymore:
     const loggingError = new Error();
     try {
@@ -122,7 +142,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       this.telemetryService.logException(loggingError, null, null, _severityLevel);
     }
     // Taking starting time
-    let sT = new Date();
+    
     this.gRPDFButtonText = "Getting Resiliency Score report...";
     this.gRPDFButtonIcon = {
       iconName: 'Download',
@@ -160,7 +180,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
           'DetectorTimeTaken': detectorTimeTaken.toString(),
           'TotalTimeTaken': totalTimeTaken.toString()
         };
-        this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonClicked, eventProperties);
+        this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportDownloaded, eventProperties);                
         this.gRPDFButtonText = "Get Resiliency Score report";
         this.gRPDFButtonIcon = { iconName: 'Download' };
         this.gRPDFButtonDisabled = false;
