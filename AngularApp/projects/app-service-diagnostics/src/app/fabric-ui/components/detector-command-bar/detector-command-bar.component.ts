@@ -10,7 +10,7 @@ import { OperatingSystem } from '../../../shared/models/site';
 import { AppType } from '../../../shared/models/portal';
 import { SeverityLevel } from '@microsoft/applicationinsights-web';
 import { DirectionalHint } from 'office-ui-fabric-react';
-import { ResiliencyScoreReportHelper } from '../../../shared/utilities/resiliencyScoreReportHelper';
+import { ResiliencyScoreReportHelper } from '../../../../../../diagnostic-data/src/lib/utilities/resiliencyScoreReportHelper';
 import { BehaviorSubject } from 'rxjs';
 import { DemoSubscriptions } from '../../../betaSubscriptions';
 
