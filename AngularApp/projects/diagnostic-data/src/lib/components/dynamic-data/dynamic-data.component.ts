@@ -207,7 +207,9 @@ export class DynamicDataComponent implements OnInit {
       case RenderingType.Section:
         return SectionsComponent;
       case RenderingType.StepViews:
-        return NetworkTroubleshooterComponent;
+        return StepViewsRendererComponent;
+        case RenderingType.NetworkTroubleshooter:
+          return NetworkTroubleshooterComponent;
       default:
         return null;
     }
