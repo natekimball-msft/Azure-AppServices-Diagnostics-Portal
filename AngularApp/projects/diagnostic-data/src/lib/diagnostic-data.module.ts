@@ -124,6 +124,7 @@ import { DetectorTimePickerComponent } from './components/detector-time-picker/d
 import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-feedback.component';
 import { GenericBreadcrumbService } from './services/generic-breadcrumb.service';
 import { GenericUserSettingService } from './services/generic-user-setting.service';
+import { NetworkTroubleshooterComponent } from './components/network-troubleshooter/network-troubleshooter.component';
 
 @NgModule({
   imports: [
@@ -203,6 +204,7 @@ import { GenericUserSettingService } from './services/generic-user-setting.servi
     CollapsibleListItemComponent,
     InputStepComponent,
     StepViewsRendererComponent,
+    NetworkTroubleshooterComponent,
     InfoStepComponent,
     DropDownStepComponent,
     ButtonStepComponent,
@@ -240,6 +242,7 @@ import { GenericUserSettingService } from './services/generic-user-setting.servi
     CollapsibleListItemComponent,
     InputStepComponent,
     StepViewsRendererComponent,
+    NetworkTroubleshooterComponent,
     InfoStepComponent,
     DropDownStepComponent,
     ButtonStepComponent,

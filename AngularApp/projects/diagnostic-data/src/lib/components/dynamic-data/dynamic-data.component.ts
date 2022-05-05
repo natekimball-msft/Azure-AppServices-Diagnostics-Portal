@@ -46,6 +46,7 @@ import { InfoStepComponent } from '../step-views/info-step-view/info-step.compon
 import { DropDownStepComponent } from '../step-views/dropdown-step-view/dropdown-step.component';
 import { CheckStepComponent } from '../step-views/check-step-view/check-step.component';
 import { ButtonStepComponent } from '../step-views/button-step-view/button-step.component';
+import { NetworkTroubleshooterComponent } from '../network-troubleshooter/network-troubleshooter.component';
 
 @Component({
   selector: 'dynamic-data',
@@ -56,7 +57,7 @@ import { ButtonStepComponent } from '../step-views/button-step-view/button-step.
     InsightsComponent, TimeSeriesInstanceGraphComponent, DynamicInsightComponent, MarkdownViewComponent,
     DetectorListComponent, DropdownComponent, CardSelectionComponent, SolutionComponent, GuageControlComponent, FormComponent,
     ChangeAnalysisOnboardingComponent, ChangesetsViewComponent, AppDependenciesComponent, AppInsightsMarkdownComponent, DetectorListAnalysisComponent, ConnectAppInsightsComponent, DetectorSearchComponent, SummaryCardsComponent, InsightsV4Component, DropdownV4Component, CardSelectionV4Component, DynamicInsightV4Component, DataTableV4Component, KeystoneInsightComponent, NotificationRenderingComponent, FabTabComponent, SectionsComponent,
-    StepViewsRendererComponent, InfoStepComponent, ButtonStepComponent, DropDownStepComponent, CheckStepComponent
+    StepViewsRendererComponent, NetworkTroubleshooterComponent, InfoStepComponent, ButtonStepComponent, DropDownStepComponent, CheckStepComponent
   ]
 })
 export class DynamicDataComponent implements OnInit {
@@ -206,7 +207,7 @@ export class DynamicDataComponent implements OnInit {
       case RenderingType.Section:
         return SectionsComponent;
       case RenderingType.StepViews:
-        return StepViewsRendererComponent;
+        return NetworkTroubleshooterComponent;
       default:
         return null;
     }

@@ -15,7 +15,8 @@ export enum StepViewType {
     check,
     input,
     info,
-    button
+    button,
+    networkTroubleshooter
 }
 
 // for angular component variable binding
