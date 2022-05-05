@@ -1,4 +1,4 @@
-import { Component, Pipe, PipeTransform, Inject, OnInit, Input, ViewEncapsulation, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, Pipe, PipeTransform, Inject, OnInit, Input, ViewEncapsulation, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Globals } from 'projects/app-service-diagnostics/src/app/globals';
 import { CXPChatCallerService } from 'projects/app-service-diagnostics/src/app/shared-v2/services/cxp-chat-caller.service';
@@ -26,7 +26,7 @@ import { ButtonStepView, CheckStepView, DropdownStepView, InfoStepView, InputSte
   styleUrls: ['./network-troubleshooter.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class NetworkTroubleshooterComponent extends DataRenderBaseComponent implements OnInit{
+export class NetworkTroubleshooterComponent extends DataRenderBaseComponent implements OnInit, AfterViewInit{
 
   protected processData(data: DiagnosticData) {
     super.processData(data);
@@ -51,8 +51,8 @@ export class NetworkTroubleshooterComponent extends DataRenderBaseComponent impl
   cxpChatUrl: string = '';
 
   logEvent: (eventMessage: string, properties: { [name: string]: string }, measurements?: any) => void;
-  width = '100vw';
-  height = '100vh';
+  width = '100%';
+  height = '100%';
   private _feedbackQuestions = "- Is your networking issue resolved? \r\n\r\n\r\n" +
       "- What was the issue?\r\n\r\n\r\n" +
       "- If the issue was not resolved, what can be the reason?\r\n\r\n\r\n" +

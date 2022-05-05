@@ -143,15 +143,12 @@ export class FabricFeedbackComponent implements AfterViewInit, OnInit, OnDestroy
   }
 
   onOpenFeedbackPanel() {
-    if (this.feedbackPanelConfig.url != window.location.href.split("?")[0]) {
-      const globals = this.globals;
-      if (this.isPublic && globals.messagesData.feedbackPanelConfig != null && globals.messagesData.feedbackPanelConfig.url == window.location.href.split("?")[0]) {
-        this.feedbackPanelConfig = globals.messagesData.feedbackPanelConfig;
-
-      } else {
-        this.feedbackPanelConfig = { url: window.location.href.split("?")[0] };
-      }
+    const globals = this.globals;
+    if (this.isPublic && globals.messagesData.feedbackPanelConfig != null && globals.messagesData.feedbackPanelConfig.url.split("?")[0] == window.location.href.split("?")[0]) {
+      this.feedbackPanelConfig = globals.messagesData.feedbackPanelConfig;
       this.feedbackText = this.feedbackPanelConfig.defaultFeedbackText || "";
+    }else if (this.feedbackPanelConfig.url != window.location.href.split("?")[0]){
+      this.feedbackPanelConfig.url = window.location.href.split("?")[0];
     }
   }
 
