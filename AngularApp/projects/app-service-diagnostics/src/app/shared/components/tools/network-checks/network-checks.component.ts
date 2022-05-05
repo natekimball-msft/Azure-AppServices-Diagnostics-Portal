@@ -1,7 +1,6 @@
 import { Component, ViewEncapsulation, } from '@angular/core';
 
 @Component({
-    selector: 'network-checks',
     templateUrl: 'network-checks.component.html',
     styleUrls: ['../styles/daasstyles.scss', './network-checks.component.scss'],
     encapsulation: ViewEncapsulation.None,
