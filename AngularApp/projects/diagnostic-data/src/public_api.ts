@@ -58,5 +58,4 @@ export * from './lib/utilities/string-utilities';
 export * from './lib/components/step-views/step-view-lib';
 export * from "./lib/components/solution-orchestrator/solution-orchestrator.component";
 export * from './lib/utilities/uri-utilities';
-export * from './lib/assets/vfs_fonts.js';
 export * from './lib/utilities/resiliencyScoreReportHelper'
