@@ -54,7 +54,8 @@
               "node_modules/prismjs/components/prism-clike.min.js",
               "node_modules/prismjs/components/prism-csharp.min.js",
               "node_modules/prismjs/components/prism-css.min.js",
-              "node_modules/bootstrap/dist/js/bootstrap.min.js"
+              "node_modules/bootstrap/dist/js/bootstrap.min.js",
+              "projects/diagnostic-data/lib/assets/vfs_fonts.js"
             ]
           },
           "configurations": {
