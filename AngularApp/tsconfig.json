@@ -26,7 +26,6 @@
     "lib": [
       "es2017",
       "dom"
-    ],
-    "allowJs": true
+    ]
   }
 }
