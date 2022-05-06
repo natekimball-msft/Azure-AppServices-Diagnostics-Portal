@@ -533,12 +533,18 @@ export class HighchartsGraphComponent implements OnInit {
             if (chart) {
                 if (currentId === chart.container.id) {
                     //Add width of side-nav in Diag&Solve so cursor will align with vertical line
+
                     const sideNav = <HTMLElement>document.getElementById('sidebar');
                     let sideNavWidth = sideNav ? sideNav.offsetWidth : 0;
+
+                    console.log("current chartId and width", currentId, sideNavWidth);
+                    console.log("current element", this.el.nativeElement);
                     let bbLeft = this.el.nativeElement.offsetLeft + chart.plotLeft + sideNavWidth;
 
                     // Get the timestamp value where mouse is hovering
                     xAxisValue = chart.xAxis[0].toValue(ev.pageX - bbLeft, true);
+
+                    console.log("bbleft, xval", bbLeft, xAxisValue);
                     chart.xAxis[0].crosshair = false;
                     break;
                 }
