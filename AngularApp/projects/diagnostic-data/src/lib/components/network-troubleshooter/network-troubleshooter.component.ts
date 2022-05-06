@@ -51,8 +51,6 @@ export class NetworkTroubleshooterComponent extends DataRenderBaseComponent impl
   cxpChatUrl: string = '';
 
   logEvent: (eventMessage: string, properties: { [name: string]: string }, measurements?: any) => void;
-  width = '100%';
-  height = '100%';
   private _feedbackQuestions = "- Is your networking issue resolved? \r\n\r\n\r\n" +
       "- What was the issue?\r\n\r\n\r\n" +
       "- If the issue was not resolved, what can be the reason?\r\n\r\n\r\n" +
@@ -69,10 +67,6 @@ export class NetworkTroubleshooterComponent extends DataRenderBaseComponent impl
           var queryParams = _route.snapshot.queryParams;
           if (queryParams["redirectFrom"] === "supportTopic") {
               this.supportTopic = queryParams["supportTopic"];
-          }
-          if (this.supportTopic || queryParams["redirectFrom"] === "referrer") {
-              this.width = '100vw';
-              this.height = '100vh';
           }
           if (queryParams["supportTopicId"] ) {
               this.supportTopicId = queryParams["supportTopicId"];

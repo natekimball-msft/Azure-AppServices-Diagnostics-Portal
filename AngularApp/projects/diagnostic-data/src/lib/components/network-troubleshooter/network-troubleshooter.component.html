@@ -1,4 +1,4 @@
-<div class="network-troubleshooter" #networkCheckingTool [ngStyle]="{width: width, height: height}">
+<div class="network-troubleshooter" #networkCheckingTool>
     <div class="container">
         <div *ngFor="let viewModel of stepViews" >
             <div class="step-container" *ngIf="!viewModel.stepView.hidden" [ngSwitch]="viewModel.stepView.type">
