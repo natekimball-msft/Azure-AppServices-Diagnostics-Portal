@@ -1,45 +1,8 @@
 .network-checking-tool{
-    position: fixed;
-    min-width: 475px;
-    overflow-y: scroll;
-    padding-bottom: 20px;
-}
-.container {
-    min-width: 500px;
-    width: 80%;
-    max-width: 750px;
-    .error-section{
-        .error-message{
-            color: red;
-        }
-    }
-}
-
-.step-container{
-    padding: 7px 7px 7px 0px;
-}
-
-.step{
-    border: 1px solid #e5e5e5;
-    overflow: hidden;
-}
-
-.loading-spin{
-    padding-left: 8px;
-    padding-top: 5px;
-    .fa-spin{
-        font-size: 18px;
-    }
-
-    .ms-Spinner{
-        align-items: unset;
-        margin-left: -3px;
-    }
-    
-
-
-    .loading-text{
-        margin-top: -20px;
-        margin-left: 25px;
+    margin-left: 20px;
+    margin-top: 20px;
+    .network-troubleshooter{
+        margin-top: -10px;
+        margin-left: -15px;
     }
 }

@@ -121,7 +121,11 @@ export class FeatureService {
   }
 
   getFeaturesForCategory(category: Category): Feature[] {
-    return this._features.filter(feature => {
+    return this.filterFeaturesForCategory(category, this._features);
+  }
+
+  filterFeaturesForCategory(category: Category, features: Feature[]): Feature[] {
+    return features.filter(feature => {
       if (feature && feature.category) {
         return feature.category.toLowerCase() === category.name.toLowerCase();
       }
@@ -131,7 +135,7 @@ export class FeatureService {
 
   getFeaturesForCategorySub(category: Category): Observable<Feature[]> {
     return this.featureSub.pipe(
-      map(features => this.getFeaturesForCategory(category)
+      map(features => this.filterFeaturesForCategory(category, features)
       ));
   }
 

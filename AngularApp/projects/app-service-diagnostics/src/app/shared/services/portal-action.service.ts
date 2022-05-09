@@ -85,8 +85,7 @@ export class PortalActionService {
         this._portalService.openBlade(bladeInfo, 'troubleshoot');
     }
 
-    public openBladeDiagnosticToolId(toolId: string) {
-        const category = "DiagnosticTools";
+    public openBladeDiagnosticToolId(toolId: string, category:string = "DiagnosticTools") {
         const bladeInfo = {
             title: category,
             detailBlade: 'SCIFrameBlade',

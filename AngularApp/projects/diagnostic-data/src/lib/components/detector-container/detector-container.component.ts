@@ -17,7 +17,8 @@ const hideTimePickerDetectors: string[] = [
   'eventviewer',
   'LinuxLogViewer',
   'DiagnosticTools',
-  'LinuxDiagnosticTools'
+  'LinuxDiagnosticTools',
+  'networktroubleshooter'
 ];
 
 @Component({
