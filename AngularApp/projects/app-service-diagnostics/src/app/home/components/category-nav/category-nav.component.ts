@@ -211,7 +211,7 @@ export class CategoryNavComponent implements OnInit {
                 // Get all the detector list under this category
                 this.siteFeatureService.getFeaturesForCategorySub(this.category).subscribe(features => {
                     if (!this.isDiagnosticTools) {
-                        features.filter(feature => feature.id).forEach(feature => {
+                        features.forEach(feature => {
                             let onClick = () => {
                                 feature.clickAction();
                             }

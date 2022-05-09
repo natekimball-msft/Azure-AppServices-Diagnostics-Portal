@@ -1,7 +1,7 @@
 declare var jsDynamicImportFlows: any;
 export class CheckManager {
     private static _jsUrl = "http://127.0.0.1:8000/test-check.js";
-    private static _remoteCheckPromise:Promise<any> = null;
+    private static _remoteCheckPromise:Promise<any>;
     static loadRemoteCheckAsync(reset:boolean = false): Promise<any> {
         if (reset || CheckManager._remoteCheckPromise == null) {
             CheckManager._remoteCheckPromise = new Promise<any>((resolve, reject) => {

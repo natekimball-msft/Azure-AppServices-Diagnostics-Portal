@@ -423,7 +423,7 @@ export class SiteFeatureService extends FeatureService {
           category: 'Diagnostic Tools',
           description: '',
           featureType: FeatureTypes.Tool,
-          clickAction: this._createFeatureAction(ToolNames.NetworkChecks, 'Networking', () => {
+          clickAction: this._createFeatureAction(ToolNames.NetworkChecks, 'Diagnostic Tools', () => {
             //Need remove after A/B test
             if (this.isLegacy) {
               this._router.navigateByUrl(`resource${resourceId}/tools/networkchecks`);
