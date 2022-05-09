@@ -423,12 +423,34 @@ export class SiteFeatureService extends FeatureService {
           category: 'Diagnostic Tools',
           description: '',
           featureType: FeatureTypes.Tool,
-          clickAction: this._createFeatureAction(ToolNames.NetworkChecks, 'Diagnostic Tools', () => {
+          clickAction: this._createFeatureAction(ToolNames.NetworkChecks, 'Networking', () => {
             //Need remove after A/B test
             if (this.isLegacy) {
               this._router.navigateByUrl(`resource${resourceId}/tools/networkchecks`);
             } else {
               this.navigateTo(resourceId, ToolIds.NetworkChecks);
+            }
+          })
+        }
+      },
+      {
+        appType: AppType.WorkflowApp,
+        platform: OperatingSystem.any,
+        sku: Sku.All,
+        hostingEnvironmentKind: HostingEnvironmentKind.All,
+        stack: '',
+        item: {
+          id: ToolIds.NetworkChecks,
+          name: ToolNames.NetworkChecks,
+          category: 'Networking',
+          description: '',
+          featureType: FeatureTypes.Tool,
+          clickAction: this._createFeatureAction(ToolNames.NetworkChecks, 'Networking', () => {
+            //Need remove after A/B test
+            if (this.isLegacy) {
+              this._router.navigateByUrl(`resource${resourceId}/tools/networkchecks`);
+            } else {
+              this.navigateTo(resourceId, ToolIds.NetworkChecks, "Networking");
             }
           })
         }
@@ -581,13 +603,13 @@ export class SiteFeatureService extends FeatureService {
     });
   }
 
-  private navigateTo(resourceId: string, toolId: string) {
+  private navigateTo(resourceId: string, toolId: string, category: string = "DiagnosticTools") {
     const isHomepage = this._router.url.endsWith(resourceId);
     //If in homepage then open second blade for Diagnostic Tool and second blade will continue to open third blade for
     if (isHomepage) {
-      this._portalActionService.openBladeDiagnosticToolId(toolId);
+      this._portalActionService.openBladeDiagnosticToolId(toolId, category);
     } else {
-      this._router.navigateByUrl(`resource${resourceId}/categories/DiagnosticTools/tools/${toolId}`);
+      this._router.navigateByUrl(`resource${resourceId}/categories/${category}/tools/${toolId}`);
     }
   }
 }

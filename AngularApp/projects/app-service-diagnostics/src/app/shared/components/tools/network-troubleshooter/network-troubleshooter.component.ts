@@ -1,23 +1,19 @@
 import { Component, Pipe, PipeTransform, Inject, OnInit, Input, ViewEncapsulation, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DiagnosticData, StepFlowManager, StepViewContainer, TelemetryService, InfoStepView, DropdownStepView, StepFlow, CheckStepView, InputStepView, ButtonStepView, PromiseCompletionSource } from 'diagnostic-data';
 import { Globals } from 'projects/app-service-diagnostics/src/app/globals';
 import { CXPChatCallerService } from 'projects/app-service-diagnostics/src/app/shared-v2/services/cxp-chat-caller.service';
-import { ResourceService } from 'projects/app-service-diagnostics/src/app/shared-v2/services/resource.service';
-import { CheckManager } from 'projects/app-service-diagnostics/src/app/shared/components/tools/network-checks/check-manager';
-import { DiagProvider } from 'projects/app-service-diagnostics/src/app/shared/components/tools/network-checks/diag-provider';
-import { FunctionAppFlowSet } from 'projects/app-service-diagnostics/src/app/shared/components/tools/network-checks/functionapp-flows';
-import { NetworkCheckFlow } from 'projects/app-service-diagnostics/src/app/shared/components/tools/network-checks/network-check-flow';
-import { NetworkCheckFlowSet } from 'projects/app-service-diagnostics/src/app/shared/components/tools/network-checks/network-check-flow-set';
-import { WebAppFlowSet } from 'projects/app-service-diagnostics/src/app/shared/components/tools/network-checks/webapp-flow-set';
-import { Site, SiteInfoMetaData } from 'projects/app-service-diagnostics/src/app/shared/models/site';
-import { ArmService } from 'projects/app-service-diagnostics/src/app/shared/services/arm.service';
-import { SiteService } from 'projects/app-service-diagnostics/src/app/shared/services/site.service';
 import { PortalService } from 'projects/app-service-diagnostics/src/app/startup/services/portal.service';
-import { DiagnosticData } from '../../models/detector';
-import { TelemetryService } from '../../services/telemetry/telemetry.service';
-import { DataRenderBaseComponent } from '../data-render-base/data-render-base.component';
-import { ButtonStepView, CheckStepView, DropdownStepView, InfoStepView, InputStepView, PromiseCompletionSource, StepFlow, StepFlowManager, StepViewContainer } from '../step-views/step-view-lib';
-
+import { DataRenderBaseComponent } from 'projects/diagnostic-data/src/lib/components/data-render-base/data-render-base.component';
+import { SiteInfoMetaData, Site } from '../../../models/site';
+import { ArmService } from '../../../services/arm.service';
+import { SiteService } from '../../../services/site.service';
+import { CheckManager } from '../network-checks/check-manager';
+import { DiagProvider } from '../network-checks/diag-provider';
+import { FunctionAppFlowSet } from '../network-checks/functionapp-flows';
+import { NetworkCheckFlow } from '../network-checks/network-check-flow';
+import { NetworkCheckFlowSet } from '../network-checks/network-check-flow-set';
+import { WebAppFlowSet } from '../network-checks/webapp-flow-set';
 
 
 @Component({

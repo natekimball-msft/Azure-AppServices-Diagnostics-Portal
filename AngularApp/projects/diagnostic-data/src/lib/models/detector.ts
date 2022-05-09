@@ -126,8 +126,7 @@ export enum RenderingType {
     Notification,
     Tab,
     Section,
-    StepViews,
-    NetworkTroubleshooter
+    StepViews
 }
 
 export enum TimeSeriesType {
