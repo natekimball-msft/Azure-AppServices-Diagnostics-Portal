@@ -1,5 +1,5 @@
 import * as pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "../assets/vfs_fonts";
+import pdfFonts from "../models/vfs_fonts.js";
 import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from "../models/resiliencyReportData";
 import { DataTableResponseObject } from '../models/detector';
 pdfMake.vfs = pdfFonts;
