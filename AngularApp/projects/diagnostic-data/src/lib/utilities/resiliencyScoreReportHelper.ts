@@ -1,9 +1,16 @@
-import * as pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "../assets/vfs_fonts";
+//import * as pdfMake from "pdfmake/build/pdfmake";
+// import * as pdfFonts from "pdfmake/build/vfs_fonts";
+
+// import 'pdfmake/build/pdfmake';
+// import 'pdfmake/build/vfs_fonts';
+
 import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from "../models/resiliencyReportData";
 import { DataTableResponseObject } from '../models/detector';
-pdfMake.vfs = pdfFonts;
+//pdfMake.vfs = pdfFonts;
 
+const pdfMake = require('pdfmake/build/pdfmake.js');
+const pdfFonts = require('pdfmake/build/vfs_fonts.js');
+pdfMake.vfs = pdfFonts;
 export class ResiliencyScoreReportHelper {
 
     // Creates the ResiliencyResource object from a DataTableResponseObject and calls PDFMake to generate the PDF using the provided file name
