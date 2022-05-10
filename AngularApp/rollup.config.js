@@ -1,5 +1,5 @@
 export default {
     moduleContext: {
-        './node_modules/vfs_fonts/dist/vfs_fonts.js': 'window',
+        './src/lib/assets/vfs_fonts.js': 'window',
       },
 };
