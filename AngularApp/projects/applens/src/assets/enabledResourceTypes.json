@@ -586,7 +586,8 @@
             "versionPrefix": "v2/",
             "azureCommImpactedServicesList": "appservice",
             "emergingIssuesICMLookupEnabled": false,
-            "displayName": "Internal Stamp"
+            "displayName": "Internal Stamp",
+            "overviewPageMetricsId" : "applensoverviewmetrics_stamps"
         }
     ]
 }

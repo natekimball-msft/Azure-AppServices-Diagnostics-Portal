@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using AppLensV3.Services;
 
 namespace AppLensV3
 {
@@ -10,9 +11,12 @@ namespace AppLensV3
     {
         IObserverClientService _observerService;
 
-        public ResourceController(IObserverClientService observerService)
+        IKustoQueryService _kustoQueryService;
+
+        public ResourceController(IObserverClientService observerService, IKustoQueryService kustoQueryService)
         {
             _observerService = observerService;
+            _kustoQueryService = kustoQueryService;
         }
 
         [HttpGet("api/sites/{siteName}")]
@@ -165,6 +169,26 @@ namespace AppLensV3
             }
 
             return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("api/kustogeo/{geoRegionName}")]
+        public async Task<IActionResult> GetKustoByGeo(string geoRegionName)
+        {
+            return await GetKustoByGeoInternal(geoRegionName);
+        }
+
+        private async Task<IActionResult> GetKustoByGeoInternal(string geoRegionName)
+        {
+            var kustoClusterName = await _kustoQueryService.GetKustoClusterByGeoRegion(geoRegionName);
+            if (kustoClusterName == null)
+            {
+                return NotFound(new { GeoRegionName = geoRegionName });
+            }
+            else
+            {
+                return Ok(new { GeoRegionName = geoRegionName, ClusterName = kustoClusterName });
+            }
         }
     }
 }

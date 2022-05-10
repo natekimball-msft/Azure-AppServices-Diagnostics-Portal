@@ -101,6 +101,11 @@ export class DiagnosticApiService {
     return useCache ? this._cacheService.get(this.getCacheKey(HttpMethod.POST, url), request, invalidateCache) : request;
   }
 
+  public getKustoClusterForGeoRegion(geoRegion: string, useCache: boolean = true, invalidateCache: boolean = false): Observable<any> {
+    let path = `api/kustogeo/${geoRegion}`;
+    return this.get(path, invalidateCache);
+  }
+
   public requestTemporaryAccess(): Observable<any> {
     let url: string = `${this.diagnosticApi}temporaryAccess/requestAccess`;
     let request = this._httpClient.post(url, {}, {

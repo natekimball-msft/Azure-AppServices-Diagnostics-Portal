@@ -177,8 +177,10 @@ export class DashboardComponent implements OnDestroy {
 
         this.keys = Object.keys(this.resource);
         this.replaceResourceEmptyValue();
-        if (!(serviceInputs.resourceType.toString().toLowerCase() == "stamps"))
-        {
+        if (serviceInputs.resourceType.toString().toLowerCase() == "stamps") {
+          this.updateAdditionalStampInfo();
+        }
+        else {
           this.updateVentAndLinuxInfo();
         }
       }
@@ -192,6 +194,22 @@ export class DashboardComponent implements OnDestroy {
       });
       this.breadcrumbItems[this.breadcrumbItems.length - 1].isCurrentItem = true;
     });
+  }
+
+  updateAdditionalStampInfo(){
+    if (this.keys.indexOf('JarvisDashboard') == -1 && this.resourceReady != null && this.resourceDetailsSub == null) {
+      this.resourceDetailsSub = this.resourceReady.subscribe(resource => {
+        if (resource) {
+          this._resourceService.getAdditionalResourceInfo(this.resource).subscribe(resourceInfo => {
+            for (let key in resourceInfo) {
+              this.resource[key] = resourceInfo[key];
+              this.keys.push(key);
+            };
+            this.replaceResourceEmptyValue();
+          });
+        }
+      });
+    }
   }
 
 

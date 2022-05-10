@@ -6,8 +6,10 @@ import { ResourceService } from "../services/resource.service";
 import { ObserverService } from "../services/observer.service";
 import { StaticWebAppService } from "../services/staticwebapp.service";
 import {StampService} from "../services/stamp.service";
+import {DiagnosticApiService} from "../services/diagnostic-api.service";
+import {DetectorControlService} from "diagnostic-data";
 
-export let ResourceServiceFactory = (startupService: StartupService, observerService: ObserverService) => {
+export let ResourceServiceFactory = (startupService: StartupService, observerService: ObserverService, diagnosticApiService: DiagnosticApiService, detectorControlService: DetectorControlService) => {
     let serviceInputs = startupService.getInputs();
     let service: ResourceService;
 
@@ -29,7 +31,7 @@ export let ResourceServiceFactory = (startupService: StartupService, observerSer
             service = new StaticWebAppService(serviceInputs, observerService);
             break;
         case 'stamps':
-            service = new StampService(serviceInputs, observerService);
+            service = new StampService(serviceInputs, observerService, diagnosticApiService, detectorControlService);
             break;
         default:
             service = new ResourceService(serviceInputs);
