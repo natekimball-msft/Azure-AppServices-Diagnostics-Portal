@@ -103,7 +103,10 @@ export class CategoryNavComponent implements OnInit {
         }
 
         if (this._activatedRoute && this._activatedRoute.firstChild && this._activatedRoute.firstChild.snapshot) {
-            if (!this._activatedRoute.firstChild.snapshot.params['analysisId']) {
+            if(this._activatedRoute.firstChild.snapshot.routeConfig.path.startsWith("tools/")){
+                this.currentDetectorId = this._activatedRoute.firstChild.snapshot.routeConfig.path.split("/")[1];
+            }
+            else if (!this._activatedRoute.firstChild.snapshot.params['analysisId']) {
                 if (this._activatedRoute.firstChild.snapshot.params['detectorName']) {
                     this.currentDetectorId = this._activatedRoute.firstChild.snapshot.params['detectorName'];
                 }
