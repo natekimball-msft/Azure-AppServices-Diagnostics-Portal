@@ -2,7 +2,6 @@ import pdfMake from "pdfmake/build/pdfmake";
 import "../assets/vfs_fonts";
 import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from "../models/resiliencyReportData";
 import { DataTableResponseObject } from '../models/detector';
-//pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 export class ResiliencyScoreReportHelper {
 
