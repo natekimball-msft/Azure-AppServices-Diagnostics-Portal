@@ -1,5 +1,5 @@
 import {
-  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource
+  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource, ResiliencyScoreReportHelper
 } from 'diagnostic-data';
 import { Component, AfterViewInit, Input } from '@angular/core';
 import { Globals } from '../../../globals';
@@ -10,7 +10,6 @@ import { OperatingSystem } from '../../../shared/models/site';
 import { AppType } from '../../../shared/models/portal';
 import { SeverityLevel } from '@microsoft/applicationinsights-web';
 import { DirectionalHint } from 'office-ui-fabric-react';
-import { ResiliencyScoreReportHelper } from '../../../shared/utilities/resiliencyScoreReportHelper';
 import { BehaviorSubject } from 'rxjs';
 import { DemoSubscriptions } from '../../../betaSubscriptions';
 
