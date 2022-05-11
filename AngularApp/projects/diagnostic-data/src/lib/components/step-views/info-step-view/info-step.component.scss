@@ -12,22 +12,22 @@
 
 .recommendation-info {
     height: inherit;
-    background-color: rgb(240, 246, 255);
-    
+    background-color: var(--recommendationInfoBg);
+
 }
 
 .recommendation-info svg{
-    background-color: rgb(1, 92, 218);    
+    background-color: rgb(1, 92, 218);
 }
 
 .diagnostic-info {
     height: inherit;
-    background-color: rgb(249, 243, 252);
-    
+    background-color: var(--diagnosticInfoBg);
+
 }
 
 .diagnostic-info svg{
-    background-color: rgb(138, 45, 165);  
+    background-color: rgb(138, 45, 165);
 }
 
 .markdown-title{
