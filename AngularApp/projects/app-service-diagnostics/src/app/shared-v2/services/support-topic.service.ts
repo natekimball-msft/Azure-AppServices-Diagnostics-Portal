@@ -27,6 +27,18 @@ export class SupportTopicService {
         "15551": ["32632390", "32632389", "32632430", "32632396", "32632397", "32632401", "32632431", "32632436", "32632434", "32632406", "32632389", "32632390", "32632430", "32632393", "32632398", "32632403", "32632409", "32632413", "32632414", "32632415", "32632385", "32632418", "32632419", "32632422", "32632424", "32632438", "32632399", "32632408", "32632421", "32632426", "32632405", "32683732", "32632427", "32632386", "32632387", "32632388", "32632395", "32632404", "32632416", "32632402", "32632420", "32632425", "32632428", "32632432", "32632437", "32632407", "32740235", "32740236", "32740237", "32740238", "32740239", "32740240", "32740234"]
     };
 
+    private vnetSupportTopicIds:{name:string, supportTopicId:string, sapSupportTopicId:string}[] = [
+        {name:"VNet Integration", supportTopicId:"32542212", sapSupportTopicId: "e46a61a3-caeb-38aa-89ea-f851e9d63652"}, // Web App (Linux)\Networking\Configuring VNET integration with App Service
+        {name:"VNet Integration", supportTopicId:"32542212", sapSupportTopicId: "f9793673-0fe9-0109-52fa-8b166b645087"}, // Web App (Windows)\Networking\Configuring VNET integration with App Service
+        {name:"VNet Integration", supportTopicId:"32542212", sapSupportTopicId: "2b508ce1-e160-1a35-6355-71172d0af5b0"}, // Web App for Containers\Networking\Configuring VNET integration with App Service
+        {name:"VNet Integration", supportTopicId:"32630473", sapSupportTopicId: "2f550394-351c-4add-5807-eba6428dac71"}, // Function App\Networking\Configuring VNET integration with Functions
+        {name:"VNet Integration", supportTopicId:"32799806", sapSupportTopicId: "73f8d0d6-2b1c-0fb9-f08e-ce5675ae4e9a"}, // Logic App\Networking\Configuring VNET integration
+        {name:"Outbound Connectivity", supportTopicId:"32820919", sapSupportTopicId: "6baa322b-ef6b-f235-c0c0-82ff512602c4"}, // Web App (Linux)\Networking\Outbound Connectivity
+        {name:"Outbound Connectivity", supportTopicId:"32820919", sapSupportTopicId: "1653e0e2-8249-fb67-6d0e-767fa14d79b2"}, // Web App (Windows)\Networking\Outbound Connectivity
+        {name:"Outbound Connectivity", supportTopicId:"32820919", sapSupportTopicId: "1653e0e2-8249-fb67-6d0e-767fa14d79b2"}, // Web App for Containers\Networking\Outbound Connectivity
+        {name:"Outbound Connectivity", supportTopicId:"32820562", sapSupportTopicId: "8856038e-a071-236e-9823-41313ee4cb85"}, // Function App\Networking\Outbound Connectivity
+    ];
+
     private solutionOrchestratorConfig = {
         "14748": ["32629421"]
     };
@@ -59,26 +71,19 @@ export class SupportTopicService {
         return this._resourceService.getPesId().pipe(flatMap(pesId => {
             const redirectFrom = "supportTopic";
             var supportTopic:string = null;
-            // Web App (Linux)\Networking\Configuring VNET integration with App Service: supportTopicId == "32542212" , sapSupportTopicId == "e46a61a3-caeb-38aa-89ea-f851e9d63652"
-            // Web App (Windows)\Networking\Configuring VNET integration with App Service:  supportTopicId == "32542212" , sapSupportTopicId == "f9793673-0fe9-0109-52fa-8b166b645087"
-            // Web App for Containers\Networking\Configuring VNET integration with App Service: supportTopicId == "32542212", sapSupportTopicId == "2b508ce1-e160-1a35-6355-71172d0af5b0"
-            // Function App\Networking\Configuring VNET integration with Functions:  supportTopicId == "32630473", sapSupportTopicId == "2f550394-351c-4add-5807-eba6428dac71"
-            if (supportTopicId == "32542212" || sapSupportTopicId == "e46a61a3-caeb-38aa-89ea-f851e9d63652" ||  sapSupportTopicId == "f9793673-0fe9-0109-52fa-8b166b645087" || sapSupportTopicId == "2b508ce1-e160-1a35-6355-71172d0af5b0"
-            || supportTopicId == "32630473" || sapSupportTopicId == "2f550394-351c-4add-5807-eba6428dac71") {
-                // WebApp/VNET integration with App Service or FunctionApp/Configuring VNET integration with AppService
-                supportTopic = "VNet Integration";
-                return observableOf({ path: 'tools/networkchecks', queryParams: { redirectFrom, supportTopic, supportTopicId, sapSupportTopicId } });
-            } else if (supportTopicId == "32820919" || sapSupportTopicId == "6baa322b-ef6b-f235-c0c0-82ff512602c4" || sapSupportTopicId == "1653e0e2-8249-fb67-6d0e-767fa14d79b2" || sapSupportTopicId == "bafd9de9-bbe7-5366-efbd-3e845db6e1ae"
-            || supportTopicId == "32820562" || sapSupportTopicId == "8856038e-a071-236e-9823-41313ee4cb85") {
-                // WebApp/Outbound Connectivity or FunctionApp/Outbound Connectivity
-                supportTopic = "Outbound Connectivity";
-                var kind = this._resourceService.resource.kind;
-                if (kind.includes("container")) {
-                    // container based App is not supported yet
-                } else {
-                    // non-container webapp/function app
-                    return observableOf({ path: 'tools/networkchecks', queryParams: { redirectFrom, supportTopic, supportTopicId, sapSupportTopicId } });
+
+            for(var i = 0; i<this.vnetSupportTopicIds.length; ++i){
+                if(supportTopicId == this.vnetSupportTopicIds[i].sapSupportTopicId || sapSupportTopicId == this.vnetSupportTopicIds[i].sapSupportTopicId){
+                    supportTopic = this.vnetSupportTopicIds[i].name;
+                    break;
                 }
+            }
+            
+            var kind = this._resourceService.resource.kind;
+            if (supportTopic == "Outbound Connectivity" && kind.includes("container")) {
+                // container based App is not supported by "Outbound Connectivity" yet, do nothing
+            } else {
+                return observableOf({ path: 'tools/networkchecks', queryParams: { redirectFrom, supportTopic, supportTopicId, sapSupportTopicId } });
             }
 
             this.pesId = pesId;
