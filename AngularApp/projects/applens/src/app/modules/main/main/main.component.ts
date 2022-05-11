@@ -1,11 +1,11 @@
 import * as momentNs from 'moment';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, NavigationExtras, Router } from '@angular/router';
+import { NavigationExtras, Router } from '@angular/router';
 import {
-  ResourceServiceInputs, ResourceType, ResourceTypeState, ResourceServiceInputsJsonResponse
+  ResourceServiceInputs, ResourceTypeState, ResourceServiceInputsJsonResponse
 } from '../../../shared/models/resources';
 import { HttpClient } from '@angular/common/http';
-import { DropdownMenuItemType, IDropdownOption, IDropdownProps, PanelType } from 'office-ui-fabric-react';
+import { IDropdownOption, IDropdownProps, PanelType } from 'office-ui-fabric-react';
 import { BehaviorSubject } from 'rxjs';
 import { DataTableResponseObject, DetectorControlService, GenericThemeService, HealthStatus } from 'diagnostic-data';
 import { AdalService } from 'adal-angular4';
@@ -147,10 +147,6 @@ export class MainComponent implements OnInit {
 
 
     this._userSettingService.getUserSetting().subscribe(userInfo => {
-      if (userInfo && userInfo.resources) {
-        this.table = this.generateDataTable(userInfo.resources);
-      }
-
       if (userInfo && userInfo.theme && userInfo.theme.toLowerCase() == "dark") {
         this._themeService.setActiveTheme("dark");
       }
@@ -180,6 +176,12 @@ export class MainComponent implements OnInit {
       });
       this.resourceTypeList.sort((a, b) => {
         return a.name.localeCompare(b.name);
+      });
+
+      this._userSettingService.getUserSetting().subscribe(userInfo => {
+        if (userInfo && userInfo.resources) {
+          this.table = this.generateDataTable(userInfo.resources);
+        }
       });
     });
 
