@@ -11,7 +11,7 @@
         display: inline;
         margin-right: 45px;
     }
-    
+
     .bold{
         font-weight: 500;
     }
@@ -33,7 +33,7 @@
         margin-top: 1px;
         margin-left: -35px;
         .ms-Icon{
-            color: black;
+            color: var(--bodyText);
         }
     }
 }
