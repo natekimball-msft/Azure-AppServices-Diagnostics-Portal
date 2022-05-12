@@ -123,6 +123,7 @@ import { NetworkCheckComponent } from './components/tools/network-checks/network
 import { DaasComponent } from './components/daas/daas/daas.component';
 import { ProfilerComponent } from './components/daas/profiler/profiler.component';
 import { ABTestingService } from './services/abtesting.service';
+import { NetworkTroubleshooterComponent } from './components/tools/network-troubleshooter/network-troubleshooter.component';
 
 @NgModule({
     declarations: [
@@ -151,6 +152,7 @@ import { ABTestingService } from './services/abtesting.service';
         DaasSessionsComponent,
         ProfilerToolComponent,
         NetworkCheckComponent,
+        NetworkTroubleshooterComponent,
         MemoryDumpToolComponent,
         JavaMemoryDumpToolComponent,
         JavaThreadDumpToolComponent,

@@ -22,5 +22,7 @@ namespace AppLensV3.Services
         /// <param name="timeoutSeconds">Time out in seconds for the query.</param>
         /// <returns>Returns a data table containing the result of the query.</returns>
         Task<DataTable> ExecuteQueryAsync(string cluster, string database, string query, string operationName, DateTime? startTime = null, DateTime? endTime = null, int timeoutSeconds = KustoConstants.DefaultQueryTimeoutInSeconds);
+
+        Task<string> GetKustoClusterByGeoRegion(string geoRegionName);
     }
 }

@@ -13,6 +13,7 @@ import { StartupService } from '../../shared/services/startup.service';
 import { Observable } from 'rxjs';
 import { SideNavComponent, SearchMenuPipe } from './side-nav/side-nav.component';
 import { ResourceMenuItemComponent } from './resource-menu-item/resource-menu-item.component';
+import { DiagnosticApiService } from '../../shared/services/diagnostic-api.service';
 import { ResourceService } from '../../shared/services/resource.service';
 import { ResourceServiceFactory } from '../../shared/providers/resource.service.provider';
 import { ResourceHomeComponent } from './resource-home/resource-home.component';
@@ -422,7 +423,7 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
         {
             provide: ResourceService,
             useFactory: ResourceServiceFactory,
-            deps: [StartupService, ObserverService]
+            deps: [StartupService, ObserverService, DiagnosticApiService, DetectorControlService]
         },
         { provide: DiagnosticService, useExisting: ApplensDiagnosticService },
         { provide: GenericSupportTopicService, useExisting: ApplensSupportTopicService },

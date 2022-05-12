@@ -18,6 +18,8 @@ namespace AppLensV3.Services
 
         private static ConcurrentDictionary<Tuple<string, string>, ICslQueryProvider> QueryProviderMapping;
 
+        private static ConcurrentDictionary<string, string> KustoClusterGeoMapping;
+
         private string aadKustoResource = string.Empty;
 
         private string kustoApiQueryEndpoint = string.Empty;
@@ -61,6 +63,11 @@ namespace AppLensV3.Services
             if (QueryProviderMapping == null)
             {
                 QueryProviderMapping = new ConcurrentDictionary<Tuple<string, string>, ICslQueryProvider>();
+            }
+
+            if (KustoClusterGeoMapping == null)
+            {
+                KustoClusterGeoMapping = new ConcurrentDictionary<string, string>();
             }
         }
 
@@ -116,6 +123,58 @@ namespace AppLensV3.Services
             }
 
             return datatable;
+        }
+
+        public async Task<string> GetKustoClusterByGeoRegion(string geoRegionName)
+        {
+            geoRegionName = geoRegionName.ToLower();
+            if (KustoClusterGeoMapping.Count == 0)
+            {
+                await LoadKustoClusterGeoMapping();
+            }
+            if (KustoClusterGeoMapping.ContainsKey(geoRegionName))
+            {
+                return KustoClusterGeoMapping[geoRegionName];
+            }
+            else
+            {
+                return await GetKustoClusterByGeo(geoRegionName);
+            }
+        }
+
+        private async Task<string> GetKustoClusterByGeo(string geoRegionName)
+        {
+            string clusterQuery = @$"WawsAn_regionsincluster
+                                    | where pdate >= ago(2d)
+                                    | where tolower(Region) == '{geoRegionName}'
+                                    | take 1
+                                    | project ClusterName";
+            var clusterResult = await ExecuteQueryAsync("wawseusfollower", "wawsprod", clusterQuery, "GetKustoClusterByGeoRegion");
+            if (clusterResult.Rows.Count > 0)
+            {
+                return clusterResult.Rows[0]["ClusterName"].ToString();
+            }
+            return null;
+        }
+
+        private async Task LoadKustoClusterGeoMapping()
+        {
+            string clusterGeoQuery = @$"WawsAn_regionsincluster
+                                    | where pdate >= ago(2d)
+                                    | distinct ClusterName, Region";
+            var clusterGeoResult = await ExecuteQueryAsync("wawseusfollower", "wawsprod", clusterGeoQuery, "GetKustoClusterGeoMapping");
+            if (clusterGeoResult.Rows.Count > 0)
+            {
+                foreach (DataRow row in clusterGeoResult.Rows)
+                {
+                    var clusterName = row["ClusterName"].ToString();
+                    var geoRegion = row["Region"].ToString().ToLower();
+                    if (!KustoClusterGeoMapping.TryAdd(geoRegion, clusterName))
+                    {
+                        KustoClusterGeoMapping[geoRegion] = clusterName;
+                    }
+                }
+            }
         }
 
         private string GetClientIdentifyingName()

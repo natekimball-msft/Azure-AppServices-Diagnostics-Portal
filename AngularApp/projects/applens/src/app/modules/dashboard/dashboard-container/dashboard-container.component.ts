@@ -54,11 +54,30 @@ export class DashboardContainerComponent implements OnInit {
 
         this.keys = Object.keys(this.resource);
         this.replaceResourceEmptyValue();
-        if (!(serviceInputs.resourceType.toString().toLowerCase() == "stamps")) {
+        if (serviceInputs.resourceType.toString().toLowerCase() == "stamps") {
+          this.updateAdditionalStampInfo();
+        }
+        else {
           this.updateVentAndLinuxInfo();
         }
       }
     });
+  }
+
+  updateAdditionalStampInfo(){
+    if (this.keys.indexOf('JarvisDashboard') == -1 && this.resourceReady != null && this.resourceDetailsSub == null) {
+      this.resourceDetailsSub = this.resourceReady.subscribe(resource => {
+        if (resource) {
+          this._resourceService.getAdditionalResourceInfo(this.resource).subscribe(resourceInfo => {
+            for (let key in resourceInfo) {
+              this.resource[key] = resourceInfo[key];
+              this.keys.push(key);
+            };
+            this.replaceResourceEmptyValue();
+          });
+        }
+      });
+    }
   }
 
   updateVentAndLinuxInfo() {
@@ -100,5 +119,9 @@ export class DashboardContainerComponent implements OnInit {
     setTimeout(() => {
       event.target.src = "/assets/img/copy-icon.png";
     }, 3000);
+  }
+
+  checkWithHref(s: string) {
+    return `${s}`.includes("a href");
   }
 }

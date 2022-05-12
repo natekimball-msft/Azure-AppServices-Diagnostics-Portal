@@ -70,6 +70,8 @@ namespace AppLensV3.Helpers
         public const string VerbHeader = "x-ms-verb";
         public const string IsTemporaryAccessHeader = "IsTemporaryAccess";
         public const string TemporaryAccessExpiresHeader = "TemporaryAccessExpires";
+        public const string CustomerCaseNumberHeader = "x-ms-customer-casenumber";
+        public const string UserTokenHeader = "x-ms-user-token";
     }
 
     public static class DetectorGistTemplateServiceConstants

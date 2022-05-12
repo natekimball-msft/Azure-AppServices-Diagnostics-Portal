@@ -77,6 +77,10 @@ export class ResourceService {
     return observableOf(this._armResource);
   }
 
+  public getAdditionalResourceInfo(resourceProps): Observable<any>{
+    return observableOf({});
+  }
+
   public getResourceByObserver(): any {
     return this._observerResource;
   }

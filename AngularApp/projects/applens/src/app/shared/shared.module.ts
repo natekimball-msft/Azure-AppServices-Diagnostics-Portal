@@ -28,6 +28,7 @@ import { ApplensDocsComponent } from './components/applens-docs/applens-docs.com
 import { StaticWebAppService } from './services/staticwebapp.service';
 import { StampService } from './services/stamp.service';
 import { DetectorGistApiService } from './services/detectorgist-template-api.service';
+import { AlertService } from './services/alert.service';
 
 @NgModule({
   imports: [
@@ -67,7 +68,8 @@ export class SharedModule {
         AadAuthGuard,
         CaseCleansingApiService,
         UserSettingService,
-        DetectorGistApiService
+        DetectorGistApiService,
+        AlertService
       ]
     }
   }
