@@ -134,6 +134,7 @@ namespace AppLensV3
             {
                 services.AddSingleton<IAuthorizationHandler, SecurityGroupHandler>();
             }
+            services.AddSingleton<IAuthorizationHandler, DefaultAuthorizationHandler>();
 
 
             if (Configuration["ServerMode"] == "internal")
