@@ -195,6 +195,8 @@ namespace AppLensV3.Controllers
                 }
             }
 
+            headers.Add("x-ms-user-token", Request.Headers["Authorization"].ToString());
+            
             // For Publishing Detector Calls, validate if user has access to publish the detector
             if (invokeHeaders.Path.EndsWith("/diagnostics/publish", StringComparison.OrdinalIgnoreCase))
             {

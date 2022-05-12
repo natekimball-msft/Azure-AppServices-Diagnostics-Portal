@@ -16,6 +16,15 @@ export class ApplensDiagnosticService {
     if (!this.resourceId.startsWith("/")) this.resourceId = "/" + this.resourceId;
   }
 
+  public checkUserAccess() {
+    return this._diagnosticApi.checkUserAccess();
+  }
+
+  public unrelatedResourceConfirmation(overrideResourceUri?: string) {
+    let resourceId = overrideResourceUri ? overrideResourceUri : this._resourceService.getCurrentResourceId(true);
+    return this._diagnosticApi.unrelatedResourceConfirmation(resourceId);
+  }
+
   getDetector(detector: string, startTime: string, endTime: string, refresh: boolean = false, internalView: boolean = true, formQueryParams?: string, overrideResourceUri?: string): Observable<DetectorResponse> {
     let resourceId = overrideResourceUri ? overrideResourceUri : this._resourceService.getCurrentResourceId(true);
     if (!resourceId.startsWith('/')) resourceId = '/' + resourceId;

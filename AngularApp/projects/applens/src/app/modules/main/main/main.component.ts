@@ -1,11 +1,11 @@
 import * as momentNs from 'moment';
 import { Component, OnInit } from '@angular/core';
-import { NavigationExtras, Router } from '@angular/router';
+import { NavigationExtras, Router, ActivatedRoute } from '@angular/router';
 import {
   ResourceServiceInputs, ResourceTypeState, ResourceServiceInputsJsonResponse
 } from '../../../shared/models/resources';
 import { HttpClient } from '@angular/common/http';
-import { IDropdownOption, IDropdownProps, PanelType } from 'office-ui-fabric-react';
+import { IDropdownOption, IDropdownProps, PanelType, SpinnerSize } from 'office-ui-fabric-react';
 import { BehaviorSubject } from 'rxjs';
 import { DataTableResponseObject, DetectorControlService, GenericThemeService, HealthStatus } from 'diagnostic-data';
 import { AdalService } from 'adal-angular4';
@@ -13,6 +13,8 @@ import { UserSettingService } from '../../dashboard/services/user-setting.servic
 import { RecentResource } from '../../../shared/models/user-setting';
 import { ResourceDescriptor } from 'diagnostic-data'
 import { applensDocs } from '../../../shared/utilities/applens-docs-constant';
+import {DiagnosticApiService} from '../../../shared/services/diagnostic-api.service';
+import { UserAccessStatus } from '../../../shared/models/alerts';
 const moment = momentNs;
 
 @Component({
@@ -35,59 +37,74 @@ export class MainComponent implements OnInit {
     }
   }
 
+  displayLoader: boolean = false;
+  loaderSize = SpinnerSize.large;
+  caseNumberNeededForUser: boolean = false;
+  caseNumber: string = '';
+  caseNumberValidationError: string = null;
+  accessErrorMessage: string = '';
+  userAccessErrorMessage: string = '';
+  displayUserAccessError: boolean = false;
+
   defaultResourceTypes: ResourceTypeState[] = [
     {
-      resourceType: null,
+      resourceType: "Microsoft.Web/sites",
       resourceTypeLabel: 'App name',
       routeName: (name) => `sites/${name}`,
       displayName: 'App Service',
       enabled: true,
       caseId: false,
-      id: 'App Service'
+      id: 'App Service',
+      durianEnabled: true
     },
     {
-      resourceType: null,
+      resourceType: "Microsoft.Web/hostingEnvironments",
       resourceTypeLabel: 'ASE name',
       routeName: (name) => `hostingEnvironments/${name}`,
       displayName: 'App Service Environment',
       enabled: true,
       caseId: false,
-      id: 'App Service Environment'
+      id: 'App Service Environment',
+      durianEnabled: false
     },
     {
-      resourceType: null,
+      resourceType: "Microsoft.Web/containerApps",
       resourceTypeLabel: 'Container App Name',
       routeName: (name) => `containerapps/${name}`,
       displayName: 'Container App',
       enabled: true,
       caseId: false,
-      id: 'Container App'
+      id: 'Container App',
+      durianEnabled: false
     }, {
-      resourceType: null,
+      resourceType: "Microsoft.Web/staticSites",
       resourceTypeLabel: 'Static App Name Or Default Host Name',
       routeName: (name) => `staticwebapps/${name}`,
       displayName: 'Static Web App',
       enabled: true,
       caseId: false,
-      id: 'Static Web App'
+      id: 'Static Web App',
+      durianEnabled: false
     },
     {
-      resourceType: null,
+      resourceType: "Microsoft.Compute/virtualMachines",
       resourceTypeLabel: 'Virtual machine Id',
       routeName: (name) => this.getFakeArmResource('Microsoft.Compute', 'virtualMachines', name),
       displayName: 'Virtual Machine',
       enabled: true,
       caseId: false,
-      id: 'Virtual Machine'
+      id: 'Virtual Machine',
+      durianEnabled: false
     },
     {
-      resourceType: null,
+      resourceType: "ARMResourceId",
       resourceTypeLabel: 'ARM Resource ID',
       routeName: (name) => `${name}`,
       displayName: 'ARM Resource ID',
       enabled: true,
       caseId: false,
-      id: 'ARM Resource ID'
+      id: 'ARM Resource ID',
+      durianEnabled: false
     },
     {
       resourceType: null,
@@ -96,7 +113,8 @@ export class MainComponent implements OnInit {
       displayName: 'Internal Stamp',
       enabled: true,
       caseId: false,
-      id: 'Internal Stamp'
+      id: 'Internal Stamp',
+      durianEnabled: false
     }
   ];
   resourceTypes: ResourceTypeState[] = [];
@@ -123,7 +141,7 @@ export class MainComponent implements OnInit {
   table: RecentResourceDisplay[];
   applensDocs = applensDocs;
 
-  constructor(private _router: Router, private _http: HttpClient, private _detectorControlService: DetectorControlService, private _adalService: AdalService, private _userSettingService: UserSettingService, private _themeService: GenericThemeService) {
+  constructor(private _router: Router, private _http: HttpClient, private _detectorControlService: DetectorControlService, private _adalService: AdalService, private _userSettingService: UserSettingService, private _themeService: GenericThemeService, private _diagnosticApiService: DiagnosticApiService, private _activatedRoute: ActivatedRoute) {
     this.endTime = moment.utc();
     this.startTime = this.endTime.clone().add(-1, 'days');
     this.inIFrame = window.parent !== window;
@@ -131,11 +149,82 @@ export class MainComponent implements OnInit {
     if (this.inIFrame) {
       this.resourceTypes = this.resourceTypes.filter(resourceType => !resourceType.caseId);
     }
+
+    if (this._activatedRoute.snapshot.queryParams['caseNumber'] && this._activatedRoute.snapshot.queryParams['caseNumber'] !== "undefined") {
+      this.caseNumber = this._activatedRoute.snapshot.queryParams['caseNumber'];
+    }
+    if (this._activatedRoute.snapshot.queryParams['resourceName']) {
+      this.resourceName = this._activatedRoute.snapshot.queryParams['resourceName'];
+    }
+    if (this._activatedRoute.snapshot.queryParams['errorMessage']) {
+      this.accessErrorMessage = this._activatedRoute.snapshot.queryParams['errorMessage'];
+    }
+    if (this._activatedRoute.snapshot.queryParams['resourceType']) {
+      let foundResourceType = this.defaultResourceTypes.find(resourceType => resourceType.resourceType.toLowerCase() === this._activatedRoute.snapshot.queryParams['resourceType'].toLowerCase());
+      if (!foundResourceType) {
+        this.selectedResourceType = this.defaultResourceTypes.find(resourceType => resourceType.resourceType.toLowerCase() === "armresourceid");
+        this.resourceName = this._activatedRoute.snapshot.queryParams['resourceId'];
+      }
+      else {
+        this.selectedResourceType = foundResourceType;
+      }
+    }
+  }
+
+  validateCaseNumber(){
+    if (!this.caseNumber || this.caseNumber.length < 12) {
+      this.caseNumberValidationError = "Case number too short";
+      return false;
+    }
+    if (this.caseNumber.length > 18) {
+      this.caseNumberValidationError = "Case number too long";
+      return false;
+    }
+    if (this.caseNumber && this.caseNumber.length > 0 && isNaN(Number(this.caseNumber))){
+      this.caseNumberValidationError = "Case number should be a valid number";
+      return false;
+    }
+    else {
+      this.caseNumberValidationError = "";
+      return true;
+    }
+  }
+
+  fetchUserDetails() {
+    this.displayLoader = true;
+    this.userAccessErrorMessage = '';
+    this.displayUserAccessError = false;
+    this._diagnosticApiService.checkUserAccess().subscribe(res => {
+      if (res && res.Status == UserAccessStatus.CaseNumberNeeded) {
+        this.caseNumberNeededForUser = true;
+        this.displayLoader = false;
+      }
+      else {
+        this.displayLoader = false;
+      }
+    },(err) => {
+      if (err.status === 404) {
+        //This means durian is not yet available on the backend
+        this.caseNumberNeededForUser = false;
+        this.displayLoader = false;
+        return;
+      }
+      let errormsg = err.error;
+      errormsg = errormsg.replace(/\\"/g, '"');
+      errormsg = errormsg.replace(/\"/g, '"');
+        let errobj = JSON.parse(errormsg);
+        this.displayUserAccessError = true;
+        this.userAccessErrorMessage = errobj.DetailText;
+        this.displayLoader = false;
+    });
   }
 
   ngOnInit() {
+    this.fetchUserDetails();
     this.resourceTypes = [...this.defaultResourceTypes];
-    this.selectedResourceType = this.defaultResourceTypes[0];
+    if (!this.selectedResourceType) {
+      this.selectedResourceType = this.defaultResourceTypes[0];
+    }
 
     this.defaultResourceTypes.forEach(resource => {
       this.fabDropdownOptions.push({
@@ -254,6 +343,13 @@ export class MainComponent implements OnInit {
   }
 
   onSubmit() {
+    if (this.caseNumberNeededForUser && (this.selectedResourceType && this.selectedResourceType.durianEnabled)) {
+      this.caseNumber = this.caseNumber.trim();
+      if (!this.validateCaseNumber()){
+        return;
+      }
+      this._diagnosticApiService.setCustomerCaseNumber(this.caseNumber);
+    }
     this.resourceName = this.resourceName.trim();
 
     //If it is ARM resource id
@@ -279,7 +375,10 @@ export class MainComponent implements OnInit {
     }
 
     let navigationExtras: NavigationExtras = {
-      queryParams: timeParams
+      queryParams: {
+        ...timeParams,
+        ...this.caseNumber? {caseNumber: this.caseNumber}: {}
+      },
     }
 
     if (this.errorMessage === '') {

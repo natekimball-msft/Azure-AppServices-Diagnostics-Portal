@@ -15,7 +15,8 @@
             "searchSuffix": "AZURE WEB APP",
             "emergingIssuesICMLookupEnabled": false,
             "displayName": "App",
-            "overviewPageMetricsId" : "applensoverviewmetrics_appservices"
+            "overviewPageMetricsId" : "applensoverviewmetrics_appservices",
+            "durianEnabled": true
         },
         {
             "service": "AseService",

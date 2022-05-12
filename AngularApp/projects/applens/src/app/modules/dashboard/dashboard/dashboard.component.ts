@@ -10,7 +10,7 @@ import { SearchService } from '../services/search.service';
 import { environment } from '../../../../environments/environment';
 import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
 import { ObserverService } from '../../../shared/services/observer.service';
-import { ICommandBarProps, PanelType, IBreadcrumbProps, IBreadcrumbItem, ITooltipHostProps } from 'office-ui-fabric-react';
+import { ICommandBarProps, PanelType, IBreadcrumbProps, IBreadcrumbItem, ITooltipHostProps, SpinnerSize, DialogType } from 'office-ui-fabric-react';
 import { ApplensGlobal } from '../../../applens-global';
 import { L2SideNavType } from '../l2-side-nav/l2-side-nav';
 import { l1SideNavCollapseWidth, l1SideNavExpandWidth } from '../../../shared/components/l1-side-nav/l1-side-nav';
@@ -19,6 +19,11 @@ import { StartupService } from '../../../shared/services/startup.service';
 import { UserInfo } from '../user-detectors/user-detectors.component';
 import { BreadcrumbService } from '../services/breadcrumb.service';
 import { UserSettingService } from '../services/user-setting.service';
+import {AlertService} from '../../../shared/services/alert.service';
+import {AlertInfo, ConfirmationOption} from '../../../shared/models/alerts';
+import { TelemetryService } from 'diagnostic-data';
+import { TelemetryEventNames } from 'diagnostic-data';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'dashboard',
@@ -76,9 +81,23 @@ export class DashboardComponent implements OnDestroy {
     }
   }
 
+  accessError: string = '';
+  displayAlertDialog: boolean = false;
+  displayErrorInDialog: boolean = false;
+  errorInDialog: string = null;
+  showLoaderInDialog: boolean = false;
+  alertInfo: AlertInfo = null;
+  stillLoading: boolean = false;
+  loaderSize = SpinnerSize.large;
+  showDashboardContent: boolean = true;
+  alertDialogStyles = { main: { maxWidth: "70vw!important", minWidth: "40vw!important" } };
+  alertDialogProps = {isBlocking: true}
+  dialogType: DialogType = DialogType.normal;
+
   constructor(public resourceService: ResourceService, private startupService: StartupService,  private _detectorControlService: DetectorControlService,
     private _router: Router, private _activatedRoute: ActivatedRoute, private _navigator: FeatureNavigationService,
-    private _diagnosticService: ApplensDiagnosticService, private _adalService: AdalService, public _searchService: SearchService, private _diagnosticApiService: DiagnosticApiService, private _observerService: ObserverService, public _applensGlobal: ApplensGlobal, private _startupService: StartupService, private _resourceService: ResourceService, private _breadcrumbService: BreadcrumbService, private _userSettingsService: UserSettingService, private _themeService: GenericThemeService) {
+    private _diagnosticService: ApplensDiagnosticService, private _adalService: AdalService, public _searchService: SearchService, private _diagnosticApiService: DiagnosticApiService, private _observerService: ObserverService, public _applensGlobal: ApplensGlobal, private _startupService: StartupService, private _resourceService: ResourceService, private _breadcrumbService: BreadcrumbService, private _userSettingsService: UserSettingService, private _themeService: GenericThemeService,
+    private _alertService: AlertService, private _telemetryService: TelemetryService) {
     this.contentHeight = (window.innerHeight - 50) + 'px';
 
     this.navigateSub = this._navigator.OnDetectorNavigate.subscribe((detector: string) => {
@@ -102,6 +121,12 @@ export class DashboardComponent implements OnDestroy {
         routeParams['searchTerm'] = this._activatedRoute.snapshot.queryParams['searchTerm'];
       }
 
+      if (!this._activatedRoute.queryParams['caseNumber']) {
+        let caseNumber = this._activatedRoute.snapshot.queryParams['caseNumber']? this._activatedRoute.snapshot.queryParams['caseNumber']: (this._activatedRoute.snapshot.queryParams['srId']? this._activatedRoute.snapshot.queryParams['srId']: null);
+        this._diagnosticApiService.setCustomerCaseNumber(caseNumber);
+        routeParams['caseNumber'] = caseNumber;
+      }
+
       this._router.navigate([], { queryParams: routeParams, queryParamsHandling: 'merge', relativeTo: this._activatedRoute });
     }
 
@@ -117,9 +142,89 @@ export class DashboardComponent implements OnDestroy {
         this.displayName = userInfo.displayName;
       });
     }
+
+    this._alertService.getAlert().subscribe((alert: AlertInfo) => {
+      this.alertInfo = alert;
+      this.displayAlertDialog = true;
+      setTimeout(() => {
+        var elem = document.getElementsByClassName('ms-Dialog-title')[0] as HTMLElement;
+        if (elem) {
+          elem.focus();
+        }
+      }, 500);
+    });
+
+    this._alertService.getUnAuthorizedAlerts().subscribe((error: HttpErrorResponse) => {
+      let errorObj = JSON.parse(error.error);
+      if (errorObj && errorObj.DetailText) {
+        this.accessError = errorObj.DetailText;
+        this.navigateBackToHomePage();
+      }
+    });
+  }
+
+  resetDialogSuccessStatus(){
+    this.errorInDialog = null;
+    this.displayErrorInDialog = false;
+  }
+
+  CheckIsResourceUnrelatedError(detailText){
+    return detailText && detailText.includes("resource is not related to the case");
+  }
+
+  navigateBackToHomePage() {
+    let resourceInfo = this._startupService.getResourceInfo();
+    let queryParams = {
+      caseNumber: this._diagnosticApiService.CustomerCaseNumber,
+      errorMessage: this.accessError,
+      resourceType: `${resourceInfo.provider}/${resourceInfo.resourceTypeName}`,
+      resourceName: resourceInfo.resourceName,
+      resourceId: this._resourceService.getCurrentResourceId()
+    };
+    const queryString = new URLSearchParams(queryParams).toString();
+    window.location.href = "/?" + queryString;
+  }
+
+  handleUserResponse(userResponse: ConfirmationOption) {
+    let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
+    this._telemetryService.logEvent(TelemetryEventNames.ResourceOutOfScopeUserResponse, {userId: alias, url: this._router.url, userResponse: userResponse.label, caseNumber: this._diagnosticApiService.CustomerCaseNumber});
+    if (userResponse.value === 'yes') {
+      this.showLoaderInDialog = true;
+      this._diagnosticService.unrelatedResourceConfirmation().subscribe(() => {
+        this.showLoaderInDialog = false;
+        this.displayAlertDialog = false;
+        this.alertInfo = null;
+        location.reload();
+      },
+      (err) => {
+        this.showLoaderInDialog = false;
+        let error = err.error;
+        this.errorInDialog = error;
+        this.displayErrorInDialog = true;
+      });
+    }
+    else if (userResponse.value == 'no') {
+      this.accessError = this.alertInfo.details;
+      this.navigateBackToHomePage();
+    }
   }
 
   ngOnInit() {
+    this.stillLoading = true;
+    this._diagnosticService.getDetectors().subscribe(detectors => {
+      this.stillLoading = false;
+    },
+    (err) => {
+      this.stillLoading = false;
+      this.showDashboardContent = false;
+      let errobj = JSON.parse(err.error);
+      this.accessError = errobj.DetailText;
+      if (!this.CheckIsResourceUnrelatedError(errobj.DetailText))
+      {
+        this.navigateBackToHomePage();
+      }
+    });
+
     this.title="";
     this._applensGlobal.headerTitleSubject.subscribe(title => {
       this.title = title;

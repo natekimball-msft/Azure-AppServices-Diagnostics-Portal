@@ -94,7 +94,8 @@ export const TelemetryEventNames = {
     SolutionOrchestratorViewSupportingDataClicked: 'SolutionOrchestratorViewSupportingDataClicked',
     OpenSlotInNewTab: 'OpenSlotInNewTab',
     ResiliencyScoreReportButtonDisplayed: 'ResiliencyScoreReportButtonDisplayed',
-    ResiliencyScoreReportButtonClicked: 'ResiliencyScoreReportButtonClicked' 
+    ResiliencyScoreReportButtonClicked: 'ResiliencyScoreReportButtonClicked',
+    ResourceOutOfScopeUserResponse: 'ResourceOutOfScopeUserResponse',
 };
 
 export const TelemetrySource = {

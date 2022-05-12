@@ -23,12 +23,29 @@ export class DiagnosticApiService {
   public GeomasterName: string = null;
   public Location: string = null;
   public effectiveLocale: string = "";
+  public CustomerCaseNumber: string = null;
 
   constructor(private _httpClient: HttpClient, private _cacheService: CacheService,
     private _adalService: AdalService, private _telemetryService: TelemetryService, private _router: Router) { }
 
   public get diagnosticApi(): string {
     return environment.production ? '' : this.localDiagnosticApi;
+  }
+
+  public setCustomerCaseNumber(value) { this.CustomerCaseNumber = value;}
+
+  public checkUserAccess() {
+    let path = "durian/checkUserAccess";
+    return this.invoke<any>(path, HttpMethod.GET, null, true, false, true, false);
+  }
+
+  public unrelatedResourceConfirmation(resourceId: string) {
+    let body = {
+      caseNumber: this.CustomerCaseNumber,
+      resourceId: resourceId
+    };
+    let path = "durian/confirmUnrelatedResource";
+    return this.invoke<any>(path, HttpMethod.POST, body, false, false, true, false);
   }
 
   public getDetector(version: string, resourceId: string, detector: string, startTime?: string, endTime?: string,
@@ -267,6 +284,8 @@ export class DiagnosticApiService {
     if (!additionalHeaders.has('x-ms-request-id') || additionalHeaders.get('x-ms-request-id') == null || additionalHeaders.get('x-ms-request-id') == '') {
       additionalHeaders.set('x-ms-request-id', requestId);
     }
+
+    if (this.CustomerCaseNumber) additionalHeaders.set('x-ms-customer-casenumber', this.CustomerCaseNumber);
 
     let eventProps = {
       'resourceId': path,

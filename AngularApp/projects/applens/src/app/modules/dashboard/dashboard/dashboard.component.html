@@ -1,6 +1,29 @@
-<fabric-feedback></fabric-feedback>
-<applens-header></applens-header>
-<side-nav></side-nav>
+<fabric-feedback *ngIf="!stillLoading && showDashboardContent"></fabric-feedback>
+<div *ngIf="!stillLoading && displayAlertDialog">
+  <fab-dialog [hidden]="!displayAlertDialog" [styles]="alertDialogStyles" [modalProps]="alertDialogProps" [forceFocusInsideTrap]="true">
+    <fab-dialog-content [title]="alertInfo.header" tabindex="1">
+      <p>{{alertInfo.details}}</p>
+    </fab-dialog-content>
+    <fab-dialog-footer>
+      <div class="mt-5">
+        <fab-primary-button (onClick)="handleUserResponse(alertInfo.confirmationOptions[0])" contentClass="mr-3" tabindex="1">
+          {{!showLoaderInDialog? alertInfo.confirmationOptions[0].label: 'Loading...'}}
+        </fab-primary-button>
+        <fab-default-button (onClick)="handleUserResponse(alertInfo.confirmationOptions[1])" tabindex="1">
+          {{alertInfo.confirmationOptions[1].label}}
+        </fab-default-button>
+      </div>
+      <div class="mt-5" *ngIf="displayErrorInDialog" tabindex="1" style="font-size:12px;color:red;">
+        {{errorInDialog}}
+      </div>
+    </fab-dialog-footer>
+  </fab-dialog>
+</div>
+<applens-header *ngIf="!stillLoading && showDashboardContent"></applens-header>
+<div class="main-row" style="margin: 0px auto; width: 100%;margin-top: 50px;" *ngIf="stillLoading">
+  <fab-spinner [size]="loaderSize" [label]="'Loading...'"></fab-spinner>
+</div>
+<side-nav *ngIf="!stillLoading && showDashboardContent"></side-nav>
 <!-- <l1-side-nav></l1-side-nav> -->
 <!-- <header class="main-header">
   <nav class="navbar navbar-fixed-top" role="navigation">
@@ -36,7 +59,7 @@
     </div>
   </nav>
 </header> -->
-<div class="dashboard-container content-under-header" [ngStyle]="getContainerStyle()">
+<div *ngIf="!stillLoading && showDashboardContent" class="dashboard-container content-under-header" [ngStyle]="getContainerStyle()">
   <div class="dashboard-content">
     <applens-preview-banner></applens-preview-banner>
     <comm-alert></comm-alert>
@@ -52,7 +75,7 @@
   </div>
 </div>
 
-<fab-panel [isOpen]="_applensGlobal.openResourceInfoPanel" [type]="type" [customWidth]="width" [isHiddenOnDismiss]="true"
+<fab-panel *ngIf="!stillLoading && showDashboardContent" [isOpen]="_applensGlobal.openResourceInfoPanel" [type]="type" [customWidth]="width" [isHiddenOnDismiss]="true"
 [styles]="panelStyles" [isLightDismiss]="true" [hasCloseButton]="true" [closeButtonAriaLabel]="'close'"
 (onDismiss)="dismissedHandler()">
 <div>
