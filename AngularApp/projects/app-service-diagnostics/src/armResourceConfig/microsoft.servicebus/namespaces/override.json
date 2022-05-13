@@ -1,0 +1,33 @@
+{
+	"homePageText": {
+		"title": "",
+		"description": "",
+		"searchBarPlaceHolder": ""
+	},
+	"matchRegEx": "/Microsoft.ServiceBus/namespaces",
+	"searchSuffix": "",
+	"azureServiceName": "",
+	"armApiConfig": {
+		"armApiVersion": "",
+		"isArmApiResponseBase64Encoded": false
+	},
+	"isSearchEnabled": true,
+	"keystoneDetectorId": "",
+	"liveChatConfig": {
+		"isApplicableForLiveChat": false,
+		"supportTopicIds": []
+	},
+	"categories": [{
+			"id": "",
+			"name": "",
+			"description": "",
+			"keywords": [],
+			"color": "",
+			"createFlowForCategory": true,
+			"overridePath": "",
+			"chatEnabled": false
+		}
+	],
+	"pesId": "13186",
+	"sapProductId": "23e2c469-4b37-ebf5-0a3f-72e8b1407301"
+}
