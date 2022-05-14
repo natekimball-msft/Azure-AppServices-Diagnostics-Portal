@@ -55,7 +55,7 @@ export class MainComponent implements OnInit {
       enabled: true,
       caseId: false,
       id: 'App Service',
-      durianEnabled: true
+      userAuthorizationEnabled: true
     },
     {
       resourceType: "Microsoft.Web/hostingEnvironments",
@@ -65,7 +65,7 @@ export class MainComponent implements OnInit {
       enabled: true,
       caseId: false,
       id: 'App Service Environment',
-      durianEnabled: false
+      userAuthorizationEnabled: false
     },
     {
       resourceType: "Microsoft.Web/containerApps",
@@ -75,7 +75,7 @@ export class MainComponent implements OnInit {
       enabled: true,
       caseId: false,
       id: 'Container App',
-      durianEnabled: false
+      userAuthorizationEnabled: false
     }, {
       resourceType: "Microsoft.Web/staticSites",
       resourceTypeLabel: 'Static App Name Or Default Host Name',
@@ -84,7 +84,7 @@ export class MainComponent implements OnInit {
       enabled: true,
       caseId: false,
       id: 'Static Web App',
-      durianEnabled: false
+      userAuthorizationEnabled: false
     },
     {
       resourceType: "Microsoft.Compute/virtualMachines",
@@ -94,7 +94,7 @@ export class MainComponent implements OnInit {
       enabled: true,
       caseId: false,
       id: 'Virtual Machine',
-      durianEnabled: false
+      userAuthorizationEnabled: false
     },
     {
       resourceType: "ARMResourceId",
@@ -104,7 +104,7 @@ export class MainComponent implements OnInit {
       enabled: true,
       caseId: false,
       id: 'ARM Resource ID',
-      durianEnabled: false
+      userAuthorizationEnabled: false
     },
     {
       resourceType: null,
@@ -114,7 +114,7 @@ export class MainComponent implements OnInit {
       enabled: true,
       caseId: false,
       id: 'Internal Stamp',
-      durianEnabled: false
+      userAuthorizationEnabled: false
     }
   ];
   resourceTypes: ResourceTypeState[] = [];
@@ -204,7 +204,7 @@ export class MainComponent implements OnInit {
       }
     },(err) => {
       if (err.status === 404) {
-        //This means durian is not yet available on the backend
+        //This means userAuthorization is not yet available on the backend
         this.caseNumberNeededForUser = false;
         this.displayLoader = false;
         return;
@@ -343,7 +343,7 @@ export class MainComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.caseNumberNeededForUser && (this.selectedResourceType && this.selectedResourceType.durianEnabled)) {
+    if (this.caseNumberNeededForUser && (this.selectedResourceType && this.selectedResourceType.userAuthorizationEnabled)) {
       this.caseNumber = this.caseNumber.trim();
       if (!this.validateCaseNumber()){
         return;

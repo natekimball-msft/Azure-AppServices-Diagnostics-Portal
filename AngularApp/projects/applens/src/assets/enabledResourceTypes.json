@@ -16,7 +16,7 @@
             "emergingIssuesICMLookupEnabled": false,
             "displayName": "App",
             "overviewPageMetricsId" : "applensoverviewmetrics_appservices",
-            "durianEnabled": true
+            "userAuthorizationEnabled": true
         },
         {
             "service": "AseService",

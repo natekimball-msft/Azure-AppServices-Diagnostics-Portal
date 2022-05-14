@@ -15,7 +15,7 @@
         <h3>Select a resource to begin troubleshooting:</h3>
       </div>
       <div style="width: 50%;">
-        <div class="section" *ngIf="caseNumberNeededForUser && (selectedResourceType && selectedResourceType.durianEnabled)">
+        <div class="section" *ngIf="caseNumberNeededForUser && (selectedResourceType && selectedResourceType.userAuthorizationEnabled)">
           <label for="landing-page-casenumber">
             Case Number <span class="required">*</span>
           </label>
