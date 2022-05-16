@@ -19,7 +19,7 @@ import { ObserverService } from '../../../../shared/services/observer.service';
 })
 export class TabDataComponent implements OnInit {
 
-  constructor(private _route: ActivatedRoute, private _startupService: StartupService, public resourceService: ResourceService,  private _observerService: ObserverService, private _diagnosticApiService: DiagnosticApiService, private _applensDiagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService,private _applensCommandBarService:ApplensCommandBarService,private _applensGlobal:ApplensGlobal) { }
+  constructor(private _route: ActivatedRoute, private _startupService: StartupService, public resourceService: ResourceService,  private _observerService: ObserverService, private _diagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService,private _applensCommandBarService:ApplensCommandBarService,private _applensGlobal:ApplensGlobal) { }
 
   detectorResponse: DetectorResponse;
 
@@ -98,7 +98,7 @@ export class TabDataComponent implements OnInit {
 
   refresh() {
     this.detector = this._route.snapshot.params['detector'];
-    this._applensDiagnosticApiService.getDetectorMetaDataById(this.detector).subscribe(metaData => {
+    this._diagnosticApiService.getDetectorMetaDataById(this.detector).subscribe(metaData => {
       if(metaData) {
         this._applensGlobal.updateHeader(metaData.name);
       }
