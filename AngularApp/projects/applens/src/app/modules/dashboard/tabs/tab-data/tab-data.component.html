@@ -8,6 +8,9 @@
       </fab-command-bar-item>
       <fab-command-bar-item key="internal" [text]="internalExternalText" [iconProps]="{ iconName: 'View' }"
         (click)="internalExternalToggle()"></fab-command-bar-item>
+      <fab-command-bar-item *ngIf="displayDownloadReportButton" [id]="'downloadReport'" key="downloadReport" [text]="downloadReportText"
+        [iconProps]="downloadReportIcon" (click)="downloadReport()" [disabled]="downloadReportDisabled" >
+      </fab-command-bar-item>  
     </items>
   </fab-command-bar>
 <detector-container [analysisMode]="analysisMode" [detector]="detector"></detector-container>
