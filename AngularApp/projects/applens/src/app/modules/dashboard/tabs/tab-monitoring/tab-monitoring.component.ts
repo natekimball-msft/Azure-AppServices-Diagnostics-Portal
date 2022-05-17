@@ -75,7 +75,12 @@ export class TabMonitoringComponent implements OnInit {
 
   openTimePickerSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
+  isPPE: boolean = false;
+
   ngOnInit() {
+    this._diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
+      this.isPPE = env === "PPE";
+    });
     this.getMonitoringResponse();
     this.getDetectorResponse();
     this.selectedDataSource  = this.statisticsType === StatisticsType.Analytics ? "Azure Portal" : "All";
