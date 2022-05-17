@@ -6,5 +6,5 @@ export interface NetworkCheckFlow {
     id: string;
     title: string;
     description?: string;
-    func(siteInfo: SiteInfoMetaData & Site & { fullSiteName: string }, diagProvider: DiagProvider, flowMgr: StepFlowManager): Promise<null>;
+    func(resourceInfo: any, diagProvider: DiagProvider, flowMgr: StepFlowManager): Promise<null>;
 }
