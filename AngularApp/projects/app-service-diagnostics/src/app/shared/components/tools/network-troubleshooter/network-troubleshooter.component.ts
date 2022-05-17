@@ -15,6 +15,7 @@ import { LogicAppFlowSet } from '../network-checks/logicapp-flows';
 import { NetworkCheckFlow } from '../network-checks/network-check-flow';
 import { NetworkCheckFlowSet } from '../network-checks/network-check-flow-set';
 import { WebAppFlowSet } from '../network-checks/webapp-flow-set';
+import { sampleFlow } from '../network-checks/network-check-flows/sampleFlow.js'
 
 
 @Component({
@@ -132,13 +133,31 @@ export class NetworkTroubleshooterComponent extends DataRenderBaseComponent impl
           }
           var flows = this.processFlows(flowSet.flows);
 
-          if (this.debugMode) {
-              window["logDebugMessage"] = console.log.bind(console);
-              var remoteFlows: any = await CheckManager.loadRemoteCheckAsync(true);
-              remoteFlows = this.processFlows(remoteFlows, "(debug)");
-              flows = flows.concat(remoteFlows);
+          if(window.location.hostname == "localhost" || this.debugMode){
+            flows = flows.concat(this.processFlows([sampleFlow]));
           }
+
           var mgr = this.stepFlowManager;
+          if (this.debugMode) {
+            window["logDebugMessage"] = console.log.bind(console);
+            var remoteFlows: any = await CheckManager.loadRemoteCheckAsync(true);
+            if(Object.keys(remoteFlows).length > 0){
+                var remoteStepFlows = this.processFlows(remoteFlows, "(debug)");
+                flows = flows.concat(remoteStepFlows);
+                mgr.addView(new CheckStepView({
+                    id: "debugCheckLoadingStatus",
+                    title: `Successfully load ${Object.keys(remoteFlows).length} debug flow(s)`,
+                    level: 0
+                }));
+            }else{
+                mgr.addView(new CheckStepView({
+                    id: "debugCheckLoadingStatus",
+                    title: `Failed to load any debug flow, is local check server running?`,
+                    level: 2
+                }));
+            }
+          }
+          
           var dropDownView = new DropdownStepView({
               id: "InitialDropDown",
               description: "Tell us more about the problem you are experiencing:",
@@ -172,7 +191,7 @@ export class NetworkTroubleshooterComponent extends DataRenderBaseComponent impl
       }
   }
 
-  processFlows(flows: NetworkCheckFlow[], postfix?: string): StepFlow[] {
+  processFlows(flows: any, postfix?: string): StepFlow[] {
       return Object.keys(flows).map(key => {
           var flow = flows[key];
           if (postfix != null) {

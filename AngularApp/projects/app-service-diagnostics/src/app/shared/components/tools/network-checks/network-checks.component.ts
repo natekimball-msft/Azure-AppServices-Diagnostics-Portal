@@ -10,4 +10,9 @@ import { Component, ViewEncapsulation, } from '@angular/core';
 export class NetworkCheckComponent{
     title: string = 'Network/Connectivity Troubleshooter';
     description: string = 'Check your network connectivity and troubleshoot network issues';
+    constructor(){
+        if (window["debugMode"]){
+            this.title += " - debug mode";
+        }
+    }
 }
