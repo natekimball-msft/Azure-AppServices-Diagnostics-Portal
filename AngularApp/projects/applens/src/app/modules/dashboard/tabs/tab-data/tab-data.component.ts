@@ -1,4 +1,4 @@
-import { DetectorMetaData, DetectorResponse, ResiliencyScoreReportHelper } from 'diagnostic-data';
+import { DetectorMetaData, DetectorResponse, ResiliencyScoreReportHelper, TelemetryService, TelemetryEventNames } from 'diagnostic-data';
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ActivatedRoute, Params } from '@angular/router';
@@ -9,6 +9,8 @@ import { ApplensGlobal } from 'projects/applens/src/app/applens-global';
 import { StartupService } from '../../../../shared/services/startup.service';
 import { ResourceService } from '../../../../shared/services/resource.service';
 import { ObserverService } from '../../../../shared/services/observer.service';
+import { SeverityLevel } from '@microsoft/applicationinsights-web';
+import { DirectionalHint } from 'office-ui-fabric-react';
 
 
 
@@ -19,7 +21,7 @@ import { ObserverService } from '../../../../shared/services/observer.service';
 })
 export class TabDataComponent implements OnInit {
 
-  constructor(private _route: ActivatedRoute, private _startupService: StartupService, public resourceService: ResourceService,  private _observerService: ObserverService, private _diagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService,private _applensCommandBarService:ApplensCommandBarService,private _applensGlobal:ApplensGlobal) { }
+  constructor(private _route: ActivatedRoute, private _startupService: StartupService, public resourceService: ResourceService,  private _observerService: ObserverService, private telemetryService: TelemetryService, private _diagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService,private _applensCommandBarService:ApplensCommandBarService,private _applensGlobal:ApplensGlobal) { }
 
   detectorResponse: DetectorResponse;
 
@@ -40,12 +42,24 @@ export class TabDataComponent implements OnInit {
   resourceReady: Observable<any>;
   resource: any;  
   displayDownloadReportButton: boolean = false;
-  downloadReportText: string = "Get report";
+  downloadReportId: string;
+  downloadReportText: string = "Download report";
   downloadReportIcon: any = { iconName: 'Download' };
   downloadReportButtonDisabled: boolean;
   downloadReportFileName: string;
-  _isBetaSubscription: boolean = false;
+  coachmarkId: string;  
+  showCoachmark: boolean = true;
+  showTeachingBubble: boolean = false;
   generatedOn: string;
+  coachmarkPositioningContainerProps = {
+    directionalHint: DirectionalHint.bottomLeftEdge,
+    doNotLayer: true
+  };
+  teachingBubbleCalloutProps = {
+    directionalHint: DirectionalHint.bottomLeftEdge
+  };
+
+  
 
   public _checkIsWindowsApp(): boolean {
 
@@ -71,7 +85,7 @@ export class TabDataComponent implements OnInit {
   }    
    
 
-  ngOnInit() {
+  ngOnInit() {    
     this._route.params.subscribe((params: Params) => {
       this.refresh();
     });
@@ -82,9 +96,9 @@ export class TabDataComponent implements OnInit {
       } else {
         this._detectorControlService.setDetectorQueryParams("");
       }
-
-      this.analysisMode = this._route.snapshot.data['analysisMode'];      
-      this.displayDownloadReportButton = this._route.firstChild.firstChild.firstChild.firstChild.firstChild.snapshot.params["detector"] === "ResiliencyScore" && this._checkIsWindowsApp() ? true: false;
+      this.detector = this._route.snapshot.params['detector'];         
+      this.displayDownloadReportButton = this.detector === "ResiliencyScore" && this._checkIsWindowsApp() ? true: false;
+      this.telemetryService.logEvent(TelemetryEventNames.DownloadReportButtonDisplayed, { 'DownloadReportButtonDisplayed': this.displayDownloadReportButton.toString(), 'Detector:': this.detector, 'SubscriptionId': this._route.parent.snapshot.params['subscriptionid'], 'Resource': this.resource.SiteName });
     });
 
     if (this._detectorControlService.isInternalView){
@@ -93,7 +107,25 @@ export class TabDataComponent implements OnInit {
     else{
       this.internalExternalText = this.externalViewText;
     }
-    
+    const loggingError = new Error();
+    this.downloadReportButtonDisabled = false;
+        //Get showCoachMark value(string) from local storage (if exists), then convert to boolean   
+        try {
+          if (this.displayDownloadReportButton){
+            if (localStorage.getItem("showCoachmark") != undefined) {
+              this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
+            }
+            else {
+              this.showCoachmark = true;
+            }
+          }
+        }
+        catch (error) {
+          loggingError.message = 'Error trying to retrieve showCoachmark from localStorage';
+          loggingError.stack = error;
+          let _severityLevel: SeverityLevel = SeverityLevel.Warning;
+          this.telemetryService.logException(loggingError, null, null, _severityLevel);
+        }    
   }
 
   refresh() {
@@ -130,4 +162,149 @@ export class TabDataComponent implements OnInit {
     this._detectorControlService.toggleInternalExternal();
     this.refreshPage();
   }
+
+  ngAfterViewInit() {
+    // Async to get button element after grandchild is rendered
+    setTimeout(() => {
+      this.updateDownloadReportId();
+    });
+  }
+
+
+  updateDownloadReportId() {
+    const btns = document.querySelectorAll("#fab-command-bar button");
+    const downloadButtonId = "downloadReportId";
+    const coachMarkId = "fab-coachmark";
+    let downloadButtonIndex = -1;
+    if (btns && btns.length > 0) {
+      btns.forEach((btn,i) => {
+        if(btn.textContent.includes(this.downloadReportText)) {
+          downloadButtonIndex = i;
+        }
+      });
+      
+      if(downloadButtonIndex >= 0 && downloadButtonIndex < btns.length && btns[downloadButtonIndex]) {
+        const downloadButton = btns[downloadButtonIndex];
+        downloadButton.setAttribute("id", downloadButtonId);
+      }
+    }
+
+    this.downloadReportId = `#${downloadButtonId}`;
+    this.coachmarkId = `#${coachMarkId}`;
+  }
+
+
+  downloadReport() {
+    // Once the button is clicked no need to show Coachmark anymore:
+    const loggingError = new Error();
+    try {
+      if (localStorage.getItem("showCoachmark") != undefined) {
+        this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
+      }
+      else {
+        this.showCoachmark = false;
+        localStorage.setItem("showCoachmark", "false");
+      }
+    }
+    catch (error) {
+      //Use TelemetryService logException
+      loggingError.message = 'Error accessing localStorage. Most likely accessed via in InPrivate or Incognito mode';
+      loggingError.stack = error;
+      let _severityLevel: SeverityLevel = SeverityLevel.Warning;
+      this.telemetryService.logException(loggingError, null, null, _severityLevel);
+    }
+    // Taking starting time
+    let sT = new Date();
+    this.downloadReportText = "Getting Resiliency Score report...";
+    this.downloadReportIcon = {
+      iconName: 'Download',
+      styles: {
+        root: {
+          color: 'grey'
+        }
+      }
+    };
+    this.downloadReportButtonDisabled = true;    
+
+    if (this._route.snapshot.params['detector']) {
+      this.detector = this._route.snapshot.params['detector'];
+    }
+    else {
+      this.detector = this._route.parent.snapshot.params['detector'];
+    }
+    let allRouteQueryParams = this._route.snapshot.queryParams;
+    let additionalQueryString = '';
+    let knownQueryParams = ['startTime', 'endTime'];
+    Object.keys(allRouteQueryParams).forEach(key => {
+      if (knownQueryParams.indexOf(key) < 0) {
+        additionalQueryString += `&${key}=${encodeURIComponent(allRouteQueryParams[key])}`;
+      }
+    });
+
+
+    this._diagnosticApiService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString, this._detectorControlService.shouldRefresh, this._detectorControlService.isInternalView, additionalQueryString)
+      .subscribe((httpResponse: DetectorResponse) => {            
+        //If the page hasn't been refreshed this will use a cached request, so changing File Name to use the same name + "(cached)" to let them know they are seeing a cached version.
+        let eT = new Date();
+        let detectorTimeTaken = eT.getTime() - sT.getTime();
+        if (this.downloadReportFileName == undefined) {
+          this.generatedOn = ResiliencyScoreReportHelper.generatedOn();
+          this.downloadReportFileName = `ResiliencyReport-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":", "-")}`;
+          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}`, this.generatedOn);
+        }
+        else {
+          this.downloadReportFileName = `${this.downloadReportFileName}`;
+          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}_(cached)`, this.generatedOn);
+        }
+        // Time after downloading report
+        eT = new Date();
+        // Estimate total time it took to download report
+        let totalTimeTaken = eT.getTime() - sT.getTime();
+        // log telemetry for interaction
+        const eventProperties = {
+          'Subscription': this._route.parent.snapshot.params['subscriptionid'],
+          'CustomerName': JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName,
+          'NameSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].Name,
+          'ScoreSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].OverallScore,
+          'DetectorTimeTaken': detectorTimeTaken.toString(),
+          'TotalTimeTaken': totalTimeTaken.toString()
+        };
+        this.telemetryService.logEvent(TelemetryEventNames.DownloadReportButtonClicked, eventProperties);
+        this.downloadReportText = "Download report";
+        this.downloadReportIcon = { iconName: 'Download' };
+        this.downloadReportButtonDisabled = false;
+      }, error => {
+        loggingError.message = `Error calling ${this.detector} detector`;
+        loggingError.stack = error;
+        this.telemetryService.logException(loggingError);
+      });    
+  }  
+
+  
+  coachMarkViewed() {
+    const loggingError = new Error();
+    // Stop showing TeachingBubble
+    this.showTeachingBubble = false;
+
+    //Once Coachmark has been seen, disable it by setting boolean value to local storage
+    try {
+      localStorage.setItem("showCoachmark", "false");
+    }
+    catch (error) {
+      //Use TelemetryService logException
+      loggingError.message = 'Error accessing localStorage. Most likely accessed via in InPrivate or Incognito mode';
+      loggingError.stack = error;
+      let _severityLevel: SeverityLevel = SeverityLevel.Warning;
+      this.telemetryService.logException(loggingError, null, null, _severityLevel);
+    }
+  }
+
+  showingTeachingBubble(){
+    if (this.displayDownloadReportButton){
+      this.showTeachingBubble = true;
+    }  
+  }
 }
+
+
+
