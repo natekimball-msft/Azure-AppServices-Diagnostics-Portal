@@ -360,13 +360,13 @@ export class FormComponent extends DataRenderBaseComponent {
      //set visibility of selected children of dropdown option to true
     selectedChildren.forEach(element => {
         let formInput = allInputs.find(ip => ip.inputId == element);
-        formInput.isVisible = true;
+        if(formInput) formInput.isVisible = true;
     });
     // set visibility of other children linked with current dropdown to false
     let inputsToHide = currentDropdown["children"].filter(item => selectedChildren.indexOf(item) < 0);
     inputsToHide.forEach(element => {
         let formInput = allInputs.find(ip => ip.inputId == element);
-        formInput.isVisible = false;
+        if(formInput) formInput.isVisible = false;
     });
   }
 }

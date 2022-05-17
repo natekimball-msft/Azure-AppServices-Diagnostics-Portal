@@ -35,7 +35,7 @@ export class DiagnosticApiService {
   public setCustomerCaseNumber(value) { this.CustomerCaseNumber = value;}
 
   public checkUserAccess() {
-    let path = "durian/checkUserAccess";
+    let path = "userAuthorization/checkUserAccess";
     return this.invoke<any>(path, HttpMethod.GET, null, true, false, true, false);
   }
 
@@ -44,7 +44,7 @@ export class DiagnosticApiService {
       caseNumber: this.CustomerCaseNumber,
       resourceId: resourceId
     };
-    let path = "durian/confirmUnrelatedResource";
+    let path = "userAuthorization/confirmUnrelatedResource";
     return this.invoke<any>(path, HttpMethod.POST, body, false, false, true, false);
   }
 
