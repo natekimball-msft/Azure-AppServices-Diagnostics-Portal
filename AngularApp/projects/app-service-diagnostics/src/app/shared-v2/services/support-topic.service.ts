@@ -70,21 +70,24 @@ export class SupportTopicService {
         this.sapProductId = sapProductId;
         return this._resourceService.getPesId().pipe(flatMap(pesId => {
             const redirectFrom = "supportTopic";
-            var supportTopic:string = null;
+            var networkSupportTopic:string = null;
 
             for(var i = 0; i<this.vnetSupportTopicIds.length; ++i){
-                if(supportTopicId == this.vnetSupportTopicIds[i].sapSupportTopicId || sapSupportTopicId == this.vnetSupportTopicIds[i].sapSupportTopicId){
-                    supportTopic = this.vnetSupportTopicIds[i].name;
+                if(supportTopicId == this.vnetSupportTopicIds[i].supportTopicId || sapSupportTopicId == this.vnetSupportTopicIds[i].sapSupportTopicId){
+                    networkSupportTopic = this.vnetSupportTopicIds[i].name;
                     break;
                 }
             }
             
             var kind = this._resourceService.resource.kind;
-            if (supportTopic == "Outbound Connectivity" && kind.includes("container")) {
+            if (networkSupportTopic != null) {
+                if(networkSupportTopic == "Outbound Connectivity" && kind.includes("container")){
                 // container based App is not supported by "Outbound Connectivity" yet, do nothing
-            } else {
-                return observableOf({ path: 'tools/networkchecks', queryParams: { redirectFrom, supportTopic, supportTopicId, sapSupportTopicId } });
-            }
+                }
+                else {
+                    return observableOf({ path: 'tools/networkchecks', queryParams: { redirectFrom, supportTopic: networkSupportTopic, supportTopicId, sapSupportTopicId } });
+                }
+            } 
 
             this.pesId = pesId;
             this.detectorTask = this._diagnosticService.getDetectors();
