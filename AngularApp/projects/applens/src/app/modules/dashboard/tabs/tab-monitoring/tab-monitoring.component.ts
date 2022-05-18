@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { DetectorResponse, DetectorMetaData } from 'diagnostic-data';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { ApplensDiagnosticService } from '../../services/applens-diagnostic.service';
 import { DiagnosticService } from 'diagnostic-data';
 import * as momentNs from 'moment';
@@ -21,7 +21,7 @@ export enum StatisticsType {
 })
 
 export class TabMonitoringComponent implements OnInit {
-  constructor(private _route: ActivatedRoute, private _diagnosticApiService: ApplensDiagnosticService, private _diagnosticService: DiagnosticService) { }
+  constructor(private _route: ActivatedRoute, private _diagnosticApiService: ApplensDiagnosticService, private _diagnosticService: DiagnosticService, private _router: Router) { }
 
   systemInvokerResponse: DetectorResponse;
   detectorAuthor: String = "";
@@ -43,7 +43,7 @@ export class TabMonitoringComponent implements OnInit {
     ["Azure Portal", "2"]
   ]);
   dataSourceKeys: string[];
-  selectedDataSource: string = "All";
+  selectedDataSource: string = "All Prod";
   private dataSourceFlag: string = "0";
 
   private timeRangeMapping: Map<string, string> = new Map<string, string>([
@@ -76,9 +76,11 @@ export class TabMonitoringComponent implements OnInit {
   openTimePickerSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
   isPPE: boolean = false;
+  prodMonitoringLink: string;
 
   ngOnInit() {
     this._diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
+      this.prodMonitoringLink = `https://applens.trafficmanager.net${this._router.url}`;
       this.isPPE = env === "PPE";
     });
     this.getMonitoringResponse();
