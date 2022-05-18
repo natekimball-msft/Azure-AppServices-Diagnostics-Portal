@@ -699,7 +699,7 @@ export class OnboardingFlowComponent implements OnInit {
       this.diagnosticApiService.getDevopsChangeList(`${this.DevopsConfig.folderPath}/${this.gistName}/${this.gistName}.csx`, this.resourceId).subscribe((data:any[]) => {
         data.forEach(version => {
           let commitDate = version["author"]["date"];
-          let commitDateFormatted = moment(commitDate).format('MM/DD/YYYY');  
+          let commitDateFormatted = moment(commitDate).format('MM/DD/YYYY HH:mm:ss');  
           let authorAlias = version["author"]['email'].split("@")[0];
           let displayText = String(`${authorAlias}: ${commitDateFormatted} ${version["commitId"] === this.configuration['dependencies'][this.gistName] ? "[in use]" : ""}`);
           tempList.push({
