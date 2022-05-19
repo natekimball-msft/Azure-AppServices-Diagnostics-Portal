@@ -42,11 +42,12 @@ export class TabDataComponent implements OnInit {
   resourceReady: Observable<any>;
   resource: any;  
   displayDownloadReportButton: boolean = false;
+  displayDownloadReportButtonStyle: any = {};
   downloadReportId: string;
   downloadReportText: string = "Download report";
   downloadReportIcon: any = { iconName: 'Download' };
   downloadReportButtonDisabled: boolean;
-  downloadReportFileName: string;
+  downloadReportFileName: string;  
   coachmarkId: string;  
   showCoachmark: boolean = true;
   showTeachingBubble: boolean = false;
@@ -61,7 +62,7 @@ export class TabDataComponent implements OnInit {
 
   
 
-  public _checkIsWindowsApp(): boolean {
+  public _checkIsWindowsApp() {
 
     let serviceInputs = this._startupService.getInputs();
     this.resourceReady = this.resourceService.getCurrentResource();
@@ -72,22 +73,20 @@ export class TabDataComponent implements OnInit {
           this._observerService.getSiteRequestDetails(this.resource.SiteName, this.resource.InternalStampName).subscribe(siteInfo => {            
             this.resource['IsWindows'] = siteInfo.details.islinux === false ? true : false;
             if (this.resource['IsWindows'] === true) {
-              return true;
-            }
-            else {
-              return false;
-            }
+              this.displayDownloadReportButton = this.detector === "ResiliencyScore" ? true: false;
+              this.displayDownloadReportButtonStyle = !(this.displayDownloadReportButton === true) ? { display: "none"} : {};
+            }            
         })      
         }
       }
-    });
-    return false;
+    });   
   }    
    
 
   ngOnInit() {    
-    this._route.params.subscribe((params: Params) => {
+    this._route.params.subscribe((params: Params) => {      
       this.refresh();
+      this._checkIsWindowsApp();
     });
     // If route query params contains detectorQueryParams, setting the values in shared service so it is accessible in all components
     this._route.queryParams.subscribe((queryParams: Params) => {
@@ -96,11 +95,9 @@ export class TabDataComponent implements OnInit {
       } else {
         this._detectorControlService.setDetectorQueryParams("");
       }
-      this.detector = this._route.snapshot.params['detector'];         
-      this.displayDownloadReportButton = this.detector === "ResiliencyScore" && this._checkIsWindowsApp() ? true: false;
+      this.detector = this._route.snapshot.params['detector'];               
       this.telemetryService.logEvent(TelemetryEventNames.DownloadReportButtonDisplayed, { 'DownloadReportButtonDisplayed': this.displayDownloadReportButton.toString(), 'Detector:': this.detector, 'SubscriptionId': this._route.parent.snapshot.params['subscriptionid'], 'Resource': this.resource.SiteName });
-    });
-
+    });    
     if (this._detectorControlService.isInternalView){
       this.internalExternalText = this.internalViewText;
     }
@@ -215,7 +212,7 @@ export class TabDataComponent implements OnInit {
     }
     // Taking starting time
     let sT = new Date();
-    this.downloadReportText = "Getting Resiliency Score report...";
+    this.downloadReportText = "Downloading report...";
     this.downloadReportIcon = {
       iconName: 'Download',
       styles: {

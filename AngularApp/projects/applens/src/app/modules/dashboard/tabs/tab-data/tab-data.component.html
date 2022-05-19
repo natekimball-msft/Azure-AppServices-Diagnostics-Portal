@@ -7,13 +7,14 @@
       <fab-command-bar-item key="emailToAuthor" text="Email Author" [iconProps]="{ iconName: 'Mail' }" (click)="emailToAuthor()">
       </fab-command-bar-item>
       <fab-command-bar-item key="internal" [text]="internalExternalText" [iconProps]="{ iconName: 'View' }"
-        (click)="internalExternalToggle()"></fab-command-bar-item>
-      <fab-command-bar-item *ngIf="displayDownloadReportButton" [id]="'downloadReportId'" key="downloadReport" [text]="downloadReportText"
-        [iconProps]="downloadReportIcon" (click)="downloadReport()" [disabled]="downloadReportDisabled" >
+        (click)="internalExternalToggle()">
+      </fab-command-bar-item>
+      <fab-command-bar-item [style]="displayDownloadReportButtonStyle" [id]="'downloadReportId'" key="downloadReport" [text]="downloadReportText"
+        [iconProps]="downloadReportIcon" (click)="downloadReport()" [disabled]="downloadReportButtonDisabled">
       </fab-command-bar-item>  
     </items>
   </fab-command-bar>
-  <fab-coachmark 
+  <!-- <fab-coachmark 
    *ngIf="showCoachmark==true"
   [attr.id]="'fab-coachmark'" 
   [target]="downloadReportId" 
@@ -38,5 +39,5 @@
     ariaLabelledBy="resiiencyreport-label1">
     Download a report to check how well your Web App scores against our recommended resiliency best practices.
   </fab-teachingbubble>
-</fab-coachmark>
+</fab-coachmark> -->
 <detector-container [analysisMode]="analysisMode" [detector]="detector"></detector-container>
