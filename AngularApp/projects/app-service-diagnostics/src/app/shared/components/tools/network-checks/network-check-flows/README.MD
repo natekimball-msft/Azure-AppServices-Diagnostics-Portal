@@ -80,4 +80,4 @@ If loading was not successful, a failed check will appear instead
 
 Every time when refresh button is hit, Network Troubleshooter will try to reload the checks from that server
 
-To run the server, check https://github.com/yifguoMSFT/NetworkCheckPlayground
+To run the server, check https://github.com/yifguoMSFT/NetworkCheckServer
