@@ -78,14 +78,22 @@ export class TabMonitoringComponent implements OnInit {
   isPPE: boolean = false;
   prodMonitoringLink: string;
 
+  preSelectedSource: string;
+
   ngOnInit() {
+    this.preSelectedSource = this._route.snapshot.queryParams['dataSource'];
     this._diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
-      this.prodMonitoringLink = `https://applens.trafficmanager.net${this._router.url}`;
+      this.prodMonitoringLink = `https://applens.trafficmanager.net${this._router.url}&dataSource=PPE`;
       this.isPPE = env === "PPE";
     });
     this.getMonitoringResponse();
     this.getDetectorResponse();
-    this.selectedDataSource  = this.statisticsType === StatisticsType.Analytics ? "Azure Portal" : "All";
+    if (this.monitoringDataSourceMapping.has(this.preSelectedSource)){
+      this.setDataSource(this.preSelectedSource);
+    }
+    else{
+      this.selectedDataSource  = this.statisticsType === StatisticsType.Analytics ? "Azure Portal" : "All";
+    }
     this.setDataSource(this.selectedDataSource);
     this.dataSourceKeys = this.statisticsType === StatisticsType.Analytics ? Array.from(this.analyticsDataSourceMapping.keys()) : Array.from(this.monitoringDataSourceMapping.keys());
     this.timeRangeKeys = Array.from(this.timeRangeMapping.keys());
