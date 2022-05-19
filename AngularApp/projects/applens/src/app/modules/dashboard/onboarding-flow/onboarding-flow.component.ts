@@ -26,7 +26,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import { WebSocket } from "ws";
 import { MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection } from 'monaco-languageclient';
 import { v4 as uuid } from 'uuid';
-import { IButtonStyles, IChoiceGroupOption, IDialogContentProps, IDropdownOption, IDropdownProps, IPanelProps, IPivotProps, PanelType, TagItemSuggestion } from 'office-ui-fabric-react';
+import { IButtonStyles, IChoiceGroupOption, IDialogContentProps, IDropdownOption, IDropdownProps, IPanelProps, IPivotProps, MessageBarType, PanelType, TagItemSuggestion } from 'office-ui-fabric-react';
 import { BehaviorSubject } from 'rxjs';
 import { Commit } from '../../../shared/models/commit';
 import { ApplensCommandBarService } from '../services/applens-command-bar.service';
@@ -317,8 +317,14 @@ export class OnboardingFlowComponent implements OnInit {
   private _oldCodeDecorations: string[] = [];
   selectedKey: string = '';
   isSaved: boolean = false;
-
-
+  notificationStatusType: MessageBarType = MessageBarType.success;
+  branchMessageStyle: any = {
+    root: {
+        height: '20px',
+        backgroundColor: '#c9dded',
+    }
+  }
+  showBranchInfo:boolean = false;
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService, private detectorGistApiService: DetectorGistApiService,
     private diagnosticApiService: ApplensDiagnosticService, private _diagnosticApi: DiagnosticApiService, private resourceService: ResourceService,
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
@@ -546,6 +552,7 @@ export class OnboardingFlowComponent implements OnInit {
           this.tempBranch = this.Branch;
         }
         this.updateBranch();
+        this.showBranchInfo = true;
       }
     });
 

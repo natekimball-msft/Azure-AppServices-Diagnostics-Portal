@@ -267,6 +267,11 @@
     {{alertMessage}}
   </div>
 
+  <ng-container *ngIf="showBranchInfo">
+    <fab-message-bar [messageBarType]="notificationStatusType"  dismissButtonAriaLabel="Close" [styles]="branchMessageStyle">
+        Code is loaded from {{displayBranch}} branch for development.
+    </fab-message-bar>
+  </ng-container>
 
   <fab-command-bar [attr.id]="'fab-command-bar'" contentClass="fab-command-bar-class">
     <items>
