@@ -33,7 +33,9 @@ export class DynamicInsightV4Component extends DataRenderBaseComponent {
   private parseInsight() {
     if (this.renderingProperties) {
       // Make sure that we don't render a box within the insight
-      this.renderingProperties.innerRendering.title = '';
+      if(this.renderingProperties.innerRendering) {
+        this.renderingProperties.innerRendering.title = '';
+      }
 
       this.insight = <DynamicInsight>{
         title: this.renderingProperties.title,
