@@ -218,7 +218,7 @@ export class ResiliencyScoreReportHelper {
     }
 
     static PDFMake(resiliencyReportData: ResiliencyReportData, fileName: string, generatedOn: string) {
-		fonts = {
+		let fonts = {
             Roboto: {
                 normal: 'https://app-service-diagnostics-portal.azureedge.net/Roboto-Regular.ttf',
                 bold: 'https://app-service-diagnostics-portal.azureedge.net/Roboto-Medium.ttf',
