@@ -1,4 +1,4 @@
-import pdfMake from "pdfmake/build/pdfmake";
+import * as pdfMake from "pdfmake/build/pdfmake";
 import "projects/diagnostic-data/src/lib/assets/vfs_fonts";
 import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from "../models/resiliencyReportData";
 import { DataTableResponseObject } from '../models/detector';
@@ -218,20 +218,20 @@ export class ResiliencyScoreReportHelper {
     }
 
     static PDFMake(resiliencyReportData: ResiliencyReportData, fileName: string, generatedOn: string) {
-        pdfMake.fonts = {
+		pdfMake.fonts = {
             Roboto: {
-                normal: 'Roboto-Regular.ttf',
-                bold: 'Roboto-Medium.ttf',
-                italics: 'Roboto-Italic.ttf',
-                bolditalics: 'Roboto-Italic.ttf'
+                normal: 'https://app-service-diagnostics-portal.azureedge.net/Roboto-Regular.ttf',
+                bold: 'https://app-service-diagnostics-portal.azureedge.net/Roboto-Medium.ttf',
+                italics: 'https://app-service-diagnostics-portal.azureedge.net/Roboto-Italic.ttf',
+                bolditalics: 'https://app-service-diagnostics-portal.azureedge.net/Roboto-Italic.ttf'
             },
             Calibri: {
-                normal: 'Calibri-Light.ttf',
-                bold: 'Calibri-Bold.ttf',
-                italics: 'Calibri-Italic.ttf',
-                bolditalics: 'Calibri-Bold-Italic.ttf',
-                light: 'Calibri-Light.ttf',
-                lightitalics: 'Calibri-Light-Italic.ttf'
+                normal: 'https://app-service-diagnostics-portal.azureedge.net/Calibri-Light.ttf',
+                bold: 'https://app-service-diagnostics-portal.azureedge.net/Calibri-Bold.ttf',
+                italics: 'https://app-service-diagnostics-portal.azureedge.net/Calibri-Italic.ttf',
+                bolditalics: 'https://app-service-diagnostics-portal.azureedge.net/Calibri-Bold-Italic.ttf',
+                light: 'https://app-service-diagnostics-portal.azureedge.net/Calibri-Light.ttf',
+                lightitalics: 'https://app-service-diagnostics-portal.azureedge.net/Calibri-Light-Italic.ttf'
             }
         };
         var docDefinition = {
