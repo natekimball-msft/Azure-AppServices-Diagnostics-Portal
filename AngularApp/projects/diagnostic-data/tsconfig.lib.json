@@ -11,7 +11,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "types": ["./projects/diagnostic-data/src/lib/assets/vfs_fonts.js"],
+    "types": [],
     "lib": [
       "dom",
       "es2015"
