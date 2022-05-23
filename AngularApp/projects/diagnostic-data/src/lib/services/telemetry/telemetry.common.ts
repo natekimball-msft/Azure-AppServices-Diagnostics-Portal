@@ -97,6 +97,8 @@ export const TelemetryEventNames = {
     ResiliencyScoreReportButtonClicked: 'ResiliencyScoreReportButtonClicked', 
     ResiliencyScoreReportDownloaded: 'ResiliencyScoreReportDownloaded',
     ResourceOutOfScopeUserResponse: 'ResourceOutOfScopeUserResponse',
+    FavoriteDetectorAdded: 'FavoriteDetectorAdded',
+    FavoriteDetectorRemoved: 'FavoriteDetectorRemoved'
 };
 
 export const TelemetrySource = {

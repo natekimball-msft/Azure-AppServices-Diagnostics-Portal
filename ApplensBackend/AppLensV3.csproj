@@ -26,7 +26,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.1" />
 	<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.14" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.9.2" />
+	<PackageReference Include="Microsoft.Azure.Cosmos" Version="3.27.0" />
     <PackageReference Include="Microsoft.Azure.Kusto.Cloud.Platform" Version="10.0.1" />
     <PackageReference Include="Microsoft.Azure.Kusto.Data" Version="10.0.1" />
 	<PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="3.1.9" />

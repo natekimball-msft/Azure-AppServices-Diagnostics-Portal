@@ -1,10 +1,11 @@
-import { DetectorMetaData, DetectorResponse } from 'diagnostic-data';
+import { DetectorMetaData, DetectorResponse, DetectorType, HealthStatus, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { ApplensDiagnosticService } from '../../services/applens-diagnostic.service';
 import { DetectorControlService } from 'diagnostic-data';
 import { ApplensCommandBarService } from '../../services/applens-command-bar.service';
 import { ApplensGlobal } from 'projects/applens/src/app/applens-global';
+import { IPanelProps, PanelType } from 'office-ui-fabric-react';
 
 @Component({
   selector: 'tab-data',
@@ -13,21 +14,44 @@ import { ApplensGlobal } from 'projects/applens/src/app/applens-global';
 })
 export class TabDataComponent implements OnInit {
 
-  constructor(private _route: ActivatedRoute, private _diagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService,private _applensCommandBarService:ApplensCommandBarService,private _applensGlobal:ApplensGlobal) { }
+  constructor(private _route: ActivatedRoute, private _diagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService, private _applensCommandBarService: ApplensCommandBarService, private _applensGlobal: ApplensGlobal,private _telemetryService:TelemetryService) { }
 
   detectorResponse: DetectorResponse;
 
   detector: string;
-
-  error: any;
+  detectorMetaData: DetectorMetaData;
 
   analysisMode: boolean = false;
 
   hideDetectorControl: boolean = false;
 
   internalExternalText: string = "";
-  internalViewText: string = "Internal view";
-  externalViewText: string = "Customer view";
+  readonly internalViewText: string = "Internal view";
+  readonly externalViewText: string = "Customer view";
+
+  pinnedDetector: boolean = false;
+  get pinUnpinDetectorText() {
+    return this.pinnedDetector ? "UnPin" : "Pin"
+  }
+
+  get pinUnpinDetectorIcon() {
+    return this.pinnedDetector ? "Unpin" : "Pinned"
+  }
+  panelStyles: IPanelProps['styles'] = {
+    root: {
+      height: "60px",
+    },
+    content: {
+      padding: "0px"
+    }
+  }
+  PanelType = PanelType;
+  panelHealthStatus = HealthStatus.Success;
+  panelTimer = null;
+  showPanel: boolean = false;
+  panelMessage: string = "";
+
+
 
   ngOnInit() {
 
@@ -45,10 +69,10 @@ export class TabDataComponent implements OnInit {
       this.analysisMode = this._route.snapshot.data['analysisMode'];
     });
 
-    if (this._detectorControlService.isInternalView){
+    if (this._detectorControlService.isInternalView) {
       this.internalExternalText = this.internalViewText;
     }
-    else{
+    else {
       this.internalExternalText = this.externalViewText;
     }
   }
@@ -56,10 +80,18 @@ export class TabDataComponent implements OnInit {
   refresh() {
     this.detector = this._route.snapshot.params['detector'];
     this._diagnosticApiService.getDetectorMetaDataById(this.detector).subscribe(metaData => {
-      if(metaData) {
+      if (metaData) {
         this._applensGlobal.updateHeader(metaData.name);
+        this.detectorMetaData = metaData;
       }
-    })
+    });
+
+    this._applensCommandBarService.getUserSetting().subscribe(userSetting => {
+      if (userSetting && userSetting.favoriteDetectors) {
+        const favoriteDetectorIds = Object.keys(userSetting.favoriteDetectors);
+        this.pinnedDetector = favoriteDetectorIds.findIndex(d => d.toLowerCase() === this.detector.toLowerCase()) > -1;
+      }
+    });
   }
 
   refreshPage() {
@@ -67,7 +99,7 @@ export class TabDataComponent implements OnInit {
   }
 
   emailToAuthor() {
-    this._applensCommandBarService.getDetectorMeatData(this.detector).subscribe(metaData =>{
+    this._applensCommandBarService.getDetectorMeatData(this.detector).subscribe(metaData => {
       this._applensCommandBarService.emailToAuthor(metaData);
     });
   }
@@ -76,15 +108,66 @@ export class TabDataComponent implements OnInit {
     this._applensGlobal.openFeedback = true;
   }
 
-  internalExternalToggle(){
-    if (this.internalExternalText === this.externalViewText){
+  internalExternalToggle() {
+    if (this.internalExternalText === this.externalViewText) {
       this.internalExternalText = this.internalViewText;
     }
-    else{
+    else {
       this.internalExternalText = this.externalViewText;
     }
 
     this._detectorControlService.toggleInternalExternal();
     this.refreshPage();
+  }
+
+  addOrRemoveDetector() {
+    this.showPanel = false;
+    this.panelMessage = "";
+    this.panelHealthStatus = HealthStatus.Success;
+    
+    if(this.pinnedDetector) {
+      this._telemetryService.logEvent(TelemetryEventNames.FavoriteDetectorRemoved,{'detectorId': this.detector});
+      this.removeFavoriteDetector();
+    }else {
+      this._telemetryService.logEvent(TelemetryEventNames.FavoriteDetectorAdded,{'detectorId': this.detector});
+      this.addFavoriteDetector();
+    }
+  }
+    
+
+  private addFavoriteDetector() {
+    //Pinned detector can be analysis
+    const detectorType = this.detectorMetaData ? this.detectorMetaData.type : DetectorType.Detector;
+
+    this._applensCommandBarService.addFavoriteDetector(this.detector,detectorType).subscribe(message => {
+      this.setPanelStatusAndMessage(HealthStatus.Success, message);
+    }, error => {
+      this.setPanelStatusAndMessage(HealthStatus.Critical, error);
+    })
+  }
+
+
+  private removeFavoriteDetector() {
+    this._applensCommandBarService.removeFavoriteDetector(this.detector).subscribe(message => {
+      this.setPanelStatusAndMessage(HealthStatus.Success, message);
+    }, err => {
+      this.setPanelStatusAndMessage(HealthStatus.Critical, err);
+    })
+  }
+
+  private setPanelStatusAndMessage(status: HealthStatus, message: string) {
+    this.panelHealthStatus = status;
+    this.panelMessage = message;
+    this.autoDismissPanel();
+  }
+
+  private autoDismissPanel() {
+    this.showPanel = true;
+    if (this.panelTimer !== null) {
+      clearTimeout(this.panelTimer);
+    }
+    this.panelTimer = setTimeout(() => {
+      this.showPanel = false;
+    }, 3000);
   }
 }

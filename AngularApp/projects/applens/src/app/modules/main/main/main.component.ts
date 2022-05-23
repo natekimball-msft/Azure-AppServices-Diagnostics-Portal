@@ -276,7 +276,6 @@ export class MainComponent implements OnInit {
 
     this._detectorControlService.timePickerStrSub.subscribe(s => {
       this.timePickerStr = s;
-      this._detectorControlService.timeRangeErrorString
     });
 
     this.userGivenName = this._adalService.userInfo.profile.given_name;
@@ -296,7 +295,6 @@ export class MainComponent implements OnInit {
       this.showResourceTypeOptions = false;
     }
     this.selectedResourceType = type;
-    this._userSettingService.updateDefaultServiceType(type.id);
   }
 
   selectDropdownKey(e: { option: IDropdownOption, index: number }) {
@@ -343,6 +341,7 @@ export class MainComponent implements OnInit {
   }
 
   onSubmit() {
+    this._userSettingService.updateDefaultServiceType(this.selectedResourceType.id);
     if (this.caseNumberNeededForUser && (this.selectedResourceType && this.selectedResourceType.userAuthorizationEnabled)) {
       this.caseNumber = this.caseNumber.trim();
       if (!this.validateCaseNumber()){
@@ -463,8 +462,8 @@ export class MainComponent implements OnInit {
 
   //Todo, once get startTime,endTime from database,replace with those get from detectorControlService
   private onNavigateRecentResource(recentResource: RecentResourceDisplay) {
-    let startUtc = this._detectorControlService.startTime;
-    let endUtc = this._detectorControlService.endTime;
+    const startUtc = this._detectorControlService.startTime;
+    const endUtc = this._detectorControlService.endTime;
 
     let timeParams = {
       startTime: startUtc ? startUtc.format('YYYY-MM-DDTHH:mm') : "",
