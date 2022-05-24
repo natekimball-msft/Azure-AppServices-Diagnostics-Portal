@@ -16,6 +16,7 @@ import { NetworkCheckFlow } from '../network-checks/network-check-flow';
 import { NetworkCheckFlowSet } from '../network-checks/network-check-flow-set';
 import { WebAppFlowSet } from '../network-checks/webapp-flow-set';
 import { sampleFlow } from '../network-checks/network-check-flows/sampleFlow.js'
+import { ApimFlowSet } from '../network-checks/apim-flows';
 
 
 @Component({
@@ -105,12 +106,27 @@ export class NetworkTroubleshooterComponent extends DataRenderBaseComponent impl
       this.stepFlowManager.setDom(this.networkCheckingToolDiv.nativeElement);
   }
 
+  getProviders(resourceUri:string){
+    resourceUri = resourceUri.toLowerCase();
+    var m = resourceUri.match(/.*?\/providers\/microsoft\.(.*?)\/.*/);
+    if(m.length >= 2){
+        return m[1];
+    }else{
+        throw new Error(`unknown provider ${resourceUri}`);
+    }
+  }
+
   async loadFlowsAsync(): Promise<void> {
       try {
           var globals = this._globals;
           globals.messagesData.currentNetworkCheckFlow = null;
           var telemetryService = this._telemetryService;
           var flowSet:NetworkCheckFlowSet;
+
+          if(this.siteInfo.kind == null){
+            this.siteInfo.kind  = this.getProviders(this.siteInfo.resourceUri);
+          }
+
           if (this.siteInfo.kind.includes("functionapp") && !this.siteInfo.kind.includes("workflowapp")) {
               // function app
               if (this.supportTopic &&
@@ -128,9 +144,12 @@ export class NetworkTroubleshooterComponent extends DataRenderBaseComponent impl
           }else if(this.siteInfo.kind.includes("workflowapp")){
             // logic apps
             flowSet = new LogicAppFlowSet();
-          }else {
-              flowSet = new WebAppFlowSet();
+          }else if(this.siteInfo.kind == "apimanagement") {
+              flowSet = new ApimFlowSet();
+          }else  {
+            flowSet = new WebAppFlowSet();
           }
+
           var flows = this.processFlows(flowSet.flows);
 
           if(window.location.hostname == "localhost" || this.debugMode){
