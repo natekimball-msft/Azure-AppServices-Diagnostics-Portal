@@ -31,7 +31,8 @@ export class DiagProvider {
         this._globals = globals;
         this._telemetryService = telemetryService;
         this._dict = new Map<string, any>();
-        var scmHostNameState = this._siteInfo.hostNameSslStates.filter(h => h.hostType == 1)[0];
+        var filteredSslStates = this._siteInfo.hostNameSslStates && this._siteInfo.hostNameSslStates.filter(h => h.hostType == 1);
+        var scmHostNameState = filteredSslStates && filteredSslStates.length > 0 && filteredSslStates[0];
         this.scmHostName = scmHostNameState == null ? null : scmHostNameState.name;
         this.portalDomain = portalDomain;
         armService.clearCache();
