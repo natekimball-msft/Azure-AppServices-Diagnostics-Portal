@@ -338,7 +338,7 @@ namespace AppLensV3
                 Timeout = TimeSpan.FromSeconds(30)
             };
 
-            HttpClient.DefaultRequestHeaders.Add("Authorization", $@"token {AccessToken}");
+            //HttpClient.DefaultRequestHeaders.Add("Authorization", $@"token {AccessToken}");
             HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             HttpClient.DefaultRequestHeaders.Add("User-Agent", "applensv3");
         }

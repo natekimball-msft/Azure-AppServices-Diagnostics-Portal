@@ -64,7 +64,7 @@ import { ResourceInfo } from '../../shared/models/resources';
 import { catchError, flatMap, map, take } from 'rxjs/operators';
 import { RecentResource } from '../../shared/models/user-setting';
 import { UserSettingService } from './services/user-setting.service';
-import { ApplensDocsComponent } from '../../shared/components/applens-docs/applens-docs.component';
+import { ApplensDocsComponent } from './applens-docs/applens-docs.component';
 import { TabKey } from './tabs/tab-key';
 import { UserActivePullrequestsComponent } from './user-active-pullrequests/user-active-pullrequests.component';
 import { BreadcrumbService } from './services/breadcrumb.service';
@@ -451,6 +451,6 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
         SearchMenuPipe, TabDataComponent, TabDevelopComponent, TabCommonComponent, TabDataSourcesComponent, TabMonitoringComponent,
         TabMonitoringDevelopComponent, TabAnalyticsDevelopComponent, TabAnalyticsDashboardComponent, GistComponent, TabGistCommonComponent,
         TabGistDevelopComponent, TabChangelistComponent, GistChangelistComponent, TabAnalysisComponent, CategoryPageComponent, SupportTopicPageComponent,
-        SelfHelpContentComponent, UserDetectorsComponent, FormatResourceNamePipe, Sort, SearchResultsComponent, ConfigurationComponent, DashboardContainerComponent, L2SideNavComponent, UserActivePullrequestsComponent, FavoriteDetectorsComponent]
+        SelfHelpContentComponent, UserDetectorsComponent, FormatResourceNamePipe, Sort, SearchResultsComponent, ConfigurationComponent, DashboardContainerComponent, L2SideNavComponent, UserActivePullrequestsComponent, FavoriteDetectorsComponent, ApplensDocsComponent]
 })
 export class DashboardModule { }
