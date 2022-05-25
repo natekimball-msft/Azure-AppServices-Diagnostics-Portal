@@ -1827,5 +1827,11 @@ export class OnboardingFlowComponent implements OnInit {
 
   ngOnDestroy() {
     clearInterval(this.redirectTimer);
+    this._router.navigate([], {
+      queryParams: {
+        'branchInput': null,
+      },
+      queryParamsHandling: 'merge'
+    })
   }
 }
