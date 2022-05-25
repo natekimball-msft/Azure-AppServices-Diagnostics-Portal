@@ -1,3 +1,4 @@
+import { HttpResponse } from '@angular/common/http';
 import { TelemetryService } from 'diagnostic-data';
 import { Globals } from 'projects/app-service-diagnostics/src/app/globals';
 import { stringify } from 'querystring';
@@ -9,6 +10,11 @@ import { SiteService } from '../../../services/site.service';
 enum ConnectionCheckStatus { success, timeout, hostNotFound, blocked, refused }
 export enum OutboundType { SWIFT, gateway };
 export enum InboundType { privateEndpoint, serviceEndpoint }
+export interface DiagResponse {
+    body: any,
+    status: number,
+    [key: string]: any
+}
 
 function delay(second: number): Promise<void> {
     return new Promise(resolve =>
@@ -72,18 +78,30 @@ export class DiagProvider {
         return result;
     }
 
+    public getResource<T>(resourceUri: string, apiVersion: string): Promise<HttpResponse<T>> {
+        return this._armService.getResourceFullResponse<T>(resourceUri, null, apiVersion).toPromise();
+    }
+
     public getArmResourceAsync(resourceUri: string, apiVersion?: string, invalidateCache: boolean = false): Promise<any> {
         var stack = new Error("error_message_placeholder").stack;
         var key = "GET;" + resourceUri + ";" + apiVersion;
         if (!invalidateCache && this._dict.has(key)) {
             return this._dict.get(key);
         }
-        var result = this._armService.requestResource<any, any>("GET", resourceUri, null, apiVersion)
+        var result = this._armService.requestResource<DiagResponse, any>("GET", resourceUri, null, apiVersion)
             .toPromise()
             .then(t => {
-                var result = t.body;
-                result.status = t.status;
-                return result;
+                let responseResult: DiagResponse;
+                if ("body" in t) {
+                    responseResult = t.body;
+                    responseResult.body = t.body;
+                    responseResult.status = t.status;
+                    return responseResult;
+                } else {
+                    responseResult = <any>{};
+                    responseResult.status = (<any>t).status;
+                    return responseResult
+                }
             })
             .catch(e => {
                 e.stack = stack.replace("error_message_placeholder", e.message || "");
@@ -292,10 +310,10 @@ export class DiagProvider {
                 var result = resp.body;
                 if (result.Status == "success") {
                     ip = result.IpAddresses.join(";");
-                }else if(result.Status == "host not found"){
+                } else if (result.Status == "host not found") {
                     ip = "";
                 }
-                else{
+                else {
                     throw new Error("DaaS nameresolver failed, result: " + stringify(result));
                 }
             } else {
