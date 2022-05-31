@@ -209,6 +209,10 @@ export class MainComponent implements OnInit {
         this.displayLoader = false;
         return;
       }
+      if (err.status === 403) {
+        this.displayLoader = false;
+        this.navigateToUnauthorized();
+      }
       let errormsg = err.error;
       errormsg = errormsg.replace(/\\"/g, '"');
       errormsg = errormsg.replace(/\"/g, '"');
@@ -484,6 +488,10 @@ export class MainComponent implements OnInit {
 
   updateResourceName(e: { event: Event, newValue?: string }) {
     this.resourceName = e.newValue.toString();
+  }
+
+  navigateToUnauthorized(){
+    this._router.navigate(['unauthorized'], {queryParams: {isDurianEnabled: true}});
   }
 
 }
