@@ -2,19 +2,21 @@ export interface NetworkStatusContact {
     location: string;
     networkStatus: {
         dnsServers: string[],
-        connectivityStatus: {
-            error?: string,
-            isOptional?: boolean,
-            lastStatusChange: string,
-            lastUpdated: string,
-            name: string,
-            resourceType: string,
-            status: ConnectivityStatusContract
-        }
+        connectivityStatus: ConnectivityStatusContract[],
     }
 }
 
-export enum ConnectivityStatusContract {
+export interface ConnectivityStatusContract {
+    error?: string,
+    isOptional?: boolean,
+    lastStatusChange: string,
+    lastUpdated: string,
+    name: string,
+    resourceType: string,
+    status: ConnectivityStatusType
+}
+
+export enum ConnectivityStatusType {
     Fail = "failure",
     Init = "initializing",
     Success = "success"
