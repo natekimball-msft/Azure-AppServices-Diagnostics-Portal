@@ -102,6 +102,7 @@ export interface Check {
     title: string;
     level: number;
     subChecks?: Check[];
+    bodyMarkdown?: string;
     detailsMarkdown?: string;
     expandByDefault?: boolean;
 }
@@ -110,6 +111,7 @@ export class CheckStepView extends StepView implements Check {
     title: string;
     level: number;
     subChecks?: Check[];
+    bodyMarkdown?: string;
     detailsMarkdown?: string;
     expandByDefault?: boolean;
 
@@ -120,6 +122,7 @@ export class CheckStepView extends StepView implements Check {
         this.level = view.level;
         this.subChecks = view.subChecks || [];
         this.expandByDefault = view.expandByDefault;
+        this.bodyMarkdown = view.bodyMarkdown;
         this.detailsMarkdown = view.detailsMarkdown;
     }
 }
