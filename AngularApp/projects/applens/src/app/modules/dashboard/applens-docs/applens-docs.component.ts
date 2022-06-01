@@ -13,6 +13,7 @@ export class ApplensDocsComponent implements OnInit {
   constructor(private _applensGlobal:ApplensGlobal, private diagnosticApiService: ApplensDiagnosticService, private ref: ChangeDetectorRef) { }
   
   markdownCode = [];
+  folders = []
 
   codeRegEx = new RegExp("<applens-code.*?\/>","g");
   folderRegEx = new RegExp("(?<=folder=\").*?(?=\")", "g");
@@ -24,11 +25,12 @@ export class ApplensDocsComponent implements OnInit {
 
       this.diagnosticApiService.getDetectorCode(`documentation/insight/insightmarkdown.txt`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(x=>{
         this.markdownCode = x.split(this.codeRegEx);
-        var folders = this.getCodeFolders(x);
+        this.folders = this.getCodeFolders(x);
         for(var i = 0; i < this.markdownCode.length; i++){
-          this.htmlToAdd = this.htmlToAdd.concat(`<markdown ngPreserveWhitespaces [data]="markdownCode[${i}]"></markdown>\n`);
-          if (i < folders.length)
-          this.htmlToAdd = this.htmlToAdd.concat(`<p>folder name: ${folders[i]}</p>\n`);
+          //this.htmlToAdd = this.htmlToAdd.concat(`<markdown ngPreserveWhitespaces [data]="markdownCode[${i}]"></markdown>\n`);
+          this.htmlToAdd = this.htmlToAdd.concat(`${this.markdownCode[i]}\n`);
+          // if (i < this.folders.length)
+          // this.htmlToAdd = this.htmlToAdd.concat(`<p>folder name: ${this.folders[i]}</p>\n`);
         }
         // this.markdownCode.forEach(mdSection => {
         //   this.htmlToAdd = this.htmlToAdd.concat(`<markdown ngPreserveWhitespaces [data]="'${mdSection}'"></markdown>\n`);
