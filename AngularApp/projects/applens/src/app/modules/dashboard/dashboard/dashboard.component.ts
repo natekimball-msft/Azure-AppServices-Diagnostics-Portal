@@ -24,6 +24,7 @@ import {AlertInfo, ConfirmationOption} from '../../../shared/models/alerts';
 import { TelemetryService } from 'diagnostic-data';
 import { TelemetryEventNames } from 'diagnostic-data';
 import { HttpErrorResponse } from '@angular/common/http';
+import { UserAccessStatus } from "../../../shared/models/alerts";
 
 @Component({
   selector: 'dashboard',
@@ -186,6 +187,30 @@ export class DashboardComponent implements OnDestroy {
     window.location.href = "/?" + queryString;
   }
 
+  examineUserAccess() {
+    this._diagnosticApiService.checkUserAccess().subscribe(res => {
+      if (res && res.Status == UserAccessStatus.CaseNumberNeeded) {
+        this._diagnosticApiService.setCaseNumberNeededForUser(true);
+      }
+      else {
+        this._diagnosticApiService.setCaseNumberNeededForUser(false);
+      }
+    },(err) => {
+      if (err.status === 404) {
+        //This means userAuthorization is not yet available on the backend
+        this._diagnosticApiService.setCaseNumberNeededForUser(false);
+        return;
+      }
+      if (err.status === 403) {
+        this.navigateToUnauthorized();
+      }
+    });
+  }
+
+  navigateToUnauthorized(){
+    this._router.navigate(['unauthorized'], {queryParams: {isDurianEnabled: true}});
+  }
+
   handleUserResponse(userResponse: ConfirmationOption) {
     let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
     if (userResponse.value === 'yes') {
@@ -217,6 +242,7 @@ export class DashboardComponent implements OnDestroy {
   }
 
   ngOnInit() {
+    this.examineUserAccess();
     this.stillLoading = true;
     this._diagnosticService.getDetectors().subscribe(detectors => {
       this.stillLoading = false;

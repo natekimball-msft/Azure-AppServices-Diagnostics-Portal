@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { TelemetryService } from 'diagnostic-data';
+import { DiagnosticApiService } from '../services/diagnostic-api.service';
 
 @Component({
   selector: 'applens-preview-banner',
@@ -12,9 +13,10 @@ export class ApplensBannerComponent implements OnInit {
   private readonly prodHostName = "applens.trafficmanager.net";
   private readonly previewHostName = "applens-preview.trafficmanager.net";
   public isPreview: boolean = true;
-  constructor(private _telemetryService: TelemetryService) { }
+  constructor(private _telemetryService: TelemetryService, private _diagnosticApiService: DiagnosticApiService) { }
 
   ngOnInit() {
+    this.showBanner = this._diagnosticApiService.caseNumberNeededForUser;
   }
 
   switchView(event: Event) {
@@ -34,8 +36,8 @@ export class ApplensBannerComponent implements OnInit {
     event.stopPropagation();
 
     const body = encodeURIComponent('Current site: ' + window.location.href + '\n' + 'Please provide feedback here:');
-    const subject = `Feedback for AppLens VNext`
-    const link = `mailto:AppLensDesign@microsoft.com?subject=${subject}&body=${body}`;
+    const subject = `Feedback for AppLens Secure Preview`;
+    const link = `mailto:applensv2team@microsoft.com?subject=${subject}&body=${body}`;
     window.open(link);
   }
 

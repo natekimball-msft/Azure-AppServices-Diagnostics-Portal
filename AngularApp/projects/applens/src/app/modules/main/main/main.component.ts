@@ -197,6 +197,7 @@ export class MainComponent implements OnInit {
     this._diagnosticApiService.checkUserAccess().subscribe(res => {
       if (res && res.Status == UserAccessStatus.CaseNumberNeeded) {
         this.caseNumberNeededForUser = true;
+        this._diagnosticApiService.setCaseNumberNeededForUser(this.caseNumberNeededForUser);
         this.displayLoader = false;
       }
       else {
@@ -206,6 +207,7 @@ export class MainComponent implements OnInit {
       if (err.status === 404) {
         //This means userAuthorization is not yet available on the backend
         this.caseNumberNeededForUser = false;
+        this._diagnosticApiService.setCaseNumberNeededForUser(this.caseNumberNeededForUser);
         this.displayLoader = false;
         return;
       }

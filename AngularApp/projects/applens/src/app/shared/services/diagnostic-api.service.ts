@@ -24,12 +24,17 @@ export class DiagnosticApiService {
   public Location: string = null;
   public effectiveLocale: string = "";
   public CustomerCaseNumber: string = null;
+  public caseNumberNeededForUser: boolean = false;
 
   constructor(private _httpClient: HttpClient, private _cacheService: CacheService,
     private _adalService: AdalService, private _telemetryService: TelemetryService, private _router: Router) { }
 
   public get diagnosticApi(): string {
     return environment.production ? '' : this.localDiagnosticApi;
+  }
+
+  public setCaseNumberNeededForUser(value: boolean) {
+    this.caseNumberNeededForUser = value;
   }
 
   public setCustomerCaseNumber(value) { this.CustomerCaseNumber = value; }
