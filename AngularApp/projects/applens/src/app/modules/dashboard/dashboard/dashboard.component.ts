@@ -93,6 +93,7 @@ export class DashboardComponent implements OnDestroy {
   alertDialogStyles = { main: { maxWidth: "70vw!important", minWidth: "40vw!important" } };
   alertDialogProps = {isBlocking: true}
   dialogType: DialogType = DialogType.normal;
+  crossSubJustification: string = '';
 
   constructor(public resourceService: ResourceService, private startupService: StartupService,  private _detectorControlService: DetectorControlService,
     private _router: Router, private _activatedRoute: ActivatedRoute, private _navigator: FeatureNavigationService,
@@ -187,8 +188,13 @@ export class DashboardComponent implements OnDestroy {
 
   handleUserResponse(userResponse: ConfirmationOption) {
     let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
-    this._telemetryService.logEvent(TelemetryEventNames.ResourceOutOfScopeUserResponse, {userId: alias, url: this._router.url, userResponse: userResponse.label, caseNumber: this._diagnosticApiService.CustomerCaseNumber});
     if (userResponse.value === 'yes') {
+      if (!(this.crossSubJustification && this.crossSubJustification.length > 0)) {
+        this.errorInDialog = 'Please enter a justification';
+        this.displayErrorInDialog = true;
+        return;
+      }
+      this._telemetryService.logEvent(TelemetryEventNames.ResourceOutOfScopeUserResponse, {userId: alias, url: this._router.url, userResponse: userResponse.label, userJustification: this.crossSubJustification, caseNumber: this._diagnosticApiService.CustomerCaseNumber});
       this.showLoaderInDialog = true;
       this._diagnosticService.unrelatedResourceConfirmation().subscribe(() => {
         this.showLoaderInDialog = false;
@@ -204,6 +210,7 @@ export class DashboardComponent implements OnDestroy {
       });
     }
     else if (userResponse.value == 'no') {
+      this._telemetryService.logEvent(TelemetryEventNames.ResourceOutOfScopeUserResponse, {userId: alias, url: this._router.url, userResponse: userResponse.label, caseNumber: this._diagnosticApiService.CustomerCaseNumber});
       this.accessError = this.alertInfo.details;
       this.navigateBackToHomePage();
     }
