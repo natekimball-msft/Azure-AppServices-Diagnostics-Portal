@@ -1,4 +1,4 @@
-<div >
+<div>
   <!-- <h3 style="font-size: 18px;">AppLens Documentations</h3>
   <div class="mb-3" *ngFor="let doc of applensDocs">
     <a [href]="doc.link">{{doc.name}}<i class="hyper-link-icon ml-1" aria-hidden="true"></i></a>
@@ -28,13 +28,20 @@
   <!-- <markdown ngPreserveWhitespaces [data]="markdownCode">
   </markdown> -->
 
-  <markdown ngPreserveWhitespaces [data]="markdownCode[0]"></markdown>
+  <!-- <markdown ngPreserveWhitespaces [data]="markdownCode[0]"></markdown>
   <p>folder name: folder1</p>
   <markdown ngPreserveWhitespaces [data]="markdownCode[1]"></markdown>
   <p>folder name: folder2</p>
   <markdown ngPreserveWhitespaces [data]="markdownCode[2]"></markdown>
   <p>folder name: folder3</p>
-  <markdown ngPreserveWhitespaces [data]="markdownCode[3]"></markdown>
+  <markdown ngPreserveWhitespaces [data]="markdownCode[3]"></markdown> -->
 
+  <!-- <markdown ngPreserveWhitespaces [data]="htmlToAdd"></markdown> -->
 
+<!-- <div [innerHtml]="htmlToAdd"></div> -->
+
+<div *ngFor="let folder of folders; let i=index">
+  <markdown ngPreserveWhitespaces [data]="markdownCode[i]"></markdown>
+  <applens-doc-section [code]="folder"></applens-doc-section>
+</div>
 </div>

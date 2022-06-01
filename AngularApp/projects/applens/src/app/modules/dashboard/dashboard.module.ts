@@ -69,6 +69,7 @@ import { TabKey } from './tabs/tab-key';
 import { UserActivePullrequestsComponent } from './user-active-pullrequests/user-active-pullrequests.component';
 import { BreadcrumbService } from './services/breadcrumb.service';
 import { FavoriteDetectorsComponent } from './favoite-detectors/favorite-detectors.component';
+import { ApplensDocSectionComponent } from './applens-doc-section/applens-doc-section.component';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
@@ -451,6 +452,6 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
         SearchMenuPipe, TabDataComponent, TabDevelopComponent, TabCommonComponent, TabDataSourcesComponent, TabMonitoringComponent,
         TabMonitoringDevelopComponent, TabAnalyticsDevelopComponent, TabAnalyticsDashboardComponent, GistComponent, TabGistCommonComponent,
         TabGistDevelopComponent, TabChangelistComponent, GistChangelistComponent, TabAnalysisComponent, CategoryPageComponent, SupportTopicPageComponent,
-        SelfHelpContentComponent, UserDetectorsComponent, FormatResourceNamePipe, Sort, SearchResultsComponent, ConfigurationComponent, DashboardContainerComponent, L2SideNavComponent, UserActivePullrequestsComponent, FavoriteDetectorsComponent, ApplensDocsComponent]
+        SelfHelpContentComponent, UserDetectorsComponent, FormatResourceNamePipe, Sort, SearchResultsComponent, ConfigurationComponent, DashboardContainerComponent, L2SideNavComponent, UserActivePullrequestsComponent, FavoriteDetectorsComponent, ApplensDocsComponent, ApplensDocSectionComponent]
 })
 export class DashboardModule { }
