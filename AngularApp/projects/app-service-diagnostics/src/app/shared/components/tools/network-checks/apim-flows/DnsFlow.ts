@@ -1,32 +1,55 @@
-import { DropdownStepView, InfoStepView, StepFlow, StepFlowManager, CheckStepView, StepViewContainer, InputStepView, ButtonStepView, PromiseCompletionSource, TelemetryService } from 'diagnostic-data';
+import { DropdownStepView, InfoStepView, StepFlow, StepFlowManager, CheckStepView, StepViewContainer, InputStepView, ButtonStepView, PromiseCompletionSource, TelemetryService, checkResultLevel } from 'diagnostic-data';
 import { DiagProvider } from '../diag-provider';
 import { NetworkCheckFlow } from "../network-check-flow"
 import { ConnectivityStatusContract, ConnectivityStatusType, NetworkStatusContact } from './Contact/NetworkStatus';
 
-function getWorstNetworkStatus(statuses: NetworkStatusContact[]) {
-    return Math.max(...statuses.map(service => getWorstNetworkStatusOfLocation(service.networkStatus.connectivityStatus)));
+function getWorstNetworkStatus(statuses: NetworkStatusContact[]): checkResultLevel {
+    return getWorstStatus(statuses.map(service => getWorstNetworkStatusOfLocation(service.networkStatus.connectivityStatus)));
 }
 
-function getWorstNetworkStatusOfLocation(statuses: ConnectivityStatusContract[]) {
-    return Math.max(...statuses.map(service => rateConnectivityStatus(service.status)));
+function getWorstNetworkStatusOfLocation(statuses: ConnectivityStatusContract[]): checkResultLevel {
+    return getWorstStatus(statuses.map(service => rateConnectivityStatus(service)));
 }
 
-function rateConnectivityStatus(status: ConnectivityStatusType) {
-    return [ConnectivityStatusType.Success, ConnectivityStatusType.Init, ConnectivityStatusType.Fail].findIndex(s => s == status);
-}
+function getWorstStatus(statuses: checkResultLevel[]) {
+    let worst = checkResultLevel.pass;
 
-function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
-    let table = `
-    | Status | Name | Resource Group |
-    | ------ | ---- | ------------- |
-    `;
-
-    for (let status of statuses) {
-        table += `|   ${status.status} | ${status.name} | ${status.resourceType} |\n`;
+    function rating(st: checkResultLevel) {
+        return [checkResultLevel.error, checkResultLevel.fail, checkResultLevel.warning, checkResultLevel.info, checkResultLevel.loading, checkResultLevel.pass, checkResultLevel.hidden].findIndex(s => s == st);        
     }
 
-    return table;
+    for (let status of statuses) {
+        if (rating(status) < rating(worst)) worst = status;
+    }
+
+    return worst;
 }
+
+function rateConnectivityStatus(status: ConnectivityStatusContract): checkResultLevel {
+    // return checkResultLevel.pass;
+
+    // console.log(status, status.status);
+    switch(status.status) {
+        case ConnectivityStatusType.Success:    return checkResultLevel.pass;
+        case ConnectivityStatusType.Init:       return checkResultLevel.info;
+        case ConnectivityStatusType.Fail:       return status.isOptional ? checkResultLevel.warning : checkResultLevel.fail;
+        default: return checkResultLevel.pass;
+    }
+    // return [ConnectivityStatusType.Success, ConnectivityStatusType.Init, ConnectivityStatusType.Fail].findIndex(s => s == status.status);
+}
+
+// function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
+//     let table = `
+//     | Status | Name | Resource Group |
+//     | ------ | ---- | ------------- |
+//     `;
+
+//     for (let status of statuses) {
+//         table += `|   ${status.status} | ${status.name} | ${status.resourceType} |\n`;
+//     }
+
+//     return table;
+// }
 
 async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId) {
     // const networkStatusResponse = await diagProvider.getResource<NetworkStatusContact[]>(resoureceId + "/networkstatus", "2021-01-01-preview");
@@ -42,7 +65,7 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId) {
                     {
                         "name": "https://gcs.prod.warm.ingestion.monitoring.azure.com",
                         "status": "failure",
-                        "error": "",
+                        "error": "Bad message here",
                         "lastUpdated": "2022-05-27T23:14:22.8845352Z",
                         "lastStatusChange": "2022-05-19T06:56:42.5388027Z",
                         "resourceType": "Monitoring",
@@ -138,12 +161,12 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId) {
                         "lastUpdated": "2022-05-27T23:17:29.3241243Z",
                         "lastStatusChange": "2022-05-25T09:46:31.9578619Z",
                         "resourceType": "Queue",
-                        "isOptional": true
+                        "isOptional": false
                     },
                     {
                         "name": "apimstpam2qefxjewl0a7o1f.table.core.windows.net",
                         "status": "success",
-                        "error": "",
+                        "error": "Some error message",
                         "lastUpdated": "2022-05-27T23:17:39.5841865Z",
                         "lastStatusChange": "2022-05-25T09:46:31.8977329Z",
                         "resourceType": "TableStorage",
@@ -153,7 +176,7 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId) {
             }
         }
     ];
-    console.log(networkStatuses);
+    // console.log(networkStatuses);
     const view = new CheckStepView({
         title: "Check DNS",
         level: getWorstNetworkStatus(networkStatuses),
@@ -168,19 +191,22 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId) {
                     //     title: generateStatusMarkdownTable(status.networkStatus.connectivityStatus),
                     //     level: getWorstNetworkStatusOfLocation(status.networkStatus.connectivityStatus)
                     // }]
-                    bodyMarkdown: worstLocationStatus > 0 ? generateStatusMarkdownTable(status.networkStatus.connectivityStatus) : null,
-                    // subChecks: status.networkStatus.connectivityStatus.map(status => {
-                    //     return {
-                    //         title: `(${status.resourceType}) ${status.name}`,
-                    //         level: rateConnectivityStatus(status.status),
-                    //         subChecks: null,
-                    //         // detailsMarkdown: `
-                    //         // | column1 | column2 |
-                    //         // | ------- | ------- |
-                    //         // | value1  | value2  |
-                    //         // `
-                    //     };
-                    // }),
+                    // bodyMarkdown: worstLocationStatus > 0 ? generateStatusMarkdownTable(status.networkStatus.connectivityStatus) : null,
+                    subChecks: status.networkStatus.connectivityStatus.map(status => {
+                        return {
+                            // title: `<table><tr><td>${status.resourceType}</td><td>${status.name}</td></tr></table>`,
+                            title: `<table><tr><td>${status.name}</td><td>${status.resourceType}</td></tr></table>`,
+                            level: rateConnectivityStatus(status),
+                            // subChecks: status.status == 0 ? [],
+                            // detailsMarkdown: status.error,
+                            bodyMarkdown: status.error,
+                            // detailsMarkdown: `
+                            // | column1 | column2 |
+                            // | ------- | ------- |
+                            // | value1  | value2  |
+                            // `
+                        };
+                    }),
                     // detailsMarkdown: `detailsMarkdown in check which subChecks is not null will be ignored`
                 }
             }),
@@ -190,7 +216,7 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId) {
 }
 
 export const DnsFlow: NetworkCheckFlow = {
-    title: "DNS flow",
+    title: "Network Connectivity Check",
     id: "dnsFlow",
 
     // todo: generate custom payload that tests single errors for the different locations
@@ -200,7 +226,7 @@ export const DnsFlow: NetworkCheckFlow = {
     func: async (siteInfo, diagProvider, flowMgr) => {
         const resoureceId = siteInfo.resourceUri;
 
-        flowMgr.addView(getNetworkStatusView(diagProvider, resoureceId),  "running DNS checks");
+        flowMgr.addView(getNetworkStatusView(diagProvider, resoureceId),  "running network checks");
 
     }
 };
