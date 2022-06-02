@@ -13,11 +13,13 @@ export class ApplensBannerComponent implements OnInit {
   private readonly prodHostName = "applens.trafficmanager.net";
   private readonly previewHostName = "applens-preview.trafficmanager.net";
   public isPreview: boolean = true;
-  constructor(private _telemetryService: TelemetryService, private _diagnosticApiService: DiagnosticApiService) { }
-
-  ngOnInit() {
-    this.showBanner = this._diagnosticApiService.caseNumberNeededForUser;
+  constructor(private _telemetryService: TelemetryService, private _diagnosticApiService: DiagnosticApiService) {
+    this._diagnosticApiService.getCaseNumberNeededForUser().subscribe(res => {
+      this.showBanner = this._diagnosticApiService.caseNumberNeededForUser;
+    });
   }
+
+  ngOnInit() {}
 
   switchView(event: Event) {
     event.stopPropagation();
