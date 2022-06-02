@@ -8,7 +8,7 @@ import { DiagnosticApiService } from '../services/diagnostic-api.service';
   styleUrls: ['./applens-preview-banner.component.scss']
 })
 export class ApplensBannerComponent implements OnInit {
-  public showBanner: boolean = false;
+  public showBanner: boolean = this._diagnosticApiService.caseNumberNeededForUser;
   private url: URL = new URL(window.location.href);
   private readonly prodHostName = "applens.trafficmanager.net";
   private readonly previewHostName = "applens-preview.trafficmanager.net";
