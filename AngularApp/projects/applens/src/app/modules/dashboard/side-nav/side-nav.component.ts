@@ -30,7 +30,7 @@ export class SideNavComponent implements OnInit {
   gists: CollapsibleMenuItem[] = [];
   gistsCopy: CollapsibleMenuItem[] = [];
 
-  searchValue: string = "";
+  searchValue: string = undefined;
 
   contentHeight: string;
 
@@ -136,7 +136,7 @@ export class SideNavComponent implements OnInit {
     onClick: () => {
       let alias = Object.keys(this._adalService.userInfo.profile).length > 0 ? this._adalService.userInfo.profile.upn : '';
     const userId: string = alias.replace('@microsoft.com', '');
-    if (userId.length > 0) {        
+    if (userId.length > 0) {
       this.navigateTo(`users/${userId}/activepullrequests`);
     }
     },
@@ -233,6 +233,7 @@ export class SideNavComponent implements OnInit {
           this.categories.push(new CollapsibleMenuItem("Analysis", "", null, null, null, true, this.analysisTypes));
         }
         this.categories = this.categories.sort((a, b) => a.label === 'Uncategorized' ? 1 : (a.label > b.label ? 1 : -1));
+        console.log("categories", this.categories);
         this.categoriesCopy = this.deepCopyArray(this.categories);
         this.detectorsLoading = false;
         this._telemetryService.logPageView(TelemetryEventNames.SideNavigationLoaded, {});
@@ -244,8 +245,6 @@ export class SideNavComponent implements OnInit {
           this.getDetectorsRouteNotFound = true;
         }
       });
-
-
 
     this._diagnosticApiService.getGists().subscribe(gistList => {
       if (gistList) {
@@ -334,9 +333,13 @@ export class SideNavComponent implements OnInit {
         }
         copiedItem.subItems = subItems;
       }
+
+      console.log("befor updating", items);
       if (this.checkMenuItemMatchesWithSearchTerm(copiedItem, searchValue) || (Array.isArray(copiedItem.subItems) && copiedItem.subItems.length > 0)) {
         if (Array.isArray(copiedItem.subItems) && copiedItem.subItems.length > 0) {
           copiedItem.expanded = true;
+
+          console.log("updating ", copiedItem);
         }
         categories.push(copiedItem);
       }
