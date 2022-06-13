@@ -217,7 +217,6 @@ export class OnboardingFlowComponent implements OnInit {
   PRLink: string = "";
 
   detectorGraduation: boolean = false;
-  // autoMerge: boolean = false;
   disableDelete: boolean = false;
 
   buttonStyle: IButtonStyles = {
@@ -497,7 +496,6 @@ export class OnboardingFlowComponent implements OnInit {
         this.timePickerButtonStr = s;
       });
 
-      // this.autoMerge = devopsConfig.autoMerge;
       if (this._detectorControlService.isInternalView) {
         this.internalExternalText = this.internalViewText;
       }
@@ -1420,13 +1418,11 @@ export class OnboardingFlowComponent implements OnInit {
       this.queryResponse.invocationOutput['appFilter']['AppType'].split(',').forEach(apt => {
         if(Object.keys(this.DevopsConfig.appTypeReviewers).includes(apt)){
           if (!this.owners.includes(this.DevopsConfig.appTypeReviewers[apt])) this.owners.push(this.DevopsConfig.appTypeReviewers[apt]);
-          //reviewers = reviewers.concat(`${this.DevopsConfig.appTypeReviewers[apt]}\n`);
         }
       });
       this.queryResponse.invocationOutput['appFilter']['PlatformType'].split(',').forEach(plt => {
         if(Object.keys(this.DevopsConfig.platformReviewers).includes(plt)){
           if (!this.owners.includes(this.DevopsConfig.platformReviewers[plt])) this.owners.push(this.DevopsConfig.platformReviewers[plt]);
-          //reviewers = reviewers.concat(`${this.DevopsConfig.platformReviewers[plt]}\n`);
         }
       });
       this.owners.forEach(o => {
@@ -1438,7 +1434,6 @@ export class OnboardingFlowComponent implements OnInit {
 
     var requestBranch = this.Branch;
     if (this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && this.queryResponse.invocationOutput['appFilter']['InternalOnly'] === 'True' && !this.IsDetectorMarkedPublic(this.originalCode))) {
-      //this.Branch = this.defaultBranch;
       requestBranch = this.defaultBranch;
     }
     let link = this.gistMode ? `${this.PPEHostname}/${this.resourceId}/gists/${this.publishingPackage.id}?branchInput=${this.Branch}` : `${this.PPEHostname}/${this.resourceId}/detectors/${this.publishingPackage.id}/edit?branchInput=${this.Branch}`;
@@ -1496,7 +1491,6 @@ export class OnboardingFlowComponent implements OnInit {
 
     var requestBranch = this.Branch;
     if (this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.originalCode))) {
-      //this.Branch = this.defaultBranch;
       requestBranch = this.defaultBranch;
     }
 
@@ -1561,13 +1555,11 @@ export class OnboardingFlowComponent implements OnInit {
       this.queryResponse.invocationOutput['appFilter']['AppType'].split(',').forEach(apt => {
         if(Object.keys(this.DevopsConfig.appTypeReviewers).includes(apt)){
           if (!this.owners.includes(this.DevopsConfig.appTypeReviewers[apt])) this.owners.push(this.DevopsConfig.appTypeReviewers[apt]);
-          //reviewers = reviewers.concat(`${this.DevopsConfig.appTypeReviewers[apt]}\n`);
         }
       });
       this.queryResponse.invocationOutput['appFilter']['PlatformType'].split(',').forEach(plt => {
         if(Object.keys(this.DevopsConfig.platformReviewers).includes(plt)){
           if (!this.owners.includes(this.DevopsConfig.platformReviewers[plt])) this.owners.push(this.DevopsConfig.platformReviewers[plt]);
-          //reviewers = reviewers.concat(`${this.DevopsConfig.platformReviewers[plt]}\n`);
         }
       });
       this.owners.forEach(o => {
@@ -1753,9 +1745,6 @@ export class OnboardingFlowComponent implements OnInit {
       
       // if (this.DevopsConfig.resourceProvider === 'Microsoft.Web/sites')
       this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/owners.txt`, this.Branch, this.resourceId).subscribe(o => {
-        // o.split('\n').forEach(x => {
-        //   if(x.match(/^\s*$/) !== null) this.owners.push(x);
-        // })
         this.owners = o.split('\n');
       })
     }
