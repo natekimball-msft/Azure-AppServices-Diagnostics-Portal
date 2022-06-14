@@ -326,6 +326,8 @@ export class OnboardingFlowComponent implements OnInit {
   showBranchInfo:boolean = false;
   owners: string[] = [];
 
+  codeOnDefaultBranch: boolean = true;
+
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService, private detectorGistApiService: DetectorGistApiService,
     private diagnosticApiService: ApplensDiagnosticService, private _diagnosticApi: DiagnosticApiService, private resourceService: ResourceService,
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
@@ -469,11 +471,11 @@ export class OnboardingFlowComponent implements OnInit {
       if (this.detectorGraduation)
         this.getBranchList();
 
-      if (!this.initialized) {
-        this.initialize();
-        this.initialized = true;
-        this._telemetryService.logPageView(TelemetryEventNames.OnboardingFlowLoaded, {});
-      }
+      // if (!this.initialized) {
+      //   this.initialize();
+      //   this.initialized = true;
+      //   this._telemetryService.logPageView(TelemetryEventNames.OnboardingFlowLoaded, {});
+      // }
 
       this.diagnosticApiService.getPPEHostname().subscribe(host => {
         this.PPEHostname = host;
@@ -551,6 +553,11 @@ export class OnboardingFlowComponent implements OnInit {
         }
         this.updateBranch();
         this.showBranchInfo = true;
+      }
+      if (!this.initialized) {
+        this.initialize();
+        this.initialized = true;
+        this._telemetryService.logPageView(TelemetryEventNames.OnboardingFlowLoaded, {});
       }
     });
 
@@ -1396,8 +1403,10 @@ export class OnboardingFlowComponent implements OnInit {
   gradPublish() {
     this.publishDialogHidden = true;
 
-    const commitType = this.mode == DevelopMode.Create && !this.isSaved ? "add" : "edit";
-    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved ? "Adding" : "Editing";
+    var pushToMain = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && this.queryResponse.invocationOutput['appFilter']['InternalOnly'] === 'True' && !this.IsDetectorMarkedPublic(this.originalCode));
+
+    const commitType = this.mode == DevelopMode.Create && !this.isSaved || (pushToMain && !this.codeOnDefaultBranch) ? "add" : "edit";
+    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved || (pushToMain && !this.codeOnDefaultBranch) ? "Adding" : "Editing";
 
     let gradPublishFiles: string[] = [
       this.publishingPackage.codeString,
@@ -1433,7 +1442,7 @@ export class OnboardingFlowComponent implements OnInit {
     }
 
     var requestBranch = this.Branch;
-    if (this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && this.queryResponse.invocationOutput['appFilter']['InternalOnly'] === 'True' && !this.IsDetectorMarkedPublic(this.originalCode))) {
+    if (pushToMain) {
       requestBranch = this.defaultBranch;
     }
     let link = this.gistMode ? `${this.PPEHostname}/${this.resourceId}/gists/${this.publishingPackage.id}?branchInput=${this.Branch}` : `${this.PPEHostname}/${this.resourceId}/detectors/${this.publishingPackage.id}/edit?branchInput=${this.Branch}`;
@@ -1442,7 +1451,7 @@ export class OnboardingFlowComponent implements OnInit {
     const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, this.PRTitle, this.resourceId, description);
 
     DetectorObservable.subscribe(_ => {
-      if ((!this.DevopsConfig.autoMerge && !(this.DevopsConfig.internalPassthrough && this.queryResponse.invocationOutput['appFilter']['InternalOnly'] === 'True')) || this.IsDetectorMarkedPublic(this.originalCode)) {
+      if (!pushToMain) {
         makePullRequestObservable.subscribe(_ => {
           this.PRLink = `${_["webUrl"]}/pullrequest/${_["prId"]}`
           this.publishSuccess = true;
@@ -1457,6 +1466,7 @@ export class OnboardingFlowComponent implements OnInit {
         this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.publishingPackage.id.toLowerCase()}/${this.publishingPackage.id.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.publishingPackage.id.toLowerCase()}/${this.publishingPackage.id.toLowerCase()}.csx&version=GB${this.defaultBranch}`;
         this.publishSuccess = true;
         this.postPublish();
+        this.codeOnDefaultBranch = true;
         this.deleteBranch(this.Branch, this.resourceId);
         this._applensCommandBarService.refreshPage();
       }
@@ -1746,7 +1756,7 @@ export class OnboardingFlowComponent implements OnInit {
       // if (this.DevopsConfig.resourceProvider === 'Microsoft.Web/sites')
       this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/owners.txt`, this.Branch, this.resourceId).subscribe(o => {
         this.owners = o.split('\n');
-      })
+      });
     }
     else {
       this.githubService.getMetadataFile(this.id.toLowerCase()).subscribe(res => {
@@ -1773,6 +1783,11 @@ export class OnboardingFlowComponent implements OnInit {
           this.fileName = `${this.id.toLowerCase()}.csx`;
           this.deleteAvailable = true;
           detectorFile = this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId)
+          this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.defaultBranch, this.resourceId).subscribe(x => {
+            this.codeOnDefaultBranch = true;
+          }, err => {
+            this.codeOnDefaultBranch = false;
+          });
         }
         else {
           this.fileName = `${this.id.toLowerCase()}.csx`;
