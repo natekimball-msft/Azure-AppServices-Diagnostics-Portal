@@ -127,7 +127,7 @@ export class CheckStepView extends StepView implements Check {
     }
 }
 
-enum InfoType {
+export enum InfoType {
     recommendation,
     diagnostic
 }

@@ -1,9 +1,17 @@
-import { DropdownStepView, InfoStepView, StepFlow, StepFlowManager, CheckStepView, StepViewContainer, InputStepView, ButtonStepView, PromiseCompletionSource, TelemetryService, checkResultLevel } from 'diagnostic-data';
+import { DropdownStepView, InfoStepView, StepFlow, StepFlowManager, CheckStepView, StepViewContainer, InputStepView, ButtonStepView, PromiseCompletionSource, TelemetryService, checkResultLevel, InfoType } from 'diagnostic-data';
+import { Check, themeRulesStandardCreator } from 'office-ui-fabric-react';
+import { isArray } from 'util';
 import { DiagProvider } from '../diag-provider';
 import { NetworkCheckFlow } from "../network-check-flow"
-import { ConnectivityStatusContract, ConnectivityStatusType, NetworkStatusContact } from './Contact/NetworkStatus';
+import { ApiManagementServiceResource, VirtualNetworkType } from './Contract/APIMService';
+import { NetworkSecurityGroup, ProvisioningState, SecurityRule, SecurityRuleAccess, SecurityRuleDirection, SecurityRuleProtocol, Subnet } from './Contract/NetworkSecurity';
+import { ConnectivityStatusContract, ConnectivityStatusType, NetworkStatusContractByLocation } from './Contract/NetworkStatus';
+import stv2portRequirements, { PortRequirements } from './data/portRequirements';
 
-function getWorstNetworkStatus(statuses: NetworkStatusContact[]): checkResultLevel {
+const APIM_API_VERSION = "2021-12-01-preview";
+const NETWORK_API_VERSION = "2021-08-01";
+
+function getWorstNetworkStatus(statuses: NetworkStatusContractByLocation[]): checkResultLevel {
     return getWorstStatus(statuses.map(service => getWorstNetworkStatusOfLocation(service.networkStatus.connectivityStatus)));
 }
 
@@ -38,147 +46,13 @@ function rateConnectivityStatus(status: ConnectivityStatusContract): checkResult
     // return [ConnectivityStatusType.Success, ConnectivityStatusType.Init, ConnectivityStatusType.Fail].findIndex(s => s == status.status);
 }
 
-// function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
-//     let table = `
-//     | Status | Name | Resource Group |
-//     | ------ | ---- | ------------- |
-//     `;
-
-//     for (let status of statuses) {
-//         table += `|   ${status.status} | ${status.name} | ${status.resourceType} |\n`;
-//     }
-
-//     return table;
-// }
-
-async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId) {
-    // const networkStatusResponse = await diagProvider.getResource<NetworkStatusContact[]>(resoureceId + "/networkstatus", "2021-01-01-preview");
-    // const networkStatuses = networkStatusResponse.body;
-    const networkStatuses: any = [
-        {
-            "location": "West US",
-            "networkStatus": {
-                "dnsServers": [
-                    "168.63.129.16"
-                ],
-                "connectivityStatus": [
-                    {
-                        "name": "https://gcs.prod.warm.ingestion.monitoring.azure.com",
-                        "status": "failure",
-                        "error": "Bad message here",
-                        "lastUpdated": "2022-05-27T23:14:22.8845352Z",
-                        "lastStatusChange": "2022-05-19T06:56:42.5388027Z",
-                        "resourceType": "Monitoring",
-                        "isOptional": true
-                    },
-                    {
-                        "name": "https://global.prod.microsoftmetrics.com/",
-                        "status": "success",
-                        "error": "",
-                        "lastUpdated": "2022-05-27T23:15:02.2903526Z",
-                        "lastStatusChange": "2022-05-19T06:56:42.6471303Z",
-                        "resourceType": "Monitoring",
-                        "isOptional": false
-                    },
-                    {
-                        "name": "https://login.windows.net",
-                        "status": "success",
-                        "error": "",
-                        "lastUpdated": "2022-05-27T23:15:17.7854174Z",
-                        "lastStatusChange": "2022-05-19T07:11:24.5359641Z",
-                        "resourceType": "AzureActiveDirectory",
-                        "isOptional": true
-                    },
-                ]
-            }
-        },
-        {
-            "location": "East US",
-            "networkStatus": {
-                "dnsServers": [
-                    "168.63.129.16"
-                ],
-                "connectivityStatus": [
-                    {
-                        "name": "dc.services.visualstudio.com",
-                        "status": "success",
-                        "error": "",
-                        "lastUpdated": "2022-05-27T23:17:57.4183434Z",
-                        "lastStatusChange": "2022-05-22T22:32:23.1687127Z",
-                        "resourceType": "ApplicationInsightsIngestionEndpoint",
-                        "isOptional": true
-                    },
-                    {
-                        "name": "https://global.prod.microsoftmetrics.com/",
-                        "status": "success",
-                        "error": "",
-                        "lastUpdated": "2022-05-27T23:18:03.2620214Z",
-                        "lastStatusChange": "2022-05-22T22:32:22.7044581Z",
-                        "resourceType": "Monitoring",
-                        "isOptional": true
-                    },
-                    {
-                        "name": "https://login.windows.net",
-                        "status": "success",
-                        "error": "",
-                        "lastUpdated": "2022-05-27T23:18:49.695124Z",
-                        "lastStatusChange": "2022-05-22T22:32:22.746829Z",
-                        "resourceType": "AzureActiveDirectory",
-                        "isOptional": true
-                    },
-                    {
-                        "name": "https://prod3.prod.microsoftmetrics.com:1886/RecoveryService",
-                        "status": "success",
-                        "error": "",
-                        "lastUpdated": "2022-05-27T23:18:22.6360112Z",
-                        "lastStatusChange": "2022-05-22T22:16:35.1051766Z",
-                        "resourceType": "Metrics",
-                        "isOptional": true
-                    },
-                    {
-                        "name": "LocalGatewayRedis",
-                        "status": "success",
-                        "error": "",
-                        "lastUpdated": "2022-05-27T23:17:39.590723Z",
-                        "lastStatusChange": "2022-05-22T22:32:22.7155782Z",
-                        "resourceType": "InternalCache",
-                        "isOptional": true
-                    }
-                ]
-            }
-        },
-        {
-            "location": "Central US",
-            "networkStatus": {
-                "dnsServers": [
-                    "168.63.129.16"
-                ],
-                "connectivityStatus": [
-                    {
-                        "name": "apimstpam2qefxjewl0a7o1f.queue.core.windows.net",
-                        "status": "failure",
-                        "error": "",
-                        "lastUpdated": "2022-05-27T23:17:29.3241243Z",
-                        "lastStatusChange": "2022-05-25T09:46:31.9578619Z",
-                        "resourceType": "Queue",
-                        "isOptional": false
-                    },
-                    {
-                        "name": "apimstpam2qefxjewl0a7o1f.table.core.windows.net",
-                        "status": "success",
-                        "error": "Some error message",
-                        "lastUpdated": "2022-05-27T23:17:39.5841865Z",
-                        "lastStatusChange": "2022-05-25T09:46:31.8977329Z",
-                        "resourceType": "TableStorage",
-                        "isOptional": false
-                    },
-                ]
-            }
-        }
-    ];
-    // console.log(networkStatuses);
+async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId: string) {
+    
+    
+    const networkStatusResponse = await diagProvider.getResource<NetworkStatusContractByLocation[]>(resoureceId + "/networkstatus", APIM_API_VERSION);
+    const networkStatuses = networkStatusResponse.body;
     const view = new CheckStepView({
-        title: "Check DNS",
+        title: "Check Network Status",
         level: getWorstNetworkStatus(networkStatuses),
         id: "firstStep",
         subChecks:
@@ -215,18 +89,252 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId) {
     return view;
 }
 
+
+// class CIDRBlock {
+//     bitAddress: number;
+//     prefix: number;
+
+//     toBits(a: string, b: string, c: string, d: string): number {
+//         let [o1, o2, o3, o4] = [parseInt(a), parseInt(b), parseInt(c), parseInt(d)];
+//         return o1 << 24 | o2 << 16 | o3 << 8 | o4;
+//     }
+
+//     constructor(address: string) {
+//         if (address == "*") {
+//             this.bitAddress = 0;
+//             this.prefix = 0;
+//         } else {
+//             let [a, b, c, dp] = address.split(".");
+//             let [d, p] = dp.split("/");
+//             this.bitAddress = this.toBits(a, b, c, d);
+//             this.prefix = parseInt(p);
+//         }
+//     }
+
+//     qualifies(address: string): boolean {
+//         let [a, b, c, d] = address.split(".");
+//         let bitAddr = this.toBits(a, b, c, d);
+//         return (this.bitAddress >> (32 - this.prefix)) == (bitAddr >> (32 - this.prefix));
+//     }
+// }
+
+// class IPBlock {
+//     a: number;
+//     b: number;
+//     c: number;
+//     d: number;
+
+//     constructor(address: string) {
+//         if (address == "*") {
+//             this.a = -1;
+//             this.b = -1;
+//             this.c = -1;
+//             this.d = -1;
+//         } else {
+//             let [a, b, c, d] = address.split(".");
+//             this.a = a == "*" ? -1 : parseInt(a);
+//             this.b = b == "*" ? -1 : parseInt(b);
+//             this.c = c == "*" ? -1 : parseInt(c);
+//             this.d = d == "*" ? -1 : parseInt(d);
+//         }
+//     }
+
+//     qualifies(address: string): boolean {
+//         return false;
+//     }
+// }
+
+class PortRange {
+    port1: number;
+    port2: number | null;
+
+    constructor(ports: string) {
+        if (ports == "*") {
+            this.port1 = 0;
+            this.port2 = 65536;
+        } else if (ports.includes("-")) {
+            let [p1, p2] = ports.split("-");
+            this.port1 = parseInt(p1);
+            this.port2 = parseInt(p2);
+        } else {
+            this.port1 = parseInt(ports);
+            this.port2 = null;
+        }
+    }
+
+    has(port: number) {
+        if (this.port2) {
+            return this.port1 <= port && port < this.port2;
+        } else {
+            return port == this.port1;
+        }
+    }
+}
+
+function sameProtocol(protocol1: SecurityRuleProtocol, protocol2: SecurityRuleProtocol) {
+    return protocol1 == SecurityRuleProtocol.AST || protocol2 == SecurityRuleProtocol.AST || protocol1 == protocol2;
+}
+
+function samePorts(port: number | number[], pRange: string) {
+    let destinationPortRange = new PortRange(pRange);
+    let ports =[].concat(port);
+    return !ports.some((n) => destinationPortRange.has(n));
+}
+
+function sameIP(ip1: string, ip2: string) {
+    return ip1 == "*" || ip2 == "*" || ip1 == "Any" || ip2 == "Any" || ip1 == ip2 || 
+        (ip1 == "Internet" && ip2 != "VirtualNetwork") || (ip1 != "VirtualNetwork" && ip2 == "Internet");
+}
+
+function has(arr: [] | Object, val: Object) {
+    if (Array.isArray(val)) {
+        return (arr as Array<Object>).includes(val);
+    } else {
+        return arr == val;
+    }
+}
+
+function rulePassed(requirement: PortRequirements, rule: SecurityRule) {
+    if (rule.properties.access == SecurityRuleAccess.ALLOW)                 return true;
+    if (rule.properties.provisioningState != ProvisioningState.SUCCEEDED)   return true;
+    
+    // do vnet type check outside here!
+    if (!has(requirement.dir, rule.properties.direction))                   return false;
+    if (!sameProtocol(requirement.protocol, rule.properties.protocol))      return false;
+
+    if (!samePorts(requirement.num, rule.properties.destinationPortRange))  return true;
+    return sameIP(requirement.serviceSource, rule.properties.sourceAddressPrefix) 
+        && sameIP(requirement.serviceDestination, rule.properties.destinationAddressPrefix);
+}
+
+
+interface RequirementResult {
+    status: checkResultLevel;
+    name: string;
+    description: string;
+}
+
+function requirementCheck(requirements: PortRequirements[], rules: SecurityRule[], networkSecurityGroupResourceId: string): RequirementResult[] {
+    let failedChecks: RequirementResult[] = [];
+
+    console.log("requirement check", requirements, rules);
+    
+    requirements.forEach(req => {
+        let failedRule = rules.find(r => !rulePassed(req, r));
+        console.log(failedRule);
+        
+        if (failedRule != undefined) {
+            failedChecks.push({
+                status: req.required ? checkResultLevel.fail : checkResultLevel.warning,
+                name: `Security rule <b>${failedRule.name}</b> is blocking access from service tag <b>${req.serviceSource}</b> to <b>${req.serviceDestination}</b>`,
+                description: 
+                `Security rule [${failedRule.name}](https://ms.portal.azure.com/#microsoft.onmicrosoft.com/resource${networkSecurityGroupResourceId}) is blocking access to **${req.serviceDestination}** on ${req.num > 1 ? "ports" : "port"} ${req.num}. 
+                 Please modify the existing security rule or add a higher priority rule that allows ${Array.isArray(req.dir) ? "inbound and outbound" : req.dir == SecurityRuleDirection.INBOUND ? "inbound" : "outbound"} traffic 
+                 from service tags **${req.serviceSource}** to **${req.serviceDestination}** on ports ${req.num}. 
+                 For more information on port requirements, please visit the [VNet configuration reference](https://docs.microsoft.com/en-us/azure/api-management/virtual-network-reference?tabs=stv2).`
+            });
+        }
+    });
+
+    return failedChecks;
+}
+
+async function getVnetInfoView(diagProvider: DiagProvider, serviceResource: ApiManagementServiceResource, networkType: VirtualNetworkType = VirtualNetworkType.EXTERNAL) {
+
+    console.log("virtual network detected!");
+
+    const subnetResourceId = serviceResource.properties.virtualNetworkConfiguration.subnetResourceId;
+    // todo update api version and use platform version!!!
+    const subnetResponse = await diagProvider.getResource<Subnet>(subnetResourceId, NETWORK_API_VERSION);
+    const subnet = subnetResponse.body;
+
+    const networkSecurityGroupResourceId = subnet.properties.networkSecurityGroup.id;
+    const networkSecurityGroupResponse = await diagProvider.getResource<NetworkSecurityGroup>(networkSecurityGroupResourceId, NETWORK_API_VERSION);
+    const networkSecurityGroup = networkSecurityGroupResponse.body;
+
+    console.log(networkSecurityGroup);
+
+    const securityRules = [...networkSecurityGroup.properties.defaultSecurityRules, ...networkSecurityGroup.properties.securityRules];
+    // securityRules.filter(rule => rule.properties.)
+    securityRules.sort((a, b) => a.properties.priority - b.properties.priority);
+
+    
+    let requirements = stv2portRequirements.filter(req => has(req.vnetType, networkType));
+    let violatedRequirements = requirementCheck(requirements, securityRules, networkSecurityGroup.id);
+
+    let view;
+    if(violatedRequirements.length == 0) {
+        view = new InfoStepView({
+            id: "netsec-view",
+            title: "VNET Status",
+            infoType: InfoType.diagnostic,
+            markdown: `No isues detected!`
+        });
+    
+    } else {
+        view = new CheckStepView({
+            id: "netsec-view",
+            title: "VNET Status",
+            expandByDefault: true,
+            level: getWorstStatus(violatedRequirements.map(req => req.status)),
+            subChecks: violatedRequirements.map(req => {
+                return {
+                    level: req.status,
+                    title: req.name,
+                    bodyMarkdown: req.description
+                }
+            })
+        });
+    
+    }
+
+    return view;
+}
+
+async function getNoVnetView() {
+    const view = new InfoStepView({
+        title: "VNET Status",
+        infoType: InfoType.recommendation,
+        id: "secondStep",
+        markdown: `
+            ## No VNet Configuration detected
+            No problems then!
+        `,
+    });
+
+    return view;
+}
+
 export const DnsFlow: NetworkCheckFlow = {
     title: "Network Connectivity Check",
     id: "dnsFlow",
 
-    // todo: generate custom payload that tests single errors for the different locations
-    // todo make table more compact / concise
-
-
     func: async (siteInfo, diagProvider, flowMgr) => {
-        const resoureceId = siteInfo.resourceUri;
+        const resourceId = siteInfo.resourceUri;
+        // const subscriptionId = siteInfo.subscriptionId;
+        // const resourceGroupName = siteInfo.resourceGroupName;
+        flowMgr.addView(getNetworkStatusView(diagProvider, resourceId),  "Running network checks");
 
-        flowMgr.addView(getNetworkStatusView(diagProvider, resoureceId),  "running network checks");
+        const serviceResourceResponse = await diagProvider.getResource<ApiManagementServiceResource>(resourceId, APIM_API_VERSION);
+        let serviceResource = serviceResourceResponse.body;
 
+        // console.log(serviceResource.properties);
+
+        let networkType = serviceResource.properties.virtualNetworkType;
+        if (networkType != VirtualNetworkType.NONE) {
+            flowMgr.addView(getVnetInfoView(diagProvider, serviceResource, networkType), "Gathering VNET Configuration");
+        } else {
+            flowMgr.addView(getNoVnetView(), "Gathering VNET Configuration");
+        }
+
+        flowMgr.addView(new InfoStepView({
+            title: "Further Action",
+            infoType: InfoType.diagnostic,
+            id: "thirdStep",
+            markdown: `
+                Network status errors generally occur when the APIM service is not able to access external dependencies due to outages or traffic rules.
+                Please check any error descriptions for further information.
+            `
+        }));
     }
 };
