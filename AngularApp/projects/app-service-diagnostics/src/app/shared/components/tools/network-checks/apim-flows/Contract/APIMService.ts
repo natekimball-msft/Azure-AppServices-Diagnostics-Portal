@@ -15,6 +15,7 @@ export interface ApiManagementServiceResource {
 
         portalUrl: string;
         privateIPAddresses?: string[];
+        platformVersion: PlatformVersion;
 
         publicIPAddresses?: string[];
         publicIPAddressId?: string;
@@ -36,6 +37,11 @@ export enum VirtualNetworkType {
     EXTERNAL = "External",
     INTERNAL = "Internal",
     NONE = "None"
+}
+
+export enum PlatformVersion {
+    STV1 = "stv1",
+    STV2 = "stv2"
 }
 
 interface AdditionalLocation {

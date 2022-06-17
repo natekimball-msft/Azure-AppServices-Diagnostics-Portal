@@ -3,10 +3,10 @@ import { Check, themeRulesStandardCreator } from 'office-ui-fabric-react';
 import { isArray } from 'util';
 import { DiagProvider } from '../diag-provider';
 import { NetworkCheckFlow } from "../network-check-flow"
-import { ApiManagementServiceResource, VirtualNetworkType } from './Contract/APIMService';
+import { ApiManagementServiceResource, PlatformVersion, VirtualNetworkType } from './Contract/APIMService';
 import { NetworkSecurityGroup, ProvisioningState, SecurityRule, SecurityRuleAccess, SecurityRuleDirection, SecurityRuleProtocol, Subnet } from './Contract/NetworkSecurity';
 import { ConnectivityStatusContract, ConnectivityStatusType, NetworkStatusContractByLocation } from './Contract/NetworkStatus';
-import stv2portRequirements, { PortRequirements } from './data/portRequirements';
+import {stv2portRequirements, stv1portRequirements, PortRequirements } from './data/portRequirements';
 
 const APIM_API_VERSION = "2021-12-01-preview";
 const NETWORK_API_VERSION = "2021-08-01";
@@ -23,7 +23,14 @@ function getWorstStatus(statuses: checkResultLevel[]) {
     let worst = checkResultLevel.pass;
 
     function rating(st: checkResultLevel) {
-        return [checkResultLevel.error, checkResultLevel.fail, checkResultLevel.warning, checkResultLevel.info, checkResultLevel.loading, checkResultLevel.pass, checkResultLevel.hidden].findIndex(s => s == st);        
+        return [
+            checkResultLevel.error, 
+            checkResultLevel.fail, 
+            checkResultLevel.warning, 
+            checkResultLevel.info, 
+            checkResultLevel.loading, 
+            checkResultLevel.pass, 
+            checkResultLevel.hidden].findIndex(s => s == st);        
     }
 
     for (let status of statuses) {
@@ -34,20 +41,17 @@ function getWorstStatus(statuses: checkResultLevel[]) {
 }
 
 function rateConnectivityStatus(status: ConnectivityStatusContract): checkResultLevel {
-    // return checkResultLevel.pass;
 
-    // console.log(status, status.status);
     switch(status.status) {
         case ConnectivityStatusType.Success:    return checkResultLevel.pass;
         case ConnectivityStatusType.Init:       return checkResultLevel.info;
         case ConnectivityStatusType.Fail:       return status.isOptional ? checkResultLevel.warning : checkResultLevel.fail;
         default: return checkResultLevel.pass;
     }
-    // return [ConnectivityStatusType.Success, ConnectivityStatusType.Init, ConnectivityStatusType.Fail].findIndex(s => s == status.status);
+    
 }
 
 async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId: string) {
-    
     
     const networkStatusResponse = await diagProvider.getResource<NetworkStatusContractByLocation[]>(resoureceId + "/networkstatus", APIM_API_VERSION);
     const networkStatuses = networkStatusResponse.body;
@@ -68,20 +72,14 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId: str
                     // bodyMarkdown: worstLocationStatus > 0 ? generateStatusMarkdownTable(status.networkStatus.connectivityStatus) : null,
                     subChecks: status.networkStatus.connectivityStatus.map(status => {
                         return {
-                            // title: `<table><tr><td>${status.resourceType}</td><td>${status.name}</td></tr></table>`,
                             title: `<table><tr><td>${status.name}</td><td>${status.resourceType}</td></tr></table>`,
                             level: rateConnectivityStatus(status),
-                            // subChecks: status.status == 0 ? [],
-                            // detailsMarkdown: status.error,
+                            
                             bodyMarkdown: status.error,
-                            // detailsMarkdown: `
-                            // | column1 | column2 |
-                            // | ------- | ------- |
-                            // | value1  | value2  |
-                            // `
+                            
                         };
                     }),
-                    // detailsMarkdown: `detailsMarkdown in check which subChecks is not null will be ignored`
+                    
                 }
             }),
     });
@@ -171,6 +169,10 @@ class PortRange {
     }
 }
 
+// use
+// html itag - used to render some icon
+// table component in applense
+
 function sameProtocol(protocol1: SecurityRuleProtocol, protocol2: SecurityRuleProtocol) {
     return protocol1 == SecurityRuleProtocol.AST || protocol2 == SecurityRuleProtocol.AST || protocol1 == protocol2;
 }
@@ -216,22 +218,22 @@ interface RequirementResult {
 
 function requirementCheck(requirements: PortRequirements[], rules: SecurityRule[], networkSecurityGroupResourceId: string): RequirementResult[] {
     let failedChecks: RequirementResult[] = [];
-
-    console.log("requirement check", requirements, rules);
     
     requirements.forEach(req => {
         let failedRule = rules.find(r => !rulePassed(req, r));
-        console.log(failedRule);
         
         if (failedRule != undefined) {
             failedChecks.push({
                 status: req.required ? checkResultLevel.fail : checkResultLevel.warning,
                 name: `Security rule <b>${failedRule.name}</b> is blocking access from service tag <b>${req.serviceSource}</b> to <b>${req.serviceDestination}</b>`,
                 description: 
-                `Security rule [${failedRule.name}](https://ms.portal.azure.com/#microsoft.onmicrosoft.com/resource${networkSecurityGroupResourceId}) is blocking access to **${req.serviceDestination}** on ${req.num > 1 ? "ports" : "port"} ${req.num}. 
-                 Please modify the existing security rule or add a higher priority rule that allows ${Array.isArray(req.dir) ? "inbound and outbound" : req.dir == SecurityRuleDirection.INBOUND ? "inbound" : "outbound"} traffic 
+                `Security rule [${failedRule.name}](https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${networkSecurityGroupResourceId}/overview) 
+                is blocking access to **${req.serviceDestination}** on ${req.num > 1 ? "ports" : "port"} ${req.num}. 
+                 Please modify the existing security rule or add a higher priority rule that allows 
+                 ${Array.isArray(req.dir) ? "inbound and outbound" : req.dir == SecurityRuleDirection.INBOUND ? "inbound" : "outbound"} traffic 
                  from service tags **${req.serviceSource}** to **${req.serviceDestination}** on ports ${req.num}. 
-                 For more information on port requirements, please visit the [VNet configuration reference](https://docs.microsoft.com/en-us/azure/api-management/virtual-network-reference?tabs=stv2).`
+                 For more information on port requirements, please visit the 
+                 [VNet configuration reference](https://docs.microsoft.com/en-us/azure/api-management/virtual-network-reference?tabs=stv2).`
             });
         }
     });
@@ -239,12 +241,12 @@ function requirementCheck(requirements: PortRequirements[], rules: SecurityRule[
     return failedChecks;
 }
 
-async function getVnetInfoView(diagProvider: DiagProvider, serviceResource: ApiManagementServiceResource, networkType: VirtualNetworkType = VirtualNetworkType.EXTERNAL) {
-
-    console.log("virtual network detected!");
+async function getVnetInfoView(diagProvider: DiagProvider, 
+    serviceResource: ApiManagementServiceResource, 
+    networkType: VirtualNetworkType = VirtualNetworkType.EXTERNAL, 
+    platformVersion: PlatformVersion = PlatformVersion.STV2) {
 
     const subnetResourceId = serviceResource.properties.virtualNetworkConfiguration.subnetResourceId;
-    // todo update api version and use platform version!!!
     const subnetResponse = await diagProvider.getResource<Subnet>(subnetResourceId, NETWORK_API_VERSION);
     const subnet = subnetResponse.body;
 
@@ -252,14 +254,10 @@ async function getVnetInfoView(diagProvider: DiagProvider, serviceResource: ApiM
     const networkSecurityGroupResponse = await diagProvider.getResource<NetworkSecurityGroup>(networkSecurityGroupResourceId, NETWORK_API_VERSION);
     const networkSecurityGroup = networkSecurityGroupResponse.body;
 
-    console.log(networkSecurityGroup);
-
     const securityRules = [...networkSecurityGroup.properties.defaultSecurityRules, ...networkSecurityGroup.properties.securityRules];
-    // securityRules.filter(rule => rule.properties.)
     securityRules.sort((a, b) => a.properties.priority - b.properties.priority);
 
-    
-    let requirements = stv2portRequirements.filter(req => has(req.vnetType, networkType));
+    let requirements = (platformVersion == PlatformVersion.STV1 ? stv1portRequirements : stv2portRequirements).filter(req => has(req.vnetType, networkType));
     let violatedRequirements = requirementCheck(requirements, securityRules, networkSecurityGroup.id);
 
     let view;
@@ -307,18 +305,15 @@ async function getNoVnetView() {
 
 export const DnsFlow: NetworkCheckFlow = {
     title: "Network Connectivity Check",
-    id: "dnsFlow",
+    id: "networkCheckFlow",
 
     func: async (siteInfo, diagProvider, flowMgr) => {
         const resourceId = siteInfo.resourceUri;
-        // const subscriptionId = siteInfo.subscriptionId;
-        // const resourceGroupName = siteInfo.resourceGroupName;
         flowMgr.addView(getNetworkStatusView(diagProvider, resourceId),  "Running network checks");
 
         const serviceResourceResponse = await diagProvider.getResource<ApiManagementServiceResource>(resourceId, APIM_API_VERSION);
         let serviceResource = serviceResourceResponse.body;
 
-        // console.log(serviceResource.properties);
 
         let networkType = serviceResource.properties.virtualNetworkType;
         if (networkType != VirtualNetworkType.NONE) {
