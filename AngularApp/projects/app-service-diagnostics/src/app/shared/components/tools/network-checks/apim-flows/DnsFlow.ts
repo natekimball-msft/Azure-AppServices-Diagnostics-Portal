@@ -1,4 +1,5 @@
-import { DropdownStepView, InfoStepView, StepFlow, StepFlowManager, CheckStepView, StepViewContainer, InputStepView, ButtonStepView, PromiseCompletionSource, TelemetryService, checkResultLevel, InfoType } from 'diagnostic-data';
+import { DropdownStepView, InfoStepView, StepFlow, StepFlowManager, CheckStepView, StepViewContainer, InputStepView, ButtonStepView, PromiseCompletionSource, TelemetryService, checkResultLevel, InfoType, StatusStyles } from 'diagnostic-data';
+import { stat } from 'fs';
 import { Check, themeRulesStandardCreator } from 'office-ui-fabric-react';
 import { isArray } from 'util';
 import { DiagProvider } from '../diag-provider';
@@ -69,16 +70,16 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId: str
                     //     title: generateStatusMarkdownTable(status.networkStatus.connectivityStatus),
                     //     level: getWorstNetworkStatusOfLocation(status.networkStatus.connectivityStatus)
                     // }]
-                    // bodyMarkdown: worstLocationStatus > 0 ? generateStatusMarkdownTable(status.networkStatus.connectivityStatus) : null,
-                    subChecks: status.networkStatus.connectivityStatus.map(status => {
-                        return {
-                            title: `<table><tr><td>${status.name}</td><td>${status.resourceType}</td></tr></table>`,
-                            level: rateConnectivityStatus(status),
+                    bodyMarkdown: generateStatusMarkdownTable(status.networkStatus.connectivityStatus),
+                    // subChecks: status.networkStatus.connectivityStatus.map(status => {
+                    //     return {
+                    //         title: `<table><tr><td>${status.name}</td><td>${status.resourceType}</td></tr></table>`,
+                    //         level: rateConnectivityStatus(status),
                             
-                            bodyMarkdown: status.error,
+                    //         bodyMarkdown: status.error,
                             
-                        };
-                    }),
+                    //     };
+                    // }),
                     
                 }
             }),
@@ -179,7 +180,7 @@ function sameProtocol(protocol1: SecurityRuleProtocol, protocol2: SecurityRulePr
 
 function samePorts(port: number | number[], pRange: string) {
     let destinationPortRange = new PortRange(pRange);
-    let ports =[].concat(port);
+    let ports = [].concat(port);
     return !ports.some((n) => destinationPortRange.has(n));
 }
 
@@ -241,6 +242,35 @@ function requirementCheck(requirements: PortRequirements[], rules: SecurityRule[
     return failedChecks;
 }
 
+function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
+    let statusMarkdown = {
+        0: `<i class="${StatusStyles.HealthyIcon}" style="width: 17px; height: 17px;"></i> Success`, // pass
+        1: `<i class="${StatusStyles.WarningIcon}" style="width: 17px; height: 17px;"></i> Warning`, // warning
+        2: `<i class="${StatusStyles.CriticalIcon}" style="width: 17px; height: 17px;"></i> Error`, // fail
+    };
+    const len = 30;
+    return `
+    | Status | Name | Resource Group |
+    |--------|------|----------------|
+    ` + statuses.map(status => 
+    `|   ${statusMarkdown[rateConnectivityStatus(status)]} | ${status.name.length > len ? status.name.substring(0, len) + "..." : status.name} | ${status.resourceType} |`).join(`\n`);
+}
+
+function generateRequirementViolationTable(requirements: RequirementResult[]): string {
+    let statusMarkdown = {
+        0: `<i class="${StatusStyles.HealthyIcon}" style="width: 17px; height: 17px;"></i> Success`, // pass
+        1: `<i class="${StatusStyles.WarningIcon}" style="width: 17px; height: 17px;"></i> Warning`, // warning
+        2: `<i class="${StatusStyles.CriticalIcon}" style="width: 17px; height: 17px;"></i> Error`, // fail
+    };
+
+    console.log("requirements", requirements);
+    
+    return "| Status | Desription |\n" +
+           "|--------|------------|\n" + 
+           requirements.map((req: RequirementResult) => 
+           `| ${statusMarkdown[req.status]} | ${req.description.replace(/(\r\n|\n|\r)/gm, "")} |`).join("\n");
+}
+
 async function getVnetInfoView(diagProvider: DiagProvider, 
     serviceResource: ApiManagementServiceResource, 
     networkType: VirtualNetworkType = VirtualNetworkType.EXTERNAL, 
@@ -275,13 +305,14 @@ async function getVnetInfoView(diagProvider: DiagProvider,
             title: "VNET Status",
             expandByDefault: true,
             level: getWorstStatus(violatedRequirements.map(req => req.status)),
-            subChecks: violatedRequirements.map(req => {
-                return {
-                    level: req.status,
-                    title: req.name,
-                    bodyMarkdown: req.description
-                }
-            })
+            bodyMarkdown: generateRequirementViolationTable(violatedRequirements),
+            // subChecks: violatedRequirements.map(req => {
+            //     return {
+            //         level: req.status,
+            //         title: req.name,
+            //         bodyMarkdown: req.description
+            //     }
+            // })
         });
     
     }
