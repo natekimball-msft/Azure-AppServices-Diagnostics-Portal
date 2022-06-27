@@ -1,5 +1,5 @@
-import { VirtualNetworkType } from '../Contract/APIMService';
-import { SecurityRuleDirection, SecurityRuleProtocol } from '../Contract/NetworkSecurity';
+import { VirtualNetworkType } from '../contracts/APIMService';
+import { SecurityRuleDirection, SecurityRuleProtocol } from '../contracts/NetworkSecurity';
 
 export interface PortRequirements {
     num: number | number[];
