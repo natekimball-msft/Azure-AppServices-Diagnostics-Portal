@@ -1,25 +1,32 @@
-export class UserSetting {
-    public resources: RecentResource[];
-    public id:string;
-    public theme: string;
-    public viewMode: string;
-    public expandAnalysisCheckCard: boolean;
-    public defaultServiceType: string;
+import { DetectorType } from "diagnostic-data";
 
-    constructor(id:string,resources: RecentResource[] = [], theme:string="light", viewMode: string="smarter", expandAnalysisCheckCard: boolean = false,defaultServiceType = "") {
-        this.id = id;
-        this.resources = resources;
-        this.theme = theme;
-        this.viewMode = viewMode;
-        this.expandAnalysisCheckCard = expandAnalysisCheckCard;
-        this.defaultServiceType = defaultServiceType;
-    }
+export interface UserSetting extends LandingInfo, UserPanelSetting {
+    favoriteDetectors: FavoriteDetectors;
+    id: string;
+}
 
+export interface LandingInfo {
+    resources: RecentResource[];
+    defaultServiceType: string;
+}
 
+export interface UserPanelSetting {
+    theme: string;
+    viewMode: string;
+    expandAnalysisCheckCard: boolean;
 }
 
 export interface RecentResource {
     kind: string;
     resourceUri: string;
-    //Todo: starttime and endtime
+    queryParams: { [key: string]: string }
+}
+
+
+export interface FavoriteDetectorProp {
+    type: DetectorType;
+}
+
+export interface FavoriteDetectors {
+    [key: string]: FavoriteDetectorProp
 }

@@ -13,32 +13,39 @@ namespace AppLensV3.Models
         public string Id;
 
         [JsonProperty(PropertyName = "resources")]
-        public List<RecentResource> Resources;
+        public List<RecentResource> Resources { get; set; }
 
         [JsonProperty(PropertyName = "theme")]
-        public string Theme;
+        public string Theme { get; set; }
 
         [JsonProperty(PropertyName = "viewMode")]
-        public string ViewMode;
+        public string ViewMode { get; set; }
 
-        [JsonProperty(PropertyName = "PartitionKey")]
-        public string PartitionKey;
+        [JsonProperty]
+        private readonly string PartitionKey;
 
-       [JsonProperty(PropertyName = "expandAnalysisCheckCard")]
-       public bool ExpandAnalysisCheckCard { get; set; }
+        [JsonProperty(PropertyName = "expandAnalysisCheckCard")]
+        public bool ExpandAnalysisCheckCard { get; set; }
 
         [JsonProperty(PropertyName = "defaultServiceType")]
-        public string DefaultServiceType;
+        public string DefaultServiceType { get; set; }
 
-        public UserSetting(string id, List<RecentResource> resources, string theme="light", string viewMode="smarter", bool expandAnalysisCheckCard = false, string defaultServiceType = "")
+        /// <summary>
+        /// Key is detectorId, value is detector property
+        /// </summary>
+        [JsonProperty(PropertyName = "favoriteDetectors")]
+        public Dictionary<string, FavoriteDetectorProp> FavoriteDetectors { get; set; }
+
+        public UserSetting(string id)
         {
             Id = id;
-            Resources = resources;
+            Resources = new List<RecentResource>();
             PartitionKey = UserSettingConstant.PartitionKey;
-            Theme = theme;
-            ViewMode = viewMode;
-            ExpandAnalysisCheckCard = expandAnalysisCheckCard;
-            DefaultServiceType = defaultServiceType;
+            Theme = "light";
+            ViewMode = "smarter";
+            ExpandAnalysisCheckCard = false;
+            DefaultServiceType = string.Empty;
+            FavoriteDetectors = new Dictionary<string, FavoriteDetectorProp>();
         }
     }
 
@@ -47,10 +54,12 @@ namespace AppLensV3.Models
     {
         public string ResourceUri { get; set; }
         public string Kind { get; set; }
+        public Dictionary<string,string> QueryParams { get; set; }
+    }
 
-        public DateTime StartTime { get; set; }
-
-        public DateTime EndTime { get; set; }
+    public class FavoriteDetectorProp
+    {
+        public string Type { get; set; }
     }
 
     public class UserSettingConstant

@@ -253,7 +253,8 @@ import { GenericUserSettingService } from './services/generic-user-setting.servi
     FabTabComponent,
     FabricFeedbackComponent,
     FabDataTableComponent,
-    DetectorTimePickerComponent
+    DetectorTimePickerComponent,
+    FabCardComponent
   ],
 })
 export class DiagnosticDataModule {

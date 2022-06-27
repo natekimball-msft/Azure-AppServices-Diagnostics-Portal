@@ -5,7 +5,7 @@ import { IChoiceGroupOption, ISearchBoxProps } from 'office-ui-fabric-react';
 import { SearchService } from '../../../modules/dashboard/services/search.service';
 import { UserSettingService } from '../../../modules/dashboard/services/user-setting.service';
 import { ResourceInfo } from '../../models/resources';
-import { UserSetting } from '../../models/user-setting';
+import { UserPanelSetting, UserSetting } from '../../models/user-setting';
 import { DiagnosticApiService } from '../../services/diagnostic-api.service';
 import { ApplensGlobal } from '../../../applens-global';
 import { ApplensThemeService } from '../../services/applens-theme.service';
@@ -109,14 +109,14 @@ export class ApplensHeaderComponent implements OnInit {
   //Can add more updated userSetting into it
   private updateUserSettingsFromPanel() {
     const themeStr = this.darkThemeChecked ? "dark" : "light";
-    const updatedSettings = {
+    const updatedSettings: UserPanelSetting = {
       expandAnalysisCheckCard: this.expandCheckCard,
       theme: themeStr,
       viewMode: this.smartViewChecked ? "smarter" : "waterfall"
     };
     this._themeService.setActiveTheme(themeStr);
     this._userSettingService.isWaterfallViewSub.next(!this.smartViewChecked);
-    this._userSettingService.updateUserPanelSetting(updatedSettings);
+    this._userSettingService.updateUserPanelSetting(updatedSettings).subscribe();
     window.location.reload();
   }
 
