@@ -249,3 +249,8 @@ code[class*=language-]>span.token.operator {
 code[class*=language-]>span.token.punctuation {
   color: var(--bodyText) !important;
 }
+
+//Fix fab-link no focus indicator
+button.ms-Link:focus {
+  border: 1px solid black !important;
+}

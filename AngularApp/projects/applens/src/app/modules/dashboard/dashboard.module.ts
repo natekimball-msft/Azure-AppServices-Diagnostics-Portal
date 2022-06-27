@@ -10,7 +10,7 @@ import { MonacoEditorModule } from 'ngx-monaco-editor';
 import { NgxSmartModalModule } from 'ngx-smart-modal';
 import { MarkdownModule } from 'ngx-markdown';
 import { StartupService } from '../../shared/services/startup.service';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { SideNavComponent, SearchMenuPipe } from './side-nav/side-nav.component';
 import { ResourceMenuItemComponent } from './resource-menu-item/resource-menu-item.component';
 import { DiagnosticApiService } from '../../shared/services/diagnostic-api.service';
@@ -61,17 +61,18 @@ import { L2SideNavComponent } from './l2-side-nav/l2-side-nav.component';
 import { ApplensCommandBarService } from './services/applens-command-bar.service';
 import { ApplensGlobal as ApplensGlobals } from '../../applens-global';
 import { ResourceInfo } from '../../shared/models/resources';
-import { map } from 'rxjs/operators';
+import { catchError, flatMap, map, take } from 'rxjs/operators';
 import { RecentResource } from '../../shared/models/user-setting';
 import { UserSettingService } from './services/user-setting.service';
 import { ApplensDocsComponent } from '../../shared/components/applens-docs/applens-docs.component';
 import { TabKey } from './tabs/tab-key';
 import { UserActivePullrequestsComponent } from './user-active-pullrequests/user-active-pullrequests.component';
 import { BreadcrumbService } from './services/breadcrumb.service';
+import { FavoriteDetectorsComponent } from './favoite-detectors/favorite-detectors.component';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
-    constructor(private _resourceService: ResourceService, private _detectorControlService: DetectorControlService,private _userInfoService:UserSettingService) { }
+    constructor(private _resourceService: ResourceService, private _detectorControlService: DetectorControlService, private _userSettingService: UserSettingService) { }
 
     resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<ResourceInfo> {
         const startTime = route.queryParams['startTime'];
@@ -83,13 +84,19 @@ export class InitResolver implements Resolve<Observable<ResourceInfo>>{
             startDate: new Date(startTime),
             endDate: new Date(endTime)
         });
+
+        //Wait for getting UserSetting and update landingPage info before going to dashboard/detector page
+        let recentResource: RecentResource = null;
         return this._resourceService.waitForInitialization().pipe(map(resourceInfo => {
-            const recentResource: RecentResource = {
+            recentResource = {
                 resourceUri: resourceInfo.resourceUri,
                 kind: resourceInfo.kind
-            }
-            this._userInfoService.updateRecentResource(recentResource);
+            };
             return resourceInfo;
+        }), flatMap(resourceInfo => {
+            return this._userSettingService.getUserSetting().pipe(take(1),catchError(_ => of(null)), map(_ => resourceInfo));
+        }), flatMap(resourceInfo => {
+            return this._userSettingService.updateLandingInfo(recentResource).pipe(catchError(_ => of(null)), map(_ => resourceInfo));
         }));
     }
 }
@@ -442,6 +449,6 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
         SearchMenuPipe, TabDataComponent, TabDevelopComponent, TabCommonComponent, TabDataSourcesComponent, TabMonitoringComponent,
         TabMonitoringDevelopComponent, TabAnalyticsDevelopComponent, TabAnalyticsDashboardComponent, GistComponent, TabGistCommonComponent,
         TabGistDevelopComponent, TabChangelistComponent, GistChangelistComponent, TabAnalysisComponent, CategoryPageComponent, SupportTopicPageComponent,
-        SelfHelpContentComponent, UserDetectorsComponent, FormatResourceNamePipe, Sort, SearchResultsComponent, ConfigurationComponent, DashboardContainerComponent, L2SideNavComponent, UserActivePullrequestsComponent]
+        SelfHelpContentComponent, UserDetectorsComponent, FormatResourceNamePipe, Sort, SearchResultsComponent, ConfigurationComponent, DashboardContainerComponent, L2SideNavComponent, UserActivePullrequestsComponent, FavoriteDetectorsComponent]
 })
 export class DashboardModule { }

@@ -8,9 +8,11 @@ namespace AppLensV3.Services
 {
     public interface ICosmosDBHandlerBase<T> where T : class
     {
-        Task<Document> CreateItemAsync(T item);
+        Task<T> CreateItemAsync(T item);
         Task<T> GetItemAsync(string id, string partitionKey);
 
-        Task<List<T>> GetItemsAsync(string partitionKey, Expression<Func<T, bool>> predicate = null);
+        Task<List<T>> GetItemsAsync(string partitionKey);
+
+        Task<T> UpdateItemAsync(T item, string partitionKey);
     }
 }
