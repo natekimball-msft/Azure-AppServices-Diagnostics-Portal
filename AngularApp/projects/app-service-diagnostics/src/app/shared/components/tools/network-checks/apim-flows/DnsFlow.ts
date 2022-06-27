@@ -1,16 +1,20 @@
 import { DropdownStepView, InfoStepView, StepFlow, StepFlowManager, CheckStepView, StepViewContainer, InputStepView, ButtonStepView, PromiseCompletionSource, TelemetryService, checkResultLevel, InfoType, StatusStyles } from 'diagnostic-data';
-import { stat } from 'fs';
-import { Check, themeRulesStandardCreator } from 'office-ui-fabric-react';
-import { isArray } from 'util';
 import { DiagProvider } from '../diag-provider';
 import { NetworkCheckFlow } from "../network-check-flow"
 import { ApiManagementServiceResource, PlatformVersion, VirtualNetworkType } from './Contract/APIMService';
 import { NetworkSecurityGroup, ProvisioningState, SecurityRule, SecurityRuleAccess, SecurityRuleDirection, SecurityRuleProtocol, Subnet } from './Contract/NetworkSecurity';
 import { ConnectivityStatusContract, ConnectivityStatusType, NetworkStatusContractByLocation } from './Contract/NetworkStatus';
+import { VirtualNetwork } from './Contract/VirtualNetwork';
 import {stv2portRequirements, stv1portRequirements, PortRequirements } from './data/portRequirements';
 
 const APIM_API_VERSION = "2021-12-01-preview";
 const NETWORK_API_VERSION = "2021-08-01";
+
+let statusMarkdown = {
+    0: `<i class="${StatusStyles.HealthyIcon}" style="width: 17px; height: 17px;"></i> Success`, // pass
+    1: `<i class="${StatusStyles.WarningIcon}" style="width: 17px; height: 17px;"></i> Warning`, // warning
+    2: `<i class="${StatusStyles.CriticalIcon}" style="width: 17px; height: 17px;"></i> Error`, // fail
+};
 
 function getWorstNetworkStatus(statuses: NetworkStatusContractByLocation[]): checkResultLevel {
     return getWorstStatus(statuses.map(service => getWorstNetworkStatusOfLocation(service.networkStatus.connectivityStatus)));
@@ -52,9 +56,9 @@ function rateConnectivityStatus(status: ConnectivityStatusContract): checkResult
     
 }
 
-async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId: string) {
+async function getNetworkStatusView(diagProvider: DiagProvider, resourceId: string) {
     
-    const networkStatusResponse = await diagProvider.getResource<NetworkStatusContractByLocation[]>(resoureceId + "/networkstatus", APIM_API_VERSION);
+    const networkStatusResponse = await diagProvider.getResource<NetworkStatusContractByLocation[]>(resourceId + "/networkstatus", APIM_API_VERSION);
     const networkStatuses = networkStatusResponse.body;
     const view = new CheckStepView({
         title: "Check Network Status",
@@ -66,82 +70,13 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resoureceId: str
                 return {
                     title: status.location,
                     level: worstLocationStatus,
-                    // subChecks: [{
-                    //     title: generateStatusMarkdownTable(status.networkStatus.connectivityStatus),
-                    //     level: getWorstNetworkStatusOfLocation(status.networkStatus.connectivityStatus)
-                    // }]
                     bodyMarkdown: generateStatusMarkdownTable(status.networkStatus.connectivityStatus),
-                    // subChecks: status.networkStatus.connectivityStatus.map(status => {
-                    //     return {
-                    //         title: `<table><tr><td>${status.name}</td><td>${status.resourceType}</td></tr></table>`,
-                    //         level: rateConnectivityStatus(status),
-                            
-                    //         bodyMarkdown: status.error,
-                            
-                    //     };
-                    // }),
-                    
                 }
             }),
     });
 
     return view;
 }
-
-
-// class CIDRBlock {
-//     bitAddress: number;
-//     prefix: number;
-
-//     toBits(a: string, b: string, c: string, d: string): number {
-//         let [o1, o2, o3, o4] = [parseInt(a), parseInt(b), parseInt(c), parseInt(d)];
-//         return o1 << 24 | o2 << 16 | o3 << 8 | o4;
-//     }
-
-//     constructor(address: string) {
-//         if (address == "*") {
-//             this.bitAddress = 0;
-//             this.prefix = 0;
-//         } else {
-//             let [a, b, c, dp] = address.split(".");
-//             let [d, p] = dp.split("/");
-//             this.bitAddress = this.toBits(a, b, c, d);
-//             this.prefix = parseInt(p);
-//         }
-//     }
-
-//     qualifies(address: string): boolean {
-//         let [a, b, c, d] = address.split(".");
-//         let bitAddr = this.toBits(a, b, c, d);
-//         return (this.bitAddress >> (32 - this.prefix)) == (bitAddr >> (32 - this.prefix));
-//     }
-// }
-
-// class IPBlock {
-//     a: number;
-//     b: number;
-//     c: number;
-//     d: number;
-
-//     constructor(address: string) {
-//         if (address == "*") {
-//             this.a = -1;
-//             this.b = -1;
-//             this.c = -1;
-//             this.d = -1;
-//         } else {
-//             let [a, b, c, d] = address.split(".");
-//             this.a = a == "*" ? -1 : parseInt(a);
-//             this.b = b == "*" ? -1 : parseInt(b);
-//             this.c = c == "*" ? -1 : parseInt(c);
-//             this.d = d == "*" ? -1 : parseInt(d);
-//         }
-//     }
-
-//     qualifies(address: string): boolean {
-//         return false;
-//     }
-// }
 
 class PortRange {
     port1: number;
@@ -169,10 +104,6 @@ class PortRange {
         }
     }
 }
-
-// use
-// html itag - used to render some icon
-// table component in applense
 
 function sameProtocol(protocol1: SecurityRuleProtocol, protocol2: SecurityRuleProtocol) {
     return protocol1 == SecurityRuleProtocol.AST || protocol2 == SecurityRuleProtocol.AST || protocol1 == protocol2;
@@ -226,15 +157,17 @@ function requirementCheck(requirements: PortRequirements[], rules: SecurityRule[
         if (failedRule != undefined) {
             failedChecks.push({
                 status: req.required ? checkResultLevel.fail : checkResultLevel.warning,
-                name: `Security rule <b>${failedRule.name}</b> is blocking access from service tag <b>${req.serviceSource}</b> to <b>${req.serviceDestination}</b>`,
-                description: 
-                `Security rule [${failedRule.name}](https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${networkSecurityGroupResourceId}/overview) 
-                is blocking access to **${req.serviceDestination}** on ${req.num > 1 ? "ports" : "port"} ${req.num}. 
-                 Please modify the existing security rule or add a higher priority rule that allows 
-                 ${Array.isArray(req.dir) ? "inbound and outbound" : req.dir == SecurityRuleDirection.INBOUND ? "inbound" : "outbound"} traffic 
-                 from service tags **${req.serviceSource}** to **${req.serviceDestination}** on ports ${req.num}. 
-                 For more information on port requirements, please visit the 
-                 [VNet configuration reference](https://docs.microsoft.com/en-us/azure/api-management/virtual-network-reference?tabs=stv2).`
+                // name: `Security rule <b>${failedRule.name}</b> is blocking access from service tag <b>${req.serviceSource}</b> to <b>${req.serviceDestination}</b>`,
+                name: failedRule.name,
+                description: req.purpose
+            //     description: 
+            //     `Security rule [${failedRule.name}](https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${networkSecurityGroupResourceId}/overview) 
+            //     is blocking access to **${req.serviceDestination}** on ${req.num > 1 ? "ports" : "port"} ${req.num}. 
+            //      Please modify the existing security rule or add a higher priority rule that allows 
+            //      ${Array.isArray(req.dir) ? "inbound and outbound" : req.dir == SecurityRuleDirection.INBOUND ? "inbound" : "outbound"} traffic 
+            //      from service tags **${req.serviceSource}** to **${req.serviceDestination}** on ports ${req.num}. 
+            //      For more information on port requirements, please visit the 
+            //      [VNet configuration reference](https://docs.microsoft.com/en-us/azure/api-management/virtual-network-reference?tabs=stv2).`
             });
         }
     });
@@ -243,11 +176,7 @@ function requirementCheck(requirements: PortRequirements[], rules: SecurityRule[
 }
 
 function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
-    let statusMarkdown = {
-        0: `<i class="${StatusStyles.HealthyIcon}" style="width: 17px; height: 17px;"></i> Success`, // pass
-        1: `<i class="${StatusStyles.WarningIcon}" style="width: 17px; height: 17px;"></i> Warning`, // warning
-        2: `<i class="${StatusStyles.CriticalIcon}" style="width: 17px; height: 17px;"></i> Error`, // fail
-    };
+
     const len = 30;
     return `
     | Status | Name | Resource Group |
@@ -256,19 +185,18 @@ function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
     `|   ${statusMarkdown[rateConnectivityStatus(status)]} | ${status.name.length > len ? status.name.substring(0, len) + "..." : status.name} | ${status.resourceType} |`).join(`\n`);
 }
 
-function generateRequirementViolationTable(requirements: RequirementResult[]): string {
-    let statusMarkdown = {
-        0: `<i class="${StatusStyles.HealthyIcon}" style="width: 17px; height: 17px;"></i> Success`, // pass
-        1: `<i class="${StatusStyles.WarningIcon}" style="width: 17px; height: 17px;"></i> Warning`, // warning
-        2: `<i class="${StatusStyles.CriticalIcon}" style="width: 17px; height: 17px;"></i> Error`, // fail
-    };
+function generateRequirementViolationTable(requirements: RequirementResult[], nsgResId: string): string {
 
     console.log("requirements", requirements);
     
-    return "| Status | Desription |\n" +
-           "|--------|------------|\n" + 
+    return "| Status | Rule Name | Desription |\n" +
+           "|--------|-----------|------------|\n" + 
            requirements.map((req: RequirementResult) => 
-           `| ${statusMarkdown[req.status]} | ${req.description.replace(/(\r\n|\n|\r)/gm, "")} |`).join("\n");
+           `| ${statusMarkdown[req.status]} | [${req.name}](https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${nsgResId}/overview) | ${req.description.replace(/(\r\n|\n|\r)/gm, "")} |`).join("\n");
+}
+
+function getVnetResourceId(subnetResourceId: string): string {
+    return subnetResourceId.split("/subnets/")[0];
 }
 
 async function getVnetInfoView(diagProvider: DiagProvider, 
@@ -305,7 +233,7 @@ async function getVnetInfoView(diagProvider: DiagProvider,
             title: "VNET Status",
             expandByDefault: true,
             level: getWorstStatus(violatedRequirements.map(req => req.status)),
-            bodyMarkdown: generateRequirementViolationTable(violatedRequirements),
+            bodyMarkdown: generateRequirementViolationTable(violatedRequirements, networkSecurityGroupResourceId),
             // subChecks: violatedRequirements.map(req => {
             //     return {
             //         level: req.status,
@@ -334,21 +262,77 @@ async function getNoVnetView() {
     return view;
 }
 
+interface Body {
+    location?: string;
+}
+
+// async function getDNSMismatchView(diagProvider: DiagProvider, resourceId: string, VNetResourceId: string) {
+//     const vnetResponse = await diagProvider.getResource<VirtualNetwork>(VNetResourceId, NETWORK_API_VERSION);
+//     const vnet = await vnetResponse.body;
+
+//     const networkStatusResponse = await diagProvider.getResource<NetworkStatusContractByLocation[]>(resourceId + "/networkstatus", APIM_API_VERSION);
+//     const networkStatuses = networkStatusResponse.body;
+
+//     let validDNSs = vnet.properties.dhcpOptions.dnsServers;
+    
+//     let invalidStatuses = networkStatuses.filter(status => status.networkStatus.dnsServers.some(dns => validDNSs.includes(dns)));
+
+//     invalidStatuses.push({
+//         location: '',
+//         networkStatus: undefined
+//     });
+//     console.log("invalid statuses", validDNSs, networkStatuses);
+
+
+//     if (invalidStatuses.length > 0) {
+//         return new ButtonStepView({
+//             callback: () => {
+//                 return diagProvider
+//                     .postResourceAsync<ApiManagementServiceResource, Body>("/applynetworkconfigurationupdates", {}, APIM_API_VERSION)
+//                     .then(() => {});
+//             },
+//             id: "step4",
+//             text: "Apply Network Configuration"
+//         });
+//     } else {
+//         return new InfoStepView({
+//             title: "DNS Healthy",
+//             id: "step4",
+//             infoType: InfoType.recommendation,
+//             markdown: "DNS looks healthy!"
+//         });
+//     }
+    
+// }
+
 export const DnsFlow: NetworkCheckFlow = {
     title: "Network Connectivity Check",
     id: "networkCheckFlow",
 
     func: async (siteInfo, diagProvider, flowMgr) => {
+        
+        /** Network Status Check */
         const resourceId = siteInfo.resourceUri;
         flowMgr.addView(getNetworkStatusView(diagProvider, resourceId),  "Running network checks");
 
+
+        /** NSG Checks */
         const serviceResourceResponse = await diagProvider.getResource<ApiManagementServiceResource>(resourceId, APIM_API_VERSION);
         let serviceResource = serviceResourceResponse.body;
-
 
         let networkType = serviceResource.properties.virtualNetworkType;
         if (networkType != VirtualNetworkType.NONE) {
             flowMgr.addView(getVnetInfoView(diagProvider, serviceResource, networkType), "Gathering VNET Configuration");
+
+            
+            /** DNS Mismatch Check */
+            
+            dnsMismatchCheck(serviceResource, flowMgr, diagProvider, resourceId);
+            
+
+            /** Route Table Check */
+
+
         } else {
             flowMgr.addView(getNoVnetView(), "Gathering VNET Configuration");
         }
@@ -362,5 +346,52 @@ export const DnsFlow: NetworkCheckFlow = {
                 Please check any error descriptions for further information.
             `
         }));
+
     }
 };
+
+async function dnsMismatchCheck(serviceResource: ApiManagementServiceResource, flowMgr: StepFlowManager, diagProvider: DiagProvider, resourceId: any) {
+    const vnetResourceId = getVnetResourceId(serviceResource.properties.virtualNetworkConfiguration.subnetResourceId);
+
+    const vnetResponse = await diagProvider.getResource<VirtualNetwork>(vnetResourceId, NETWORK_API_VERSION);
+    const vnet = await vnetResponse.body;
+
+    const networkStatusResponse = await diagProvider.getResource<NetworkStatusContractByLocation[]>(resourceId + "/networkstatus", APIM_API_VERSION);
+    const networkStatuses = networkStatusResponse.body;
+
+    let validDNSs = vnet.properties.dhcpOptions.dnsServers;
+    
+    let invalidStatuses = networkStatuses.filter(status => status.networkStatus.dnsServers.some(dns => validDNSs.includes(dns)));
+
+    invalidStatuses.push({
+        location: '',
+        networkStatus: undefined
+    });
+    console.log("invalid statuses", validDNSs, networkStatuses);
+
+
+    if (invalidStatuses.length > 0) {
+        flowMgr.addView(new InfoStepView({
+            title: "DNS Network Configuration Needs to be Updated",
+            id: "step4",
+            infoType: InfoType.diagnostic,
+            markdown: "There seems to be some issue with the DNS settings of your APIM service. Plase click the button below to refresh your DNS configuration."
+        }));
+        flowMgr.addView(new ButtonStepView({
+            callback: () => {
+                return diagProvider
+                    .postResourceAsync<ApiManagementServiceResource, Body>(resourceId + "/applynetworkconfigurationupdates", {}, APIM_API_VERSION)
+                    .then(() => {});
+            },
+            id: "step4",
+            text: "Apply Network Configuration"
+        }));
+    } else {
+        flowMgr.addView(new InfoStepView({
+            title: "DNS Healthy",
+            id: "step4",
+            infoType: InfoType.recommendation,
+            markdown: "DNS looks healthy!"
+        }));
+    }
+}
