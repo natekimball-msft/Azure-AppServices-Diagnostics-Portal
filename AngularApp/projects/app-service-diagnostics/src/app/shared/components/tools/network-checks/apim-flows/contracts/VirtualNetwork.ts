@@ -1,11 +1,11 @@
+import { ArmObj } from "projects/app-service-diagnostics/src/app/shared/models/armObj";
 import { Subnet } from "./NetworkSecurity";
 
-export interface VirtualNetwork {
+// https://docs.microsoft.com/en-us/rest/api/virtualnetwork/virtual-networks/get#virtualnetwork
+export interface VirtualNetwork extends ArmObj {
     etag: string;
     extendedLocation: ExtendedLocation;
-    id: string;
-    location: string;
-    name: string;
+    
     properties: {
         addressSpace: AddressSpace;
         dhcpOptions: DhcpOptions;
@@ -18,7 +18,6 @@ export interface VirtualNetwork {
     }
 
     tags: Object;
-    type: string;
 }
 
 interface ExtendedLocation {
@@ -40,5 +39,4 @@ interface DhcpOptions {
 
 interface VirtualNetworkEncryption {
     enabled: boolean;
-    // eforcement
 }

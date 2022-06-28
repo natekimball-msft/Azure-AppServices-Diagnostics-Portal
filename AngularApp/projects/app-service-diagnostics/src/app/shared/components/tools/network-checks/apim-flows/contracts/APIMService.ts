@@ -1,9 +1,8 @@
-export interface ApiManagementServiceResource {
+import { ArmObj } from "projects/app-service-diagnostics/src/app/shared/models/armObj";
+
+export interface ApiManagementServiceResource extends ArmObj {
     etag: string;
-    id: string;
-    // identity
-    location: string;
-    name: string;
+    zones: string[];
     properties: {
         additionalLocations: AdditionalLocation[];
         developerPortalUrl: string;
@@ -23,8 +22,6 @@ export interface ApiManagementServiceResource {
         virtualNetworkConfiguration?: VirtualNetworkConfiguration;
         virtualNetworkType: VirtualNetworkType;
     }
-    type: string;
-    zones: string[];
 }
 
 interface VirtualNetworkConfiguration {

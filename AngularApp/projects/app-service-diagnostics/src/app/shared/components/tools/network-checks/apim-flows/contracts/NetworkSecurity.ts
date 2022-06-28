@@ -1,10 +1,8 @@
+import { ArmObj } from "projects/app-service-diagnostics/src/app/shared/models/armObj";
 
 // https://docs.microsoft.com/en-us/rest/api/virtualnetwork/network-security-groups/get#networksecuritygroup
-export interface NetworkSecurityGroup {
+export interface NetworkSecurityGroup extends ArmObj {
     etag: string;
-    id: string;
-    location: string;
-    name: string;
     properties: {
         defaultSecurityRules: SecurityRule[];
         // flowLogs: FlowLog[];
@@ -20,10 +18,6 @@ export interface NetworkSecurityGroup {
 // https://docs.microsoft.com/en-us/rest/api/virtualnetwork/network-security-groups/get#securityrule
 export interface SecurityRule {
     etag: string;
-    id: string;
-    name: string;
-    type: string;
-
     properties: {
         access: SecurityRuleAccess;
         description: string;
@@ -44,40 +38,31 @@ export interface SecurityRule {
     }
 }
 
-interface NetworkInterface {
+interface NetworkInterface extends ArmObj {
     etag: string;
-
-    id: string;
-    location: string;
-    name: string;
-
-
-
-    enableAcceleratedNetworking: boolean;
-    enableIPForwarding: boolean;
-    hostedWorkloads: string[];
-
-    macAddress: string[];
-
-    networkSecurityGroup: NetworkSecurityGroup;
-
-    primary: boolean;
-
-
-    provisioningState: ProvisioningState;
-    resourceGuid: string;
-
-
-    vnetEncryptionSupported: boolean;
-    workloadType: string;
-    // tags
-    type: string;
+    properties: {
+        enableAcceleratedNetworking: boolean;
+        enableIPForwarding: boolean;
+        hostedWorkloads: string[];
+    
+        macAddress: string[];
+    
+        networkSecurityGroup: NetworkSecurityGroup;
+    
+        primary: boolean;
+    
+    
+        provisioningState: ProvisioningState;
+        resourceGuid: string;
+    
+    
+        vnetEncryptionSupported: boolean;
+        workloadType: string;
+    }
 }
 
-export interface Subnet {
+export interface Subnet extends ArmObj {
     etag: string;
-    id: string;
-    name: string;
     properties: {
         addressPrefix: string;
         addressPrefixes: string[];
@@ -86,7 +71,6 @@ export interface Subnet {
         }
         purpose: string;
     }
-    type: string;
 }
 
 // https://docs.microsoft.com/en-us/rest/api/virtualnetwork/network-security-groups/get#securityruleaccess
@@ -96,15 +80,12 @@ export enum SecurityRuleAccess {
 }
 
 // https://docs.microsoft.com/en-us/rest/api/virtualnetwork/network-security-groups/get#applicationsecuritygroup
-interface ApplicationSecurityGroup {
+interface ApplicationSecurityGroup extends ArmObj {
     etag: string;
-    id: string;
-    location: string;
-    name: string;
-    provisioningState: ProvisioningState;
-    resourceGuid: string;
-    // tags:
-    type: string;
+    properties: {
+        provisioningState: ProvisioningState;
+        resourceGuid: string;
+    }
 }
 
 // https://docs.microsoft.com/en-us/rest/api/virtualnetwork/network-security-groups/get#provisioningstate
