@@ -27,7 +27,7 @@ export class FabricFeedbackComponent implements AfterViewInit, OnInit, OnDestroy
     [
       {
         id: "Sad",
-        text: "dissatisfied "
+        text: "dissatisfied"
       },
       {
         id: "EmojiNeutral",
@@ -150,6 +150,12 @@ export class FabricFeedbackComponent implements AfterViewInit, OnInit, OnDestroy
     }else if (this.feedbackPanelConfig.url != window.location.href.split("?")[0]){
       this.feedbackPanelConfig.url = window.location.href.split("?")[0];
     }
+
+    if (document.getElementsByName("feedback-icon-rating") != undefined && document.getElementsByName("feedback-icon-rating").length>0 && document.getElementsByName("feedback-icon-rating")[0] != undefined)
+    {
+        (<HTMLElement>document.getElementsByName("feedback-icon-rating")[0]).focus();
+    }
+
   }
 
   ngOnDestroy() {
