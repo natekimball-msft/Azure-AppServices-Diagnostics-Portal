@@ -1,4 +1,4 @@
-import { InfoStepView, StepFlowManager, CheckStepView, checkResultLevel, InfoType } from 'diagnostic-data';
+import { InfoStepView, StepFlowManager, CheckStepView, checkResultLevel, InfoType, ResourceDescriptor } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
 import { ApiManagementServiceResourceContract, PlatformVersion, VirtualNetworkType } from '../contracts/APIMService';
 import { NetworkSecurityGroupContract, ProvisioningState, SecurityRuleContract, SecurityRuleAccess, SecurityRuleProtocol, SubnetContract } from '../contracts/NetworkSecurity';
@@ -32,25 +32,22 @@ class PortRange {
         }
     }
 }
+
 function sameProtocol(protocol1: SecurityRuleProtocol, protocol2: SecurityRuleProtocol) {
     return protocol1 == SecurityRuleProtocol.AST || protocol2 == SecurityRuleProtocol.AST || protocol1 == protocol2;
 }
-function samePorts(port: number | number[], pRange: string) {
+
+function samePorts(ports: number[], pRange: string) {
     let destinationPortRange = new PortRange(pRange);
-    let ports = [].concat(port);
-    return !ports.some((n) => destinationPortRange.has(n));
+    // -1 means all ports
+    return ports.includes(-1) || !ports.some((n) => destinationPortRange.has(n));
 }
+
 function sameIP(ip1: string, ip2: string) {
     return ip1 == "*" || ip2 == "*" || ip1 == "Any" || ip2 == "Any" || ip1 == ip2 ||
         (ip1 == "Internet" && ip2 != "VirtualNetwork") || (ip1 != "VirtualNetwork" && ip2 == "Internet");
 }
-function has(arr: [] | Object, val: Object) {
-    if (Array.isArray(val)) {
-        return (arr as Array<Object>).includes(val);
-    } else {
-        return arr == val;
-    }
-}
+
 function rulePassed(requirement: PortRequirements, rule: SecurityRuleContract) {
     if (rule.properties.access == SecurityRuleAccess.ALLOW)
         return true;
@@ -58,7 +55,7 @@ function rulePassed(requirement: PortRequirements, rule: SecurityRuleContract) {
         return true;
 
     // do vnet type check outside here!
-    if (!has(requirement.dir, rule.properties.direction))
+    if (!requirement.dir.includes(rule.properties.direction))
         return false;
     if (!sameProtocol(requirement.protocol, rule.properties.protocol))
         return false;
@@ -92,12 +89,11 @@ function requirementCheck(requirements: PortRequirements[], rules: SecurityRuleC
     return failedChecks;
 }
 function generateRequirementViolationTable(requirements: RequirementResult[], nsgResId: string): string {
-
-    console.log("requirements", requirements);
-
-    return "| Status | Rule Name | Desription |\n" +
-        "|--------|-----------|------------|\n" +
-        requirements.map((req: RequirementResult) => `| ${statusMarkdown[req.status]} | [${req.name}](https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${nsgResId}/overview) | ${req.description.replace(/(\r\n|\n|\r)/gm, "")} |`).join("\n");
+    return `
+        | Status | Rule Name | Desription |\n
+        |--------|-----------|------------|\n` + 
+        requirements.map((req: RequirementResult) => 
+        `| ${statusMarkdown[req.status]} | [${req.name}](https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${nsgResId}/overview) | ${req.description.replace(/(\r\n|\n|\r)/gm, "")} |`).join("\n");
 }
 
 
@@ -117,8 +113,9 @@ async function getVnetInfoView(diagProvider: DiagProvider,
     const securityRules = [...networkSecurityGroup.properties.defaultSecurityRules, ...networkSecurityGroup.properties.securityRules];
     securityRules.sort((a, b) => a.properties.priority - b.properties.priority);
 
-    let requirements = (platformVersion == PlatformVersion.STV1 ? stv1portRequirements : stv2portRequirements).filter(req => has(req.vnetType, networkType));
-    let violatedRequirements = requirementCheck(requirements, securityRules);
+    let portRequirements = (platformVersion == PlatformVersion.STV1 ? stv1portRequirements : stv2portRequirements);
+    portRequirements = portRequirements.filter(req => req.vnetType.includes(networkType));
+    let violatedRequirements = requirementCheck(portRequirements, securityRules);
 
     let view;
     if (violatedRequirements.length == 0) {

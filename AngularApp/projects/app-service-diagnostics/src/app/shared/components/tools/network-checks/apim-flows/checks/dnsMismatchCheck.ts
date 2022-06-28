@@ -1,4 +1,4 @@
-import { InfoStepView, StepFlowManager, ButtonStepView, InfoType } from 'diagnostic-data';
+import { InfoStepView, StepFlowManager, ButtonStepView, InfoType, ResourceDescriptor } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
 import { ApiManagementServiceResourceContract, VirtualNetworkType } from '../contracts/APIMService';
 import { NetworkStatusByLocationContract } from '../contracts/NetworkStatus';
@@ -7,7 +7,8 @@ import { Body } from './nsgCheck';
 import { NETWORK_API_VERSION, APIM_API_VERSION } from '../dnsFlow';
 
 function getVnetResourceId(subnetResourceId: string): string {
-    return subnetResourceId.split("/subnets/")[0];
+    let uriDescriptor = ResourceDescriptor.parseResourceUri(subnetResourceId);
+    return uriDescriptor.resource;
 }
 export async function dnsMismatchCheck(networkType: VirtualNetworkType, serviceResource: ApiManagementServiceResourceContract, flowMgr: StepFlowManager, diagProvider: DiagProvider, resourceId: any) {
     if (networkType != VirtualNetworkType.NONE) {

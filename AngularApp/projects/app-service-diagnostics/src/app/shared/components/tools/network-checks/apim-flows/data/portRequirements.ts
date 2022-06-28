@@ -2,10 +2,10 @@ import { VirtualNetworkType } from '../contracts/APIMService';
 import { SecurityRuleDirection, SecurityRuleProtocol } from '../contracts/NetworkSecurity';
 
 export interface PortRequirements {
-    num: number | number[];
-    dir: SecurityRuleDirection | SecurityRuleDirection[];
+    num: number[];
+    dir: SecurityRuleDirection[];
     protocol: SecurityRuleProtocol;
-    vnetType: VirtualNetworkType | VirtualNetworkType[];
+    vnetType: VirtualNetworkType[];
     serviceSource: string;
     serviceDestination: string;
     required: boolean;
@@ -15,17 +15,17 @@ export interface PortRequirements {
 export const stv1portRequirements: PortRequirements[] = [
     {
         num: [80, 443],
-        dir: SecurityRuleDirection.INBOUND,
+        dir: [SecurityRuleDirection.INBOUND],
         protocol: SecurityRuleProtocol.TCP,
-        vnetType: VirtualNetworkType.EXTERNAL,
+        vnetType: [VirtualNetworkType.EXTERNAL],
         serviceSource: "Internet",
         serviceDestination: "VirtualNetwork",
         required: true,
         purpose: "Client communication to API Management"
     },
     {
-        num: 3443,
-        dir: SecurityRuleDirection.INBOUND,
+        num: [3443],
+        dir: [SecurityRuleDirection.INBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "ApiManagement",
@@ -34,8 +34,8 @@ export const stv1portRequirements: PortRequirements[] = [
         purpose: "Management endpoint for Azure portal and PowerShell"
     },
     {
-        num: 443,
-        dir: SecurityRuleDirection.OUTBOUND,
+        num: [443],
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -44,8 +44,8 @@ export const stv1portRequirements: PortRequirements[] = [
         purpose: "Dependency on Azure Storage"
     },
     {
-        num: 443,
-        dir: SecurityRuleDirection.OUTBOUND,
+        num: [443],
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -54,8 +54,8 @@ export const stv1portRequirements: PortRequirements[] = [
         purpose: "Azure Active Directory and Azure Key Vault dependency"
     },
     {
-        num: 1443,
-        dir: SecurityRuleDirection.OUTBOUND,
+        num: [1443],
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -65,7 +65,7 @@ export const stv1portRequirements: PortRequirements[] = [
     },
     {
         num: [5671, 5672, 443],
-        dir: SecurityRuleDirection.OUTBOUND,
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -74,8 +74,8 @@ export const stv1portRequirements: PortRequirements[] = [
         purpose: "Dependency for Log to Azure Event Hubs policy and monitoring agent"
     },
     {
-        num: 445,
-        dir: SecurityRuleDirection.OUTBOUND,
+        num: [445],
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -85,7 +85,7 @@ export const stv1portRequirements: PortRequirements[] = [
     },
     {
         num: [443, 12000],
-        dir: SecurityRuleDirection.OUTBOUND,
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -95,7 +95,7 @@ export const stv1portRequirements: PortRequirements[] = [
     },
     {
         num: [1886, 443],
-        dir: SecurityRuleDirection.OUTBOUND,
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -105,7 +105,7 @@ export const stv1portRequirements: PortRequirements[] = [
     },
     {
         num: [25, 587, 25028],
-        dir: SecurityRuleDirection.OUTBOUND,
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -124,7 +124,7 @@ export const stv1portRequirements: PortRequirements[] = [
         purpose: "Access Redis Service for Cache policies between machines"
     },
     {
-        num: 4290,
+        num: [4290],
         dir: [SecurityRuleDirection.INBOUND, SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.UDP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
@@ -134,8 +134,8 @@ export const stv1portRequirements: PortRequirements[] = [
         purpose: "Sync Counters for Rate Limit policies between machines"
     },
     {
-        num: -1, // fixme any port qualifier
-        dir: SecurityRuleDirection.INBOUND,
+        num: [-1], // fixme any port qualifier
+        dir: [SecurityRuleDirection.INBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "AzureLoadBalancer",
@@ -148,17 +148,17 @@ export const stv1portRequirements: PortRequirements[] = [
 export const stv2portRequirements: PortRequirements[] = [
     {
         num: [80, 443],
-        dir: SecurityRuleDirection.INBOUND,
+        dir: [SecurityRuleDirection.INBOUND],
         protocol: SecurityRuleProtocol.TCP,
-        vnetType: VirtualNetworkType.EXTERNAL,
+        vnetType: [VirtualNetworkType.EXTERNAL],
         serviceSource: "Internet",
         serviceDestination: "VirtualNetwork",
         required: true,
         purpose: "Client communication to API Management"
     },
     {
-        num: 3443,
-        dir: SecurityRuleDirection.INBOUND,
+        num: [3443],
+        dir: [SecurityRuleDirection.INBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "ApiManagement",
@@ -167,8 +167,8 @@ export const stv2portRequirements: PortRequirements[] = [
         purpose: "Management endpoint for Azure portal and PowerShell"
     },
     {
-        num: 443,
-        dir: SecurityRuleDirection.OUTBOUND,
+        num: [443],
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -177,8 +177,8 @@ export const stv2portRequirements: PortRequirements[] = [
         purpose: "Dependency on Azure Storage"
     },
     {
-        num: 443,
-        dir: SecurityRuleDirection.OUTBOUND,
+        num: [443],
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -187,8 +187,8 @@ export const stv2portRequirements: PortRequirements[] = [
         purpose: "Azure Active Directory and Azure Key Vault dependency"
     },
     {
-        num: 1443,
-        dir: SecurityRuleDirection.OUTBOUND,
+        num: [1443],
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -197,8 +197,8 @@ export const stv2portRequirements: PortRequirements[] = [
         purpose: "Access to Azure SQL endpoints"
     },
     {
-        num: 443,
-        dir: SecurityRuleDirection.OUTBOUND,
+        num: [443],
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -208,7 +208,7 @@ export const stv2portRequirements: PortRequirements[] = [
     },
     {
         num: [5671, 5672, 443],
-        dir: SecurityRuleDirection.OUTBOUND,
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -217,8 +217,8 @@ export const stv2portRequirements: PortRequirements[] = [
         purpose: "Dependency for Log to Azure Event Hubs policy and monitoring agent"
     },
     {
-        num: 445,
-        dir: SecurityRuleDirection.OUTBOUND,
+        num: [445],
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -228,7 +228,7 @@ export const stv2portRequirements: PortRequirements[] = [
     },
     {
         num: [443, 12000],
-        dir: SecurityRuleDirection.OUTBOUND,
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -238,7 +238,7 @@ export const stv2portRequirements: PortRequirements[] = [
     },
     {
         num: [1886, 443],
-        dir: SecurityRuleDirection.OUTBOUND,
+        dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "VirtualNetwork",
@@ -267,7 +267,7 @@ export const stv2portRequirements: PortRequirements[] = [
         purpose: "Access Redis Service for Cache policies between machines"
     },
     {
-        num: 4290,
+        num: [4290],
         dir: [SecurityRuleDirection.INBOUND, SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.UDP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
@@ -277,8 +277,8 @@ export const stv2portRequirements: PortRequirements[] = [
         purpose: "Sync Counters for Rate Limit policies between machines"
     },
     {
-        num: 6390,
-        dir: SecurityRuleDirection.INBOUND,
+        num: [6390],
+        dir: [SecurityRuleDirection.INBOUND],
         protocol: SecurityRuleProtocol.TCP,
         vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
         serviceSource: "AzureLoadBalancer",
