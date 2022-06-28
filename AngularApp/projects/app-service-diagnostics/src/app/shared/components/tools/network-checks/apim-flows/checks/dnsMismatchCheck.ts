@@ -10,6 +10,7 @@ function getVnetResourceId(subnetResourceId: string): string {
     let uriDescriptor = ResourceDescriptor.parseResourceUri(subnetResourceId);
     return uriDescriptor.resource;
 }
+const DEFAULT_DNS = "168.63.129.16";
 export async function dnsMismatchCheck(networkType: VirtualNetworkType, serviceResource: ApiManagementServiceResourceContract, flowMgr: StepFlowManager, diagProvider: DiagProvider, resourceId: any) {
     if (networkType != VirtualNetworkType.NONE) {
         const vnetResourceId = getVnetResourceId(serviceResource.properties.virtualNetworkConfiguration.subnetResourceId);
@@ -22,14 +23,13 @@ export async function dnsMismatchCheck(networkType: VirtualNetworkType, serviceR
 
         let validDNSs = vnet.properties.dhcpOptions.dnsServers;
 
-        let invalidStatuses = networkStatuses.filter(status => status.networkStatus.dnsServers.some(dns => validDNSs.includes(dns)));
-
-        invalidStatuses.push({
-            location: '',
-            networkStatus: undefined
-        });
-        console.log("invalid statuses", validDNSs, networkStatuses);
-
+        let invalidStatuses;
+        if (validDNSs.length == 0) { // no custom dns specified
+            // all dns have to be the default, which is 168.63.129.16
+            invalidStatuses = networkStatuses.filter(status => status.networkStatus.dnsServers.some(dns => dns != DEFAULT_DNS));
+        } else {
+            invalidStatuses = networkStatuses.filter(status => status.networkStatus.dnsServers.some(dns => !validDNSs.includes(dns)));
+        }
 
         if (invalidStatuses.length > 0) {
             flowMgr.addView(new InfoStepView({
