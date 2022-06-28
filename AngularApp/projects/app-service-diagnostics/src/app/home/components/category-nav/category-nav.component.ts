@@ -137,7 +137,7 @@ export class CategoryNavComponent implements OnInit {
                         return this.checkIsSelected(tool.item.id);
                     };
                     let icon = this.getIconImagePath(tool.item.id);
-                    return new CollapsibleMenuItem(tool.item.name, tool.item.clickAction, isSelected, icon);
+                    return new CollapsibleMenuItem(tool.item.name, tool.item.clickAction, isSelected, icon, true, [], tool.item.description);
                 })
             }
         });
@@ -154,7 +154,7 @@ export class CategoryNavComponent implements OnInit {
                         return this.checkIsSelected(tool.item.id);
                     };
                     let icon = this.getIconImagePath(tool.item.id);
-                    return new CollapsibleMenuItem(tool.item.name, tool.item.clickAction, isSelected, icon);
+                    return new CollapsibleMenuItem(tool.item.name, tool.item.clickAction, isSelected, icon, true, [], tool.item.description);
                 })
             }
         });
@@ -164,7 +164,7 @@ export class CategoryNavComponent implements OnInit {
                 return this.checkIsSelected(tool.item.id);
             };
             let icon = this.getIconImagePath(tool.item.id);
-            return new CollapsibleMenuItem(tool.item.name, tool.item.clickAction, isSelected, icon);
+            return new CollapsibleMenuItem(tool.item.name, tool.item.clickAction, isSelected, icon, true, [], tool.item.description);
         });
 
         this.toolCategories.push(<SiteFilteredItem<any>>{
@@ -223,7 +223,7 @@ export class CategoryNavComponent implements OnInit {
                                 return this.currentDetectorId === feature.id;
                             }
                             let icon = this.getIconImagePath(feature.id);
-                            let menuItem = new CollapsibleMenuItem(feature.name, onClick, isSelected, icon);
+                            let menuItem = new CollapsibleMenuItem(feature.name, onClick, isSelected, icon, true, [], feature.description);
                             this.detectorList.push(menuItem);
                         });
                     }
@@ -260,7 +260,7 @@ export class CategoryNavComponent implements OnInit {
                                         let dest1 = `resource${this.resourceId}/categories/${this.categoryId}/${routePath}/${item.id}`;
                                         this._route.navigate([dest1]);
                                     };
-                                    let orphanMenuItem = new CollapsibleMenuItem(item.name, onClick, isSelected, icon);
+                                    let orphanMenuItem = new CollapsibleMenuItem(item.name, onClick, isSelected, icon, true, [], item.description);
                                     if (!this.orphanDetectorList || !this.orphanDetectorList.find((item1 => item1.label === orphanMenuItem.label))) {
                                         this._detectorCategorization.detectorlistCategories[this.category.id].push(orphanMenuItem);
                                     }

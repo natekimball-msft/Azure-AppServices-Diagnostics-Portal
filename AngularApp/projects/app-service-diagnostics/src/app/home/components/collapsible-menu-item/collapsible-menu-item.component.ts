@@ -66,18 +66,20 @@ export class CollapsibleMenuItemComponent implements OnInit {
 
 export class CollapsibleMenuItem {
   label: string;
+  toolTip: string;
   onClick: Function;
   expanded: boolean = false;
   subItems: CollapsibleMenuItem[];
   isSelected: Function;
   icon: string;
 
-  constructor(label: string, onClick: Function, isSelected: Function, icon: string = null, expanded: boolean = false, subItems: CollapsibleMenuItem[] = []) {
+  constructor(label: string, onClick: Function, isSelected: Function, icon: string = null, expanded: boolean = false, subItems: CollapsibleMenuItem[] = [], toolTip: string="") {
     this.label = label;
     this.onClick = onClick;
     this.expanded = expanded;
     this.subItems = subItems;
     this.isSelected = isSelected;
     this.icon = icon;
+    this.toolTip = toolTip;
   }
 }
