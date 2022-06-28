@@ -21,7 +21,7 @@
           </label>
           <div id="landing-page-casenumber">
             <fab-text-field [ariaLabel]="'Customer case number'" [(value)]="caseNumber"
-              [placeholder]="'Type customer case number'">
+              [placeholder]="caseNumberPlaceholder">
             </fab-text-field>
             <div *ngIf="caseNumberValidationError && caseNumberValidationError!== ''" class="mt-3 error-message-container">
               <status-icon [status]="status"></status-icon><span class="ml-3 error-message">{{caseNumberValidationError}}</span>

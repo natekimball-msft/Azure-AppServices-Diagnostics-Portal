@@ -45,6 +45,7 @@ export class MainComponent implements OnInit {
   accessErrorMessage: string = '';
   userAccessErrorMessage: string = '';
   displayUserAccessError: boolean = false;
+  caseNumberPlaceholder: string = "Type 'internal' for internal resources"
 
   defaultResourceTypes: ResourceTypeState[] = [
     {
@@ -246,7 +247,7 @@ export class MainComponent implements OnInit {
         this._themeService.setActiveTheme("dark");
       }
 
-      if (userInfo && userInfo.defaultServiceType && this.defaultResourceTypes.find(type => type.id.toLowerCase() === userInfo.defaultServiceType.toLowerCase())) {
+      if (!(this.accessErrorMessage && this.accessErrorMessage.length>0 && this.selectedResourceType) && userInfo && userInfo.defaultServiceType && this.defaultResourceTypes.find(type => type.id.toLowerCase() === userInfo.defaultServiceType.toLowerCase())) {
         this.selectedResourceType = this.defaultResourceTypes.find(type => type.id.toLowerCase() === userInfo.defaultServiceType.toLowerCase());
       }
     });
@@ -348,7 +349,7 @@ export class MainComponent implements OnInit {
 
   onSubmit() {
     this._userSettingService.updateDefaultServiceType(this.selectedResourceType.id);
-    if (this.caseNumberNeededForUser && (this.selectedResourceType && this.selectedResourceType.userAuthorizationEnabled)) {
+    if (!(this.caseNumber == "internal") && this.caseNumberNeededForUser && (this.selectedResourceType && this.selectedResourceType.userAuthorizationEnabled)) {
       this.caseNumber = this.caseNumber.trim();
       if (!this.validateCaseNumber()) {
         return;
@@ -382,7 +383,7 @@ export class MainComponent implements OnInit {
     let navigationExtras: NavigationExtras = {
       queryParams: {
         ...timeParams,
-        ...this.caseNumber ? { caseNumber: this.caseNumber } : {}
+        ...!(this.caseNumber == "internal") && this.caseNumber ? { caseNumber: this.caseNumber } : {}
       },
     }
 
