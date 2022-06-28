@@ -1,10 +1,10 @@
 import { ArmObj } from "projects/app-service-diagnostics/src/app/shared/models/armObj";
 
-export interface ApiManagementServiceResource extends ArmObj {
+export interface ApiManagementServiceResourceContract extends ArmObj {
     etag: string;
     zones: string[];
     properties: {
-        additionalLocations: AdditionalLocation[];
+        additionalLocations: AdditionalLocationContract[];
         developerPortalUrl: string;
         disableGateway: boolean;
         gatewayUrl: string;
@@ -19,12 +19,12 @@ export interface ApiManagementServiceResource extends ArmObj {
         publicIPAddresses?: string[];
         publicIPAddressId?: string;
 
-        virtualNetworkConfiguration?: VirtualNetworkConfiguration;
+        virtualNetworkConfiguration?: VirtualNetworkConfigurationContract;
         virtualNetworkType: VirtualNetworkType;
     }
 }
 
-interface VirtualNetworkConfiguration {
+interface VirtualNetworkConfigurationContract {
     subnetResourceId: string;
     subnetname: string;
     vnetid: string;
@@ -41,7 +41,7 @@ export enum PlatformVersion {
     STV2 = "stv2"
 }
 
-interface AdditionalLocation {
+interface AdditionalLocationContract {
     disableGateway: boolean;
     gatewayRegionalUrl: string;
     location: string;

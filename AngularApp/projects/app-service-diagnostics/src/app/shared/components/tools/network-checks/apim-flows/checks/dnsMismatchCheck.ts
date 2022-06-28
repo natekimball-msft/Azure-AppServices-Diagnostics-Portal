@@ -1,22 +1,22 @@
 import { InfoStepView, StepFlowManager, ButtonStepView, InfoType } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
-import { ApiManagementServiceResource, VirtualNetworkType } from '../contracts/APIMService';
-import { NetworkStatusContractByLocation } from '../contracts/NetworkStatus';
-import { VirtualNetwork } from '../contracts/VirtualNetwork';
+import { ApiManagementServiceResourceContract, VirtualNetworkType } from '../contracts/APIMService';
+import { NetworkStatusByLocationContract } from '../contracts/NetworkStatus';
+import { VirtualNetworkContract } from '../contracts/VirtualNetwork';
 import { Body } from './nsgCheck';
 import { NETWORK_API_VERSION, APIM_API_VERSION } from '../dnsFlow';
 
 function getVnetResourceId(subnetResourceId: string): string {
     return subnetResourceId.split("/subnets/")[0];
 }
-export async function dnsMismatchCheck(networkType: VirtualNetworkType, serviceResource: ApiManagementServiceResource, flowMgr: StepFlowManager, diagProvider: DiagProvider, resourceId: any) {
+export async function dnsMismatchCheck(networkType: VirtualNetworkType, serviceResource: ApiManagementServiceResourceContract, flowMgr: StepFlowManager, diagProvider: DiagProvider, resourceId: any) {
     if (networkType != VirtualNetworkType.NONE) {
         const vnetResourceId = getVnetResourceId(serviceResource.properties.virtualNetworkConfiguration.subnetResourceId);
 
-        const vnetResponse = await diagProvider.getResource<VirtualNetwork>(vnetResourceId, NETWORK_API_VERSION);
+        const vnetResponse = await diagProvider.getResource<VirtualNetworkContract>(vnetResourceId, NETWORK_API_VERSION);
         const vnet = vnetResponse.body;
 
-        const networkStatusResponse = await diagProvider.getResource<NetworkStatusContractByLocation[]>(resourceId + "/networkstatus", APIM_API_VERSION);
+        const networkStatusResponse = await diagProvider.getResource<NetworkStatusByLocationContract[]>(resourceId + "/networkstatus", APIM_API_VERSION);
         const networkStatuses = networkStatusResponse.body;
 
         let validDNSs = vnet.properties.dhcpOptions.dnsServers;
@@ -40,7 +40,7 @@ export async function dnsMismatchCheck(networkType: VirtualNetworkType, serviceR
             flowMgr.addView(new ButtonStepView({
                 callback: () => {
                     return diagProvider
-                        .postResourceAsync<ApiManagementServiceResource, Body>(resourceId + "/applynetworkconfigurationupdates", {}, APIM_API_VERSION)
+                        .postResourceAsync<ApiManagementServiceResourceContract, Body>(resourceId + "/applynetworkconfigurationupdates", {}, APIM_API_VERSION)
                         .then(() => { });
                 },
                 id: "step4",

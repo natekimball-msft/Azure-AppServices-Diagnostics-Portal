@@ -1,6 +1,6 @@
 import { DropdownStepView, InfoStepView, StepFlow, StepViewContainer, InputStepView, PromiseCompletionSource, TelemetryService, InfoType, StatusStyles } from 'diagnostic-data';
 import { NetworkCheckFlow } from "../network-check-flow"
-import { ApiManagementServiceResource } from './contracts/APIMService';
+import { ApiManagementServiceResourceContract } from './contracts/APIMService';
 import { SecurityRuleDirection } from './contracts/NetworkSecurity';
 import { nsgRuleCheck } from './checks/nsgCheck';
 import { routeTableCheck } from './checks/routeTableCheck';
@@ -27,7 +27,7 @@ export const DnsFlow: NetworkCheckFlow = {
         networkStatusCheck(flowMgr, diagProvider, resourceId);
 
         /** NSG Checks */
-        const serviceResourceResponse = await diagProvider.getResource<ApiManagementServiceResource>(resourceId, APIM_API_VERSION);
+        const serviceResourceResponse = await diagProvider.getResource<ApiManagementServiceResourceContract>(resourceId, APIM_API_VERSION);
         let serviceResource = serviceResourceResponse.body;
 
         let networkType = serviceResource.properties.virtualNetworkType;

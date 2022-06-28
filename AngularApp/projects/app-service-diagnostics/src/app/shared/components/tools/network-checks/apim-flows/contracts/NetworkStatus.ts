@@ -1,4 +1,4 @@
-export interface NetworkStatusContractByLocation {
+export interface NetworkStatusByLocationContract {
     location: string;
     networkStatus: NetworkStatusContract;
 }

@@ -1,42 +1,42 @@
 import { ArmObj } from "projects/app-service-diagnostics/src/app/shared/models/armObj";
-import { Subnet } from "./NetworkSecurity";
+import { SubnetContract } from "./NetworkSecurity";
 
 // https://docs.microsoft.com/en-us/rest/api/virtualnetwork/virtual-networks/get#virtualnetwork
-export interface VirtualNetwork extends ArmObj {
+export interface VirtualNetworkContract extends ArmObj {
     etag: string;
-    extendedLocation: ExtendedLocation;
+    extendedLocation: ExtendedLocationContract;
     
     properties: {
-        addressSpace: AddressSpace;
-        dhcpOptions: DhcpOptions;
+        addressSpace: AddressSpaceContract;
+        dhcpOptions: DhcpOptionsContract;
         enableDdosProtection: boolean;
         enableVmProtection: boolean;
-        encryption: VirtualNetworkEncryption;
+        encryption: VirtualNetworkEncryptionContract;
         flowTimeoutInMinutes: number;
         resourceGuid: string;
-        subnets: Subnet[];
+        subnets: SubnetContract[];
     }
 
     tags: Object;
 }
 
-interface ExtendedLocation {
+interface ExtendedLocationContract {
     name: string;
-    type: ExtendedLocationTypes;
+    type: ExtendedLocationTypesContract;
 }
 
-interface ExtendedLocationTypes {
+interface ExtendedLocationTypesContract {
     EdgeZone: string;
 }
 
-interface AddressSpace {
+interface AddressSpaceContract {
     addressPrefixes: string[];
 }
 
-interface DhcpOptions {
+interface DhcpOptionsContract {
     dnsServers: string[];
 }
 
-interface VirtualNetworkEncryption {
+interface VirtualNetworkEncryptionContract {
     enabled: boolean;
 }

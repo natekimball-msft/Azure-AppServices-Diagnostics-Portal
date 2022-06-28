@@ -1,11 +1,11 @@
 import { StepFlowManager, CheckStepView, checkResultLevel, StatusStyles } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
-import { ConnectivityStatusContract, ConnectivityStatusType, NetworkStatusContractByLocation } from '../contracts/NetworkStatus';
+import { ConnectivityStatusContract, ConnectivityStatusType, NetworkStatusByLocationContract } from '../contracts/NetworkStatus';
 import { APIM_API_VERSION, statusMarkdown } from '../dnsFlow';
 
 
 
-function getWorstNetworkStatus(statuses: NetworkStatusContractByLocation[]): checkResultLevel {
+function getWorstNetworkStatus(statuses: NetworkStatusByLocationContract[]): checkResultLevel {
     return getWorstStatus(statuses.map(service => getWorstNetworkStatusOfLocation(service.networkStatus.connectivityStatus)));
 }
 function getWorstNetworkStatusOfLocation(statuses: ConnectivityStatusContract[]): checkResultLevel {
@@ -54,7 +54,7 @@ function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
 
 async function getNetworkStatusView(diagProvider: DiagProvider, resourceId: string) {
 
-    const networkStatusResponse = await diagProvider.getResource<NetworkStatusContractByLocation[]>(resourceId + "/networkstatus", APIM_API_VERSION);
+    const networkStatusResponse = await diagProvider.getResource<NetworkStatusByLocationContract[]>(resourceId + "/networkstatus", APIM_API_VERSION);
     const networkStatuses = networkStatusResponse.body;
     const view = new CheckStepView({
         title: "Check Network Status",

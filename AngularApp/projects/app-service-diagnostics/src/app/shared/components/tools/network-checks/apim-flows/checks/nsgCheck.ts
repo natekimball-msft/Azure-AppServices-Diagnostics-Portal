@@ -1,7 +1,7 @@
 import { InfoStepView, StepFlowManager, CheckStepView, checkResultLevel, InfoType } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
-import { ApiManagementServiceResource, PlatformVersion, VirtualNetworkType } from '../contracts/APIMService';
-import { NetworkSecurityGroup, ProvisioningState, SecurityRule, SecurityRuleAccess, SecurityRuleProtocol, Subnet } from '../contracts/NetworkSecurity';
+import { ApiManagementServiceResourceContract, PlatformVersion, VirtualNetworkType } from '../contracts/APIMService';
+import { NetworkSecurityGroupContract, ProvisioningState, SecurityRuleContract, SecurityRuleAccess, SecurityRuleProtocol, SubnetContract } from '../contracts/NetworkSecurity';
 import { stv2portRequirements, stv1portRequirements, PortRequirements } from '../data/portRequirements';
 import { NETWORK_API_VERSION, statusMarkdown } from '../dnsFlow';
 import { getWorstStatus } from "./networkStatusCheck";
@@ -51,7 +51,7 @@ function has(arr: [] | Object, val: Object) {
         return arr == val;
     }
 }
-function rulePassed(requirement: PortRequirements, rule: SecurityRule) {
+function rulePassed(requirement: PortRequirements, rule: SecurityRuleContract) {
     if (rule.properties.access == SecurityRuleAccess.ALLOW)
         return true;
     if (rule.properties.provisioningState != ProvisioningState.SUCCEEDED)
@@ -73,7 +73,8 @@ interface RequirementResult {
     name: string;
     description: string;
 }
-function requirementCheck(requirements: PortRequirements[], rules: SecurityRule[]): RequirementResult[] {
+
+function requirementCheck(requirements: PortRequirements[], rules: SecurityRuleContract[]): RequirementResult[] {
     let failedChecks: RequirementResult[] = [];
 
     requirements.forEach(req => {
@@ -101,16 +102,16 @@ function generateRequirementViolationTable(requirements: RequirementResult[], ns
 
 
 async function getVnetInfoView(diagProvider: DiagProvider,
-    serviceResource: ApiManagementServiceResource,
+    serviceResource: ApiManagementServiceResourceContract,
     networkType: VirtualNetworkType = VirtualNetworkType.EXTERNAL,
     platformVersion: PlatformVersion = PlatformVersion.STV2) {
 
     const subnetResourceId = serviceResource.properties.virtualNetworkConfiguration.subnetResourceId;
-    const subnetResponse = await diagProvider.getResource<Subnet>(subnetResourceId, NETWORK_API_VERSION);
+    const subnetResponse = await diagProvider.getResource<SubnetContract>(subnetResourceId, NETWORK_API_VERSION);
     const subnet = subnetResponse.body;
 
     const networkSecurityGroupResourceId = subnet.properties.networkSecurityGroup.id;
-    const networkSecurityGroupResponse = await diagProvider.getResource<NetworkSecurityGroup>(networkSecurityGroupResourceId, NETWORK_API_VERSION);
+    const networkSecurityGroupResponse = await diagProvider.getResource<NetworkSecurityGroupContract>(networkSecurityGroupResourceId, NETWORK_API_VERSION);
     const networkSecurityGroup = networkSecurityGroupResponse.body;
 
     const securityRules = [...networkSecurityGroup.properties.defaultSecurityRules, ...networkSecurityGroup.properties.securityRules];
@@ -158,7 +159,7 @@ async function getNoVnetView() {
 export interface Body {
     location?: string;
 }
-export function nsgRuleCheck(networkType: VirtualNetworkType, flowMgr: StepFlowManager, diagProvider: DiagProvider, serviceResource: ApiManagementServiceResource) {
+export function nsgRuleCheck(networkType: VirtualNetworkType, flowMgr: StepFlowManager, diagProvider: DiagProvider, serviceResource: ApiManagementServiceResourceContract) {
     if (networkType != VirtualNetworkType.NONE) {
         flowMgr.addView(getVnetInfoView(diagProvider, serviceResource, networkType), "Gathering VNET Configuration");
     } else {

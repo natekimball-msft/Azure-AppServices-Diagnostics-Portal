@@ -1,29 +1,29 @@
 import { ArmObj } from "projects/app-service-diagnostics/src/app/shared/models/armObj";
 
 // https://docs.microsoft.com/en-us/rest/api/virtualnetwork/network-security-groups/get#networksecuritygroup
-export interface NetworkSecurityGroup extends ArmObj {
+export interface NetworkSecurityGroupContract extends ArmObj {
     etag: string;
     properties: {
-        defaultSecurityRules: SecurityRule[];
+        defaultSecurityRules: SecurityRuleContract[];
         // flowLogs: FlowLog[];
-        networkInterfaces: NetworkInterface[];
+        networkInterfaces: NetworkInterfaceContract[];
         provisioningState: ProvisioningState;
         resourceGuid: string;
-        securityRules: SecurityRule[];
-        subnets: Subnet[];
+        securityRules: SecurityRuleContract[];
+        subnets: SubnetContract[];
         type: string;
     }
 }
 
 // https://docs.microsoft.com/en-us/rest/api/virtualnetwork/network-security-groups/get#securityrule
-export interface SecurityRule {
+export interface SecurityRuleContract extends ArmObj {
     etag: string;
     properties: {
         access: SecurityRuleAccess;
         description: string;
         destinationAddressPrefix: string;
         destinationAddressPrefixes: string[];
-        destinationApplicationSecurityGroups: ApplicationSecurityGroup[];
+        destinationApplicationSecurityGroups: ApplicationSecurityGroupContract[];
         destinationPortRange: string;
         destinationPortRanges: string[];
         direction: SecurityRuleDirection;
@@ -38,7 +38,7 @@ export interface SecurityRule {
     }
 }
 
-interface NetworkInterface extends ArmObj {
+interface NetworkInterfaceContract extends ArmObj {
     etag: string;
     properties: {
         enableAcceleratedNetworking: boolean;
@@ -47,7 +47,7 @@ interface NetworkInterface extends ArmObj {
     
         macAddress: string[];
     
-        networkSecurityGroup: NetworkSecurityGroup;
+        networkSecurityGroup: NetworkSecurityGroupContract;
     
         primary: boolean;
     
@@ -61,7 +61,7 @@ interface NetworkInterface extends ArmObj {
     }
 }
 
-export interface Subnet extends ArmObj {
+export interface SubnetContract extends ArmObj {
     etag: string;
     properties: {
         addressPrefix: string;
@@ -80,7 +80,7 @@ export enum SecurityRuleAccess {
 }
 
 // https://docs.microsoft.com/en-us/rest/api/virtualnetwork/network-security-groups/get#applicationsecuritygroup
-interface ApplicationSecurityGroup extends ArmObj {
+interface ApplicationSecurityGroupContract extends ArmObj {
     etag: string;
     properties: {
         provisioningState: ProvisioningState;
