@@ -1,34 +1,48 @@
-import { InfoStepView, StepFlowManager, CheckStepView, checkResultLevel, InfoType, ResourceDescriptor } from 'diagnostic-data';
+import { checkResultLevel, CheckStepView, InfoStepView, InfoType, StepFlowManager } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
 import { ApiManagementServiceResourceContract, PlatformVersion, VirtualNetworkType } from '../contracts/APIMService';
-import { NetworkSecurityGroupContract, ProvisioningState, SecurityRuleContract, SecurityRuleAccess, SecurityRuleProtocol, SubnetContract } from '../contracts/NetworkSecurity';
-import { stv2portRequirements, stv1portRequirements, PortRequirements } from '../data/portRequirements';
-import { NETWORK_API_VERSION, statusMarkdown } from '../dnsFlow';
+import { NetworkSecurityGroupContract, ProvisioningState, SecurityRuleAccess, SecurityRuleContract, SecurityRuleProtocol, SubnetContract } from '../contracts/NetworkSecurity';
+import { PortRequirements, stv1portRequirements, stv2portRequirements } from '../data/portRequirements';
+import { NETWORK_API_VERSION, statusIconMarkdown } from '../dnsFlow';
 import { getWorstStatus } from "./networkStatusCheck";
 
 class PortRange {
-    port1: number;
-    port2: number | null;
+    portLowerBound?: number;
+    portUpperBound?: number;
+    ports?: number[];
 
     constructor(ports: string) {
+        this.ports = null;
+        
         if (ports == "*") {
-            this.port1 = 0;
-            this.port2 = 65536;
+            this.portLowerBound = 0;
+            this.portUpperBound = 65536;
         } else if (ports.includes("-")) {
             let [p1, p2] = ports.split("-");
-            this.port1 = parseInt(p1);
-            this.port2 = parseInt(p2);
+            this.portLowerBound = parseInt(p1);
+            this.portUpperBound = parseInt(p2);
+        } else if (ports.includes(",")) {
+            this.portLowerBound = null;
+            this.portUpperBound = null;
+            this.ports = ports.split(",").map(p => parseInt(p));
         } else {
-            this.port1 = parseInt(ports);
-            this.port2 = null;
+            let port = parseInt(ports);
+            this.portLowerBound = port;
+            this.portUpperBound = port;
         }
     }
 
     has(port: number) {
-        if (this.port2) {
-            return this.port1 <= port && port < this.port2;
+        if (this.portLowerBound && this.portUpperBound) {
+            return this.portLowerBound <= port && port <= this.portUpperBound;
+        } else if (this.portUpperBound) {
+            throw Error(`invalid state for PortRange obj: ${this.portLowerBound}, ${this.portUpperBound}, ${this.ports}`);
+        } else if (this.portLowerBound) {
+            throw Error(`invalid state for PortRange obj: ${this.portLowerBound}, ${this.portUpperBound}, ${this.ports}`);
+        } else if (this.ports) {
+            return this.ports.includes(port);
         } else {
-            return port == this.port1;
+            throw Error(`invalid state for PortRange obj: ${this.portLowerBound}, ${this.portUpperBound}, ${this.ports}`);
         }
     }
 }
@@ -93,7 +107,7 @@ function generateRequirementViolationTable(requirements: RequirementResult[], ns
         | Status | Rule Name | Desription |\n
         |--------|-----------|------------|\n` + 
         requirements.map((req: RequirementResult) => 
-        `| ${statusMarkdown[req.status]} | [${req.name}](https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${nsgResId}/overview) | ${req.description.replace(/(\r\n|\n|\r)/gm, "")} |`).join("\n");
+        `| ${statusIconMarkdown[req.status]} | [${req.name}](https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${nsgResId}/overview) | ${req.description.replace(/(\r\n|\n|\r)/gm, "")} |`).join("\n");
 }
 
 
@@ -111,7 +125,7 @@ async function getVnetInfoView(diagProvider: DiagProvider,
     const networkSecurityGroup = networkSecurityGroupResponse.body;
 
     const securityRules = [...networkSecurityGroup.properties.defaultSecurityRules, ...networkSecurityGroup.properties.securityRules];
-    securityRules.sort((a, b) => a.properties.priority - b.properties.priority);
+    securityRules.sort();
 
     let portRequirements = (platformVersion == PlatformVersion.STV1 ? stv1portRequirements : stv2portRequirements);
     portRequirements = portRequirements.filter(req => req.vnetType.includes(networkType));

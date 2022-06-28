@@ -1,9 +1,9 @@
-import { StepFlowManager, CheckStepView, checkResultLevel, StatusStyles } from 'diagnostic-data';
+import { checkResultLevel, CheckStepView, StepFlowManager } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
 import { ConnectivityStatusContract, ConnectivityStatusType, NetworkStatusByLocationContract } from '../contracts/NetworkStatus';
-import { APIM_API_VERSION, statusMarkdown } from '../dnsFlow';
+import { statusIconMarkdown } from '../dnsFlow';
 
-
+export const APIM_API_VERSION = "2021-12-01-preview";
 
 function getWorstNetworkStatus(statuses: NetworkStatusByLocationContract[]): checkResultLevel {
     return getWorstStatus(statuses.map(service => getWorstNetworkStatusOfLocation(service.networkStatus.connectivityStatus)));
@@ -49,7 +49,7 @@ function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
     return `
     | Status | Name | Resource Group |
     |--------|------|----------------|
-    ` + statuses.map(status => `|   ${statusMarkdown[rateConnectivityStatus(status)]} | ${status.name.length > len ? status.name.substring(0, len) + "..." : status.name} | ${status.resourceType} |`).join(`\n`);
+    ` + statuses.map(status => `|   ${statusIconMarkdown[rateConnectivityStatus(status)]} | ${status.name.length > len ? status.name.substring(0, len) + "..." : status.name} | ${status.resourceType} |`).join(`\n`);
 }
 
 async function getNetworkStatusView(diagProvider: DiagProvider, resourceId: string) {

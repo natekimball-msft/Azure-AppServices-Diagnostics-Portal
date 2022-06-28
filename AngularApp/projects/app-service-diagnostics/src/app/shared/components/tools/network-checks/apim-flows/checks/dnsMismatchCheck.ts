@@ -1,10 +1,10 @@
-import { InfoStepView, StepFlowManager, ButtonStepView, InfoType, ResourceDescriptor } from 'diagnostic-data';
+import { ButtonStepView, InfoStepView, InfoType, ResourceDescriptor, StepFlowManager } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
 import { ApiManagementServiceResourceContract, VirtualNetworkType } from '../contracts/APIMService';
 import { NetworkStatusByLocationContract } from '../contracts/NetworkStatus';
 import { VirtualNetworkContract } from '../contracts/VirtualNetwork';
+import { APIM_API_VERSION, NETWORK_API_VERSION } from '../dnsFlow';
 import { Body } from './nsgCheck';
-import { NETWORK_API_VERSION, APIM_API_VERSION } from '../dnsFlow';
 
 function getVnetResourceId(subnetResourceId: string): string {
     let uriDescriptor = ResourceDescriptor.parseResourceUri(subnetResourceId);
