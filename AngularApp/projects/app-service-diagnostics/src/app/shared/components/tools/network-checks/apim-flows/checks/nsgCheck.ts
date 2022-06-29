@@ -7,14 +7,16 @@ import { NETWORK_API_VERSION, statusIconMarkdown } from '../dnsFlow';
 import { getWorstStatus } from "./networkStatusCheck";
 
 class PortRange {
-    portLowerBound?: number;
-    portUpperBound?: number;
-    ports?: number[];
+    portLowerBound: number;
+    portUpperBound: number;
+    ports: number[];
 
-    constructor(ports: string) {
-        this.ports = null;
-        
-        if (ports == "*") {
+    constructor(ports: string | string[]) {
+        this.ports = [];
+
+        if (Array.isArray(ports)) {
+            this.ports = ports.map(p => parseInt(p));
+        } else if (ports == "*") {
             this.portLowerBound = 0;
             this.portUpperBound = 65536;
         } else if (ports.includes("-")) {
@@ -22,8 +24,8 @@ class PortRange {
             this.portLowerBound = parseInt(p1);
             this.portUpperBound = parseInt(p2);
         } else if (ports.includes(",")) {
-            this.portLowerBound = null;
-            this.portUpperBound = null;
+            this.portLowerBound = -1;
+            this.portUpperBound = -1;
             this.ports = ports.split(",").map(p => parseInt(p));
         } else {
             let port = parseInt(ports);
@@ -33,13 +35,13 @@ class PortRange {
     }
 
     has(port: number) {
-        if (this.portLowerBound && this.portUpperBound) {
+        if (this.portLowerBound >= 0 && this.portUpperBound >= 0) {
             return this.portLowerBound <= port && port <= this.portUpperBound;
-        } else if (this.portUpperBound) {
+        } else if (this.portUpperBound >= 0) {
             throw Error(`invalid state for PortRange obj: ${this.portLowerBound}, ${this.portUpperBound}, ${this.ports}`);
-        } else if (this.portLowerBound) {
+        } else if (this.portLowerBound >= 0) {
             throw Error(`invalid state for PortRange obj: ${this.portLowerBound}, ${this.portUpperBound}, ${this.ports}`);
-        } else if (this.ports) {
+        } else if (this.ports.length > 0) {
             return this.ports.includes(port);
         } else {
             throw Error(`invalid state for PortRange obj: ${this.portLowerBound}, ${this.portUpperBound}, ${this.ports}`);
@@ -51,34 +53,52 @@ function sameProtocol(protocol1: SecurityRuleProtocol, protocol2: SecurityRulePr
     return protocol1 == SecurityRuleProtocol.AST || protocol2 == SecurityRuleProtocol.AST || protocol1 == protocol2;
 }
 
-function samePorts(ports: number[], pRange: string) {
-    let destinationPortRange = new PortRange(pRange);
+function samePorts(ports: number[], portRange: string | string[]) {
+    let pRange = new PortRange(portRange);
     // -1 means all ports
-    return ports.includes(-1) || !ports.some((n) => destinationPortRange.has(n));
+    let fullRange = ports.includes(-1) && (portRange == "*" || portRange == "0-65536");
+    return fullRange || !ports.some((n) => pRange.has(n));
 }
 
 function sameIP(ip1: string, ip2: string) {
     return ip1 == "*" || ip2 == "*" || ip1 == "Any" || ip2 == "Any" || ip1 == ip2 ||
-        (ip1 == "Internet" && ip2 != "VirtualNetwork") || (ip1 != "VirtualNetwork" && ip2 == "Internet");
+        (ip1 != "Internet" && ip2 == "VirtualNetwork") || (ip1 == "VirtualNetwork" && ip2 != "Internet");
 }
 
 function rulePassed(requirement: PortRequirements, rule: SecurityRuleContract) {
+    // if requirement does not apply to security rule, we return true
+
     if (rule.properties.access == SecurityRuleAccess.ALLOW)
         return true;
     if (rule.properties.provisioningState != ProvisioningState.SUCCEEDED)
         return true;
 
-    // do vnet type check outside here!
+    // rule matches inbound / outbound direction of requirement
     if (!requirement.dir.includes(rule.properties.direction))
-        return false;
-    if (!sameProtocol(requirement.protocol, rule.properties.protocol))
-        return false;
-
-    if (!samePorts(requirement.num, rule.properties.destinationPortRange))
         return true;
-    return sameIP(requirement.serviceSource, rule.properties.sourceAddressPrefix)
-        && sameIP(requirement.serviceDestination, rule.properties.destinationAddressPrefix);
+    // rule matches tcp / ip / udp protocol of requirement
+    if (!sameProtocol(requirement.protocol, rule.properties.protocol))
+        return true;
+    // rule blocks source ips of requirement
+    if (!sameIP(requirement.serviceSource, rule.properties.sourceAddressPrefix))
+        return true;
+    // rule blocks destination ips of requirement
+    if (!sameIP(requirement.serviceDestination, rule.properties.destinationAddressPrefix))
+        return true;
+
+    // TODO handle case: assume CIDR blocks and IPs always pass
+    
+    // requirement applies to rule
+    // make sure source ports are unblocked
+    if (samePorts([-1], rule.properties.sourcePortRange || rule.properties.sourcePortRanges))
+        return false;
+    // make sure destination ports are unblocked
+    if (samePorts(requirement.num, rule.properties.destinationPortRange || rule.properties.destinationPortRanges))
+        return false;
+    
+    return true;
 }
+
 interface RequirementResult {
     status: checkResultLevel;
     name: string;
@@ -102,12 +122,19 @@ function requirementCheck(requirements: PortRequirements[], rules: SecurityRuleC
 
     return failedChecks;
 }
+
 function generateRequirementViolationTable(requirements: RequirementResult[], nsgResId: string): string {
     return `
-        | Status | Rule Name | Desription |\n
-        |--------|-----------|------------|\n` + 
-        requirements.map((req: RequirementResult) => 
-        `| ${statusIconMarkdown[req.status]} | [${req.name}](https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${nsgResId}/overview) | ${req.description.replace(/(\r\n|\n|\r)/gm, "")} |`).join("\n");
+        | Status | Rule Name | Description |
+        |--------|-----------|-------------|
+        ` + requirements.map((req: RequirementResult) => {
+
+            let icon = statusIconMarkdown[req.status];
+            let description = req.description.replace(/(\r\n|\n|\r)/gm, "");
+            let link = `https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${nsgResId}/overview`;
+            
+            return `   |   ${icon} | [${req.name}](${link}) | ${description} |`;
+        }).join("\n");
 }
 
 
@@ -167,9 +194,11 @@ async function getNoVnetView() {
 
     return view;
 }
+
 export interface Body {
     location?: string;
 }
+
 export function nsgRuleCheck(networkType: VirtualNetworkType, flowMgr: StepFlowManager, diagProvider: DiagProvider, serviceResource: ApiManagementServiceResourceContract) {
     if (networkType != VirtualNetworkType.NONE) {
         flowMgr.addView(getVnetInfoView(diagProvider, serviceResource, networkType), "Gathering VNET Configuration");

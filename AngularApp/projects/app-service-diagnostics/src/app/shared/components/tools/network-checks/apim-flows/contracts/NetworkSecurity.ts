@@ -24,8 +24,8 @@ export interface SecurityRuleContract extends ArmObj {
         destinationAddressPrefix: string;
         destinationAddressPrefixes: string[];
         destinationApplicationSecurityGroups: ApplicationSecurityGroupContract[];
-        destinationPortRange: string;
-        destinationPortRanges: string[];
+        destinationPortRange?: string;
+        destinationPortRanges?: string[];
         direction: SecurityRuleDirection;
         priority: number;
         protocol: SecurityRuleProtocol;
