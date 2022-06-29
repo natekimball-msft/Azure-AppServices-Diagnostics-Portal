@@ -11,17 +11,20 @@ export class DevopsConfig{
 
 
     constructor(devopsConfig: any){
+        
         this.organization = devopsConfig.organization;
         this.repository = devopsConfig.repository;
         this.folderPath = devopsConfig.folderPath;
         this.project = devopsConfig.project;
-        if (!!devopsConfig.reviewers) {
-            Object.keys(devopsConfig.reviewers[0].platformtype).forEach(platRev => {
-                this.platformReviewers[platRev] = devopsConfig.reviewers[0].platformtype[platRev];
-            });
-            Object.keys(devopsConfig.reviewers[1].apptype).forEach(appRev => {
-                this.appTypeReviewers[appRev] = devopsConfig.reviewers[1].apptype[appRev];
-            });
+        if (!!devopsConfig.reviewers && devopsConfig.reviewers.length != 0) {
+            if (!!devopsConfig.reviewers[0])
+                Object.keys(devopsConfig.reviewers[0].platformtype).forEach(platRev => {
+                    this.platformReviewers[platRev] = devopsConfig.reviewers[0].platformtype[platRev];
+                });
+            if (!!devopsConfig.reviewers[1])
+                Object.keys(devopsConfig.reviewers[1].apptype).forEach(appRev => {
+                    this.appTypeReviewers[appRev] = devopsConfig.reviewers[1].apptype[appRev];
+                });
         }
         this.resourceProvider = devopsConfig.resourceProvider;
         this.autoMerge = devopsConfig.autoMerge;
