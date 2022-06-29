@@ -14,7 +14,7 @@
             },
             "searchSuffix": "AZURE WEB APP",
             "emergingIssuesICMLookupEnabled": false,
-            "displayName": "App",
+            "displayName": "Azure App Services",
             "overviewPageMetricsId" : "applensoverviewmetrics_appservices",
             "userAuthorizationEnabled": true
         },
