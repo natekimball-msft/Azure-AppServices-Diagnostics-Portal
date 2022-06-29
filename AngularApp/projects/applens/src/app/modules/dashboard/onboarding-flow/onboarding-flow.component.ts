@@ -471,11 +471,11 @@ export class OnboardingFlowComponent implements OnInit {
       if (this.detectorGraduation)
         this.getBranchList();
 
-      // if (!this.initialized) {
-      //   this.initialize();
-      //   this.initialized = true;
-      //   this._telemetryService.logPageView(TelemetryEventNames.OnboardingFlowLoaded, {});
-      // }
+      if (!this.initialized && !this.detectorGraduation) {
+        this.initialize();
+        this.initialized = true;
+        this._telemetryService.logPageView(TelemetryEventNames.OnboardingFlowLoaded, {});
+      }
 
       this.diagnosticApiService.getPPEHostname().subscribe(host => {
         this.PPEHostname = host;
