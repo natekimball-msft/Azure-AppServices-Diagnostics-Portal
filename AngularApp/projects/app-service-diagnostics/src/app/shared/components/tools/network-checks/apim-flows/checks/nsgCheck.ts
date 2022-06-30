@@ -3,7 +3,7 @@ import { DiagProvider } from '../../diag-provider';
 import { ApiManagementServiceResourceContract, PlatformVersion, VirtualNetworkType } from '../contracts/APIMService';
 import { NetworkSecurityGroupContract, ProvisioningState, SecurityRuleAccess, SecurityRuleContract, SecurityRuleProtocol, SubnetContract } from '../contracts/NetworkSecurity';
 import { PortRequirements, stv1portRequirements, stv2portRequirements } from '../data/portRequirements';
-import { NETWORK_API_VERSION, statusIconMarkdown } from '../dnsFlow';
+import { NETWORK_API_VERSION, statusIconMarkdown } from "../data/constants";
 import { getWorstStatus } from "./networkStatusCheck";
 
 class PortRange {
@@ -133,7 +133,7 @@ function generateRequirementViolationTable(requirements: RequirementResult[], ns
             let description = req.description.replace(/(\r\n|\n|\r)/gm, "");
             let link = `https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${nsgResId}/overview`;
             
-            return `   |   ${icon} | [${req.name}](${link}) | ${description} |`;
+            return `    |   ${icon} | [${req.name}](${link}) | ${description} |`;
         }).join("\n");
 }
 

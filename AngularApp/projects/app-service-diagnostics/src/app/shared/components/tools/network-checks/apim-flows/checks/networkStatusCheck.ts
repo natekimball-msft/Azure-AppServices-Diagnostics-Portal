@@ -1,7 +1,7 @@
 import { checkResultLevel, CheckStepView, StepFlowManager } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
 import { ConnectivityStatusContract, ConnectivityStatusType, NetworkStatusByLocationContract } from '../contracts/NetworkStatus';
-import { statusIconMarkdown } from '../dnsFlow';
+import { statusIconMarkdown } from "../data/constants";
 
 export const APIM_API_VERSION = "2021-12-01-preview";
 

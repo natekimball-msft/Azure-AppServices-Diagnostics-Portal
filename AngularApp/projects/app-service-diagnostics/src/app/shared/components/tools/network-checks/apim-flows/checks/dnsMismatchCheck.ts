@@ -3,7 +3,7 @@ import { DiagProvider } from '../../diag-provider';
 import { ApiManagementServiceResourceContract, VirtualNetworkType } from '../contracts/APIMService';
 import { NetworkStatusByLocationContract } from '../contracts/NetworkStatus';
 import { VirtualNetworkContract } from '../contracts/VirtualNetwork';
-import { APIM_API_VERSION, NETWORK_API_VERSION } from '../dnsFlow';
+import { APIM_API_VERSION, NETWORK_API_VERSION } from "../data/constants";
 import { Body } from './nsgCheck';
 
 function getVnetResourceId(subnetResourceId: string): string {
