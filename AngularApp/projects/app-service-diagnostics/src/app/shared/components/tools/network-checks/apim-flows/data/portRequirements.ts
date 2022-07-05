@@ -12,7 +12,7 @@ export interface PortRequirements {
     purpose?: string;
 }
 
-export const stv1portRequirements: PortRequirements[] = [
+const basePortRequirements: PortRequirements[] = [
     {
         num: [80, 443],
         dir: [SecurityRuleDirection.INBOUND],
@@ -64,16 +64,6 @@ export const stv1portRequirements: PortRequirements[] = [
         purpose: "Access to Azure SQL endpoints"
     },
     {
-        num: [5671, 5672, 443],
-        dir: [SecurityRuleDirection.OUTBOUND],
-        protocol: SecurityRuleProtocol.TCP,
-        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
-        serviceSource: "VirtualNetwork",
-        serviceDestination: "Azure Event Hubs",
-        required: false,
-        purpose: "Dependency for Log to Azure Event Hubs policy and monitoring agent"
-    },
-    {
         num: [445],
         dir: [SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
@@ -82,16 +72,6 @@ export const stv1portRequirements: PortRequirements[] = [
         serviceDestination: "Storage",
         required: false,
         purpose: "Dependency on Azure File Share for GIT"
-    },
-    {
-        num: [443, 12000],
-        dir: [SecurityRuleDirection.OUTBOUND],
-        protocol: SecurityRuleProtocol.TCP,
-        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
-        serviceSource: "VirtualNetwork",
-        serviceDestination: "AzureCloud",
-        required: false,
-        purpose: "Health and Monitoring Extension & Dependency on Event Grid (if events notification activated)"
     },
     {
         num: [1886, 443],
@@ -104,16 +84,6 @@ export const stv1portRequirements: PortRequirements[] = [
         purpose: "Publish Diagnostics Logs and Metrics, Resource Health, and Application Insights"
     },
     {
-        num: [25, 587, 25028],
-        dir: [SecurityRuleDirection.OUTBOUND],
-        protocol: SecurityRuleProtocol.TCP,
-        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
-        serviceSource: "VirtualNetwork",
-        serviceDestination: "Internet",
-        required: false,
-        purpose: "Connect to SMTP Relay for sending e-mail"
-    },
-    {
         num: [6381, 6382, 6383],
         dir: [SecurityRuleDirection.INBOUND, SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
@@ -122,6 +92,40 @@ export const stv1portRequirements: PortRequirements[] = [
         serviceDestination: "VirtualNetwork",
         required: false,
         purpose: "Access Redis Service for Cache policies between machines"
+    },
+];
+
+export const stv1portRequirements: PortRequirements[] = [
+    ...basePortRequirements,
+    {
+        num: [5671, 5672, 443],
+        dir: [SecurityRuleDirection.OUTBOUND],
+        protocol: SecurityRuleProtocol.TCP,
+        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
+        serviceSource: "VirtualNetwork",
+        serviceDestination: "Azure Event Hubs",
+        required: false,
+        purpose: "Dependency for Log to Azure Event Hubs policy and monitoring agent"
+    },
+    {
+        num: [443, 12000],
+        dir: [SecurityRuleDirection.OUTBOUND],
+        protocol: SecurityRuleProtocol.TCP,
+        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
+        serviceSource: "VirtualNetwork",
+        serviceDestination: "AzureCloud",
+        required: false,
+        purpose: "Health and Monitoring Extension & Dependency on Event Grid (if events notification activated)"
+    },
+    {
+        num: [25, 587, 25028],
+        dir: [SecurityRuleDirection.OUTBOUND],
+        protocol: SecurityRuleProtocol.TCP,
+        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
+        serviceSource: "VirtualNetwork",
+        serviceDestination: "Internet",
+        required: false,
+        purpose: "Connect to SMTP Relay for sending e-mail"
     },
     {
         num: [4290],
@@ -146,56 +150,7 @@ export const stv1portRequirements: PortRequirements[] = [
 ];
 
 export const stv2portRequirements: PortRequirements[] = [
-    {
-        num: [80, 443],
-        dir: [SecurityRuleDirection.INBOUND],
-        protocol: SecurityRuleProtocol.TCP,
-        vnetType: [VirtualNetworkType.EXTERNAL],
-        serviceSource: "Internet",
-        serviceDestination: "VirtualNetwork",
-        required: true,
-        purpose: "Client communication to API Management"
-    },
-    {
-        num: [3443],
-        dir: [SecurityRuleDirection.INBOUND],
-        protocol: SecurityRuleProtocol.TCP,
-        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
-        serviceSource: "ApiManagement",
-        serviceDestination: "VirtualNetwork",
-        required: true,
-        purpose: "Management endpoint for Azure portal and PowerShell"
-    },
-    {
-        num: [443],
-        dir: [SecurityRuleDirection.OUTBOUND],
-        protocol: SecurityRuleProtocol.TCP,
-        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
-        serviceSource: "VirtualNetwork",
-        serviceDestination: "Storage",
-        required: true,
-        purpose: "Dependency on Azure Storage"
-    },
-    {
-        num: [443],
-        dir: [SecurityRuleDirection.OUTBOUND],
-        protocol: SecurityRuleProtocol.TCP,
-        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
-        serviceSource: "VirtualNetwork",
-        serviceDestination: "AzureActiveDirectory",
-        required: false,
-        purpose: "Azure Active Directory and Azure Key Vault dependency"
-    },
-    {
-        num: [1443],
-        dir: [SecurityRuleDirection.OUTBOUND],
-        protocol: SecurityRuleProtocol.TCP,
-        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
-        serviceSource: "VirtualNetwork",
-        serviceDestination: "SQL",
-        required: true,
-        purpose: "Access to Azure SQL endpoints"
-    },
+    ...basePortRequirements,
     {
         num: [443],
         dir: [SecurityRuleDirection.OUTBOUND],
@@ -216,16 +171,7 @@ export const stv2portRequirements: PortRequirements[] = [
         required: false,
         purpose: "Dependency for Log to Azure Event Hubs policy and monitoring agent"
     },
-    {
-        num: [445],
-        dir: [SecurityRuleDirection.OUTBOUND],
-        protocol: SecurityRuleProtocol.TCP,
-        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
-        serviceSource: "VirtualNetwork",
-        serviceDestination: "Storage",
-        required: false,
-        purpose: "Dependency on Azure File Share for GIT"
-    },
+
     {
         num: [443, 12000],
         dir: [SecurityRuleDirection.OUTBOUND],
@@ -237,16 +183,6 @@ export const stv2portRequirements: PortRequirements[] = [
         purpose: "Health and Monitoring Extension"
     },
     {
-        num: [1886, 443],
-        dir: [SecurityRuleDirection.OUTBOUND],
-        protocol: SecurityRuleProtocol.TCP,
-        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
-        serviceSource: "VirtualNetwork",
-        serviceDestination: "AzureMonitor",
-        required: false,
-        purpose: "Publish Diagnostics Logs and Metrics, Resource Health, and Application Insights"
-    },
-    {
         num: [25, 587, 25028],
         dir: [SecurityRuleDirection.INBOUND, SecurityRuleDirection.OUTBOUND],
         protocol: SecurityRuleProtocol.TCP,
@@ -255,16 +191,6 @@ export const stv2portRequirements: PortRequirements[] = [
         serviceDestination: "Internet",
         required: false,
         purpose: "Connect to SMTP Relay for sending e-mail"
-    },
-    {
-        num: [6381, 6382, 6383],
-        dir: [SecurityRuleDirection.INBOUND, SecurityRuleDirection.OUTBOUND],
-        protocol: SecurityRuleProtocol.TCP,
-        vnetType: [VirtualNetworkType.INTERNAL, VirtualNetworkType.EXTERNAL],
-        serviceSource: "VirtualNetwork",
-        serviceDestination: "VirtualNetwork",
-        required: false,
-        purpose: "Access Redis Service for Cache policies between machines"
     },
     {
         num: [4290],
