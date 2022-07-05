@@ -9,13 +9,15 @@ import { getWorstStatus } from "./networkStatusCheck";
 class PortRange {
     portLowerBound: number;
     portUpperBound: number;
-    ports: number[];
+    ports: PortRange[];
 
     constructor(ports: string | string[]) {
+        this.portLowerBound = -1;
+        this.portUpperBound = -1;
         this.ports = [];
 
         if (Array.isArray(ports)) {
-            this.ports = ports.map(p => parseInt(p));
+            this.ports = ports.map(p => new PortRange(p));
         } else if (ports == "*") {
             this.portLowerBound = 0;
             this.portUpperBound = 65536;
@@ -24,9 +26,7 @@ class PortRange {
             this.portLowerBound = parseInt(p1);
             this.portUpperBound = parseInt(p2);
         } else if (ports.includes(",")) {
-            this.portLowerBound = -1;
-            this.portUpperBound = -1;
-            this.ports = ports.split(",").map(p => parseInt(p));
+            this.ports = ports.split(",").map(p => new PortRange(p));
         } else {
             let port = parseInt(ports);
             this.portLowerBound = port;
@@ -42,7 +42,7 @@ class PortRange {
         } else if (this.portLowerBound >= 0) {
             throw Error(`invalid state for PortRange obj: ${this.portLowerBound}, ${this.portUpperBound}, ${this.ports}`);
         } else if (this.ports.length > 0) {
-            return this.ports.includes(port);
+            return this.ports.some(pr => pr.has(port));
         } else {
             throw Error(`invalid state for PortRange obj: ${this.portLowerBound}, ${this.portUpperBound}, ${this.ports}`);
         }
@@ -56,7 +56,7 @@ function sameProtocol(protocol1: SecurityRuleProtocol, protocol2: SecurityRulePr
 function samePorts(ports: number[], portRange: string | string[]) {
     let pRange = new PortRange(portRange);
     // -1 means all ports
-    let fullRange = ports.includes(-1) && (portRange == "*" || portRange == "0-65536");
+    let fullRange = ports.includes(-1) && (portRange.includes("*") || portRange.includes("0-65536"));
     return fullRange || !ports.some((n) => pRange.has(n));
 }
 
@@ -138,7 +138,8 @@ function generateRequirementViolationTable(requirements: RequirementResult[], ns
 }
 
 
-async function getVnetInfoView(diagProvider: DiagProvider,
+async function getVnetInfoView(
+    diagProvider: DiagProvider,
     serviceResource: ApiManagementServiceResourceContract,
     networkType: VirtualNetworkType = VirtualNetworkType.EXTERNAL,
     platformVersion: PlatformVersion = PlatformVersion.STV2) {
@@ -152,8 +153,9 @@ async function getVnetInfoView(diagProvider: DiagProvider,
     const networkSecurityGroup = networkSecurityGroupResponse.body;
 
     const securityRules = [...networkSecurityGroup.properties.defaultSecurityRules, ...networkSecurityGroup.properties.securityRules];
-    securityRules.sort();
-
+    // sort by priority
+    securityRules.sort((a, b) => a.properties.priority - b.properties.priority);
+    
     let portRequirements = (platformVersion == PlatformVersion.STV1 ? stv1portRequirements : stv2portRequirements);
     portRequirements = portRequirements.filter(req => req.vnetType.includes(networkType));
     let violatedRequirements = requirementCheck(portRequirements, securityRules);
@@ -173,7 +175,13 @@ async function getVnetInfoView(diagProvider: DiagProvider,
             title: "VNET Status",
             expandByDefault: true,
             level: getWorstStatus(violatedRequirements.map(req => req.status)),
-            bodyMarkdown: generateRequirementViolationTable(violatedRequirements, networkSecurityGroupResourceId),
+            subChecks: [
+                {
+                    title: "East US",
+                    level: getWorstStatus(violatedRequirements.map(req => req.status)),
+                    bodyMarkdown: generateRequirementViolationTable(violatedRequirements, networkSecurityGroupResourceId),
+                }
+            ]
         });
 
     }
