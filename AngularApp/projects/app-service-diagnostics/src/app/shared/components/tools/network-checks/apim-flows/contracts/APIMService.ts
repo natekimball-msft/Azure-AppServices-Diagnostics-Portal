@@ -1,5 +1,6 @@
 import { ArmObj } from "projects/app-service-diagnostics/src/app/shared/models/armObj";
 
+// https://docs.microsoft.com/en-us/rest/api/apimanagement/previous-ga/api-management-service/get#apimanagementserviceresource
 export interface ApiManagementServiceResourceContract extends ArmObj {
     etag: string;
     zones: string[];
@@ -24,7 +25,7 @@ export interface ApiManagementServiceResourceContract extends ArmObj {
     }
 }
 
-interface VirtualNetworkConfigurationContract {
+export interface VirtualNetworkConfigurationContract {
     subnetResourceId: string;
     subnetname: string;
     vnetid: string;
@@ -41,6 +42,7 @@ export enum PlatformVersion {
     STV2 = "stv2"
 }
 
+// https://docs.microsoft.com/en-us/rest/api/apimanagement/previous-ga/api-management-service/get#additionallocation
 interface AdditionalLocationContract {
     disableGateway: boolean;
     gatewayRegionalUrl: string;
@@ -49,5 +51,6 @@ interface AdditionalLocationContract {
     privateIPAddresses: string[];
     publicIPAddresses: string[];
     publicIpAddressId: string;
+    virtualNetworkConfiguration: VirtualNetworkConfigurationContract;
     zones: string[];
 }

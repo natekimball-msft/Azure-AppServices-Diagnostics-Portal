@@ -1,6 +1,6 @@
 import { ButtonStepView, InfoStepView, InfoType, ResourceDescriptor, StepFlowManager } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
-import { ApiManagementServiceResourceContract, VirtualNetworkType } from '../contracts/APIMService';
+import { ApiManagementServiceResourceContract, VirtualNetworkConfigurationContract, VirtualNetworkType } from '../contracts/APIMService';
 import { NetworkStatusByLocationContract } from '../contracts/NetworkStatus';
 import { VirtualNetworkContract } from '../contracts/VirtualNetwork';
 import { APIM_API_VERSION, NETWORK_API_VERSION } from "../data/constants";
@@ -10,28 +10,65 @@ function getVnetResourceId(subnetResourceId: string): string {
     let uriDescriptor = ResourceDescriptor.parseResourceUri(subnetResourceId);
     return uriDescriptor.resource;
 }
-const DEFAULT_DNS = "168.63.129.16";
-export async function dnsMismatchCheck(networkType: VirtualNetworkType, serviceResource: ApiManagementServiceResourceContract, flowMgr: StepFlowManager, diagProvider: DiagProvider, resourceId: any) {
-    if (networkType != VirtualNetworkType.NONE) {
-        const vnetResourceId = getVnetResourceId(serviceResource.properties.virtualNetworkConfiguration.subnetResourceId);
 
-        const vnetResponse = await diagProvider.getResource<VirtualNetworkContract>(vnetResourceId, NETWORK_API_VERSION);
-        const vnet = vnetResponse.body;
+async function getInvalidDnsByVNet(
+    virtualNetworkConfiguration: VirtualNetworkConfigurationContract, 
+    diagProvider: DiagProvider, 
+    networkStatuses: NetworkStatusByLocationContract[]): Promise<NetworkStatusByLocationContract[]> {
+    const vnetResourceId = getVnetResourceId(virtualNetworkConfiguration.subnetResourceId);
+
+    const vnetResponse = await diagProvider.getResource<VirtualNetworkContract>("/" + vnetResourceId, NETWORK_API_VERSION);
+    const vnet = vnetResponse.body;
+
+    let validDNSs = vnet.properties.dhcpOptions.dnsServers;
+
+    let invalidStatuses: NetworkStatusByLocationContract[];
+    if (validDNSs.length == 0) { // no custom dns specified
+        // all dns have to be the default, which is 168.63.129.16
+        invalidStatuses = networkStatuses.filter(
+            status => status.networkStatus.dnsServers.some(
+                dns => dns != DEFAULT_DNS));
+    } else {
+        invalidStatuses = networkStatuses.filter(
+            status => status.networkStatus.dnsServers.some(
+                dns => !validDNSs.includes(dns)));
+    }
+
+    invalidStatuses.push({
+        location: '',
+        networkStatus: undefined
+    });
+
+    console.log("status", invalidStatuses);
+    return invalidStatuses;
+}
+
+
+const DEFAULT_DNS = "168.63.129.16";
+export async function dnsMismatchCheck(
+    networkType: VirtualNetworkType, 
+    serviceResource: ApiManagementServiceResourceContract, 
+    flowMgr: StepFlowManager, 
+    diagProvider: DiagProvider, 
+    resourceId: string) {
+    if (networkType != VirtualNetworkType.NONE) {
 
         const networkStatusResponse = await diagProvider.getResource<NetworkStatusByLocationContract[]>(resourceId + "/networkstatus", APIM_API_VERSION);
         const networkStatuses = networkStatusResponse.body;
 
-        let validDNSs = vnet.properties.dhcpOptions.dnsServers;
+        let invalidStatusByLocation: {[key: string]: NetworkStatusByLocationContract[]} = {};
 
-        let invalidStatuses;
-        if (validDNSs.length == 0) { // no custom dns specified
-            // all dns have to be the default, which is 168.63.129.16
-            invalidStatuses = networkStatuses.filter(status => status.networkStatus.dnsServers.some(dns => dns != DEFAULT_DNS));
-        } else {
-            invalidStatuses = networkStatuses.filter(status => status.networkStatus.dnsServers.some(dns => !validDNSs.includes(dns)));
+        // should move await calls into Promise.all for good parallelism
+        invalidStatusByLocation[serviceResource.location] = await getInvalidDnsByVNet(serviceResource.properties.virtualNetworkConfiguration, diagProvider, networkStatuses);
+
+        for (let loc of serviceResource.properties.additionalLocations) {
+            invalidStatusByLocation[loc.location] = await getInvalidDnsByVNet(loc.virtualNetworkConfiguration, diagProvider, networkStatuses);
         }
 
-        if (invalidStatuses.length > 0) {
+        // await Promise.all(Object.keys(invalidStatusByLocation).map(loc => invalidStatusByLocation[loc]));
+
+        // if any location has an invalid status
+        if (Object.values(invalidStatusByLocation).some(stat => stat.length > 0)) {
             flowMgr.addView(new InfoStepView({
                 title: "DNS Network Configuration Needs to be Updated",
                 id: "step4",
@@ -58,3 +95,4 @@ export async function dnsMismatchCheck(networkType: VirtualNetworkType, serviceR
     } else {
     }
 }
+
