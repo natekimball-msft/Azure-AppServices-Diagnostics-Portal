@@ -1,4 +1,4 @@
-import { ButtonStepView, InfoStepView, InfoType, ResourceDescriptor, StepFlowManager } from 'diagnostic-data';
+import { ButtonStepView, checkResultLevel, CheckStepView, ResourceDescriptor, StepFlowManager } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
 import { ApiManagementServiceResourceContract, VirtualNetworkConfigurationContract, VirtualNetworkType } from '../contracts/APIMService';
 import { NetworkStatusByLocationContract } from '../contracts/NetworkStatus';
@@ -6,18 +6,26 @@ import { VirtualNetworkContract } from '../contracts/VirtualNetwork';
 import { APIM_API_VERSION, NETWORK_API_VERSION } from "../data/constants";
 import { Body } from './nsgCheck';
 
+
 function getVnetResourceId(subnetResourceId: string): string {
     let uriDescriptor = ResourceDescriptor.parseResourceUri(subnetResourceId);
+
+    let subscription = uriDescriptor.subscription;
+    let resourcegroup = uriDescriptor.resourceGroup;
+    let provider = uriDescriptor.provider;
+    let resource = `${uriDescriptor.types[0]}/${uriDescriptor.resources[0]}`;
+    return `/subscriptions/${subscription}/resourcegroups/${resourcegroup}/providers/${provider}/${resource}`;
     return uriDescriptor.resource;
 }
 
 async function getInvalidDnsByVNet(
     virtualNetworkConfiguration: VirtualNetworkConfigurationContract, 
-    diagProvider: DiagProvider, 
+    diagProvider: DiagProvider,
     networkStatuses: NetworkStatusByLocationContract[]): Promise<NetworkStatusByLocationContract[]> {
     const vnetResourceId = getVnetResourceId(virtualNetworkConfiguration.subnetResourceId);
 
-    const vnetResponse = await diagProvider.getResource<VirtualNetworkContract>("/" + vnetResourceId, NETWORK_API_VERSION);
+    // todo this needs to be fixed
+    const vnetResponse = await diagProvider.getResource<VirtualNetworkContract>(vnetResourceId, NETWORK_API_VERSION);
     const vnet = vnetResponse.body;
 
     let validDNSs = vnet.properties.dhcpOptions.dnsServers;
@@ -34,10 +42,10 @@ async function getInvalidDnsByVNet(
                 dns => !validDNSs.includes(dns)));
     }
 
-    invalidStatuses.push({
-        location: '',
-        networkStatus: undefined
-    });
+    // invalidStatuses.push({
+    //     location: '',
+    //     networkStatus: undefined
+    // });
 
     console.log("status", invalidStatuses);
     return invalidStatuses;
@@ -67,14 +75,22 @@ export async function dnsMismatchCheck(
 
         // await Promise.all(Object.keys(invalidStatusByLocation).map(loc => invalidStatusByLocation[loc]));
 
+        let anyInvalid = Object.values(invalidStatusByLocation).some(stat => stat.length > 0);
+
+        flowMgr.addView(new CheckStepView({
+            title: "DNS Network Configuration Check",
+            level: anyInvalid ? checkResultLevel.warning : checkResultLevel.pass,
+            id: "thirdStep",
+            subChecks: Object.entries(invalidStatusByLocation).map(([loc, statuses]) => {
+                return {
+                    title: loc,
+                    level: checkResultLevel.warning,
+                };
+            })
+        }));
+
         // if any location has an invalid status
-        if (Object.values(invalidStatusByLocation).some(stat => stat.length > 0)) {
-            flowMgr.addView(new InfoStepView({
-                title: "DNS Network Configuration Needs to be Updated",
-                id: "step4",
-                infoType: InfoType.diagnostic,
-                markdown: "There seems to be some issue with the DNS settings of your APIM service. Plase click the button below to refresh your DNS configuration."
-            }));
+        if (anyInvalid) {
             flowMgr.addView(new ButtonStepView({
                 callback: () => {
                     return diagProvider
@@ -84,14 +100,15 @@ export async function dnsMismatchCheck(
                 id: "step4",
                 text: "Apply Network Configuration"
             }));
-        } else {
-            flowMgr.addView(new InfoStepView({
-                title: "DNS Healthy",
-                id: "step4",
-                infoType: InfoType.recommendation,
-                markdown: "DNS looks healthy!"
-            }));
-        }
+        } 
+        // else {
+        //     flowMgr.addView(new InfoStepView({
+        //         title: "DNS Healthy",
+        //         id: "step4",
+        //         infoType: InfoType.recommendation,
+        //         markdown: "DNS looks healthy!"
+        //     }));
+        // }
     } else {
     }
 }

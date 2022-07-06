@@ -17,28 +17,28 @@ export const DnsFlow: NetworkCheckFlow = {
         const resourceId = siteInfo.resourceUri;
         networkStatusCheck(flowMgr, diagProvider, resourceId);
 
-        /** NSG Checks */
         const serviceResourceResponse = await diagProvider.getResource<ApiManagementServiceResourceContract>(resourceId, APIM_API_VERSION);
         let serviceResource = serviceResourceResponse.body;
-
         let networkType = serviceResource.properties.virtualNetworkType;
+        
+        /** NSG Checks */
         nsgRuleCheck(networkType, flowMgr, diagProvider, serviceResource);
 
         /** DNS Mismatch Check */
         dnsMismatchCheck(networkType, serviceResource, flowMgr, diagProvider, resourceId);
 
         /** Route Table Check */
-        routeTableCheck(networkType);
+        routeTableCheck(networkType, flowMgr, diagProvider, serviceResource);
 
-        flowMgr.addView(new InfoStepView({
-            title: "Further Action",
-            infoType: InfoType.diagnostic,
-            id: "thirdStep",
-            markdown: `
-                Network status errors generally occur when the APIM service is not able to access external dependencies due to outages or traffic rules.
-                Please check any error descriptions for further information.
-            `
-        }));
+        // flowMgr.addView(new InfoStepView({
+        //     title: "Further Action",
+        //     infoType: InfoType.diagnostic,
+        //     id: "thirdStep",
+        //     markdown: `
+        //         Network status errors generally occur when the APIM service is not able to access external dependencies due to outages or traffic rules.
+        //         Please check any error descriptions for further information.
+        //     `
+        // }));
 
     }
 };
