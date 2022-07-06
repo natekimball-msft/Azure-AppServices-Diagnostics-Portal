@@ -66,10 +66,33 @@ export interface SubnetContract extends ArmObj {
     properties: {
         addressPrefix: string;
         addressPrefixes: string[];
-        networkSecurityGroup: {
-            id: string;
-        }
+        networkSecurityGroup: NetworkSecurityGroupContract;
         purpose: string;
+        routeTable: RouteTable;
+    }
+}
+
+export interface RouteTable extends ArmObj {
+    etag: string;
+    tags: Object;
+    type: string;
+    properties: {
+        disableBgpRoutePropogation: boolean;
+        provisioningState: ProvisioningState;
+        resourceGuid: string;
+        routes: RouteContract[];
+        subnets: SubnetContract[];
+    }
+}
+
+export interface RouteContract extends ArmObj {
+    etag: string;
+    type: string;
+    properties: {
+        addressPrefix: string;
+        hasBgpOverride: boolean;
+        nextHopIpAddress: string;
+        provisioningState: ProvisioningState;
     }
 }
 

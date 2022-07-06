@@ -1,4 +1,4 @@
-import { StatusStyles } from 'diagnostic-data';
+import { ResourceDescriptor, StatusStyles } from 'diagnostic-data';
 
 
 export const APIM_API_VERSION = "2021-12-01-preview";
