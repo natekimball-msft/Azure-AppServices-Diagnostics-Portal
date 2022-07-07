@@ -27,7 +27,7 @@ export class UserSettingService {
     }
 
     private readonly maxRecentResources = 5;
-    public readonly maxFavoriteDetectors = 5;
+    public readonly maxFavoriteDetectors = 10;
 
     constructor(private _diagnosticApiService: DiagnosticApiService, private _adalService: AdalService) {
     }
