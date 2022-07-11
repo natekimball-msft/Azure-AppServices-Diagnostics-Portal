@@ -47,7 +47,7 @@ async function getInvalidDnsByVNet(
     //     networkStatus: undefined
     // });
 
-    console.log("status", invalidStatuses);
+    // console.log("status", invalidStatuses);
     return invalidStatuses;
 }
 
