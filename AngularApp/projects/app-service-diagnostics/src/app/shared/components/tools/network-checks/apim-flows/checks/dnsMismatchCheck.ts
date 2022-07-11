@@ -66,17 +66,23 @@ export async function dnsMismatchCheck(
 
         let invalidStatusByLocation: {[key: string]: NetworkStatusByLocationContract[]} = {};
 
+        // console.log('vnet', serviceResource);
+        
         // should move await calls into Promise.all for good parallelism
         invalidStatusByLocation[serviceResource.location] = await getInvalidDnsByVNet(serviceResource.properties.virtualNetworkConfiguration, diagProvider, networkStatuses);
 
-        for (let loc of serviceResource.properties.additionalLocations) {
-            invalidStatusByLocation[loc.location] = await getInvalidDnsByVNet(loc.virtualNetworkConfiguration, diagProvider, networkStatuses);
-        }
+        // for (let loc of serviceResource.properties.additionalLocations) {
+        //     invalidStatusByLocation[loc.location] = await getInvalidDnsByVNet(loc.virtualNetworkConfiguration, diagProvider, networkStatuses);
+        // }
+
+        // console.log('statuses', invalidStatusByLocation);
+        
 
         // await Promise.all(Object.keys(invalidStatusByLocation).map(loc => invalidStatusByLocation[loc]));
 
         let anyInvalid = Object.values(invalidStatusByLocation).some(stat => stat.length > 0);
 
+        // console.log("invalid statuses", invalidStatusByLocation);
         flowMgr.addView(new CheckStepView({
             title: "DNS Network Configuration Check",
             level: anyInvalid ? checkResultLevel.warning : checkResultLevel.pass,
@@ -85,6 +91,7 @@ export async function dnsMismatchCheck(
                 return {
                     title: loc,
                     level: checkResultLevel.warning,
+                    bodyMarkdown: "Your DNS configuration is outdated. Apply network configuration to update it."                    
                 };
             })
         }));

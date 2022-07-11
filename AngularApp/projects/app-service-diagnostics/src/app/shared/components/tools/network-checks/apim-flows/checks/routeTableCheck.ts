@@ -1,9 +1,13 @@
 import { Check, checkResultLevel, CheckStepView, StepFlowManager, StepView } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
 import { ApiManagementServiceResourceContract, VirtualNetworkConfigurationContract, VirtualNetworkType } from '../contracts/APIMService';
-import { RouteTable, SubnetContract } from '../contracts/NetworkSecurity';
+import { RouteTableContract, SubnetContract } from '../contracts/NetworkSecurity';
 import { NETWORK_API_VERSION } from '../data/constants';
 
+
+interface RouteTableContractWithResId extends RouteTableContract {
+    resourceId: string;
+}
 
 function getVNetConfigsByLocation(serviceResource: ApiManagementServiceResourceContract): {[key: string]: VirtualNetworkConfigurationContract} {
     let vnetConfigsByLocation = {};
@@ -24,27 +28,36 @@ function getVNetConfigsByLocation(serviceResource: ApiManagementServiceResourceC
 function getRouteTableByLocation(
     diagProvider: DiagProvider, 
     serviceResource: ApiManagementServiceResourceContract, 
-    vnetConfigsByLocation: {[key: string]: VirtualNetworkConfigurationContract}): {[key: string]: Promise<RouteTable> | RouteTable} {
+    vnetConfigsByLocation: {[key: string]: VirtualNetworkConfigurationContract}): {[key: string]: Promise<RouteTableContractWithResId> | RouteTableContractWithResId} {
     let routeTableByLocation = {};
 
     for (let loc of Object.keys(vnetConfigsByLocation)) {
         const subnetResourceId = serviceResource.properties.virtualNetworkConfiguration.subnetResourceId;
+        const resourceIdPrefix = subnetResourceId.split("virtualNetworks")[0];
         routeTableByLocation[loc] = diagProvider.getResource<SubnetContract>(subnetResourceId, NETWORK_API_VERSION)
             .then(res => res.body)
-            .then(subnet => subnet.properties.routeTable);
+            .then(subnet => subnet.properties.routeTable)
+            .then(table => {
+                return {
+                ...table, 
+                resourceId: `${resourceIdPrefix}/routeTables/${table.name}/overview`}});
     }
 
     return routeTableByLocation;
 }
 
-function performRouteTableCheck(location: string, table: RouteTable): Check {
+function performRouteTableCheck(location: string, table: RouteTableContractWithResId): Check {
 
-    let hasOmniQualifier = table.properties && table.properties.routes.some(route => route.properties.addressPrefix.includes("/0")); // match 0 bits
+    let hasRouteTable = !!(table.properties);
+    let hasOmniQualifier = hasRouteTable && table.properties.routes.some(route => route.properties.addressPrefix.includes("/0")); // match 0 bits
 
     return {
         title: location,
         level: hasOmniQualifier ? checkResultLevel.warning : checkResultLevel.pass,
-        bodyMarkdown: hasOmniQualifier ? `Resource has a route that qualifies for everything` : null
+        bodyMarkdown: hasRouteTable ? hasOmniQualifier ? 
+                                `Resource has a route that qualifies for everything. If you would like to change it, please change the route table settings [here](${table.resourceId})` : 
+                                "No issues detected in this resource" :
+                                "No issues detected in this resource"
     }
 }
 
@@ -56,11 +69,13 @@ async function routeTableView(
     let routeTableByLocation = getRouteTableByLocation(diagProvider, serviceResource, vnetConfigsByLocation);
 
     await Promise.all(Object.values(routeTableByLocation));
+
+    // console.log("route tables", routeTableByLocation);
     return new CheckStepView({
-        title: "DNS Network Configuration Check",
+        title: "Route Table Status",
         level: checkResultLevel.pass,
         id: "thirdStep",
-        subChecks: Object.entries(routeTableByLocation).map(([loc, table]) => performRouteTableCheck(loc, (table as RouteTable)))
+        subChecks: Object.entries(routeTableByLocation).map(([loc, table]) => performRouteTableCheck(loc, (table as RouteTableContractWithResId)))
     });
 }
 

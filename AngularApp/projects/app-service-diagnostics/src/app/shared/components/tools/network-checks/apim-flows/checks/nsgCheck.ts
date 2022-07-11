@@ -133,7 +133,7 @@ function generateRequirementViolationTable(requirements: RequirementResult[], ns
             let description = req.description.replace(/(\r\n|\n|\r)/gm, "");
             let link = `https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${nsgResId}/overview`;
             
-            return `    |   ${icon} | [${req.name}](${link}) | ${description} |`;
+            return `    |   ${icon} | [${req.name}](${link}){:target="_blank"} | ${description} |`;
         }).join("\n");
 }
 

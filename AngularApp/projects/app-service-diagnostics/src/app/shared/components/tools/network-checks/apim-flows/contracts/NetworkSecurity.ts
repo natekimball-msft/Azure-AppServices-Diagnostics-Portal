@@ -68,18 +68,18 @@ export interface SubnetContract extends ArmObj {
         addressPrefixes: string[];
         networkSecurityGroup: NetworkSecurityGroupContract;
         purpose: string;
-        routeTable: RouteTable;
+        routeTable: RouteTableContract;
     }
 }
 
-export interface RouteTable extends ArmObj {
+export interface RouteTableContract extends ArmObj {
     etag: string;
     tags: Object;
     type: string;
     properties: {
         disableBgpRoutePropogation: boolean;
         provisioningState: ProvisioningState;
-        resourceGuid: string;
+        resourceGuid: string;   
         routes: RouteContract[];
         subnets: SubnetContract[];
     }

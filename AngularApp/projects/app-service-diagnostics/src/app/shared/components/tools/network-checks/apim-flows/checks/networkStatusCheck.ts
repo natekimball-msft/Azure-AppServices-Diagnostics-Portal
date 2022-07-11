@@ -47,9 +47,10 @@ function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
 
     const len = 30;
     return `
-    | Status | Name | Resource Group |
-    |--------|------|----------------|
-    ` + statuses.map(status => `|   ${statusIconMarkdown[rateConnectivityStatus(status)]} | ${status.name.length > len ? status.name.substring(0, len) + "..." : status.name} | ${status.resourceType} |`).join(`\n`);
+    | Status | Name | Resource Group | Details |
+    |--------|------|----------------|---------|
+    ` + statuses.map(status => 
+    `|   ${statusIconMarkdown[rateConnectivityStatus(status)]} | ${status.name.length > len ? status.name.substring(0, len) + "..." : status.name} | ${status.resourceType} | ${status.error} |`).join(`\n`);
 }
 
 async function getNetworkStatusView(diagProvider: DiagProvider, resourceId: string) {
