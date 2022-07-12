@@ -241,7 +241,22 @@ export class DashboardComponent implements OnDestroy {
     }
   }
 
+  addCaseNumberToLinks(caseNumber){
+    if (caseNumber && caseNumber.length > 0) {
+      var x = document.getElementsByTagName("a");
+      for (var i = 0; i < x.length; i++) {
+        let link = x[i].href;
+        if (link && (link.startsWith("https://applens.azurewebsites.net") || link.startsWith("https://applens.trafficmanager.net")) && !(link.includes("caseNumber"))) {
+          x[i].href = link + (link.includes("?")? "&": "?") + "caseNumber=" + caseNumber;
+        }
+      }
+    }
+  }
+
   ngOnInit() {
+    if (this._diagnosticApiService.CustomerCaseNumber && this._diagnosticApiService.CustomerCaseNumber.length>0) {
+      setInterval(() => {this.addCaseNumberToLinks(this._diagnosticApiService.CustomerCaseNumber)}, 500);
+    }
     this.examineUserAccess();
     this.stillLoading = true;
     this._diagnosticService.getDetectors().subscribe(detectors => {
