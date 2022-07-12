@@ -58,9 +58,10 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resourceId: stri
     const networkStatusResponse = await diagProvider.getResource<NetworkStatusByLocationContract[]>(resourceId + "/networkstatus", APIM_API_VERSION);
     const networkStatuses = networkStatusResponse.body;
     const view = new CheckStepView({
-        title: "Check Network Status",
+        title: "Network Status",
         level: getWorstNetworkStatus(networkStatuses),
         id: "firstStep",
+        bodyMarkdown: "Connectivity Status to the external resources on which the Api Management service depends from inside the Cloud Service.",
         subChecks: networkStatuses.map(status => {
             let worstLocationStatus = getWorstNetworkStatusOfLocation(status.networkStatus.connectivityStatus);
             return {

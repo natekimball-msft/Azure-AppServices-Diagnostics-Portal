@@ -62,18 +62,20 @@ export async function dnsMismatchCheck(
     if (networkType != VirtualNetworkType.NONE) {
 
         const networkStatusResponse = await diagProvider.getResource<NetworkStatusByLocationContract[]>(resourceId + "/networkstatus", APIM_API_VERSION);
-        const networkStatuses = networkStatusResponse.body;
+        const networkStatus = networkStatusResponse.body;
 
         let invalidStatusByLocation: {[key: string]: NetworkStatusByLocationContract[]} = {};
 
         // console.log('vnet', serviceResource);
         
         // should move await calls into Promise.all for good parallelism
-        invalidStatusByLocation[serviceResource.location] = await getInvalidDnsByVNet(serviceResource.properties.virtualNetworkConfiguration, diagProvider, networkStatuses);
+        invalidStatusByLocation[serviceResource.location] = await getInvalidDnsByVNet(serviceResource.properties.virtualNetworkConfiguration, diagProvider, networkStatus);
 
-        // for (let loc of serviceResource.properties.additionalLocations) {
-        //     invalidStatusByLocation[loc.location] = await getInvalidDnsByVNet(loc.virtualNetworkConfiguration, diagProvider, networkStatuses);
-        // }
+        if (serviceResource.properties.additionalLocations) {
+            for (let loc of serviceResource.properties.additionalLocations) {
+                invalidStatusByLocation[loc.location] = await getInvalidDnsByVNet(loc.virtualNetworkConfiguration, diagProvider, networkStatus);
+            }
+        }
 
         // console.log('statuses', invalidStatusByLocation);
         
@@ -84,30 +86,39 @@ export async function dnsMismatchCheck(
 
         // console.log("invalid statuses", invalidStatusByLocation);
         flowMgr.addView(new CheckStepView({
-            title: "DNS Network Configuration Check",
+            title: "DNS Network Configuration Status",
             level: anyInvalid ? checkResultLevel.warning : checkResultLevel.pass,
             id: "thirdStep",
             subChecks: Object.entries(invalidStatusByLocation).map(([loc, statuses]) => {
                 return {
                     title: loc,
                     level: checkResultLevel.warning,
-                    bodyMarkdown: "Your DNS configuration is outdated. Apply network configuration to update it."                    
+                    bodyMarkdown: "Your DNS configuration is outdated. Apply network configuration to update it.",
+                    action: {
+                        callback: () => {
+                                return diagProvider
+                                    .postResourceAsync<ApiManagementServiceResourceContract, Body>(resourceId + "/applynetworkconfigurationupdates", {}, APIM_API_VERSION)
+                                    .then(() => { });
+                            },
+                            id: "stepx",
+                            text: "Apply Network Configuration"
+                    }
                 };
             })
         }));
 
         // if any location has an invalid status
-        if (anyInvalid) {
-            flowMgr.addView(new ButtonStepView({
-                callback: () => {
-                    return diagProvider
-                        .postResourceAsync<ApiManagementServiceResourceContract, Body>(resourceId + "/applynetworkconfigurationupdates", {}, APIM_API_VERSION)
-                        .then(() => { });
-                },
-                id: "step4",
-                text: "Apply Network Configuration"
-            }));
-        } 
+        // if (anyInvalid) {
+        //     flowMgr.addView(new ButtonStepView({
+        //         callback: () => {
+        //             return diagProvider
+        //                 .postResourceAsync<ApiManagementServiceResourceContract, Body>(resourceId + "/applynetworkconfigurationupdates", {}, APIM_API_VERSION)
+        //                 .then(() => { });
+        //         },
+        //         id: "step4",
+        //         text: "Apply Network Configuration"
+        //     }));
+        // } 
         // else {
         //     flowMgr.addView(new InfoStepView({
         //         title: "DNS Healthy",

@@ -80,8 +80,9 @@
     {
       "id": "diagnostictoolsapim",
       "name": "Diagnostic Tools",
-      "description": "to be updated",
+      "description": "Run diagnostic tool to identify issues within your APIM service",
       "keywords": [
+        "Network Troubleshooter"
       ],
       "color": "rgb(186, 211, 245)",
       "createFlowForCategory": true,
