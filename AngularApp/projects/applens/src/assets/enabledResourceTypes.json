@@ -579,6 +579,18 @@
             "searchSuffix": "VIRTUAL MACHINE SCALE SETS",
             "displayName": "Virtual Machine Scale Sets"
         },
+         {
+            "service": "ResourceService",
+            "resourceType": "Microsoft.Communication/CommunicationServices",
+            "templateFileName": "CommunicationServices",
+            "imgSrc": "assets/img/CommunicationServices-Logo",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "",
+            "pesId": "17327",
+            "staticSelfHelpContent": "microsoft.communication",
+            "searchSuffix": "Communication Services",
+            "displayName": "Azure Communication Services"
+        },
         {
             "service": "StampService",
             "resourceType": "stamps",

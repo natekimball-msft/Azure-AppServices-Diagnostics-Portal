@@ -14,7 +14,7 @@ import { IPanelProps, PanelType } from 'office-ui-fabric-react';
 })
 export class TabDataComponent implements OnInit {
 
-  constructor(private _route: ActivatedRoute, private _diagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService, private _applensCommandBarService: ApplensCommandBarService, private _applensGlobal: ApplensGlobal,private _telemetryService:TelemetryService) { }
+  constructor(private _route: ActivatedRoute, private _diagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService, private _applensCommandBarService: ApplensCommandBarService, private _applensGlobal: ApplensGlobal, private _telemetryService: TelemetryService) { }
 
   detectorResponse: DetectorResponse;
 
@@ -124,22 +124,22 @@ export class TabDataComponent implements OnInit {
     this.showPanel = false;
     this.panelMessage = "";
     this.panelHealthStatus = HealthStatus.Success;
-    
-    if(this.pinnedDetector) {
-      this._telemetryService.logEvent(TelemetryEventNames.FavoriteDetectorRemoved,{'detectorId': this.detector});
+
+    if (this.pinnedDetector) {
+      this._telemetryService.logEvent(TelemetryEventNames.FavoriteDetectorRemoved, { 'detectorId': this.detector, 'location': 'CommandBar' });
       this.removeFavoriteDetector();
-    }else {
-      this._telemetryService.logEvent(TelemetryEventNames.FavoriteDetectorAdded,{'detectorId': this.detector});
+    } else {
+      this._telemetryService.logEvent(TelemetryEventNames.FavoriteDetectorAdded, { 'detectorId': this.detector, 'location': 'CommandBar' });
       this.addFavoriteDetector();
     }
   }
-    
+
 
   private addFavoriteDetector() {
     //Pinned detector can be analysis
     const detectorType = this.detectorMetaData ? this.detectorMetaData.type : DetectorType.Detector;
 
-    this._applensCommandBarService.addFavoriteDetector(this.detector,detectorType).subscribe(message => {
+    this._applensCommandBarService.addFavoriteDetector(this.detector, detectorType).subscribe(message => {
       this.setPanelStatusAndMessage(HealthStatus.Success, message);
     }, error => {
       this.setPanelStatusAndMessage(HealthStatus.Critical, error);
