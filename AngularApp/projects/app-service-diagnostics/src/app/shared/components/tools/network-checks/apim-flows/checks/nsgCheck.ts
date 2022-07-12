@@ -133,7 +133,7 @@ function generateRequirementViolationTable(requirements: RequirementResult[], ns
             let description = req.description.replace(/(\r\n|\n|\r)/gm, "");
             let link = `https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${nsgResId}/overview`;
             
-            return `    |   ${icon} | [${req.name}](${link}){:target="_blank"} | ${description} |`;
+            return `    |   ${icon} | <a href="${link}" target="_blank">${req.name}</a> | ${description} |`;
         }).join("\n");
 }
 
@@ -170,11 +170,16 @@ async function getVnetInfoView(
         });
 
     } else {
+        let link = `https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${networkSecurityGroupResourceId}/overview`;
         view = new CheckStepView({
             id: "netsec-view",
             title: "VNET Status",
             expandByDefault: true,
             level: getWorstStatus(violatedRequirements.map(req => req.status)),
+            bodyMarkdown: `
+                A network security group contains security rules that allow or deny inbound 
+                network traffic to, or outbound network traffic from, several types of Azure resources. 
+                Some rules may block access to important dependencies. You can modify your security rules [here](${link}).`,
             subChecks: [
                 {
                     title: "East US",

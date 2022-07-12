@@ -105,6 +105,7 @@ export interface Check {
     bodyMarkdown?: string;
     detailsMarkdown?: string;
     expandByDefault?: boolean;
+    action?: ButtonStepView;
 }
 
 export class CheckStepView extends StepView implements Check {
@@ -114,6 +115,7 @@ export class CheckStepView extends StepView implements Check {
     bodyMarkdown?: string;
     detailsMarkdown?: string;
     expandByDefault?: boolean;
+    action?: ButtonStepView;
 
     constructor(view: CheckStepView) {
         super(view);
@@ -124,6 +126,7 @@ export class CheckStepView extends StepView implements Check {
         this.expandByDefault = view.expandByDefault;
         this.bodyMarkdown = view.bodyMarkdown;
         this.detailsMarkdown = view.detailsMarkdown;
+        this.action = view.action;
     }
 }
 

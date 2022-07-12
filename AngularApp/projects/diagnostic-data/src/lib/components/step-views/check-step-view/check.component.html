@@ -16,18 +16,26 @@
   </div>
 
   <div *ngIf="expanded">
-    <div class="subchecks-container" *ngIf="check.subChecks?.length>0; else elseBlock">
-      <div class="sub-check" *ngFor="let subCheck of check.subChecks; let i = index">
-        <check [check]="subCheck"></check>
-      </div>
-    </div>
-    <ng-template #elseBlock>
+    
+    <div *ngIf="check.bodyMarkdown?.length > 0">
       <div class="markdown-container body-content">
         <div class="markdown">
           <markdown ngPreserveWhitespaces [data]="check.bodyMarkdown"></markdown>
         </div>
       </div>
-    </ng-template>
+    </div>
+    
+    <div class="subchecks-container" *ngIf="check.subChecks?.length>0">
+      <div class="sub-check" *ngFor="let subCheck of check.subChecks; let i = index">
+        <check [check]="subCheck"></check>
+      </div>
+    </div>
+    
+    <div class="actions-container" *ngIf="check.action != null;">
+      <fab-primary-button (onClick)="check.action.callback()"> 
+          {{check.action.text}}
+      </fab-primary-button>
+    </div>
   </div>
 
   <fab-panel *ngIf="check.detailsMarkdown!=null" [isOpen]="detailsPanelOpened" [type]="7" customWidth="fit-content"

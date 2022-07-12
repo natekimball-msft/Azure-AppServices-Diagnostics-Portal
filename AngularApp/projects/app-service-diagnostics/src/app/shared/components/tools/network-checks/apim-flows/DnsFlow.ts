@@ -8,7 +8,7 @@ import { routeTableCheck } from './checks/routeTableCheck';
 import { ApiManagementServiceResourceContract } from './contracts/APIMService';
 
 export const DnsFlow: NetworkCheckFlow = {
-    title: "Network Connectivity Check",
+    title: "Network Connectivity Issues",
     id: "networkCheckFlow",
 
     func: async (siteInfo, diagProvider, flowMgr) => {
@@ -29,16 +29,6 @@ export const DnsFlow: NetworkCheckFlow = {
 
         /** Route Table Check */
         routeTableCheck(networkType, flowMgr, diagProvider, serviceResource);
-
-        // flowMgr.addView(new InfoStepView({
-        //     title: "Further Action",
-        //     infoType: InfoType.diagnostic,
-        //     id: "thirdStep",
-        //     markdown: `
-        //         Network status errors generally occur when the APIM service is not able to access external dependencies due to outages or traffic rules.
-        //         Please check any error descriptions for further information.
-        //     `
-        // }));
 
     }
 };
