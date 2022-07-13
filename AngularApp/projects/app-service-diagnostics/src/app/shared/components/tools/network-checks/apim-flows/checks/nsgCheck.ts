@@ -174,7 +174,6 @@ async function getVnetInfoView(
         view = new CheckStepView({
             id: "netsec-view",
             title: "VNET Status",
-            expandByDefault: true,
             level: getWorstStatus(violatedRequirements.map(req => req.status)),
             bodyMarkdown: `
                 A network security group contains security rules that allow or deny inbound 

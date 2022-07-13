@@ -15,7 +15,6 @@ function getVnetResourceId(subnetResourceId: string): string {
     let provider = uriDescriptor.provider;
     let resource = `${uriDescriptor.types[0]}/${uriDescriptor.resources[0]}`;
     return `/subscriptions/${subscription}/resourcegroups/${resourcegroup}/providers/${provider}/${resource}`;
-    return uriDescriptor.resource;
 }
 
 async function getInvalidDnsByVNet(
