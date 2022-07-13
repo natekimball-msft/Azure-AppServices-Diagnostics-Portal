@@ -3,7 +3,7 @@ export interface NetworkStatusByLocationContract {
     networkStatus: NetworkStatusContract;
 }
 
-interface NetworkStatusContract {
+export interface NetworkStatusContract {
     dnsServers: string[];
     connectivityStatus: ConnectivityStatusContract[];
 }

@@ -178,7 +178,7 @@ async function getVnetInfoView(
             bodyMarkdown: `
                 A network security group contains security rules that allow or deny inbound 
                 network traffic to, or outbound network traffic from, several types of Azure resources. 
-                Some rules may block access to important dependencies. You can modify your security rules [here](${link}).`,
+                Some rules may block access to important dependencies. You can modify your security rules <a href="${link}" target="_blank">here</a>.`,
             subChecks: [
                 {
                     title: "East US",

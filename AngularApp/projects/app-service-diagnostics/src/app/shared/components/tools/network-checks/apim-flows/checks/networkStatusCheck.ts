@@ -61,7 +61,7 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resourceId: stri
         title: "Network Status",
         level: getWorstNetworkStatus(networkStatuses),
         id: "firstStep",
-        bodyMarkdown: "Connectivity Status to the external resources on which the Api Management service depends from inside the Cloud Service.",
+        bodyMarkdown: "Issues in connectivity status arise from being unable to access external resources on which the Api Management service depends from inside the Cloud Service.",
         subChecks: networkStatuses.map(status => {
             let worstLocationStatus = getWorstNetworkStatusOfLocation(status.networkStatus.connectivityStatus);
             return {
