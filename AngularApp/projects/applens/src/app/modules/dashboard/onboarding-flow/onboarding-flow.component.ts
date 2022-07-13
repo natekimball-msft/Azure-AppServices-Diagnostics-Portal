@@ -1426,12 +1426,16 @@ export class OnboardingFlowComponent implements OnInit {
     if(Object.keys(this.DevopsConfig.appTypeReviewers).length > 0 || Object.keys(this.DevopsConfig.platformReviewers).length > 0){
       this.queryResponse.invocationOutput['appFilter']['AppType'].split(',').forEach(apt => {
         if(Object.keys(this.DevopsConfig.appTypeReviewers).includes(apt)){
-          if (!this.owners.includes(this.DevopsConfig.appTypeReviewers[apt])) this.owners.push(this.DevopsConfig.appTypeReviewers[apt]);
+          this.DevopsConfig.appTypeReviewers[apt].forEach(rev => {
+            if (!this.owners.includes(rev)) this.owners.push(rev);
+          });
         }
       });
       this.queryResponse.invocationOutput['appFilter']['PlatformType'].split(',').forEach(plt => {
         if(Object.keys(this.DevopsConfig.platformReviewers).includes(plt)){
-          if (!this.owners.includes(this.DevopsConfig.platformReviewers[plt])) this.owners.push(this.DevopsConfig.platformReviewers[plt]);
+          this.DevopsConfig.platformReviewers[plt].forEach(rev => {
+            if (!this.owners.includes(rev)) this.owners.push(rev);
+          });
         }
       });
       this.owners.forEach(o => {
