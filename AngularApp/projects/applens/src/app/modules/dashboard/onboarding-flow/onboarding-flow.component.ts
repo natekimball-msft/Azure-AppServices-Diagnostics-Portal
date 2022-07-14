@@ -1426,12 +1426,16 @@ export class OnboardingFlowComponent implements OnInit {
     if(Object.keys(this.DevopsConfig.appTypeReviewers).length > 0 || Object.keys(this.DevopsConfig.platformReviewers).length > 0){
       this.queryResponse.invocationOutput['appFilter']['AppType'].split(',').forEach(apt => {
         if(Object.keys(this.DevopsConfig.appTypeReviewers).includes(apt)){
-          if (!this.owners.includes(this.DevopsConfig.appTypeReviewers[apt])) this.owners.push(this.DevopsConfig.appTypeReviewers[apt]);
+          this.DevopsConfig.appTypeReviewers[apt].forEach(rev => {
+            if (!this.owners.includes(rev)) this.owners.push(rev);
+          });
         }
       });
       this.queryResponse.invocationOutput['appFilter']['PlatformType'].split(',').forEach(plt => {
         if(Object.keys(this.DevopsConfig.platformReviewers).includes(plt)){
-          if (!this.owners.includes(this.DevopsConfig.platformReviewers[plt])) this.owners.push(this.DevopsConfig.platformReviewers[plt]);
+          this.DevopsConfig.platformReviewers[plt].forEach(rev => {
+            if (!this.owners.includes(rev)) this.owners.push(rev);
+          });
         }
       });
       this.owners.forEach(o => {
@@ -1445,10 +1449,12 @@ export class OnboardingFlowComponent implements OnInit {
     if (pushToMain) {
       requestBranch = this.defaultBranch;
     }
+
+    
     let link = this.gistMode ? `${this.PPEHostname}/${this.resourceId}/gists/${this.publishingPackage.id}?branchInput=${this.Branch}` : `${this.PPEHostname}/${this.resourceId}/detectors/${this.publishingPackage.id}/edit?branchInput=${this.Branch}`;
     let description = `This Pull Request was created via AppLens. To make edits, go to ${link}`;
     const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(requestBranch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.publishingPackage.id} Author : ${this.userName}`, commitType, this.resourceId);
-    const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, this.PRTitle, this.resourceId, description);
+    const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, this.PRTitle, this.resourceId, this.owners, description);
 
     DetectorObservable.subscribe(_ => {
       if (!pushToMain) {
@@ -1505,7 +1511,7 @@ export class OnboardingFlowComponent implements OnInit {
     }
 
     const deleteDetectorFiles = this.diagnosticApiService.pushDetectorChanges(requestBranch, gradPublishFiles, gradPublishFileTitles, `deleting detector: ${this.id} Author : ${this.userName}`, "delete", this.resourceId);
-    const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, `Deleting ${this.id}`, this.resourceId);
+    const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, `Deleting ${this.id}`, this.resourceId, this.owners);
     deleteDetectorFiles.subscribe(_ => {
       if (!this.DevopsConfig.autoMerge && !(this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.originalCode))) {
         makePullRequestObservable.subscribe(_ => {
@@ -1754,7 +1760,7 @@ export class OnboardingFlowComponent implements OnInit {
         });
       // Fetch owners.txt when needed. Otherwise leads to noisy errors in API.
       if (Object.keys(this.DevopsConfig.appTypeReviewers).length > 0 || Object.keys(this.DevopsConfig.platformReviewers).length > 0) {      
-        this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/owners.txt`, this.Branch, this.resourceId).subscribe(o => {
+        this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/owners.txt`, this.defaultBranch, this.resourceId).subscribe(o => {
           this.owners = o.split('\n');
         });
       }
