@@ -61,7 +61,7 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resourceId: stri
         title: "Network Status",
         level: getWorstNetworkStatus(networkStatuses),
         id: "firstStep",
-        bodyMarkdown: "Issues in connectivity status arise from being unable to access external resources on which the Api Management service depends from inside the Cloud Service.",
+        bodyMarkdown: "Connectivity to required dependencies (e.g. Azure Storage) is necessary to perform the core functions. If the service cannot connect to optional dependencies (e.g. e-mail server), only the respective functionality (e.g. e-mail notifications) will not work.",
         subChecks: networkStatuses.map(status => {
             let worstLocationStatus = getWorstNetworkStatusOfLocation(status.networkStatus.connectivityStatus);
             return {
