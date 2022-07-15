@@ -10,36 +10,6 @@
         font-size: 13px;
         display: inline;
         margin-right: 45px;
-
-        table {
-            display: inline-block !important;
-            width: 90% !important;
-
-            tbody {
-                display: table;
-                table-layout: fixed;
-                width: 100%;
-                tr {
-                    // display: flex;
-                    width: 100%;
-                    
-                    td {
-                        min-width: 50px;
-                        text-overflow: ellipsis;
-                    }
-
-                    td:first-child {
-                        // width: 100%;
-                        max-width: 150px;
-                        
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                        // flex: content;
-                    }
-                }
-            }
-        }
     }
 
     .bold{
@@ -70,6 +40,10 @@
     .body-content {
         padding: 10px 10px 0px 30px;
         overflow-x: auto;
+
+        table {
+            line-break: anywhere;
+        }
     }
 
     .actions-container {
