@@ -43,14 +43,17 @@ function rateConnectivityStatus(status: ConnectivityStatusContract): checkResult
         default: return checkResultLevel.pass;
     }
 }
-function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
 
+function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
+    
+    let lastUpdated = statuses.length > 0 ? `*${statuses[0].lastUpdated}*` : "";
     const len = 30;
     return `
     | Status | Name | Resource Group | Details |
     |--------|------|----------------|---------|
     ` + statuses.map(status => 
-    `|   ${statusIconMarkdown[rateConnectivityStatus(status)]} | ${status.name.length > len ? status.name.substring(0, len) + "..." : status.name} | ${status.resourceType} | ${status.error} |`).join(`\n`);
+    `|   ${statusIconMarkdown[rateConnectivityStatus(status)]} | ${status.name} | ${status.resourceType} | ${status.error} |`).join(`\n`)
+    + "\n\n" +`Last Updated *${lastUpdated}*`;
 }
 
 async function getNetworkStatusView(diagProvider: DiagProvider, resourceId: string) {
@@ -61,7 +64,10 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resourceId: stri
         title: "Network Status",
         level: getWorstNetworkStatus(networkStatuses),
         id: "firstStep",
-        bodyMarkdown: "Connectivity to required dependencies (e.g. Azure Storage) is necessary to perform the core functions. If the service cannot connect to optional dependencies (e.g. e-mail server), only the respective functionality (e.g. e-mail notifications) will not work.",
+        bodyMarkdown: 
+            "Connectivity to required dependencies (e.g. Azure Storage) is necessary to perform the core functions. " + 
+            "If the service cannot connect to optional dependencies (e.g. e-mail server), only the respective functionality " + 
+            "(e.g. e-mail notifications) will not work.",
         subChecks: networkStatuses.map(status => {
             let worstLocationStatus = getWorstNetworkStatusOfLocation(status.networkStatus.connectivityStatus);
             return {

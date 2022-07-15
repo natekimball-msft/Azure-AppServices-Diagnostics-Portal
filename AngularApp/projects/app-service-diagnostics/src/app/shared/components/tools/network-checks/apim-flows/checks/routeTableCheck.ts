@@ -59,7 +59,7 @@ function performRouteTableCheck(location: string, table: RouteTableContract): Ch
     const noTable = "No issues detected in this resource.";
     const noRoute = "No issues detected in this resource.";
     const hasIssue = `Resource **${table.name}** has a route **${omniRoute.name}** that directs all traffic. 
-    If this is not intended, please change the *addressPrefix* in route settings <a href="${table.id}/overview" target="_blank">here</a>.`;
+    If this is not intended, please change the *addressPrefix* in route settings <a href="https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${table.id}/routes" target="_blank">here</a>.`;
     return {
         title: location,
         level: hasOmniQualifier ? checkResultLevel.warning : checkResultLevel.pass,

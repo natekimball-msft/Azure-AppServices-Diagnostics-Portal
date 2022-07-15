@@ -68,7 +68,7 @@ export async function dnsMismatchCheck(
             }
         }
 
-        let anyValid = Object.values(validityByLocation).some(invalid => invalid);
+        let anyInvalid = Object.values(validityByLocation).some(valid => !valid);
 
         const applyConfigButton = {
             callback: () => {
@@ -85,16 +85,17 @@ export async function dnsMismatchCheck(
 
         flowMgr.addView(new CheckStepView({
             title: "DNS Network Configuration Status",
-            level: anyValid ? checkResultLevel.pass : checkResultLevel.warning,
+            level: anyInvalid ? checkResultLevel.warning : checkResultLevel.pass,
             id: "thirdStep",
+            bodyMarkdown: anyInvalid ? invalidText : validText,
             subChecks: Object.entries(validityByLocation).map(([loc, valid]) => {
                 return {
                     title: loc,
                     level: valid ? checkResultLevel.pass : checkResultLevel.warning,
-                    bodyMarkdown: valid ? validText : invalidText,
+                    // bodyMarkdown: valid ? validText : invalidText,
                 };
             }),
-            action: anyValid ? null : applyConfigButton
+            action: anyInvalid ? applyConfigButton : null
         }));
     } else {
     }
