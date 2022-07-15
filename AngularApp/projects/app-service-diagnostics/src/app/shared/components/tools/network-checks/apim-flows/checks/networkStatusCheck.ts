@@ -53,7 +53,8 @@ function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
     |--------|------|----------------|---------|
     ` + statuses.map(status => 
     `|   ${statusIconMarkdown[rateConnectivityStatus(status)]} | ${status.name} | ${status.resourceType} | ${status.error} |`).join(`\n`)
-    + "\n\n" +`Last Updated *${lastUpdated}*`;
+    // + "\n\n" +`Last Updated *${lastUpdated}*`
+    ;
 }
 
 async function getNetworkStatusView(diagProvider: DiagProvider, resourceId: string) {
