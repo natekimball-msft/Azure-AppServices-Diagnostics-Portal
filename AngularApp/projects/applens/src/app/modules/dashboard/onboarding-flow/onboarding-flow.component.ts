@@ -1487,7 +1487,7 @@ export class OnboardingFlowComponent implements OnInit {
   deleteDetector() {
     this.deletingDetector = true;
 
-    var pushToMain = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && this.queryResponse.invocationOutput['appFilter']['InternalOnly'] === 'True' && !this.IsDetectorMarkedPublic(this.originalCode));
+    var pushToMain = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.code) && !this.IsDetectorMarkedPublic(this.originalCode));
 
     let gradPublishFiles: string[] = [
       "delete code",
