@@ -1,7 +1,7 @@
 import { checkResultLevel, CheckStepView, InfoStepView, InfoType, StepFlowManager } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
 import { ApiManagementServiceResourceContract, PlatformVersion, VirtualNetworkConfigurationContract, VirtualNetworkType } from '../contracts/APIMService';
-import { NetworkSecurityGroupContract, ProvisioningState, SecurityRuleAccess, SecurityRuleContract, SecurityRuleProtocol, SubnetContract } from '../contracts/NetworkSecurity';
+import { NetworkSecurityGroupContract, ProvisioningState, SecurityRuleAccess, SecurityRuleContract, SecurityRuleDirection, SecurityRuleProtocol, SubnetContract } from '../contracts/NetworkSecurity';
 import { PortRequirements, stv1portRequirements, stv2portRequirements } from '../data/portRequirements';
 import { NETWORK_API_VERSION, statusIconMarkdown } from "../data/constants";
 import { getWorstStatus } from "./networkStatusCheck";
@@ -65,38 +65,51 @@ function sameIP(ip1: string, ip2: string) {
         (ip1 != "Internet" && ip2 == "VirtualNetwork") || (ip1 == "VirtualNetwork" && ip2 != "Internet");
 }
 
-function rulePassed(requirement: PortRequirements, rule: SecurityRuleContract) {
+enum RuleResult {
+    ALLOW,
+    NO_EFFECT,
+    BLOCK,
+}
+
+function ruleAffects(requirement: PortRequirements, rule: SecurityRuleContract): boolean {
     // if requirement does not apply to security rule, we return true
 
-    if (rule.properties.access == SecurityRuleAccess.ALLOW)
-        return true;
     if (rule.properties.provisioningState != ProvisioningState.SUCCEEDED)
-        return true;
+        return false;
 
     // rule matches inbound / outbound direction of requirement
     if (!requirement.dir.includes(rule.properties.direction))
-        return true;
+        return false;
     // rule matches tcp / ip / udp protocol of requirement
     if (!sameProtocol(requirement.protocol, rule.properties.protocol))
-        return true;
+        return false;
     // rule blocks source ips of requirement
     if (!sameIP(requirement.serviceSource, rule.properties.sourceAddressPrefix))
-        return true;
+        return false;
     // rule blocks destination ips of requirement
     if (!sameIP(requirement.serviceDestination, rule.properties.destinationAddressPrefix))
-        return true;
+        return false;
 
     // TODO handle case: assume CIDR blocks and IPs always pass
     
-    // requirement applies to rule
-    // make sure source ports are unblocked
-    if (samePorts([-1], rule.properties.sourcePortRange || rule.properties.sourcePortRanges))
+    // rule blocks destination ports of requirement
+    if (!samePorts(requirement.portNums, rule.properties.destinationPortRange || rule.properties.destinationPortRanges))
         return false;
-    // make sure destination ports are unblocked
-    if (samePorts(requirement.num, rule.properties.destinationPortRange || rule.properties.destinationPortRanges))
-        return false;
-    
+
     return true;
+}
+
+function rulePasses(portNum: number, rule: SecurityRuleContract): RuleResult { 
+    if (rule.properties.access == SecurityRuleAccess.ALLOW) {
+        if (samePorts([portNum], rule.properties.destinationPortRange || rule.properties.destinationPortRanges))
+            return RuleResult.ALLOW;
+    } else {
+        // make sure destination ports are unblocked
+        if (samePorts([portNum], rule.properties.destinationPortRange || rule.properties.destinationPortRanges))
+            return RuleResult.BLOCK;
+    }
+
+    return RuleResult.NO_EFFECT;
 }
 
 interface RequirementResultsByNsg {
@@ -112,19 +125,35 @@ interface RequirementResult {
 }
 
 function requirementCheck(requirements: PortRequirements[], rules: SecurityRuleContract[]): RequirementResult[] {
+    // sort by priority
+    rules.sort((a, b) => a.properties.priority - b.properties.priority);
+    
     let failedChecks: RequirementResult[] = [];
 
-    requirements.forEach(req => {
-        let failedRule = rules.find(r => !rulePassed(req, r));
-
-        if (failedRule != undefined) {
-            failedChecks.push({
-                status: req.required ? checkResultLevel.fail : checkResultLevel.warning,
-                name: failedRule.name,
-                description: req.purpose
-            });
+    for (let requirement of requirements) {
+        let affectingRules = rules.filter(rule => ruleAffects(requirement, rule));
+        for (let port of requirement.portNums) {
+            let portBlocked = false;
+            for (let rule of affectingRules) {
+                let ruleRes = rulePasses(port, rule);
+                if (ruleRes == RuleResult.ALLOW) {
+                    break;
+                } else if (ruleRes == RuleResult.NO_EFFECT) {
+                    continue;
+                } else if (ruleRes == RuleResult.BLOCK) {
+                    failedChecks.push({
+                        status: requirement.required ? checkResultLevel.fail : checkResultLevel.warning,
+                        name: rule.name,
+                        description: requirement.purpose
+                    });
+                    portBlocked = true;
+                    break;
+                }
+            }
+            if (portBlocked) break;
         }
-    });
+        
+    }
 
     return failedChecks;
 }
@@ -158,8 +187,6 @@ async function getViolatedRequirements(
         const networkSecurityGroup = networkSecurityGroupResponse.body;
     
         const securityRules = [...networkSecurityGroup.properties.defaultSecurityRules, ...networkSecurityGroup.properties.securityRules];
-        // sort by priority
-        securityRules.sort((a, b) => a.properties.priority - b.properties.priority);
         
         let portRequirements = (platformVersion == PlatformVersion.STV1 ? stv1portRequirements : stv2portRequirements);
         portRequirements = portRequirements.filter(req => req.vnetType.includes(networkType));
@@ -193,9 +220,9 @@ async function getVnetInfoView(
         bodyMarkdown: `
             A network security group contains security rules that allow or deny inbound 
             network traffic to, or outbound network traffic from, several types of Azure resources. 
-            Some rules may block access to important dependencies.`,
+            Some rules may block access to important dependencies. You can find a list of requirements 
+            [here](https://docs.microsoft.com/en-us/azure/api-management/virtual-network-reference?tabs=stv2).`,
         subChecks: Object.entries(violatedRequirementsByLocation).map(([loc, violatedRequirements]) => {
-            // let link = `https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${networkSecurityGroupResourceId}/overview`;
             return {
                 title: loc,
                 level: getWorstStatus(violatedRequirements.reqs.map(req => req.status)),
