@@ -159,6 +159,11 @@ function requirementCheck(requirements: PortRequirements[], rules: SecurityRuleC
 }
 
 function generateRequirementViolationTable(requirements: RequirementResultsByNsg): string {
+    
+    if (requirements.reqs.length == 0) {
+        return `No requirement violations detected.`;
+    }
+    
     return `
         | Status | Rule Name | Description |
         |--------|-----------|-------------|
@@ -183,6 +188,9 @@ async function getViolatedRequirements(
         const subnet = subnetResponse.body;
     
         const networkSecurityGroupResourceId = subnet.properties.networkSecurityGroup.id;
+        
+        if (!networkSecurityGroupResourceId) return null;
+        
         const networkSecurityGroupResponse = await diagProvider.getResource<NetworkSecurityGroupContract>(networkSecurityGroupResourceId, NETWORK_API_VERSION);
         const networkSecurityGroup = networkSecurityGroupResponse.body;
     
@@ -223,10 +231,18 @@ async function getVnetInfoView(
             Some rules may block access to important dependencies. You can find a list of requirements 
             [here](https://docs.microsoft.com/en-us/azure/api-management/virtual-network-reference?tabs=stv2).`,
         subChecks: Object.entries(violatedRequirementsByLocation).map(([loc, violatedRequirements]) => {
-            return {
-                title: loc,
-                level: getWorstStatus(violatedRequirements.reqs.map(req => req.status)),
-                bodyMarkdown: generateRequirementViolationTable(violatedRequirements),
+            if (violatedRequirements) {
+                return {
+                    title: loc,
+                    level: getWorstStatus(violatedRequirements.reqs.map(req => req.status)),
+                    bodyMarkdown: generateRequirementViolationTable(violatedRequirements),
+                }
+            } else {
+                return {
+                    title: loc,
+                    level: checkResultLevel.info,
+                    bodyMarkdown: "Network Security Group is not linked to this subnet"
+                }
             }
         }),
     });
@@ -241,7 +257,6 @@ async function getNoVnetView() {
         id: "secondStep",
         markdown: `
             ## No VNet Configuration detected
-            No problems then!
         `,
     });
 

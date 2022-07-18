@@ -3,6 +3,7 @@ import { DiagProvider } from '../../diag-provider';
 import { ApiManagementServiceResourceContract, VirtualNetworkConfigurationContract, VirtualNetworkType } from '../contracts/APIMService';
 import { RouteTableContract, SubnetContract } from '../contracts/NetworkSecurity';
 import { NETWORK_API_VERSION } from '../data/constants';
+import { getWorstStatus } from './networkStatusCheck';
 
 
 function getVNetConfigsByLocation(serviceResource: ApiManagementServiceResourceContract): {[key: string]: VirtualNetworkConfigurationContract} {
@@ -76,16 +77,19 @@ async function routeTableView(
 
     let routeTableByLocation = await mapToValues(routeTableByLocationPromise);
 
+    let routeTableResults = Object.entries(routeTableByLocation).map(([loc, table]) => performRouteTableCheck(loc, table));
+    let worstStatus = getWorstStatus(routeTableResults.map(res => res.level));
+
     return new CheckStepView({
         title: "Route Table Status",
-        level: checkResultLevel.warning,
+        level: worstStatus,
         id: "thirdStep",
         bodyMarkdown: 
             "If the default route (0.0.0.0/0) is set in the route table, all traffic from the API Management-delegated subnet is forced to flow " +
             "through an on-premises firewall or to a network virtual appliance. This traffic might break connectivity with API Management service, " +
             "since outbound traffic is either blocked on-premises, or NAT'd to an unrecognizable set of addresses. To learn more, check the section about " +
             "force-tunneling traffic [here](https://docs.microsoft.com/azure/api-management/api-management-using-with-vnet#-common-network-configuration-issues).",
-        subChecks: Object.entries(routeTableByLocation).map(([loc, table]) => performRouteTableCheck(loc, table))
+        subChecks: routeTableResults
     });
 }
 
