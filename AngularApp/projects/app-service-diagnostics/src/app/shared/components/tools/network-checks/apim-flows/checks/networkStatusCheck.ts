@@ -46,16 +46,16 @@ function rateConnectivityStatus(status: ConnectivityStatusContract): checkResult
 
 function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]) {
     
-    let lastUpdated = statuses.length > 0 ? `*${statuses[0].lastUpdated}*` : "";
+    let lastUpdated = statuses.length > 0 ? `${statuses[0].lastUpdated}` : "";
 
     let nowrap = (text: string) => `<span style="white-space: nowrap">${text}</span>`;
-    const len = 30;
+    
     return `
     | ${nowrap("Status")} | ${nowrap("Name")} | ${nowrap("Resource Group")} | ${nowrap("Details")} |
     |--------|------|----------------|---------|
     ` + statuses.map(status => 
     `|   ${statusIconMarkdown[rateConnectivityStatus(status)]} | ${status.name} | ${nowrap(status.resourceType)} | ${status.error} |`).join(`\n`)
-    // + "\n\n" +`Last Updated *${lastUpdated}*`
+    + "\n\n" +`    Last Updated **${new Date(lastUpdated).toLocaleString()}**`
     ;
 }
 
