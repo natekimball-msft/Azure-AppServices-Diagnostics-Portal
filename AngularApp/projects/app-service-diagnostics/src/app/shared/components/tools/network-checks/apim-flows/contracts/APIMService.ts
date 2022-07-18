@@ -1,5 +1,17 @@
 import { ArmObj } from "projects/app-service-diagnostics/src/app/shared/models/armObj";
 
+export enum ProvisioningState {
+    CREATED = "Created",
+    ACTIVATING = "Activating",
+	SUCCEEDED = "Succeeded",
+	UPDATING = "Updating",
+	FAILED = "Failed",
+	STOPPED = "Stopped",
+	TERMINATING = "Terminating",
+	TERMINATION_FAILED = "TerminationFailed",
+	DELETED = "Deleted"
+}
+
 // https://docs.microsoft.com/en-us/rest/api/apimanagement/previous-ga/api-management-service/get#apimanagementserviceresource
 export interface ApiManagementServiceResourceContract extends ArmObj {
     etag: string;
@@ -19,7 +31,12 @@ export interface ApiManagementServiceResourceContract extends ArmObj {
 
         publicIPAddresses?: string[];
         publicIPAddressId?: string;
-
+        provisioningState: ProvisioningState;
+        publisherEmail: string;
+        publisherName: string;
+        restore: boolean;
+        scmUrl: string;
+        targetProvisioningState: ProvisioningState;
         virtualNetworkConfiguration?: VirtualNetworkConfigurationContract;
         virtualNetworkType: VirtualNetworkType;
     }

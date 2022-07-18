@@ -1,6 +1,6 @@
-import {  checkResultLevel, CheckStepView, ResourceDescriptor, StepFlowManager } from 'diagnostic-data';
+import {  ButtonStepView, checkResultLevel, CheckStepView, ResourceDescriptor, StepFlowManager } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
-import { ApiManagementServiceResourceContract, VirtualNetworkConfigurationContract, VirtualNetworkType } from '../contracts/APIMService';
+import { ApiManagementServiceResourceContract, ProvisioningState, VirtualNetworkConfigurationContract, VirtualNetworkType } from '../contracts/APIMService';
 import { NetworkStatusByLocationContract, NetworkStatusContract } from '../contracts/NetworkStatus';
 import { VirtualNetworkContract } from '../contracts/VirtualNetwork';
 import { APIM_API_VERSION, NETWORK_API_VERSION } from "../data/constants";
@@ -72,14 +72,20 @@ export async function dnsMismatchCheck(
 
         let anyInvalid = Object.values(validityByLocation).some(valid => !valid);
 
-        const applyConfigButton = {
+
+        const transitionStates: ProvisioningState[] = [ProvisioningState.ACTIVATING, ProvisioningState.TERMINATING, ProvisioningState.UPDATING];
+        let isTransitioning = !!(transitionStates.find( s => s == serviceResource.properties.provisioningState));
+        let buttonText = isTransitioning ? "Configuration is updating" : "Apply Network Configuration";
+        const applyConfigButton: ButtonStepView = {
             callback: () => {
                 return diagProvider
-                    .postResourceAsync<ApiManagementServiceResourceContract, Body>(resourceId + "/applynetworkconfigurationupdates", {}, APIM_API_VERSION)
+                    .postResourceAsync<ApiManagementServiceResourceContract, Body>(
+                        resourceId + "/applynetworkconfigurationupdates", {}, APIM_API_VERSION)
                     .then(() => { });
             },
             id: "step3.5",
-            text: "Apply Network Configuration"
+            text: buttonText,
+            hidden: isTransitioning
         };
 
         const validText = "Your DNS config is healthy.";

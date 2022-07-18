@@ -5,6 +5,7 @@ import { NetworkSecurityGroupContract, ProvisioningState, SecurityRuleAccess, Se
 import { PortRequirements, stv1portRequirements, stv2portRequirements } from '../data/portRequirements';
 import { NETWORK_API_VERSION, statusIconMarkdown } from "../data/constants";
 import { getWorstStatus } from "./networkStatusCheck";
+import { StepView } from 'dist/diagnostic-data/public_api';
 
 class PortRange {
     portLowerBound: number;
@@ -57,7 +58,7 @@ function samePorts(ports: number[], portRange: string | string[]) {
     let pRange = new PortRange(portRange);
     // -1 means all ports
     let fullRange = ports.includes(-1) && (portRange.includes("*") || portRange.includes("0-65536"));
-    return fullRange || !ports.some((n) => pRange.has(n));
+    return fullRange || ports.some((n) => pRange.has(n));
 }
 
 function sameIP(ip1: string, ip2: string) {
@@ -89,8 +90,6 @@ function ruleAffects(requirement: PortRequirements, rule: SecurityRuleContract):
     // rule blocks destination ips of requirement
     if (!sameIP(requirement.serviceDestination, rule.properties.destinationAddressPrefix))
         return false;
-
-    // TODO handle case: assume CIDR blocks and IPs always pass
     
     // rule blocks destination ports of requirement
     if (!samePorts(requirement.portNums, rule.properties.destinationPortRange || rule.properties.destinationPortRanges))
@@ -161,7 +160,7 @@ function requirementCheck(requirements: PortRequirements[], rules: SecurityRuleC
 function generateRequirementViolationTable(requirements: RequirementResultsByNsg): string {
     
     if (requirements.reqs.length == 0) {
-        return `No requirement violations detected.`;
+        return `No requirement violations detected`;
     }
     
     return `
@@ -209,7 +208,7 @@ async function getVnetInfoView(
     diagProvider: DiagProvider,
     serviceResource: ApiManagementServiceResourceContract,
     networkType: VirtualNetworkType = VirtualNetworkType.EXTERNAL,
-    platformVersion: PlatformVersion = PlatformVersion.STV2) {
+    platformVersion: PlatformVersion = PlatformVersion.STV2): Promise<StepView> {
 
     let violatedRequirementsByLocation: {[key: string]: RequirementResultsByNsg} = {};
     
@@ -250,7 +249,7 @@ async function getVnetInfoView(
     return view;
 }
 
-async function getNoVnetView() {
+async function getNoVnetView(): Promise<StepView> {
     const view = new InfoStepView({
         title: "VNET Status",
         infoType: InfoType.recommendation,
