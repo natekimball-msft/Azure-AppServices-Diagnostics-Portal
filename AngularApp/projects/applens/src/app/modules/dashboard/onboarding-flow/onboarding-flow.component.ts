@@ -1487,6 +1487,8 @@ export class OnboardingFlowComponent implements OnInit {
   deleteDetector() {
     this.deletingDetector = true;
 
+    var pushToMain = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.code) && !this.IsDetectorMarkedPublic(this.originalCode));
+
     let gradPublishFiles: string[] = [
       "delete code",
       "delete metadata",
@@ -1506,7 +1508,7 @@ export class OnboardingFlowComponent implements OnInit {
     }
 
     var requestBranch = this.Branch;
-    if (this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.originalCode))) {
+    if (pushToMain) {
       requestBranch = this.defaultBranch;
     }
 
