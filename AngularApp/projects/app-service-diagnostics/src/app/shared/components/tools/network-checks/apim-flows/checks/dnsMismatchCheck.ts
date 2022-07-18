@@ -53,6 +53,8 @@ export async function dnsMismatchCheck(
         const networkStatusResponse = await diagProvider.getResource<NetworkStatusByLocationContract[]>(resourceId + "/networkstatus", APIM_API_VERSION);
         const networkStatuses = networkStatusResponse.body;
 
+        let findDnsServers = (loc: string) => networkStatuses.find(stat => stat.location == loc).networkStatus.dnsServers;
+
         let validityByLocation: {[key: string]: boolean} = {};
         
         // should move await calls into Promise.all for good parallelism
@@ -92,7 +94,7 @@ export async function dnsMismatchCheck(
                 return {
                     title: loc,
                     level: valid ? checkResultLevel.pass : checkResultLevel.warning,
-                    // bodyMarkdown: valid ? validText : invalidText,
+                    bodyMarkdown: valid ? "DNS configuration is up to date." : `DNS server(s) ${findDnsServers(loc)} do not match your vnet's DNS configuration.`
                 };
             }),
             action: anyInvalid ? applyConfigButton : null
