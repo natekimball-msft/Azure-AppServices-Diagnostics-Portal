@@ -32,7 +32,11 @@
     </div>
     
     <div class="actions-container" *ngIf="check.action != null;">
-      <button type="button" class="btn btn-primary" [disabled]="check.action.hidden" (click)="check.action.callback()">
+      <button 
+        type="button" 
+        class="btn btn-primary" 
+        [disabled]="check.action.hidden" 
+        (click)="check.action.hidden=true;check.action.callback()">
         {{check.action.text}}
       </button>
     </div>
