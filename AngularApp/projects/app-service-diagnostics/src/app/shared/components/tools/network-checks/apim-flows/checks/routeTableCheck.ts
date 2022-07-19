@@ -25,7 +25,7 @@ function getVNetConfigsByLocation(serviceResource: ApiManagementServiceResourceC
 function getRouteTableByLocation(
     diagProvider: DiagProvider, 
     serviceResource: ApiManagementServiceResourceContract, 
-    vnetConfigsByLocation: {[key: string]: VirtualNetworkConfigurationContract}): {[key: string]: Promise<RouteTableContract>} {
+    vnetConfigsByLocation: {[key: string]: VirtualNetworkConfigurationContract}): {[key: string]: Promise<RouteTableContract | null>} {
     let routeTableByLocation = {};
 
     for (let loc of Object.keys(vnetConfigsByLocation)) {
@@ -36,7 +36,8 @@ function getRouteTableByLocation(
             .then(subnet => subnet.properties.routeTable)
             .then(table => table.id)
             .then(resId => diagProvider.getResource<RouteTableContract>(resId, NETWORK_API_VERSION))
-            .then(table => table.body);
+            .then(table => table.body)
+            .catch(_ => null);
     }
 
     return routeTableByLocation;
@@ -49,18 +50,18 @@ async function mapToValues<Value>(valueMap: {[key: string]: Promise<Value>}): Pr
     return res;
 }
 
-function performRouteTableCheck(location: string, table: RouteTableContract): Check {
+function performRouteTableCheck(location: string, table: RouteTableContract | null): Check {
 
     const allQualifyingCIDR = "0.0.0.0/0";
     
-    let hasRouteTable = !!(table.properties); // convert falsy value to boolean
+    let hasRouteTable = !!(table && table.properties); // convert fals`y value to boolean
     let omniRoute = hasRouteTable ? table.properties.routes.find(route => route.properties.addressPrefix.includes(allQualifyingCIDR)) : null;
     let hasOmniQualifier = hasRouteTable && omniRoute; // match 0 bits
 
     const noTable = "No issues detected in this resource.";
     const noRoute = "No issues detected in this resource.";
-    const hasIssue = `Resource **${table.name}** has a route **${omniRoute.name}** that directs all traffic. 
-    If this is not intended, please change the *addressPrefix* in route settings <a href="https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${table.id}/routes" target="_blank">here</a>.`;
+    const hasIssue = `Resource **${table ? table.name : ""}** has a route **${omniRoute ? omniRoute.name : ""}** that directs all traffic. 
+    If this is not intended, please change the *addressPrefix* in route settings <a href="https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${table ? table.id : ""}/routes" target="_blank">here</a>.`;
     return {
         title: location,
         level: hasOmniQualifier ? checkResultLevel.warning : checkResultLevel.pass,

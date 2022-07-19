@@ -255,7 +255,7 @@ async function getNoVnetView(): Promise<StepView> {
         infoType: InfoType.recommendation,
         id: "secondStep",
         markdown: `
-            ## No VNet Configuration detected
+            **No VNet Configuration detected**
         `,
     });
 
