@@ -10,7 +10,7 @@ import {
   , Observable, of
 } from 'rxjs';
 import { flatMap, map } from 'rxjs/operators'
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { Package } from '../../../shared/models/package';
 import { GithubApiService } from '../../../shared/services/github-api.service';
 import { DetectorGistApiService } from '../../../shared/services/detectorgist-template-api.service';
@@ -656,11 +656,11 @@ export class OnboardingFlowComponent implements OnInit {
     return new ReconnectingWebSocket(url, undefined, socketOptions);
   }
 
-  ngOnChanges() {
-    if (this.initialized) {
-      this.initialize();
-    }
-  }
+  // ngOnChanges() {
+  //   if (this.initialized) {
+  //     this.initialize();
+  //   }
+  // }
 
   gistVersionChange() {
     var newGist;
