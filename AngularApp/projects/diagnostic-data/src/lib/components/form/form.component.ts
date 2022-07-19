@@ -95,7 +95,7 @@ export class FormComponent extends DataRenderBaseComponent {
           }
           else if(this.isDropdown(formInputs[ip]["inputType"])) {
               this.detectorForms[i].formInputs.push(new Dropdown(
-                `${this.detectorForms[i].formId}.${formInputs[ip]["inputId"]}`,
+                `formDropdown-${this.detectorForms[i].formId}-${formInputs[ip]["inputId"]}`,
                 formInputs[ip]["inputId"],
                 formInputs[ip]["inputType"],
                 formInputs[ip]["label"],
@@ -318,8 +318,8 @@ export class FormComponent extends DataRenderBaseComponent {
     let data = event.option["data"];
     let isMultiSelect = data["isMultiSelect"];
     let internalId = data["internalId"];
-    let formId = internalId.split(".")[0];
-    let inputId = internalId.split(".")[1];
+    let formId = internalId.split("-")[1];
+    let inputId = internalId.split("-")[2];
     // Find matching form
     let form = this.detectorForms.find(f => f.formId == formId);
     // Find the input
