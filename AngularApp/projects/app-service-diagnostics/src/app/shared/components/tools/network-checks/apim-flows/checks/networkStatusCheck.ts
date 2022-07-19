@@ -58,13 +58,13 @@ function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]): st
         if (stale) {
             switch (status) {
                 case 0: return statusIcon(StatusStyles.WarningIcon, "Stale");
-                case 1: return statusIcon(StatusStyles.WarningIcon, "Stale (Optional)");
+                case 1: return statusIcon(StatusStyles.WarningIcon, "Error (Optional)");
                 case 2: return statusIcon(StatusStyles.CriticalIcon, "Error");
             }
         } else  {
             switch (status) {
                 case 0: return statusIcon(StatusStyles.HealthyIcon, "Success");
-                case 1: return statusIcon(StatusStyles.WarningIcon, "Warning");
+                case 1: return statusIcon(StatusStyles.WarningIcon, "Error (Optional)");
                 case 2: return statusIcon(StatusStyles.CriticalIcon, "Error");
             }
         }
