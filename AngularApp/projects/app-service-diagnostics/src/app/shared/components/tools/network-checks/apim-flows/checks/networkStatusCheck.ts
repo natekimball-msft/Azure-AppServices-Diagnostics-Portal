@@ -53,19 +53,19 @@ function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]): st
 
     
     // let lastUpdated = statuses.length > 0 ? `${statuses[0].lastUpdated}` : "";
-    let statusIconMarkdown = (stale: boolean, status: StatusStyles): string => {
+    let statusIconMarkdown = (stale: boolean, status: checkResultLevel): string => {
         let statusIcon = (icon: StatusStyles, text: string) => `<div style="${iconContainerStyles}"><i class="${icon}" style="${iconStyles}"></i><span>${text}</span></div>`;
         if (stale) {
             switch (status) {
-                case 0: return statusIcon(StatusStyles.WarningIcon, "Stale");
-                case 1: return statusIcon(StatusStyles.CriticalIcon, "Error (Optional)");
-                case 2: return statusIcon(StatusStyles.CriticalIcon, "Error");
+                case checkResultLevel.pass: return statusIcon(StatusStyles.WarningIcon, "Stale");
+                case checkResultLevel.warning: return statusIcon(StatusStyles.CriticalIcon, "Error (Optional)");
+                case checkResultLevel.error: return statusIcon(StatusStyles.CriticalIcon, "Error");
             }
         } else  {
             switch (status) {
-                case 0: return statusIcon(StatusStyles.HealthyIcon, "Success");
-                case 1: return statusIcon(StatusStyles.CriticalIcon, "Error (Optional)");
-                case 2: return statusIcon(StatusStyles.CriticalIcon, "Error");
+                case checkResultLevel.pass: return statusIcon(StatusStyles.HealthyIcon, "Success");
+                case checkResultLevel.warning: return statusIcon(StatusStyles.CriticalIcon, "Error (Optional)");
+                case checkResultLevel.error: return statusIcon(StatusStyles.CriticalIcon, "Error");
             }
         }
     };

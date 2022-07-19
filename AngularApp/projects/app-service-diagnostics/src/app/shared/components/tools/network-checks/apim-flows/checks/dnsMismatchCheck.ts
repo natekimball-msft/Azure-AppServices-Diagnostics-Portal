@@ -75,7 +75,7 @@ export async function dnsMismatchCheck(
 
         const transitionStates: ProvisioningState[] = [ProvisioningState.ACTIVATING, ProvisioningState.TERMINATING, ProvisioningState.UPDATING];
         let isTransitioning = !!(transitionStates.find( s => s == serviceResource.properties.provisioningState));
-        let buttonText = isTransitioning ? "Configuration is updating" : "Apply Network Configuration";
+        let buttonText = isTransitioning ? "Service is updating" : "Apply Network Configuration";
         const applyConfigButton: ButtonStepView = {
             callback: () => {
                 return diagProvider

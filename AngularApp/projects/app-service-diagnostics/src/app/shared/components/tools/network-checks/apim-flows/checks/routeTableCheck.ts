@@ -54,7 +54,7 @@ function performRouteTableCheck(location: string, table: RouteTableContract | nu
 
     const allQualifyingCIDR = "0.0.0.0/0";
     
-    let hasRouteTable = !!(table && table.properties); // convert fals`y value to boolean
+    let hasRouteTable = !!(table && table.properties); // convert falsey value to boolean
     let omniRoute = hasRouteTable ? table.properties.routes.find(route => route.properties.addressPrefix.includes(allQualifyingCIDR)) : null;
     let hasOmniQualifier = hasRouteTable && omniRoute; // match 0 bits
 
