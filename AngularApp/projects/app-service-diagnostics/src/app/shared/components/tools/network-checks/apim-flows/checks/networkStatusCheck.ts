@@ -93,7 +93,8 @@ async function getNetworkStatusView(diagProvider: DiagProvider, resourceId: stri
         bodyMarkdown: 
             "Connectivity to required dependencies (e.g. Azure Storage) is necessary to perform the core functions. " + 
             "If the service cannot connect to optional dependencies (e.g. e-mail server), only the respective functionality " + 
-            "(e.g. e-mail notifications) will not work.",
+            "(e.g. e-mail notifications) will not work. " + 
+            "Stale status means that the service status has not updated in over 3 hours and could mean the service is experiencing network connection issues.",
         subChecks: networkStatuses.map(status => {
             let worstLocationStatus = getWorstNetworkStatusOfLocation(status.networkStatus.connectivityStatus);
             return {
