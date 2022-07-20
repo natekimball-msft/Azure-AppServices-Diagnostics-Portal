@@ -7,7 +7,7 @@
       <!-- Feedback Panel Content -->
       <div class="panel-text feedback-panel-content">
         <p>Thank you for giving us feedback!</p>
-        <p aria-required="true">Are you satisfied with your experience?</p>
+        <p>Are you satisfied with your experience?</p>
         <div class="feedback-panel-icons" id="feedback-icons">
           <div *ngFor="let feedbackIcon of feedbackIcons;let i = index" (click)="setRating(i)"
             [ngClass]="{'selected-icon':rating - 1 === i}" class="feedback-icon hover-item" style="padding: 5px;"
