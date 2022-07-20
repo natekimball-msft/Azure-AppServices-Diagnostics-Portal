@@ -155,7 +155,6 @@ export class NetworkTroubleshooterComponent extends DataRenderBaseComponent impl
 
             if (window.location.hostname == "localhost" || this.debugMode) {
                 flows = flows.concat(this.processFlows([sampleFlow]));
-                flows = flows.concat(this.processFlows([DnsFlow]));
             }
 
             var mgr = this.stepFlowManager;
