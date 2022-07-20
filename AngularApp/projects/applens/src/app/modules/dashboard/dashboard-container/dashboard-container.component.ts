@@ -1,16 +1,19 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { ApplensGlobal } from '../../../applens-global';
 import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
 import { ObserverService } from '../../../shared/services/observer.service';
 import { ResourceService } from '../../../shared/services/resource.service';
 import { StartupService } from '../../../shared/services/startup.service';
+import { AppLensCloudRegionUtility, AppLensCloudRegion } from '../../../shared/utilities/applens-cloud-region-utility';
 
 @Component({
   selector: 'dashboard-container',
   templateUrl: './dashboard-container.component.html',
   styleUrls: ['./dashboard-container.component.scss']
 })
+
 export class DashboardContainerComponent implements OnInit {
 
   keys: string[];
@@ -19,9 +22,15 @@ export class DashboardContainerComponent implements OnInit {
   resourceReady: Observable<any>;
   resourceDetailsSub: Subscription;
   observerLink: string = "";
+  ascResourceExplorerLink:string = "";
   showMetrics: boolean = true;
 
-  constructor(public _resourceService: ResourceService, private _startupService: StartupService, private _diagnosticApiService: DiagnosticApiService, private _observerService: ObserverService, private _applensGlobal: ApplensGlobal) { }
+    constructor(public _resourceService: ResourceService, private _startupService: StartupService, private _diagnosticApiService: DiagnosticApiService, private _observerService: ObserverService, private _applensGlobal: ApplensGlobal,  private _activatedRoute: ActivatedRoute) {
+    let caseNumber = this._activatedRoute.snapshot.queryParams['caseNumber']? this._activatedRoute.snapshot.queryParams['caseNumber']: (this._activatedRoute.snapshot.queryParams['srId']? this._activatedRoute.snapshot.queryParams['srId']: null);
+    if(caseNumber && AppLensCloudRegionUtility.getASCCloudSpecificBaseUri()) {
+      this.ascResourceExplorerLink = AppLensCloudRegionUtility.getASCCloudSpecificBaseUri() + "/resourceexplorerv2?srId=" + caseNumber;
+    }
+  }
 
   ngOnInit() {
     this.showMetrics = !(this._resourceService.overviewPageMetricsId == undefined || this._resourceService.overviewPageMetricsId == "");
@@ -62,9 +71,17 @@ export class DashboardContainerComponent implements OnInit {
         else {
           this.updateVentAndLinuxInfo();
         }
+        this.updateAscLink();
         this.convertKeyToKeyPairs(this.keys);
       }
     });
+  }
+
+  updateAscLink() {
+    if(this.ascResourceExplorerLink && this.resource!= null ) {
+          this.resource['ASCLink'] = `<a href="${this.ascResourceExplorerLink}" target="_blank">Resource Explorer<i class="hyper-link-icon ml-1" aria-hidden="true"></i></a>`;
+          this.keys.push('ASCLink');
+    }
   }
 
   updateAdditionalStampInfo() {
