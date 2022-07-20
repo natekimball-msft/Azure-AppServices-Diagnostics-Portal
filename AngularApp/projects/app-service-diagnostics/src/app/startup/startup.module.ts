@@ -14,6 +14,7 @@ import { GenericCategoryFlow } from '../supportbot/message-flow/v2-flows/generic
 import { AvailabilityPerformanceFlow } from '../supportbot/message-flow/v2-flows/availability-performance.flow';
 import { CpuAnalysisChatFlow } from '../supportbot/message-flow/cpu-analysis-chat/cpu-analysis-chat-flow';
 import { LinuxAvailabilityPerformanceFlow } from '../supportbot/message-flow/v2-flows/linux-availability-performance.flow';
+import { GenericPortalService } from 'diagnostic-data';
 
 @NgModule({
   imports: [
@@ -25,22 +26,23 @@ import { LinuxAvailabilityPerformanceFlow } from '../supportbot/message-flow/v2-
 export class StartupModule {
   static forRoot(): ModuleWithProviders {
     return {
-        ngModule: StartupModule,
-        providers: [
-            WindowService,
-            PortalService,
-            BroadcastService,
-            AuthService,
-            StartupMessages,
-            MainMenuMessageFlow,
-            FeedbackMessageFlow,
-            CpuAnalysisChatFlow,
-            MessageProcessor,
-            GenieMessageProcessor,
-            AvailabilityPerformanceFlow,
-            LinuxAvailabilityPerformanceFlow,
-            GenericCategoryFlow,
-        ]
+      ngModule: StartupModule,
+      providers: [
+        WindowService,
+        PortalService,
+        { provide: GenericPortalService, useExisting: GenericPortalService },
+        BroadcastService,
+        AuthService,
+        StartupMessages,
+        MainMenuMessageFlow,
+        FeedbackMessageFlow,
+        CpuAnalysisChatFlow,
+        MessageProcessor,
+        GenieMessageProcessor,
+        AvailabilityPerformanceFlow,
+        LinuxAvailabilityPerformanceFlow,
+        GenericCategoryFlow,
+      ]
     };
-}
+  }
 }
