@@ -17,8 +17,6 @@ import { NetworkCheckFlowSet } from '../network-checks/network-check-flow-set';
 import { WebAppFlowSet } from '../network-checks/webapp-flow-set';
 import { sampleFlow } from '../network-checks/network-check-flows/sampleFlow.js'
 import { ApimFlowSet } from '../network-checks/apim-flows';
-import { DnsFlow } from '../network-checks/apim-flows/dnsFlow';
-
 
 @Component({
     selector: 'network-troubleshooter',
@@ -155,7 +153,6 @@ export class NetworkTroubleshooterComponent extends DataRenderBaseComponent impl
 
             if (window.location.hostname == "localhost" || this.debugMode) {
                 flows = flows.concat(this.processFlows([sampleFlow]));
-                flows = flows.concat(this.processFlows([DnsFlow]));
             }
 
             var mgr = this.stepFlowManager;

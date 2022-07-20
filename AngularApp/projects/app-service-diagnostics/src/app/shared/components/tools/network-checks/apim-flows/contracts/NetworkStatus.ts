@@ -1,9 +1,11 @@
-export interface NetworkStatusContact {
+export interface NetworkStatusByLocationContract {
     location: string;
-    networkStatus: {
-        dnsServers: string[],
-        connectivityStatus: ConnectivityStatusContract[],
-    }
+    networkStatus: NetworkStatusContract;
+}
+
+export interface NetworkStatusContract {
+    dnsServers: string[];
+    connectivityStatus: ConnectivityStatusContract[];
 }
 
 export interface ConnectivityStatusContract {

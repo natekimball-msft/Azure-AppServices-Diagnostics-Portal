@@ -38,7 +38,16 @@
     }
 
     .body-content {
-        padding: 10px 0px 0px;
+        padding: 10px 10px 0px 30px;
+        overflow-x: auto;
+
+        // table {
+        //     line-break: anywhere;
+        // }
+    }
+
+    .actions-container {
+        padding: 10px 10px 10px 30px;
     }
 }
 
