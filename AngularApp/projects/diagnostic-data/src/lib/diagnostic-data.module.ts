@@ -124,6 +124,7 @@ import { DetectorTimePickerComponent } from './components/detector-time-picker/d
 import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-feedback.component';
 import { GenericBreadcrumbService } from './services/generic-breadcrumb.service';
 import { GenericUserSettingService } from './services/generic-user-setting.service';
+import { GenericPortalService } from './services/generic-portal.service';
 
 @NgModule({
   imports: [
@@ -269,6 +270,7 @@ export class DiagnosticDataModule {
         GenericDocumentsSearchService,
         GenericBreadcrumbService,
         GenericUserSettingService,
+        GenericPortalService,
         { provide: DIAGNOSTIC_DATA_CONFIG, useValue: config },
         CXPChatService,
         KustoTelemetryService,
