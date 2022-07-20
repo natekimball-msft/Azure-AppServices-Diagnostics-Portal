@@ -17,8 +17,6 @@ import { NetworkCheckFlowSet } from '../network-checks/network-check-flow-set';
 import { WebAppFlowSet } from '../network-checks/webapp-flow-set';
 import { sampleFlow } from '../network-checks/network-check-flows/sampleFlow.js'
 import { ApimFlowSet } from '../network-checks/apim-flows';
-import { DnsFlow } from '../network-checks/apim-flows/DnsFlow';
-
 
 @Component({
     selector: 'network-troubleshooter',

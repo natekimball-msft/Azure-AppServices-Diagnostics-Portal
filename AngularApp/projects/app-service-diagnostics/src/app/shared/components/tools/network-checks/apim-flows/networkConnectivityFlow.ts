@@ -7,7 +7,7 @@ import { nsgRuleCheck } from './checks/nsgCheck';
 import { routeTableCheck } from './checks/routeTableCheck';
 import { ApiManagementServiceResourceContract } from './contracts/APIMService';
 
-export const DnsFlow: NetworkCheckFlow = {
+export const networkConnectivityFlow: NetworkCheckFlow = {
     title: "Network Connectivity Issues",
     id: "networkCheckFlow",
 
