@@ -1400,6 +1400,29 @@ export class OnboardingFlowComponent implements OnInit {
     }
   }
 
+  addReviewers(){
+    let reviewers = "";
+    this.queryResponse.invocationOutput['appFilter']['AppType'].split(',').forEach(apt => {
+        if(Object.keys(this.DevopsConfig.appTypeReviewers).includes(apt)){
+          this.DevopsConfig.appTypeReviewers[apt].forEach(rev => {
+            if (!this.owners.includes(rev)) this.owners.push(rev);
+          });
+        }
+      });
+      this.queryResponse.invocationOutput['appFilter']['PlatformType'].split(',').forEach(plt => {
+        if(Object.keys(this.DevopsConfig.platformReviewers).includes(plt)){
+          this.DevopsConfig.platformReviewers[plt].forEach(rev => {
+            if (!this.owners.includes(rev)) this.owners.push(rev);
+          });
+        }
+      });
+      this.owners.forEach(o => {
+        if(o.match(/^\s*$/) == null) reviewers = reviewers.concat(o, '\n');
+      });
+      
+      return reviewers;
+  }
+  
   gradPublish() {
     this.publishDialogHidden = true;
 
@@ -1424,23 +1447,7 @@ export class OnboardingFlowComponent implements OnInit {
     let reviewers = "";
 
     if(Object.keys(this.DevopsConfig.appTypeReviewers).length > 0 || Object.keys(this.DevopsConfig.platformReviewers).length > 0){
-      this.queryResponse.invocationOutput['appFilter']['AppType'].split(',').forEach(apt => {
-        if(Object.keys(this.DevopsConfig.appTypeReviewers).includes(apt)){
-          this.DevopsConfig.appTypeReviewers[apt].forEach(rev => {
-            if (!this.owners.includes(rev)) this.owners.push(rev);
-          });
-        }
-      });
-      this.queryResponse.invocationOutput['appFilter']['PlatformType'].split(',').forEach(plt => {
-        if(Object.keys(this.DevopsConfig.platformReviewers).includes(plt)){
-          this.DevopsConfig.platformReviewers[plt].forEach(rev => {
-            if (!this.owners.includes(rev)) this.owners.push(rev);
-          });
-        }
-      });
-      this.owners.forEach(o => {
-        if(o.match(/^\s*$/) == null) reviewers = reviewers.concat(o, '\n');
-      })
+      reviewers = this.addReviewers();
       gradPublishFileTitles.push(`/${this.publishingPackage.id.toLowerCase()}/owners.txt`);
       gradPublishFiles.push(reviewers);
     }
@@ -1515,7 +1522,7 @@ export class OnboardingFlowComponent implements OnInit {
     const deleteDetectorFiles = this.diagnosticApiService.pushDetectorChanges(requestBranch, gradPublishFiles, gradPublishFileTitles, `deleting detector: ${this.id} Author : ${this.userName}`, "delete", this.resourceId);
     const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, `Deleting ${this.id}`, this.resourceId, this.owners);
     deleteDetectorFiles.subscribe(_ => {
-      if (!this.DevopsConfig.autoMerge && !(this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.originalCode))) {
+      if (!pushToMain) {
         makePullRequestObservable.subscribe(_ => {
           this.PRLink = `${_["webUrl"]}/pullrequest/${_["prId"]}`
           this.publishSuccess = true;
@@ -1570,19 +1577,7 @@ export class OnboardingFlowComponent implements OnInit {
     let reviewers = "";
 
     if(Object.keys(this.DevopsConfig.appTypeReviewers).length > 0 || Object.keys(this.DevopsConfig.platformReviewers).length > 0){
-      this.queryResponse.invocationOutput['appFilter']['AppType'].split(',').forEach(apt => {
-        if(Object.keys(this.DevopsConfig.appTypeReviewers).includes(apt)){
-          if (!this.owners.includes(this.DevopsConfig.appTypeReviewers[apt])) this.owners.push(this.DevopsConfig.appTypeReviewers[apt]);
-        }
-      });
-      this.queryResponse.invocationOutput['appFilter']['PlatformType'].split(',').forEach(plt => {
-        if(Object.keys(this.DevopsConfig.platformReviewers).includes(plt)){
-          if (!this.owners.includes(this.DevopsConfig.platformReviewers[plt])) this.owners.push(this.DevopsConfig.platformReviewers[plt]);
-        }
-      });
-      this.owners.forEach(o => {
-        if(o.match(/^\s*$/) == null) reviewers = reviewers.concat(o, '\n');
-      })
+      reviewers = this.addReviewers();
       gradPublishFileTitles.push(`/${this.publishingPackage.id.toLowerCase()}/owners.txt`);
       gradPublishFiles.push(reviewers);
     }
