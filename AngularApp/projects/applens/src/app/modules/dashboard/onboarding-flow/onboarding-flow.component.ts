@@ -1447,7 +1447,7 @@ export class OnboardingFlowComponent implements OnInit {
     let reviewers = "";
 
     if(Object.keys(this.DevopsConfig.appTypeReviewers).length > 0 || Object.keys(this.DevopsConfig.platformReviewers).length > 0){
-      reviewers = addReviewers();
+      reviewers = this.addReviewers();
       gradPublishFileTitles.push(`/${this.publishingPackage.id.toLowerCase()}/owners.txt`);
       gradPublishFiles.push(reviewers);
     }
@@ -1577,7 +1577,7 @@ export class OnboardingFlowComponent implements OnInit {
     let reviewers = "";
 
     if(Object.keys(this.DevopsConfig.appTypeReviewers).length > 0 || Object.keys(this.DevopsConfig.platformReviewers).length > 0){
-      reviewers = addReviewers();
+      reviewers = this.addReviewers();
       gradPublishFileTitles.push(`/${this.publishingPackage.id.toLowerCase()}/owners.txt`);
       gradPublishFiles.push(reviewers);
     }
