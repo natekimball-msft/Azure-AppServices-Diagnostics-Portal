@@ -1,11 +1,10 @@
-import { checkResultLevel, CheckStepView, InfoStepView, InfoType, StepFlowManager } from 'diagnostic-data';
+import { checkResultLevel, CheckStepView, InfoStepView, InfoType, StepFlowManager, StepView } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
 import { ApiManagementServiceResourceContract, PlatformVersion, VirtualNetworkConfigurationContract, VirtualNetworkType } from '../contracts/APIMService';
-import { NetworkSecurityGroupContract, ProvisioningState, SecurityRuleAccess, SecurityRuleContract, SecurityRuleDirection, SecurityRuleProtocol, SubnetContract } from '../contracts/NetworkSecurity';
+import { NetworkSecurityGroupContract, ProvisioningState, SecurityRuleAccess, SecurityRuleContract, SecurityRuleProtocol, SubnetContract } from '../contracts/NetworkSecurity';
 import { PortRequirements, stv1portRequirements, stv2portRequirements } from '../data/portRequirements';
 import { NETWORK_API_VERSION, statusIconMarkdown } from "../data/constants";
 import { getWorstStatus } from "./networkStatusCheck";
-import { StepView } from '../../../../../../../../../diagnostic-data/src/public_api';
 
 class PortRange {
     portLowerBound: number;
