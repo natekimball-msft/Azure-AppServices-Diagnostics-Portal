@@ -613,6 +613,18 @@
             "emergingIssuesICMLookupEnabled": false,
             "displayName": "Internal Stamp",
             "overviewPageMetricsId" : "applensoverviewmetrics_stamps"
+        },
+        {
+            "service": "ResourceService",
+            "resourceType": "Microsoft.AppConfiguration/configurationStores",
+            "templateFileName": "AppConfiguration",
+            "imgSrc": "assets/img/Azure-AppConfiguration-Logo.svg",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "",
+            "pesId": "16751",
+            "staticSelfHelpContent": "",
+            "searchSuffix": "AZURE APP CONFIGURATION",
+            "displayName": "Azure App Configuration"
         }
     ]
 }
