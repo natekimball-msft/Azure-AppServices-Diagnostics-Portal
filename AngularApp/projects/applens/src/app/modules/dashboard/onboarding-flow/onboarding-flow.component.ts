@@ -203,7 +203,7 @@ export class OnboardingFlowComponent implements OnInit {
   failureMessage: string = "";
   PPERedirectTimer: number = 10;
   DevopsConfig: DevopsConfig;
-  autoMergeText: boolean = false;
+  useAutoMergeText: boolean = false;
   runButtonStyle: any = {
     root: { cursor: "default" }
   };
@@ -1205,8 +1205,8 @@ export class OnboardingFlowComponent implements OnInit {
             this.disablePublishButton();
           }
           else {
-            this.autoMergeText = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.code) && !this.IsDetectorMarkedPublic(this.originalCode));
-            this.modalPublishingButtonText = !this.autoMergeText ? "Create PR" : "Publish";
+            this.useAutoMergeText = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.code) && !this.IsDetectorMarkedPublic(this.originalCode));
+            this.modalPublishingButtonText = !this.useAutoMergeText ? "Create PR" : "Publish";
             this.enablePublishButton();
           }
 
@@ -1432,8 +1432,8 @@ export class OnboardingFlowComponent implements OnInit {
 
     //var pushToMain = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && this.queryResponse.invocationOutput['appFilter']['InternalOnly'] === 'True' && !this.IsDetectorMarkedPublic(this.originalCode));
 
-    const commitType = this.mode == DevelopMode.Create && !this.isSaved || (this.autoMergeText && !this.codeOnDefaultBranch) ? "add" : "edit";
-    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved || (this.autoMergeText && !this.codeOnDefaultBranch) ? "Adding" : "Editing";
+    const commitType = this.mode == DevelopMode.Create && !this.isSaved || (this.useAutoMergeText && !this.codeOnDefaultBranch) ? "add" : "edit";
+    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved || (this.useAutoMergeText && !this.codeOnDefaultBranch) ? "Adding" : "Editing";
 
     let gradPublishFiles: string[] = [
       this.publishingPackage.codeString,
@@ -1457,9 +1457,9 @@ export class OnboardingFlowComponent implements OnInit {
     }
 
     var requestBranch = this.Branch;
-    if (this.autoMergeText) {
+    if (this.useAutoMergeText) {
       requestBranch = this.defaultBranch;
-      this.autoMergeText = true;
+      this.useAutoMergeText = true;
     }
 
     
@@ -1469,7 +1469,7 @@ export class OnboardingFlowComponent implements OnInit {
     const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, this.PRTitle, this.resourceId, this.owners, description);
 
     DetectorObservable.subscribe(_ => {
-      if (!this.autoMergeText) {
+      if (!this.useAutoMergeText) {
         makePullRequestObservable.subscribe(_ => {
           this.PRLink = `${_["webUrl"]}/pullrequest/${_["prId"]}`
           this.publishSuccess = true;
@@ -1499,7 +1499,7 @@ export class OnboardingFlowComponent implements OnInit {
   deleteDetector() {
     this.deletingDetector = true;
 
-    this.autoMergeText = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.code) && !this.IsDetectorMarkedPublic(this.originalCode));
+    this.useAutoMergeText = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.code) && !this.IsDetectorMarkedPublic(this.originalCode));
 
     let gradPublishFiles: string[] = [
       "delete code",
@@ -1520,14 +1520,14 @@ export class OnboardingFlowComponent implements OnInit {
     }
 
     var requestBranch = this.Branch;
-    if (this.autoMergeText) {
+    if (this.useAutoMergeText) {
       requestBranch = this.defaultBranch;
     }
 
     const deleteDetectorFiles = this.diagnosticApiService.pushDetectorChanges(requestBranch, gradPublishFiles, gradPublishFileTitles, `deleting detector: ${this.id} Author : ${this.userName}`, "delete", this.resourceId);
     const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, `Deleting ${this.id}`, this.resourceId, this.owners);
     deleteDetectorFiles.subscribe(_ => {
-      if (!this.autoMergeText) {
+      if (!this.useAutoMergeText) {
         makePullRequestObservable.subscribe(_ => {
           this.PRLink = `${_["webUrl"]}/pullrequest/${_["prId"]}`
           this.publishSuccess = true;
