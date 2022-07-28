@@ -31,59 +31,50 @@
         font-weight: 600;
     }
 
-    .input-container {
+
+    .form-entry {
         margin-bottom: 10px;
-
-        .input-content {
-            display: flex;
-            align-items: flex-start;
-            justify-content: left;
-            // justify-content: space-between;
-            
-            .input-entry {
-                width: 200px;
-                // height: 32px;
-            }
-
-            .input-box{
-                width: 225px;
-
-                .input {
-                    height: 32px !important;
-                }
-
-                .input-error{
-                    // margin-left: 200px;
-                    color: red;
-                    margin-top: 6px;
-                }
-            
-                .input-error-icon{
-                    margin-right: 4px;
-                    margin-top: 3px;
-                    float: left;
-                }
-            }
-        } 
     }
 
-    // .dropdown-container{ 
-    //     .description{
-    //         margin: 10px 0px 5px 1px;
-    //     }
+    .input-container {
 
-    //     .ms-Dropdown-caretDownWrapper,.ms-Dropdown-title{
-    //         height: 24px;
-    //         padding-top: 2px;
-    //         line-height: unset;
-    //     }
-    // }
+        .input-box{
+            position: absolute;
+            margin-left: 200px;
+            margin-top: -21px;
+            width: 225px;
+        }
+    
+        .input-error{
+            margin-left: 200px;
+            color: red;
+            margin-top: 12px;
+        }
+    
+        .input-error-icon{
+            margin-right: 4px;
+            margin-top: 3px;
+            float: left;
+        }
+    }
+
+    .dropdown-container{ 
+        .description{
+            margin: 10px 0px 5px 1px;
+        }
+
+        .ms-Dropdown-caretDownWrapper,.ms-Dropdown-title{
+            height: 24px;
+            padding-top: 2px;
+            line-height: unset;
+        }
+    }
 }
 
-// .ms-Dropdown-optionText,.ms-Dropdown-title{
-//     font-size: 13px;
-//     overflow:unset;
-// }
+.ms-Dropdown-optionText,.ms-Dropdown-title{
+    font-size: 13px;
+    overflow:unset;
+}
 
 .ms-Callout-container .ms-Callout-main{
     max-height: calc(50vh - 30px) !important;
