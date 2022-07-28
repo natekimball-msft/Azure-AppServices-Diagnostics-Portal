@@ -39,14 +39,6 @@ export const pingCheckFlow: NetworkCheckFlow = {
                     value: 0,
                     options: ["HTTPS", "TCP", "UDP"],
                 },
-                // {
-                //     itype: InputType.TextBox,
-                //     id: "id2",
-                //     description: "text label",
-                //     placeholder: "placeholder",
-                //     tooltip: "extra info",
-                //     value: "text box initial text"
-                // }
             ],
             expandByDefault: false,
             buttonText: "send data",

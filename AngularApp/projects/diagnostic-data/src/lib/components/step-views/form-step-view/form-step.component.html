@@ -8,49 +8,58 @@
 
             <!-- Textbox entry input -->
             <div class="form-entry input-container" *ngSwitchCase="0">
-                <div class="input-entry">
-                    {{dropdown.description}}
-                    <a class="input-tooltip" *ngIf="dropdown.tooltip">
-                        <fab-tooltip-host [content]="dropdown.tooltip">
-                            <i class="ib-info"></i>
-                        </fab-tooltip-host>
-                    </a>
+                <div class="input-content">
+                    <div class="input-entry">
+                        {{dropdown.description}}
+                        <a class="input-tooltip" *ngIf="dropdown.tooltip">
+                            <fab-tooltip-host [content]="dropdown.tooltip">
+                                <i class="ib-info"></i>
+                            </fab-tooltip-host>
+                        </a>
+                    </div>
+                    <div class="input-box">
+                    <input
+                        class="input"
+                        name="{{dropdown.id}}"
+                        id="{{dropdown.id}}"
+                        title="{{dropdown.tooltip}}"
+                        placeholder="{{dropdown.placeholder}}" 
+                        [(ngModel)]="dropdown.value" 
+                        (change)="onChange($event, i)">
+                        <div class="input-error" >
+                            <i class="ib-redx input-error-icon"></i><div>Hello error text {{dropdown.error}}&nbsp;</div>
+                        </div>
+                    </div>
                 </div>
-                <input 
-                    class="input-box"
-                    name="{{dropdown.id}}"
-                    id="{{dropdown.id}}"
-                    title="{{dropdown.tooltip}}"
-                    placeholder="{{dropdown.placeholder}}" 
-                    [(ngModel)]="dropdown.value" 
-                    (change)="onChange($event, i)">
-                <div class="input-error" *ngIf="dropdown.error!=null">
-                    <i class="ib-redx input-error-icon"></i><div>{{dropdown.error}}&nbsp;</div>
-                </div>
+                
             </div>
 
             
             <!-- Dropdown entry input -->
-            <div class="form-entry dropdown-container" *ngSwitchCase="3">
-                <p class="description">
-                    {{dropdown.description}}
-                    <a class="input-tooltip" *ngIf="dropdown.tooltip">
-                        <fab-tooltip-host [content]="dropdown.tooltip">
-                            <i class="ib-info"></i>
-                        </fab-tooltip-host>
-                    </a>
-                </p>
-                <fab-dropdown 
-                    id="{{dropdown.id}}"
-                    [componentRef]="dropdownRef" 
-                    (onChange)="onChange($event, i)"
-                    (onDismiss)="formStepView.onDismiss()" 
-                    [disabled]="dropdown.options.length==0"
-                    [options]="dropdown | getDropdownOptions" 
-                    [defaultSelectedKey]="dropdown.value" 
-                    contentStyle="width: 60%; max-width: 300px;">
-                </fab-dropdown>
-            </div>
+            <div class="form-entry input-container" *ngSwitchCase="3">
+                <div class="input-content">
+                    <div class="input-entry">
+                        {{dropdown.description}}
+                        <a class="input-tooltip" *ngIf="dropdown.tooltip">
+                            <fab-tooltip-host [content]="dropdown.tooltip">
+                                <i class="ib-info"></i>
+                            </fab-tooltip-host>
+                        </a>
+                    </div>
+                    <div class="input-box">
+                        <fab-dropdown 
+                            class="input"
+                            id="{{dropdown.id}}"
+                            [componentRef]="dropdownRef" 
+                            (onChange)="onChange($event, i)"
+                            (onDismiss)="formStepView.onDismiss()" 
+                            [disabled]="dropdown.options.length==0"
+                            [options]="dropdown | getDropdownOptions" 
+                            [defaultSelectedKey]="dropdown.value">
+                        </fab-dropdown>
+                    </div>
+                </div>
+            </div>        
         
         
         </div>
