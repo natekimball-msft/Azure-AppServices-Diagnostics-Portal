@@ -124,6 +124,7 @@ import { DetectorTimePickerComponent } from './components/detector-time-picker/d
 import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-feedback.component';
 import { GenericBreadcrumbService } from './services/generic-breadcrumb.service';
 import { GenericUserSettingService } from './services/generic-user-setting.service';
+import { FormStepComponent } from './components/step-views/form-step-view/form-step.component';
 
 @NgModule({
   imports: [
@@ -207,6 +208,7 @@ import { GenericUserSettingService } from './services/generic-user-setting.servi
     DropDownStepComponent,
     ButtonStepComponent,
     CheckStepComponent,
+    FormStepComponent,
     CheckComponent,
     ConvertLevelToHealthStatusPipe,
     GetDropdownOptionsPipe,
@@ -244,6 +246,7 @@ import { GenericUserSettingService } from './services/generic-user-setting.servi
     DropDownStepComponent,
     ButtonStepComponent,
     CheckStepComponent,
+    FormStepComponent,
     CheckComponent,
     ConvertLevelToHealthStatusPipe,
     GetDropdownOptionsPipe,
