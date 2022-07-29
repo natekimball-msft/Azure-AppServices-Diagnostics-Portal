@@ -46,6 +46,7 @@ export class DashboardComponent implements OnDestroy {
   currentRoutePath: string[];
   resource: any;
   observerLink: string = "";
+  stampAppLensLink: string = "";
   showUserInformation: boolean;
   resourceReady: Observable<any>;
   resourceDetailsSub: Subscription;
@@ -329,6 +330,9 @@ export class DashboardComponent implements OnDestroy {
         }
 
         this.keys = Object.keys(this.resource);
+        if (this.keys.indexOf("StampName")>=0){
+          this.stampAppLensLink = `${window.location.origin}/stamps/${this.resource.StampName}`;
+        }
         this.keys.sort((a,b) => a.localeCompare(b));
         this.replaceResourceEmptyValue();
         if (serviceInputs.resourceType.toString().toLowerCase() == "stamps") {

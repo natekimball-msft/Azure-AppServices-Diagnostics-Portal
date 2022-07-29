@@ -33,6 +33,10 @@
             <td>
               <ng-container [ngTemplateOutlet]="checkUseEmbeddedHTML(resource[keyPair[0]])? embeddedHTML:interpretation"
                 [ngTemplateOutletContext]="{data:resource[keyPair[0]]}"></ng-container>
+              <div style="display: inline;" *ngIf="keyPair[0] == 'StampName' && stampAppLensLink !== ''" class="info-item-value">
+                <a href="{{stampAppLensLink}}" target="_blank">Open in AppLens<i class="hyper-link-icon ml-1"
+                    aria-hidden="true"></i></a>
+              </div>
             </td>
             <td>
               <div class="info-item-copy">
@@ -51,7 +55,12 @@
               </td>
               <td>
                 <ng-container [ngTemplateOutlet]="checkUseEmbeddedHTML(resource[keyPair[1]])? embeddedHTML:interpretation"
-                [ngTemplateOutletContext]="{data:resource[keyPair[1]]}"></ng-container>
+                [ngTemplateOutletContext]="{data:resource[keyPair[1]]}">
+                </ng-container>
+                <div style="display: inline;" *ngIf="keyPair[1] == 'StampName' && stampAppLensLink !== ''" class="info-item-value">
+                  <a href="{{stampAppLensLink}}" target="_blank">Open in AppLens<i class="hyper-link-icon ml-1"
+                      aria-hidden="true"></i></a>
+                </div>
               </td>
               <td>
                 <div class="info-item-copy">

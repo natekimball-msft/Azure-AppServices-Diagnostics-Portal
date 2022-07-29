@@ -100,9 +100,15 @@
           </a>
         </div>
         <div *ngFor="let key of keys">
-          <b>{{key}}:</b> &nbsp;<div style="display:inline">{{resource[key]}}</div>&nbsp;<span *ngIf="resource[key] !== '' && !checkWithHref(resource[key])"><img
+          <b>{{key}}:</b> &nbsp;<div style="display:inline">{{resource[key]}}</div>&nbsp;
+          <div style="display: inline;" *ngIf="key == 'StampName' && stampAppLensLink !== ''">
+            <a href="{{stampAppLensLink}}" target="_blank">Open in AppLens<i class="hyper-link-icon ml-1"
+                aria-hidden="true"></i></a>
+          </div>
+          <span *ngIf="resource[key] !== '' && !checkWithHref(resource[key])" style="cursor: pointer;"><img
               src="/assets/img/copy-icon.png" style="height: 12px;background-color:var(--imgButtonBackground);"
-              (click)="copyToClipboard(resource[key], $event)" alt="Copy to clipboard" /></span>
+              (click)="copyToClipboard(resource[key], $event)" alt="Copy to clipboard" />
+          </span>
         </div>
       </div>
     </div>

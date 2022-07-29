@@ -22,6 +22,7 @@ export class DashboardContainerComponent implements OnInit {
   resourceReady: Observable<any>;
   resourceDetailsSub: Subscription;
   observerLink: string = "";
+  stampAppLensLink: string = "";
   ascResourceExplorerLink:string = "";
   showMetrics: boolean = true;
 
@@ -63,6 +64,9 @@ export class DashboardContainerComponent implements OnInit {
         }
 
         this.keys = Object.keys(this.resource);
+        if (this.keys.indexOf('StampName')>=0){
+          this.stampAppLensLink = `${window.location.origin}/stamps/${this.resource.StampName}`;
+        }
         this.keys.sort((a,b) => a.localeCompare(b));
         this.replaceResourceEmptyValue();
         if (serviceInputs.resourceType.toString().toLowerCase() == "stamps") {
