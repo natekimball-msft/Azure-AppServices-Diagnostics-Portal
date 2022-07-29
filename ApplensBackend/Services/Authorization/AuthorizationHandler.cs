@@ -99,31 +99,18 @@ namespace AppLensV3.Authorization
         private readonly string graphUrl = "https://graph.microsoft.com/v1.0/users/{0}/checkMemberGroups";
         private readonly int loggedInUserCacheClearIntervalInMs = 60 * 60 * 1000; // 1 hour
         private readonly int loggedInUserExpiryIntervalInSeconds = 6 * 60 * 60; // 6 hours
-        private ICosmosDBHandlerBase<TemporaryAccessUser> _cosmosDBHandler;
-        private readonly long temporaryAccessExpiryInSeconds;
-        private readonly int temporaryAccessDays = 7;
         private readonly ILogger<SecurityGroupHandler> _logger;
 
-        public SecurityGroupHandler(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ICosmosDBHandlerBase<TemporaryAccessUser> cosmosDBHandler, ILogger<SecurityGroupHandler> logger)
+        public SecurityGroupHandler(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ILogger<SecurityGroupHandler> logger)
         {
             _logger = logger;
             loggedInUsersCache = new Dictionary<string, Dictionary<string, CachedUser>>();
             var applensAccess = new SecurityGroupConfig();
-            var applensTesters = new SecurityGroupConfig();
             configuration.Bind("ApplensAccess", applensAccess);
-            configuration.Bind("ApplensTesters", applensTesters);
             loggedInUsersCache[applensAccess.GroupId] = new Dictionary<string, CachedUser>();
-            loggedInUsersCache[applensTesters.GroupId] = new Dictionary<string, CachedUser>();
-            loggedInUsersCache.Add("TemporaryAccess", new Dictionary<string, CachedUser>());
 
             ClearLoggedInUserCache();
             _httpContextAccessor = httpContextAccessor;
-
-            var accessDurationInDays = configuration["ApplensTemporaryAccess:AccessDurationInDays"];
-            int.TryParse(accessDurationInDays.ToString(), out temporaryAccessDays);
-            temporaryAccessExpiryInSeconds = temporaryAccessDays * 24 * 60 * 60;
-            _cosmosDBHandler = cosmosDBHandler;
-
         }
 
         private IHttpContextAccessor _httpContextAccessor = null;
@@ -232,21 +219,6 @@ namespace AppLensV3.Authorization
             return false;
         }
 
-        private async Task<Boolean> CheckTemporaryAccess(string userId)
-        {
-            var result = await _cosmosDBHandler.GetItemAsync(userId, "TemporaryAccessUser");
-            if (result != null && ((long)DateTime.UtcNow.Subtract(result.AccessStartDate).TotalSeconds) < temporaryAccessExpiryInSeconds)
-            {
-                HttpContext context = _httpContextAccessor.HttpContext;
-                context.Response.Headers["IsTemporaryAccess"] = "true";
-                context.Response.Headers["TemporaryAccessExpires"] = (result.AccessStartDate.AddDays(temporaryAccessDays) - DateTime.UtcNow).Days.ToString();
-                AddUserToCache("TemporaryAccess", userId, result.AccessStartDate);
-                return true;
-            }
-
-            return false;
-        }
-
         /// <summary>
         /// Checks if a user is part of a security group
         /// </summary>
@@ -262,7 +234,7 @@ namespace AppLensV3.Authorization
                 return true;
             }
 
-            return await CheckTemporaryAccess(userId);
+            return false;
         }
 
         /// <summary>
@@ -290,12 +262,6 @@ namespace AppLensV3.Authorization
                     {
                         if (IsUserInCache(requirement.SecurityGroupObjectId, userId))
                         {
-                            isMember = true;
-                        }
-                        else if (IsUserInCache("TemporaryAccess", userId, out userSince))
-                        {
-                            httpContext.Response.Headers["IsTemporaryAccess"] = "true";
-                            httpContext.Response.Headers["TemporaryAccessExpires"] = (userSince.AddDays(temporaryAccessDays) - DateTime.UtcNow).Days.ToString();
                             isMember = true;
                         }
                         else

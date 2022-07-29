@@ -96,10 +96,6 @@ namespace AppLensV3.Configuration
                 {
                     policy.Requirements.Add(new SecurityGroupRequirement("ApplensAccess", string.Empty));
                 });
-                options.AddPolicy("ApplensTesters", policy =>
-                {
-                    policy.Requirements.Add(new SecurityGroupRequirement("ApplensTesters", string.Empty));
-                });
             });
 
             services.AddSingleton<IAuthorizationHandler, SecurityGroupHandlerNationalCloud>();
@@ -185,7 +181,7 @@ namespace AppLensV3.Configuration
                 .AllowAnyMethod()
                 .AllowAnyOrigin()
                 .WithExposedHeaders(new string[] { HeaderConstants.ScriptEtagHeader }));
-            
+
             app.UseRouting();
             app.UseAuthorization();
             app.UseAuthentication();
@@ -220,7 +216,7 @@ namespace AppLensV3.Configuration
                     }
                 }
             });
-                        
+
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
