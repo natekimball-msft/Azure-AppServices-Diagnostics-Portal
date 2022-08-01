@@ -10,6 +10,7 @@ import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/serv
 import { TelemetryEventNames } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
 import { environment } from '../../../../environments/environment';
 import { UserSettingService } from '../services/user-setting.service';
+import { BreadcrumbService } from '../services/breadcrumb.service';
 
 @Component({
   selector: 'side-nav',
@@ -41,7 +42,7 @@ export class SideNavComponent implements OnInit {
   getDetectorsRouteNotFound: boolean = false;
   isGraduation: boolean = false;
   isProd: boolean = false;
-  constructor(private _router: Router, private _activatedRoute: ActivatedRoute, private _adalService: AdalService, private _diagnosticApiService: ApplensDiagnosticService, public resourceService: ResourceService, private _telemetryService: TelemetryService, private _userSettingService: UserSettingService) {
+  constructor(private _router: Router, private _activatedRoute: ActivatedRoute, private _adalService: AdalService, private _diagnosticApiService: ApplensDiagnosticService, public resourceService: ResourceService, private _telemetryService: TelemetryService, private _userSettingService: UserSettingService, private breadcrumbService: BreadcrumbService) {
     this.contentHeight = (window.innerHeight - 139) + 'px';
     if (environment.adal.enabled) {
       let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
@@ -185,7 +186,7 @@ export class SideNavComponent implements OnInit {
       preserveFragment: true,
       relativeTo: this._activatedRoute
     };
-
+    this.breadcrumbService.resetBreadCrumbSubject();
     this._router.navigate(path.split('/'), navigationExtras);
   }
 
@@ -255,10 +256,10 @@ export class SideNavComponent implements OnInit {
       });
   }
 
-  private createDetectorMenuItem(element: DetectorMetaData, categories: CollapsibleMenuItem[], isAnalysis: boolean = false, isFavoriteDetector: boolean = false) {    
+  private createDetectorMenuItem(element: DetectorMetaData, categories: CollapsibleMenuItem[], isAnalysis: boolean = false, isFavoriteDetector: boolean = false) {
     const onClick = () => {
-      if(isFavoriteDetector) {
-        this._telemetryService.logEvent(TelemetryEventNames.FavoriteDetectorClicked, {'detectorId': element.id, 'location': 'SideNav'});
+      if (isFavoriteDetector) {
+        this._telemetryService.logEvent(TelemetryEventNames.FavoriteDetectorClicked, { 'detectorId': element.id, 'location': 'SideNav' });
       }
       this._telemetryService.logEvent(TelemetryEventNames.SideNavigationItemClicked, { "elementId": element.id });
 
@@ -276,9 +277,9 @@ export class SideNavComponent implements OnInit {
     };
 
     let category = "Uncategorized";
-    if(isAnalysis) {
+    if (isAnalysis) {
       category = "Analysis";
-    } else if(element.category) {
+    } else if (element.category) {
       category = element.category;
     }
 
