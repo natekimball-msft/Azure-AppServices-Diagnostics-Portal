@@ -327,7 +327,7 @@ export class OnboardingFlowComponent implements OnInit {
   showBranchInfo:boolean = false;
   owners: string[] = [];
 
-  codeOnDefaultBranch: boolean = true;
+  codeOnDefaultBranch: boolean = false;
 
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService, private detectorGistApiService: DetectorGistApiService,
     private diagnosticApiService: ApplensDiagnosticService, private _diagnosticApi: DiagnosticApiService, private resourceService: ResourceService,
