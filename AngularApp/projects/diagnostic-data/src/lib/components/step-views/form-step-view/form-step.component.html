@@ -1,62 +1,68 @@
 <div class="form-step">
     <p class="view-description">{{ formStepView.description }}</p>
 
-    <div *ngFor="let dropdown of formStepView.inputs; index as i">
+    <form (ngSubmit)="buttonClicked()" #pingForm="ngForm">
+    <div *ngFor="let input of formStepView.inputs; index as i">
 
-        <div [ngSwitch]="dropdown.itype">
-
-
+        <div [ngSwitch]="input.itype">
             <!-- Textbox entry input -->
             <div class="form-entry input-container" *ngSwitchCase="0">
                 <div class="input-entry">
-                    {{dropdown.description}}
-                    <a class="input-tooltip" *ngIf="dropdown.tooltip">
-                        <fab-tooltip-host [content]="dropdown.tooltip">
+                    {{input.description}}
+                    <a class="input-tooltip" *ngIf="input.tooltip">
+                        <fab-tooltip-host [content]="input.tooltip">
                             <i class="ib-info"></i>
                         </fab-tooltip-host>
                     </a>
                 </div>
                 <input 
+                    required
                     class="input-box"
-                    name="{{dropdown.id}}"
-                    id="{{dropdown.id}}"
-                    title="{{dropdown.tooltip}}"
-                    placeholder="{{dropdown.placeholder}}" 
-                    [(ngModel)]="dropdown.value" 
+                    pattern="{{input.pattern}}"
+                    name="{{input.id}}"
+                    id="{{input.id}}"
+                    title="{{input.tooltip}}"
+                    placeholder="{{input.placeholder}}" 
+                    [(ngModel)]="input.value" 
                     (change)="onChange($event, i)">
-                <div class="input-error" *ngIf="dropdown.error!=null">
-                    <i class="ib-redx input-error-icon"></i><div>{{dropdown.error}}&nbsp;</div>
+                <div class="input-error" *ngIf="input.error!=null">
+                    <i class="ib-redx input-error-icon"></i><div>{{input.error}}&nbsp;</div>
                 </div>
             </div>
 
             
             <!-- Dropdown entry input -->
-            <div class="form-entry dropdown-container" *ngSwitchCase="3">
-                <p class="description">
-                    {{dropdown.description}}
-                    <a class="input-tooltip" *ngIf="dropdown.tooltip">
-                        <fab-tooltip-host [content]="dropdown.tooltip">
+
+            <div class="form-entry input-container" *ngSwitchCase="3">
+                <div class="input-entry">
+                    {{input.description}}
+                    <a class="input-tooltip" *ngIf="input.tooltip">
+                        <fab-tooltip-host [content]="input.tooltip">
                             <i class="ib-info"></i>
                         </fab-tooltip-host>
                     </a>
-                </p>
+                </div>
                 <fab-dropdown 
-                    id="{{dropdown.id}}"
+                    required
+                    class="input-box"
+                    id="{{input.id}}"
                     [componentRef]="dropdownRef" 
                     (onChange)="onChange($event, i)"
                     (onDismiss)="formStepView.onDismiss()" 
-                    [disabled]="dropdown.options.length==0"
-                    [options]="dropdown | getDropdownOptions" 
-                    [defaultSelectedKey]="dropdown.value" 
+                    [disabled]="input.options.length==0"
+                    [options]="input | getDropdownOptions" 
+                    [defaultSelectedKey]="input.value" 
                     contentStyle="width: 60%; max-width: 300px;">
                 </fab-dropdown>
             </div>
-        
-        
         </div>
     </div>
 
-    <fab-primary-button contentClass="input-check-button" (click)="formStepView.callback(gatherData())">
+    <fab-primary-button 
+        type="submit"
+        contentClass="input-check-button" 
+        [disabled]="formStepView.disableButton || !pingForm.form.valid">
         {{formStepView.buttonText}}
     </fab-primary-button>
+    </form>
 </div>

@@ -6,6 +6,8 @@ import { ResponseMessageEnvelope } from '../../../models/responsemessageenvelope
 import { Site, SiteInfoMetaData } from '../../../models/site';
 import { ArmService } from '../../../services/arm.service';
 import { SiteService } from '../../../services/site.service';
+import { catchError, map } from 'rxjs/operators'; 
+import {of } from 'rxjs';
 
 enum ConnectionCheckStatus { success, timeout, hostNotFound, blocked, refused }
 export enum OutboundType { SWIFT, gateway };
@@ -82,6 +84,10 @@ export class DiagProvider {
         return this._armService.getResourceFullResponse<T>(resourceUri, null, apiVersion).toPromise();
     }
 
+    public getAuthorizationToken(): string {
+        return this._armService.getHeaders().get("Authorization");
+    }
+
     public getArmResourceAsync(resourceUri: string, apiVersion?: string, invalidateCache: boolean = false): Promise<any> {
         var stack = new Error("error_message_placeholder").stack;
         var key = "GET;" + resourceUri + ";" + apiVersion;
@@ -141,6 +147,27 @@ export class DiagProvider {
                 e.stack = stack.replace("error_message_placeholder", e.message || "");
                 throw e;
             });
+    }
+
+    public extendedPostResourceAsync<T, S>(resourceUri: string, body?: S, apiVersion?: string): Promise<T> {
+        console.log('extended post resource requested here!');
+        
+        return this._armService.requestResource<T, S>("POST", resourceUri, body, apiVersion).pipe<T>(
+            map((response: HttpResponse<{}>) => {
+                console.log('http response here!', response);
+                
+                // if (response.status >= 300) return response.error;
+                if (response.status == 200) return response.body;
+                if (response.status == 202) {
+                    let locationHeader = response.headers.get('Location');
+                    if (locationHeader != null) {
+                        // return locationHeader;
+                        return this.getResource<T>(resourceUri, apiVersion);
+                    } else return response.body;
+                }
+            }),
+            catchError(err => of(err.error))
+        ).toPromise();
     }
 
     public postDaaSExtApiAsync(api: string, body?: any, timeoutInSec: number = 15): Promise<any> {

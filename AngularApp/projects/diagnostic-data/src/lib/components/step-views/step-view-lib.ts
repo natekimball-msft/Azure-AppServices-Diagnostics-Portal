@@ -91,6 +91,7 @@ export interface FormAttributes {
     
     placeholder?: string | number; // textbox only
     error?: string; // textbox only
+    pattern?: string;
 }
 
 export class FormStepView extends StepView {
@@ -103,6 +104,9 @@ export class FormStepView extends StepView {
     public callback: (data: { [key: string]: string }) => Promise<void>;
     public onDismiss?: () => void;
     public afterInit?: () => void;
+
+    public disableButton?: boolean = false;
+
     constructor(view: FormStepView) {
         super(view);
         this.type = StepViewType.form;

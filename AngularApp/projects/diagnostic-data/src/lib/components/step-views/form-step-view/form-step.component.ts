@@ -107,9 +107,24 @@ export class FormStepComponent implements OnInit, AfterViewInit {
 
   gatherData(): { [key: string]: string } {
     let res = {};
-    for (let input of this.formStepView.inputs)
-      res[input.id] = input.value;
+    for (let input of this.formStepView.inputs) {
+      switch (input.itype) {
+        case InputType.DropDown: res[input.id] = input.options[input.value];
+        break;
+        default: res[input.id] = input.value;
+      }
+    }
+      
     return res;
+  }
+
+  buttonClicked() {
+    if (!this.formStepView.disableButton) {
+      this.formStepView.disableButton = true;
+      this.formStepView
+        .callback(this.gatherData())
+        .then(() => this.formStepView.disableButton = false);
+    }
   }
 }
 

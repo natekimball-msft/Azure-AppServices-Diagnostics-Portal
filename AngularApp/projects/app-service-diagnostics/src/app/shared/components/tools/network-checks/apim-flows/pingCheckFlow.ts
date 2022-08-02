@@ -1,8 +1,83 @@
-import { FormStepView, InfoStepView, InfoType, InputStepView } from 'diagnostic-data';
+import { FormStepView, InfoStepView, InfoType, InputStepView, StepView } from 'diagnostic-data';
 import { NetworkCheckFlow } from "../network-check-flow";
 import { APIM_API_VERSION } from './data/constants';
 import { ApiManagementServiceResourceContract } from './contracts/APIMService';
 import { InputType } from 'projects/diagnostic-data/src/lib/models/form';
+import { DiagProvider } from '../diag-provider';
+import { ConnectivityCheckPayloadContract, ConnectivityCheckProtocol, ConnectivityCheckResponse, ErrorResponseContract, Method, PreferredIPVersion } from './contracts/ConnectivityCheck';
+import { ResponseMessageEnvelope } from '../../../../models/responsemessageenvelope';
+
+
+
+function generatePayload(inputs: {[key: string]: string}, authorization: string): ConnectivityCheckPayloadContract {
+    console.log('generating payload', inputs);
+    
+    return {
+        "source": {
+            "region": inputs["region"]
+        },
+        "destination": {
+            "address": inputs["ipaddr"],
+            "port": parseInt(inputs["destport"]),
+        },
+        protocol: (inputs["protocol"] as ConnectivityCheckProtocol),
+        protocolConfiguration: { // only needed for protocol http or https
+            HTTPConfiguration: {
+                headers: [
+                    {
+                        name: "Authorization",
+                        value: authorization
+                    }
+                ],
+                method: Method.GET,
+                "validStatusCodes": [
+                    200,
+                    204
+                ],
+            }
+        },
+        "preferredIPVersion": PreferredIPVersion.IPv4
+    }
+}
+
+async function queryPingData(diagProvider: DiagProvider, resourceId: string, authorization: string, inputs: {[key: string]: string}): Promise<ConnectivityCheckResponse | ErrorResponseContract> {
+    // console.log('querying ping data');
+    
+    return diagProvider
+        .extendedPostResourceAsync<ConnectivityCheckResponse | ErrorResponseContract, ConnectivityCheckPayloadContract>
+            (resourceId + "/connectivityCheck", generatePayload(inputs, authorization), APIM_API_VERSION)
+        // .then(res => res)
+        .catch(error => error);
+    // return null;
+}
+
+async function displayPingData(diagProvider: DiagProvider, resId: string, authorization: string, inputs: {[key: string]: string}): Promise<StepView> {
+
+    let res = await queryPingData(diagProvider, resId, authorization, inputs);
+
+    console.log("result of ping", res);
+    
+    let errRes = res as ErrorResponseContract;
+    if (errRes && errRes.error) {
+        return new InfoStepView({
+            title: errRes.error.code,
+            infoType: InfoType.diagnostic,
+            id: "secondStep",
+            markdown: `${errRes.error.message}`,
+        });
+    } else {
+
+    }
+
+    return new InfoStepView({
+        title: "VNET Status",
+        infoType: InfoType.recommendation,
+        id: "secondStep",
+        markdown: `
+            ## No VNet Configuration detected
+        `,
+    });
+}
 
 export const pingCheckFlow: NetworkCheckFlow = {
     title: "Dependency Access Issues",
@@ -10,7 +85,21 @@ export const pingCheckFlow: NetworkCheckFlow = {
 
     func: async (siteInfo, diagProvider, flowMgr) => {
         
+        const resourceId = siteInfo.resourceUri;
+        const serviceResourceResponse = await diagProvider.getResource<ApiManagementServiceResourceContract>(resourceId, APIM_API_VERSION);
+        console.log("service resource response", serviceResourceResponse);
+        
+        // let authorizationToken = serviceResourceResponse.headers.get("Authorization");
+        // diagProvider._armService._authService.getAuthToken()
+        let serviceResource = serviceResourceResponse.body;
 
+        let locations = [serviceResource.location, ...(serviceResource.properties.additionalLocations || []).map(loc => loc.location)];
+
+        let authorizationToken = diagProvider.getAuthorizationToken();
+
+        let fqdn = "(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)";
+        let ipaddr = "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)";
+        let url = "([A-Za-z]+:\/\/[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_:%&;\?\#\/.=]+)";
         flowMgr.addView(new FormStepView({
             id: "form1",
             description: "form 2",
@@ -19,9 +108,8 @@ export const pingCheckFlow: NetworkCheckFlow = {
                     itype: InputType.TextBox,
                     id: "ipaddr",
                     description: "URL or IP address",
-                    placeholder: "0.0.0.0",
-                    // tooltip: "extra info",
-                    // value: "text box initial text"
+                    placeholder: "0.0.0.0 or url",
+                    pattern: `${url}|${ipaddr}`
                 },
                 {
                     itype: InputType.TextBox,
@@ -37,20 +125,22 @@ export const pingCheckFlow: NetworkCheckFlow = {
                     description: "Protocol",
                     // tooltip: "extra info",
                     value: 0,
-                    options: ["HTTPS", "TCP", "UDP"],
+                    options: ["HTTPS", "HTTP", "TCP"],
                 },
-                // {
-                //     itype: InputType.TextBox,
-                //     id: "id2",
-                //     description: "text label",
-                //     placeholder: "placeholder",
-                //     tooltip: "extra info",
-                //     value: "text box initial text"
-                // }
+                {
+                    itype: InputType.DropDown,
+                    id: "region",
+                    description: "Location",
+                    value: 0,
+                    options: locations
+                }
             ],
             expandByDefault: false,
             buttonText: "send data",
-            callback: (input) => {alert("hello!"); return Promise.resolve();},
+            callback: (inputs) => {
+                flowMgr.addView(displayPingData(diagProvider, resourceId, authorizationToken, inputs), "Querying the network");
+                return Promise.resolve();
+            },
         }));
     }
 };

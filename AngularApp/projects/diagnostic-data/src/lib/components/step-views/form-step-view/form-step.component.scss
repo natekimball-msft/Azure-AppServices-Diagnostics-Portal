@@ -9,7 +9,6 @@
 
         .ms-Button{
             height: 28px;
-            margin-top: -10px;
             width: fit-content;
             border-radius: 2px;
         }
@@ -55,12 +54,6 @@
             margin-right: 4px;
             margin-top: 3px;
             float: left;
-        }
-    }
-
-    .dropdown-container{ 
-        .description{
-            margin: 10px 0px 5px 1px;
         }
 
         .ms-Dropdown-caretDownWrapper,.ms-Dropdown-title{
