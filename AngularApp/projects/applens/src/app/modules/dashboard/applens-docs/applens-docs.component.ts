@@ -19,6 +19,9 @@ export class ApplensDocsComponent implements OnInit {
   folderRegEx = new RegExp("(?<=folder=\").*?(?=\")", "g");
 
   htmlToAdd = "";
+  fileNames: string[] = [];
+
+  files: string[][] = [];
   
   ngOnInit() {
       this._applensGlobal.updateHeader("");
@@ -26,6 +29,9 @@ export class ApplensDocsComponent implements OnInit {
       this.diagnosticApiService.getDetectorCode(`documentation/insight/insightmarkdown.txt`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(x=>{
         this.markdownCode = x.split(this.codeRegEx);
         this.folders = this.getCodeFolders(x);
+        this.folders.forEach(f => {
+          this.getFiles(f);
+        });
         for(var i = 0; i < this.markdownCode.length; i++){
           //this.htmlToAdd = this.htmlToAdd.concat(`<markdown ngPreserveWhitespaces [data]="markdownCode[${i}]"></markdown>\n`);
           this.htmlToAdd = this.htmlToAdd.concat(`${this.markdownCode[i]}\n`);
@@ -49,5 +55,18 @@ export class ApplensDocsComponent implements OnInit {
     });
 
     return folders;
+  }
+  getFiles(folderName: string){
+    let fileIndex = this.files.length;
+    this.files.push([]);
+    this.diagnosticApiService.getDetectorCode(`documentation/insight/${folderName}/content`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(names => {
+      this.fileNames = names.split('\n');
+      this.fileNames.forEach(f => {
+        this.diagnosticApiService.getDetectorCode(`documentation/insight/${folderName}/${f.replace(/\s/g,"")}`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(fileContent => {
+          this.files[fileIndex].push(fileContent);
+          // console.log(caller, fileContent)
+        });
+      });
+    });
   }
 }
