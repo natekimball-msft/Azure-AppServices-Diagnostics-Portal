@@ -42,6 +42,6 @@
 
 <div *ngFor="let folder of folders; let i=index">
   <markdown ngPreserveWhitespaces [data]="markdownCode[i]"></markdown>
-  <applens-doc-section [code]="folder"></applens-doc-section>
+  <applens-doc-section [files]="files[i]"></applens-doc-section>
 </div>
 </div>
