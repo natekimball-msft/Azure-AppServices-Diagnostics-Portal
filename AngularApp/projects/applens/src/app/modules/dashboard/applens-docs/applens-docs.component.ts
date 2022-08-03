@@ -19,9 +19,12 @@ export class ApplensDocsComponent implements OnInit {
   folderRegEx = new RegExp("(?<=folder=\").*?(?=\")", "g");
 
   htmlToAdd = "";
-  fileNames: string[] = [];
+  fileNames: string[][] = [];
 
-  files: string[][] = [];
+  files: {id: number, file: string}[][] = [];
+
+  // editorTestString: string = "editor test test";
+  // editorOptions = {theme: 'vs-dark', language: 'javascript'};
   
   ngOnInit() {
       this._applensGlobal.updateHeader("");
@@ -60,10 +63,12 @@ export class ApplensDocsComponent implements OnInit {
     let fileIndex = this.files.length;
     this.files.push([]);
     this.diagnosticApiService.getDetectorCode(`documentation/insight/${folderName}/content`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(names => {
-      this.fileNames = names.split('\n');
-      this.fileNames.forEach(f => {
+      this.fileNames[fileIndex] = names.split('\n');
+      let subIndexer = 0;
+      this.fileNames[fileIndex].forEach(f => {
         this.diagnosticApiService.getDetectorCode(`documentation/insight/${folderName}/${f.replace(/\s/g,"")}`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(fileContent => {
-          this.files[fileIndex].push(fileContent);
+          this.files[fileIndex].push({id: subIndexer, file: fileContent});
+          subIndexer = subIndexer + 1;
           // console.log(caller, fileContent)
         });
       });

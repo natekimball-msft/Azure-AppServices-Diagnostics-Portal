@@ -1,3 +1,18 @@
-<div *ngFor="let file of files; let i=index">
-  <p>{{file}}</p>
+<div *ngIf="files.length > 1; else singleSample">
+    <fab-pivot>
+      <fab-pivot-item *ngFor="let file of files; let i=index;" [headerText]="fileNames[i]">
+        <p>{{files.length}}:{{file.id}}</p>
+        <ngx-monaco-editor [options]="editorOptions" [(ngModel)]="file.file"></ngx-monaco-editor>
+      </fab-pivot-item>
+    </fab-pivot>
+    <!-- <p>{{file}}</p> -->
 </div>
+<div *ngFor="let file of files; let i=index;">{{i}}</div>
+
+<ng-template #singleSample>
+  <div *ngFor="let file of files; let i=index">
+    <p>confusion. count: {{i}}</p>
+  </div>
+</ng-template>
+
+

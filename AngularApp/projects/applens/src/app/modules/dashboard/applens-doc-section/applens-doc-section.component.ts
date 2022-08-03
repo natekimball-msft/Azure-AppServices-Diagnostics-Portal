@@ -22,21 +22,45 @@ export class ApplensDocSectionComponent implements OnInit {
   // @Input() folderName = "";
 
   @Input() files = [];
+  @Input() fileNames = [];
 
   //files: string[];
-  fileNames: string[];
+  //fileNames: string[];
+
+  lightOptions = {
+    theme: 'vs-dark',
+    language: 'csharp',
+    fontSize: 14,
+    automaticLayout: true,
+    scrollBeyondLastLine: false,
+    minimap: {
+      enabled: false
+    },
+    folding: true
+  };
+
+  editorOptions = this.lightOptions
+
+  isMultipleSamples: boolean = false;
+
 
   constructor(private diagnosticApiService: ApplensDiagnosticService) { }
 
   ngOnInit() {
+    this.isMultipleSamples = this.files.length > 1;
     //this.getFiles();
-    console.log(`${this.files}`);
+    //console.log(`${this.files}`);
   }
 
-  // ngOnChanges(){
-  //   this.getFiles("changes");
-  //   //console.log(`change\nfoldername: ${this.folderName}\n`);
-  // }
+  ngOnChanges(){
+    this.isMultipleSamples = this.files.length > 1;
+    // this.getFiles("changes");
+    // //console.log(`change\nfoldername: ${this.folderName}\n`);
+  }
+
+  track(index: number, file: any){
+    return file.id;
+  }
 
   // getFiles(){
   //   this.diagnosticApiService.getDetectorCode(`documentation/insight/${this.folderName}/content`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(names => {
