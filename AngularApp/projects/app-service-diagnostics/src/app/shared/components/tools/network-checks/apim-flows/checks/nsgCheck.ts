@@ -1,7 +1,7 @@
 import { checkResultLevel, CheckStepView, InfoStepView, InfoType, StepFlowManager, StepView } from 'diagnostic-data';
 import { DiagProvider } from '../../diag-provider';
 import { ApiManagementServiceResourceContract, PlatformVersion, VirtualNetworkConfigurationContract, VirtualNetworkType } from '../contracts/APIMService';
-import { NetworkSecurityGroupContract, ProvisioningState, SecurityRuleAccess, SecurityRuleContract, SecurityRuleDirection, SecurityRuleProtocol, SubnetContract } from '../contracts/NetworkSecurity';
+import { NetworkSecurityGroupContract, ProvisioningState, SecurityRuleAccess, SecurityRuleContract, SecurityRuleProtocol, SubnetContract } from '../contracts/NetworkSecurity';
 import { PortRequirements, stv1portRequirements, stv2portRequirements } from '../data/portRequirements';
 import { NETWORK_API_VERSION, statusIconMarkdown } from "../data/constants";
 import { getWorstStatus } from "./networkStatusCheck";
@@ -89,7 +89,6 @@ function ruleAffects(requirement: PortRequirements, rule: SecurityRuleContract):
     // rule blocks destination ips of requirement
     if (!sameIP(requirement.serviceDestination, rule.properties.destinationAddressPrefix))
         return false;
-    
     // rule blocks destination ports of requirement
     if (!samePorts(requirement.portNums, rule.properties.destinationPortRange || rule.properties.destinationPortRanges))
         return false;
@@ -97,7 +96,7 @@ function ruleAffects(requirement: PortRequirements, rule: SecurityRuleContract):
     return true;
 }
 
-function rulePasses(portNum: number, rule: SecurityRuleContract): RuleResult { 
+function rulePasses(portNum: number, rule: SecurityRuleContract): RuleResult {
     if (rule.properties.access == SecurityRuleAccess.ALLOW) {
         if (samePorts([portNum], rule.properties.destinationPortRange || rule.properties.destinationPortRanges))
             return RuleResult.ALLOW;
@@ -125,7 +124,6 @@ interface RequirementResult {
 function requirementCheck(requirements: PortRequirements[], rules: SecurityRuleContract[]): RequirementResult[] {
     // sort by priority
     rules.sort((a, b) => a.properties.priority - b.properties.priority);
-    
     let failedChecks: RequirementResult[] = [];
 
     for (let requirement of requirements) {
@@ -150,57 +148,56 @@ function requirementCheck(requirements: PortRequirements[], rules: SecurityRuleC
             }
             if (portBlocked) break;
         }
-        
     }
 
     return failedChecks;
 }
 
 function generateRequirementViolationTable(requirements: RequirementResultsByNsg): string {
-    
+
     if (requirements.reqs.length == 0) {
         return `No requirement violations detected`;
     }
-    
+
     return `
         | Status | Rule Name | Description |
         |--------|-----------|-------------|
         ` + requirements.reqs.map((req: RequirementResult) => {
 
-            let icon = statusIconMarkdown[req.status];
-            let description = req.description.replace(/(\r\n|\n|\r)/gm, "");
-            let link = `https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${requirements.id}/overview`;
-            
-            return `    |   ${icon} | <a href="${link}" target="_blank">${req.name}</a> | ${description} |`;
-        }).join("\n");
+        let icon = statusIconMarkdown[req.status];
+        let description = req.description.replace(/(\r\n|\n|\r)/gm, "");
+        let link = `https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource${requirements.id}/overview`;
+
+        return `    |   ${icon} | <a href="${link}" target="_blank">${req.name}</a> | ${description} |`;
+    }).join("\n");
 }
 
 async function getViolatedRequirements(
-    virtualNetworkConfiguration: VirtualNetworkConfigurationContract, 
+    virtualNetworkConfiguration: VirtualNetworkConfigurationContract,
     diagProvider: DiagProvider,
     networkType: VirtualNetworkType = VirtualNetworkType.EXTERNAL,
     platformVersion: PlatformVersion = PlatformVersion.STV2): Promise<RequirementResultsByNsg> {
-    
-        const subnetResourceId = virtualNetworkConfiguration.subnetResourceId;
-        const subnetResponse = await diagProvider.getResource<SubnetContract>(subnetResourceId, NETWORK_API_VERSION);
-        const subnet = subnetResponse.body;
-    
-        const networkSecurityGroupResourceId = subnet.properties.networkSecurityGroup.id;
-        
-        if (!networkSecurityGroupResourceId) return null;
-        
-        const networkSecurityGroupResponse = await diagProvider.getResource<NetworkSecurityGroupContract>(networkSecurityGroupResourceId, NETWORK_API_VERSION);
-        const networkSecurityGroup = networkSecurityGroupResponse.body;
-    
-        const securityRules = [...networkSecurityGroup.properties.defaultSecurityRules, ...networkSecurityGroup.properties.securityRules];
-        
-        let portRequirements = (platformVersion == PlatformVersion.STV1 ? stv1portRequirements : stv2portRequirements);
-        portRequirements = portRequirements.filter(req => req.vnetType.includes(networkType));
-        return {
-            id: networkSecurityGroup.id,
-            location: networkSecurityGroup.location,
-            reqs: requirementCheck(portRequirements, securityRules),
-        };
+
+    const subnetResourceId = virtualNetworkConfiguration.subnetResourceId;
+    const subnetResponse = await diagProvider.getResource<SubnetContract>(subnetResourceId, NETWORK_API_VERSION);
+    const subnet = subnetResponse.body;
+
+    const networkSecurityGroupResourceId = subnet.properties.networkSecurityGroup.id;
+
+    if (!networkSecurityGroupResourceId) return null;
+
+    const networkSecurityGroupResponse = await diagProvider.getResource<NetworkSecurityGroupContract>(networkSecurityGroupResourceId, NETWORK_API_VERSION);
+    const networkSecurityGroup = networkSecurityGroupResponse.body;
+
+    const securityRules = [...networkSecurityGroup.properties.defaultSecurityRules, ...networkSecurityGroup.properties.securityRules];
+
+    let portRequirements = (platformVersion == PlatformVersion.STV1 ? stv1portRequirements : stv2portRequirements);
+    portRequirements = portRequirements.filter(req => req.vnetType.includes(networkType));
+    return {
+        id: networkSecurityGroup.id,
+        location: networkSecurityGroup.location,
+        reqs: requirementCheck(portRequirements, securityRules),
+    };
 }
 
 async function getVnetInfoView(
@@ -209,8 +206,8 @@ async function getVnetInfoView(
     networkType: VirtualNetworkType = VirtualNetworkType.EXTERNAL,
     platformVersion: PlatformVersion = PlatformVersion.STV2): Promise<StepView> {
 
-    let violatedRequirementsByLocation: {[key: string]: RequirementResultsByNsg} = {};
-    
+    let violatedRequirementsByLocation: { [key: string]: RequirementResultsByNsg } = {};
+
     violatedRequirementsByLocation[serviceResource.location] = await getViolatedRequirements(serviceResource.properties.virtualNetworkConfiguration, diagProvider, networkType, platformVersion);
     if (serviceResource.properties.additionalLocations) {
         for (let loc of serviceResource.properties.additionalLocations) {
