@@ -71,6 +71,18 @@ export class DashboardComponent implements OnDestroy {
   breadcrumbStyles: IBreadcrumbProps['styles'] = {
     itemLink: {
       fontSize:"14px",
+      textDecoration: 'underline',
+      selectors: {
+        ':hover': {
+          textDecoration: 'underline',
+        },
+        ':focus': {
+          textDecoration: 'underline',
+        },
+        ':hover:focus': {
+          textDecoration: 'underline',
+        },
+      },
     },
   }
   breadcrumbTooltipHostProps: IBreadcrumbProps['tooltipHostProps'] = {
