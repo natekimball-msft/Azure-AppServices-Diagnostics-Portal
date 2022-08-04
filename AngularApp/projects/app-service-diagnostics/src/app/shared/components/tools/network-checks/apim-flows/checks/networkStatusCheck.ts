@@ -12,7 +12,7 @@ function getWorstNetworkStatusOfLocation(statuses: ConnectivityStatusContract[])
     return getWorstStatus(statuses.map(service => rateConnectivityStatus(service)));
 }
 
-export function getWorstStatus(statuses: checkResultLevel[]) {
+export function getWorstStatus(statuses: checkResultLevel[]): checkResultLevel {
     let worst = checkResultLevel.pass;
 
     function rating(st: checkResultLevel) {
@@ -59,13 +59,13 @@ function generateStatusMarkdownTable(statuses: ConnectivityStatusContract[]): st
             switch (status) {
                 case checkResultLevel.pass: return statusIcon(StatusStyles.WarningIcon, "Stale");
                 case checkResultLevel.warning: return statusIcon(StatusStyles.CriticalIcon, "Error (Optional)");
-                case checkResultLevel.error: return statusIcon(StatusStyles.CriticalIcon, "Error");
+                case checkResultLevel.fail: return statusIcon(StatusStyles.CriticalIcon, "Error");
             }
         } else  {
             switch (status) {
                 case checkResultLevel.pass: return statusIcon(StatusStyles.HealthyIcon, "Success");
                 case checkResultLevel.warning: return statusIcon(StatusStyles.CriticalIcon, "Error (Optional)");
-                case checkResultLevel.error: return statusIcon(StatusStyles.CriticalIcon, "Error");
+                case checkResultLevel.fail: return statusIcon(StatusStyles.CriticalIcon, "Error");
             }
         }
     };
