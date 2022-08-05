@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { ApplensGlobal } from '../../../applens-global';
 import { applensDocs } from '../../../shared/utilities/applens-docs-constant';
 import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
@@ -21,7 +22,7 @@ export class ApplensDocsComponent implements OnInit {
   htmlToAdd = "";
   fileNames: string[][] = [];
 
-  files: {id: number, file: string}[][] = [];
+  files:any[][] = [];
 
   // editorTestString: string = "editor test test";
   // editorOptions = {theme: 'vs-dark', language: 'javascript'};
@@ -35,12 +36,12 @@ export class ApplensDocsComponent implements OnInit {
         this.folders.forEach(f => {
           this.getFiles(f);
         });
-        for(var i = 0; i < this.markdownCode.length; i++){
+        //for(var i = 0; i < this.markdownCode.length; i++){
           //this.htmlToAdd = this.htmlToAdd.concat(`<markdown ngPreserveWhitespaces [data]="markdownCode[${i}]"></markdown>\n`);
-          this.htmlToAdd = this.htmlToAdd.concat(`${this.markdownCode[i]}\n`);
+          //this.htmlToAdd = this.htmlToAdd.concat(`${this.markdownCode[i]}\n`);
           // if (i < this.folders.length)
           // this.htmlToAdd = this.htmlToAdd.concat(`<p>folder name: ${this.folders[i]}</p>\n`);
-        }
+        //}
         // this.markdownCode.forEach(mdSection => {
         //   this.htmlToAdd = this.htmlToAdd.concat(`<markdown ngPreserveWhitespaces [data]="'${mdSection}'"></markdown>\n`);
         // });
@@ -64,13 +65,13 @@ export class ApplensDocsComponent implements OnInit {
     this.files.push([]);
     this.diagnosticApiService.getDetectorCode(`documentation/insight/${folderName}/content`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(names => {
       this.fileNames[fileIndex] = names.split('\n');
-      let subIndexer = 0;
+      let getFileObservables = [];
       this.fileNames[fileIndex].forEach(f => {
-        this.diagnosticApiService.getDetectorCode(`documentation/insight/${folderName}/${f.replace(/\s/g,"")}`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(fileContent => {
-          this.files[fileIndex].push({id: subIndexer, file: fileContent});
-          subIndexer = subIndexer + 1;
-          // console.log(caller, fileContent)
-        });
+        getFileObservables.push(this.diagnosticApiService.getDetectorCode(`documentation/insight/${folderName}/${f.replace(/\s/g,"")}`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/")); 
+      });
+      forkJoin(getFileObservables).subscribe(fileContent => {
+        this.files[fileIndex] = fileContent;
+        // console.log(caller, fileContent)
       });
     });
   }
