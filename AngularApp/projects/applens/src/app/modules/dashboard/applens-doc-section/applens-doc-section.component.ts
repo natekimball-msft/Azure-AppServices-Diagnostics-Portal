@@ -58,9 +58,13 @@ export class ApplensDocSectionComponent implements OnInit {
     // //console.log(`change\nfoldername: ${this.folderName}\n`);
   }
 
-  track(index: number, file: any){
-    return file.id;
+  run(){
+    console.log("ran");
   }
+
+  // track(index: number, file: any){
+  //   return file.id;
+  // }
 
   // getFiles(){
   //   this.diagnosticApiService.getDetectorCode(`documentation/insight/${this.folderName}/content`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(names => {

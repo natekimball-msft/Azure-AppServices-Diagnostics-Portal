@@ -40,8 +40,9 @@
 
 <!-- <div [innerHtml]="htmlToAdd"></div> -->
 
-<div *ngFor="let folder of folders; let i=index">
-  <markdown ngPreserveWhitespaces [data]="markdownCode[i]"></markdown>
-  <applens-doc-section [files]="files[i]" [fileNames]="fileNames[i]" ></applens-doc-section>
+<div *ngFor="let markdown of markdownCode; let i=index">
+  <markdown ngPreserveWhitespaces [data]="markdown.trim()"></markdown>
+  <applens-doc-section *ngIf="i<files.length" [files]="files[i]" [fileNames]="fileNames[i]" ></applens-doc-section>
+  <!-- <markdown *ngIf="markdownCode.length > folders.length" [data]="markdownCode[markdownCode.length-1].trim()"></markdown> -->
 </div>
 </div>
