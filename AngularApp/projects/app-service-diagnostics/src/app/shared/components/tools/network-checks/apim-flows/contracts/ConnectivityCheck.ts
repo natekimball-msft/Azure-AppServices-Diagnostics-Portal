@@ -62,11 +62,13 @@ export interface ErrorResponseContract {
     }
 }
 
-enum ConnectionStatus {
+export enum ConnectionStatus {
     CONNECTED = "Connected",
     DEGRADED = "Degraded",
     DISCONNECTED = "Disconnected",
-    UNKNOWN = "Unknown"
+    UNKNOWN = "Unknown",
+    REACHABLE = "Reachable",
+    UNREACHABLE = "Unreachable"
 }
 
 enum Origin {
@@ -99,7 +101,7 @@ interface ConnectivityIssue {
     type: IssueType;
 }
 
-interface ConnectivityHop {
+export interface ConnectivityHopContract {
     address: string;
     id: string;
     issues: ConnectivityIssue[];
@@ -111,7 +113,7 @@ interface ConnectivityHop {
 export interface ConnectivityCheckResponse {
     avgLatencyInMs: number;
     connectionStatus: ConnectionStatus;
-    hoops: ConnectivityHop[];
+    hops: ConnectivityHopContract[];
     maxLatencyInMs: number;
     minLatencyInMs: number;
     probesFailed: number;

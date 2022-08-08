@@ -3,7 +3,7 @@ import { InputType } from 'projects/diagnostic-data/src/lib/models/form';
 import { DiagProvider } from '../diag-provider';
 import { NetworkCheckFlow } from "../network-check-flow";
 import { ApiManagementServiceResourceContract } from './contracts/APIMService';
-import { ConnectivityCheckPayloadContract, ConnectivityCheckProtocol, ConnectivityCheckResponse, ErrorResponseContract, Method, PreferredIPVersion } from './contracts/ConnectivityCheck';
+import { ConnectionStatus, ConnectivityCheckPayloadContract, ConnectivityCheckProtocol, ConnectivityCheckResponse, ConnectivityHopContract, ErrorResponseContract, Method, PreferredIPVersion } from './contracts/ConnectivityCheck';
 import { APIM_API_VERSION } from './data/constants';
 
 
@@ -43,6 +43,52 @@ async function queryPingData(diagProvider: DiagProvider, resourceId: string, aut
         .catch(error => error);
 }
 
+function generateHopTable(hops: ConnectivityHopContract[]): string {
+    return `
+        |              Type | Address |
+        |-------------------|---------|
+        ` + hops.map(hop => `    |                            ${hop.type} | ${hop.address} |`).join("\n");
+}
+
+function generatePingDataDisplay(data: ConnectivityCheckResponse): StepView {
+
+    switch(data.connectionStatus) {
+        case ConnectionStatus.CONNECTED: 
+        case ConnectionStatus.REACHABLE:
+            return new InfoStepView({
+                title: "Ping Status",
+                infoType: InfoType.recommendation,
+                id: "dataDisp",
+                markdown: `
+                    **Average Latency**: ${data.avgLatencyInMs}ms</br>
+                    **Min Latency**: ${data.minLatencyInMs}ms</br>
+                    **Max Latency**: ${data.maxLatencyInMs}ms</br>
+                    
+                    ---
+                    
+                    **Probes Sent**: ${data.probesSent}</br>
+                    **Probes Failed**: ${data.probesFailed}</br>
+                    ${generateHopTable(data.hops)}
+                `,
+            });
+        case ConnectionStatus.DEGRADED:
+        case ConnectionStatus.DISCONNECTED:
+        case ConnectionStatus.UNKNOWN: 
+        case ConnectionStatus.UNREACHABLE:
+        default: 
+            return new InfoStepView({
+                title: "Ping Status",
+                infoType: InfoType.recommendation,
+                id: "dataDisp",
+                markdown: `
+                    **Probes Sent**: ${data.probesSent}</br>
+                    **Probes Failed**: ${data.probesFailed}</br>
+                    ${generateHopTable(data.hops)}
+                `,
+            });
+    }
+}
+
 async function displayPingData(diagProvider: DiagProvider, resId: string, authorization: string, inputs: {[key: string]: string}): Promise<StepView> {
 
     let res = await queryPingData(diagProvider, resId, authorization, inputs);
@@ -56,17 +102,8 @@ async function displayPingData(diagProvider: DiagProvider, resId: string, author
             markdown: `${errRes.error.message}`,
         });
     } else {
-
+        return generatePingDataDisplay((res as ConnectivityCheckResponse));
     }
-
-    return new InfoStepView({
-        title: "VNET Status",
-        infoType: InfoType.recommendation,
-        id: "secondStep",
-        markdown: `
-            ## No VNet Configuration detected
-        `,
-    });
 }
 
 export const pingCheckFlow: NetworkCheckFlow = {
@@ -87,9 +124,11 @@ export const pingCheckFlow: NetworkCheckFlow = {
         let fqdn = "(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)";
         let ipaddr = "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)";
         let url = "([A-Za-z]+:\/\/[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_:%&;\?\#\/.=]+)";
-        flowMgr.addView(new FormStepView({
+        
+        let viewExists = false;
+        flowMgr.addView(new FormStepView({  
             id: "form1",
-            description: "form 2",
+            description: "Perform a Ping Request",
             inputs: [
                 {
                     itype: InputType.TextBox,
@@ -123,8 +162,14 @@ export const pingCheckFlow: NetworkCheckFlow = {
                 }
             ],
             expandByDefault: false,
-            buttonText: "send data",
+            buttonText: "Send Request",
             callback: (inputs) => {
+                
+                if (viewExists) {
+                    flowMgr.removeLatestView();
+                }
+
+                viewExists = true;
                 flowMgr.addView(displayPingData(diagProvider, resourceId, authorizationToken, inputs), "Querying the network");
                 return Promise.resolve();
             },

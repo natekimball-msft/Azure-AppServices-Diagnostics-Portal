@@ -368,6 +368,10 @@ export class StepFlowManager {
         return idx;
     }
 
+    public removeLatestView() {
+        return this._stepViewQueue.pop();
+    }
+
     private generateAddViewsFunc(flow: StepFlow) {
         var addViews = this.addViews.bind(this);
         return (viewPromise: StepView[] | Promise<StepView[]>, loadingText?: string): number => {
