@@ -1,17 +1,13 @@
-import { FormStepView, InfoStepView, InfoType, InputStepView, StepView } from 'diagnostic-data';
-import { NetworkCheckFlow } from "../network-check-flow";
-import { APIM_API_VERSION } from './data/constants';
-import { ApiManagementServiceResourceContract } from './contracts/APIMService';
+import { FormStepView, InfoStepView, InfoType, StepView } from 'diagnostic-data';
 import { InputType } from 'projects/diagnostic-data/src/lib/models/form';
 import { DiagProvider } from '../diag-provider';
+import { NetworkCheckFlow } from "../network-check-flow";
+import { ApiManagementServiceResourceContract } from './contracts/APIMService';
 import { ConnectivityCheckPayloadContract, ConnectivityCheckProtocol, ConnectivityCheckResponse, ErrorResponseContract, Method, PreferredIPVersion } from './contracts/ConnectivityCheck';
-import { ResponseMessageEnvelope } from '../../../../models/responsemessageenvelope';
+import { APIM_API_VERSION } from './data/constants';
 
 
-
-function generatePayload(inputs: {[key: string]: string}, authorization: string): ConnectivityCheckPayloadContract {
-    console.log('generating payload', inputs);
-    
+function generatePayload(inputs: {[key: string]: string}, authorization: string): ConnectivityCheckPayloadContract {    
     return {
         "source": {
             "region": inputs["region"]
@@ -40,23 +36,17 @@ function generatePayload(inputs: {[key: string]: string}, authorization: string)
     }
 }
 
-async function queryPingData(diagProvider: DiagProvider, resourceId: string, authorization: string, inputs: {[key: string]: string}): Promise<ConnectivityCheckResponse | ErrorResponseContract> {
-    // console.log('querying ping data');
-    
+async function queryPingData(diagProvider: DiagProvider, resourceId: string, authorization: string, inputs: {[key: string]: string}): Promise<ConnectivityCheckResponse | ErrorResponseContract> {    
     return diagProvider
         .extendedPostResourceAsync<ConnectivityCheckResponse | ErrorResponseContract, ConnectivityCheckPayloadContract>
             (resourceId + "/connectivityCheck", generatePayload(inputs, authorization), APIM_API_VERSION)
-        // .then(res => res)
         .catch(error => error);
-    // return null;
 }
 
 async function displayPingData(diagProvider: DiagProvider, resId: string, authorization: string, inputs: {[key: string]: string}): Promise<StepView> {
 
     let res = await queryPingData(diagProvider, resId, authorization, inputs);
 
-    console.log("result of ping", res);
-    
     let errRes = res as ErrorResponseContract;
     if (errRes && errRes.error) {
         return new InfoStepView({
@@ -87,10 +77,7 @@ export const pingCheckFlow: NetworkCheckFlow = {
         
         const resourceId = siteInfo.resourceUri;
         const serviceResourceResponse = await diagProvider.getResource<ApiManagementServiceResourceContract>(resourceId, APIM_API_VERSION);
-        console.log("service resource response", serviceResourceResponse);
         
-        // let authorizationToken = serviceResourceResponse.headers.get("Authorization");
-        // diagProvider._armService._authService.getAuthToken()
         let serviceResource = serviceResourceResponse.body;
 
         let locations = [serviceResource.location, ...(serviceResource.properties.additionalLocations || []).map(loc => loc.location)];

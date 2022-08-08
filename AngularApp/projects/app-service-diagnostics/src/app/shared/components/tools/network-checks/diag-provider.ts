@@ -2,12 +2,12 @@ import { HttpResponse } from '@angular/common/http';
 import { TelemetryService } from 'diagnostic-data';
 import { Globals } from 'projects/app-service-diagnostics/src/app/globals';
 import { stringify } from 'querystring';
+import { Observable, of, throwError, timer } from 'rxjs';
+import { catchError, mergeMap } from 'rxjs/operators';
 import { ResponseMessageEnvelope } from '../../../models/responsemessageenvelope';
 import { Site, SiteInfoMetaData } from '../../../models/site';
 import { ArmService } from '../../../services/arm.service';
 import { SiteService } from '../../../services/site.service';
-import { catchError, flatMap, map, tap } from 'rxjs/operators'; 
-import {Observable, of, throwError } from 'rxjs';
 
 enum ConnectionCheckStatus { success, timeout, hostNotFound, blocked, refused }
 export enum OutboundType { SWIFT, gateway };
@@ -153,76 +153,23 @@ export class DiagProvider {
             });
     }
 
-
-    private routeToHeaderLocation<T>(res: HttpResponse<T>): Observable<HttpResponse<T>> {
-        console.log('route to header', res);
-        
-        return this.getPlain<T>(res.headers.get('location'));
-    }
-
-    private genObs<T>() {
-        return (res1: Observable<HttpResponse<T>>) => 
-            res1.map(resx => this.routeToHeaderLocation(resx)
-                .pipe(
-                    res2 => res2.map(res2 => {
-                        if (res2.status == 200) return of(res2.body);
-                        if (res2.status == 202) return throwError(res2);
-                        // shouldn't need this ideally
-                        return of(res2.body);
-                    }).catch((err, caught) => caught),
-                    tap(res => console.log('midway ', res))
-                )
-            )
-    }
-
     private genObs2<T>() {
-        console.log('generatopr called!!');
-        
-        return (res1: Observable<HttpResponse<T>>) => 
-            res1.flatMap(resx => 
-                this.getPlain<T>(resx.headers.get('location'))
-                .flatMap(res2 => {
-                    console.log('midway', res2);
-                    
-                    if (res2.status == 200) return of(res2.body);
-                    if (res2.status == 202) return throwError(res2).delay(5000);
-                    // shouldn't need this ideally
-                    return of(res2.body);
-                })
-                .catch((err, caught) => caught)
-            )
+
+        return resx => 
+        this.getPlain<T>(resx.headers.get('location'))
+        .flatMap(res2 => {
+            if (res2.status == 200) return of(res2.body);
+            if (res2.status == 202) return timer(5000).pipe(mergeMap(_ => throwError(res2)));
+            // shouldn't need this ideally
+            return of(res2.body);
+        })
+        .catch((err, caught) => caught);
     }
 
     public extendedPostResourceAsync<T, S>(resourceUri: string, body?: S, apiVersion?: string): Promise<T> {
-        console.log('extended post resource requested here!');
-        
-
-        // let getInfo = this.getPlain<T>(locationHeader).map(res => res.body);
-        
-        
-        
-        
-        // let handleResponse = map((response: HttpResponse<{}>) => {
-            
-        //     // if (response.status >= 300) return response.error;
-        //     if (response.status == 200) return response.body;
-        //     if (response.status == 202) {
-                
-                
-        //         let locationHeader = response.headers.get('location');
-        //         console.log('need to repeat!', locationHeader);
-        //         if (locationHeader != null) {
-        //             // return locationHeader;
-        //             return  ;
-        //         } else return response.body;
-        //     }
-        // });
-
         return this._armService.requestResource<T, S>("POST", resourceUri, body, apiVersion).pipe<T>(
-            this.genObs2<HttpResponse<T>>(),
-            catchError(err => {console.log('lv 1 error caught!', err);
-            return of(err.error)}),
-            tap(res => console.log('first request', res))
+            res1 => res1.flatMap(this.genObs2()),
+            catchError(err => of(err.error)),
         ).toPromise();
     }
 
