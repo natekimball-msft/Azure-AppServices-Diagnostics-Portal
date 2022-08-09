@@ -57,7 +57,7 @@
         </div>
 
         <div class="section">
-          <button type="button" class="btn btn-sm btn-primary" [disabled]="disableSubmitButton"
+          <button type="button" class="btn btn-sm btn-primary btn-continuebtn" [disabled]="disableSubmitButton"
             (click)="onSubmit()">Continue</button>
           <div *ngIf="accessErrorMessage && accessErrorMessage!== ''" class="mt-3 error-message-container">
             <status-icon [status]="status"></status-icon><span class="ml-3 error-message">{{accessErrorMessage}}</span>
