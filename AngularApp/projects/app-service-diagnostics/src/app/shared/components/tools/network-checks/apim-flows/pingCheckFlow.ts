@@ -125,7 +125,7 @@ export const pingCheckFlow: NetworkCheckFlow = {
         let ipaddr = "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)";
         let url = "([A-Za-z]+:\/\/[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_:%&;\?\#\/.=]+)";
         
-        let viewExists = false;
+        let detailsView: StepView = null;
         flowMgr.addView(new FormStepView({  
             id: "form1",
             description: "Perform a Ping Request",
@@ -165,12 +165,13 @@ export const pingCheckFlow: NetworkCheckFlow = {
             buttonText: "Send Request",
             callback: (inputs) => {
                 
-                if (viewExists) {
-                    flowMgr.removeLatestView();
+                if (detailsView) {
+                    detailsView.hidden = true;
                 }
 
-                viewExists = true;
-                flowMgr.addView(displayPingData(diagProvider, resourceId, authorizationToken, inputs), "Querying the network");
+                let pingDataView = displayPingData(diagProvider, resourceId, authorizationToken, inputs);
+                pingDataView.then(view => detailsView = view);
+                flowMgr.addView(pingDataView, "Querying the network");
                 return Promise.resolve();
             },
         }));
