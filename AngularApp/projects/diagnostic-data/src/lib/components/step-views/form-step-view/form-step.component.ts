@@ -127,25 +127,3 @@ export class FormStepComponent implements OnInit, AfterViewInit {
     }
   }
 }
-
-// @Pipe({
-//   name: 'getDropdownOptions'
-// })
-// export class GetDropdownOptionsPipe implements PipeTransform {
-//   transform(dropdown: {
-//     description?: string,
-//     options: string[],
-//     defaultChecked?: number,
-//     placeholder: string
-//   }, args?: any): IDropdownOption[] {
-//     // generate IDropdownOption from dropdown
-//     if (dropdown == null) {
-//       return [];
-//     } else {
-//       return [<IDropdownOption>{ key: -1, text: dropdown.placeholder, isSelected: dropdown.defaultChecked == null, hidden: true }]
-//         .concat(dropdown.options.map((s, idx) => {
-//           return { key: idx, text: s, isSelected: idx == dropdown.defaultChecked };
-//         }));
-//     }
-//   }
-// }

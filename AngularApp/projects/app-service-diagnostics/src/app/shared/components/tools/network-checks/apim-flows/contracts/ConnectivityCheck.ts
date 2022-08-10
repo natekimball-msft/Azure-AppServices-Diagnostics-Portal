@@ -77,12 +77,12 @@ enum Origin {
     OUTBOUND = "Outbound"
 }
 
-enum Severity {
+export enum Severity {
     ERROR = "Error",
     WARNING = "Warning"
 }
 
-enum IssueType {
+export enum IssueType {
     AgentStopped = "AgentStopped",
     DnsResolution = "DnsResolution",
     GuestFirewall = "GuestFirewall",
@@ -94,7 +94,7 @@ enum IssueType {
     UserDefinedRoute = "UserDefinedRoute"
 }
 
-interface ConnectivityIssue {
+export interface ConnectivityIssueContract {
     context: object[];
     origin: Origin;
     severity: Severity;
@@ -104,9 +104,9 @@ interface ConnectivityIssue {
 export interface ConnectivityHopContract {
     address: string;
     id: string;
-    issues: ConnectivityIssue[];
+    issues: ConnectivityIssueContract[];
     nextHopIds: string[];
-    resourceId: string;
+    resourceId?: string;
     type: string;
 }
 

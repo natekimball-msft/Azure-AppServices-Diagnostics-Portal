@@ -1,10 +1,11 @@
-import { FormStepView, InfoStepView, InfoType, StepView } from 'diagnostic-data';
+import { Connection } from '@angular/http';
+import { FormStepView, InfoStepView, InfoType, StatusStyles, StepView } from 'diagnostic-data';
 import { InputType } from 'projects/diagnostic-data/src/lib/models/form';
 import { DiagProvider } from '../diag-provider';
 import { NetworkCheckFlow } from "../network-check-flow";
 import { ApiManagementServiceResourceContract } from './contracts/APIMService';
-import { ConnectionStatus, ConnectivityCheckPayloadContract, ConnectivityCheckProtocol, ConnectivityCheckResponse, ConnectivityHopContract, ErrorResponseContract, Method, PreferredIPVersion } from './contracts/ConnectivityCheck';
-import { APIM_API_VERSION } from './data/constants';
+import { ConnectionStatus, ConnectivityCheckPayloadContract, ConnectivityCheckProtocol, ConnectivityCheckResponse, ConnectivityHopContract, ConnectivityIssueContract, ErrorResponseContract, Method, PreferredIPVersion, Severity } from './contracts/ConnectivityCheck';
+import { APIM_API_VERSION, iconContainerStyles, iconStyles } from './data/constants';
 
 
 function generatePayload(inputs: {[key: string]: string}, authorization: string): ConnectivityCheckPayloadContract {    
@@ -43,11 +44,32 @@ async function queryPingData(diagProvider: DiagProvider, resourceId: string, aut
         .catch(error => error);
 }
 
+let sevToIcon = {
+    "Warning": StatusStyles.WarningIcon,
+    "Error": StatusStyles.CriticalIcon,
+    "Success": StatusStyles.HealthyIcon
+};
+
 function generateHopTable(hops: ConnectivityHopContract[]): string {
+
+    let statusIcon = (icon: StatusStyles, text: string) => `<div style="${iconContainerStyles}"><i class="${icon}" style="${iconStyles}"></i><span>${text}</span></div>`;
+
+    function genIssueMessage(issue: ConnectivityIssueContract) {
+        return `${statusIcon(sevToIcon[issue.severity], `[${issue.origin}] ${issue.type}`)}`;
+    }
+    const genIssues = (hop) => hop.issues.length > 0 ? hop.issues.map(issue => genIssueMessage(issue)).join("\n") : statusIcon(sevToIcon.Success, "");
+
+
+    let errorEncountered = false;
+    let tableBody = "";
+    for (let hop of hops) {
+        tableBody += `    |               ${hop.type} | ${hop.address} | ${errorEncountered ? "" : genIssues(hop)} |\n`;
+        errorEncountered = errorEncountered || hop.issues.length > 0;
+    }
     return `
-        |              Type | Address |
-        |-------------------|---------|
-        ` + hops.map(hop => `    |                            ${hop.type} | ${hop.address} |`).join("\n");
+        |              Type | Address | Issues |
+        |-------------------|---------|--------|
+        ` + tableBody;
 }
 
 function generatePingDataDisplay(data: ConnectivityCheckResponse): StepView {
@@ -93,7 +115,7 @@ async function displayPingData(diagProvider: DiagProvider, resId: string, author
 
     let res = await queryPingData(diagProvider, resId, authorization, inputs);
 
-    let errRes = res as ErrorResponseContract;
+    let errRes = res as any as ErrorResponseContract;
     if (errRes && errRes.error) {
         return new InfoStepView({
             title: errRes.error.code,
