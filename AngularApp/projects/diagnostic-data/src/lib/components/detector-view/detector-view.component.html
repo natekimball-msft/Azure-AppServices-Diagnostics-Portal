@@ -26,8 +26,7 @@
     <ng-container *ngTemplateOutlet="detectorTimePickerPill"></ng-container>
   </div>
   <div *ngIf="isAnalysisView && supportsDownTime" class="ml-3">
-    <fab-primary-button id="detector-view-downtime" (onClick)="showDowntimeCallout = true;" [styles]="buttonStyle"
-      [disabled]="downtimeFilterDisabled">
+    <fab-primary-button [id]="'detector-view-downtime'" (onClick)="showDowntimeCallout = true;" [styles]="buttonStyle">
       <fab-icon [iconName]="'Clock'" [styles]="iconStyles"></fab-icon>
       <span class="ml-3 control-pill-text">
         <span>Downtime(UTC): </span>

@@ -135,7 +135,7 @@
     </div>
   </ngx-smart-modal>
 
-  <fab-dialog [hidden]="publishDialogHidden || !detectorGraduation" (onDismiss)="publishDialogCancel()">
+  <fab-dialog [hidden]="publishDialogHidden || !detectorGraduation || useAutoMergeText" (onDismiss)="publishDialogCancel()">
     <div class="callout-padding">
     <fab-dialog-content [title]="dialogTitle" [subText]="dialogSubText" [styles]="publishDialogStyles">
       <p>Branch Name: </p><p style="text-decoration: underline; font-weight: bold; word-wrap: break-word;">{{Branch}}</p>
@@ -152,6 +152,17 @@
     <fab-dialog-footer>
 
     </fab-dialog-footer>
+  </fab-dialog>
+
+  <fab-dialog [hidden]="publishDialogHidden || !detectorGraduation || !useAutoMergeText" (onDismiss)="publishDialogCancel()">
+    <div>
+      <fab-dialog-content [title]="'Publish'" [subText]="'This detector will be pushed directly to main and no pull request will be created'" [styles]="publishDialogStyles">
+        <div class="pt-3 pb-3 callout-padding" style="padding-left: 0px">
+          <fab-primary-button [text]="'Publish'" (onClick)="publish()"></fab-primary-button>
+          <fab-default-button [text]="cancelButtonText" (onClick)="publishDialogCancel()"></fab-default-button>
+        </div>
+      </fab-dialog-content>
+    </div>
   </fab-dialog>
 
   <fab-dialog [hidden]="deleteDialogHidden" (onDismiss)="dismissDeleteDialog()">
@@ -219,14 +230,14 @@
     (onOpened)="onOpenPublishSuccessPanel()" >
     <div class="submitted-panel-text panel-text">
       <div style="display: flex;align-items: center; margin-left: 4px; margin-right: 8px;">
-        <div *ngIf="publishSuccess && !detectorGraduation || saveSuccess" style="display: flex; align-items: center; padding: 0px 10px;">
+        <div *ngIf="publishSuccess && (!detectorGraduation || useAutoMergeText) || saveSuccess" style="display: flex; align-items: center; padding: 0px 10px;">
           <status-icon [status]="HealthStatus.Success" class="mr-3"></status-icon>
           <div>
             <h5 style="font-weight: 600;">Your detector {{detectorName}} was saved</h5>
           </div>
         </div>
 
-        <div *ngIf="publishFailed && !detectorGraduation" style="display: flex; align-items: center; padding: 0px 10px;">
+        <div *ngIf="publishFailed && (!detectorGraduation || useAutoMergeText)" style="display: flex; align-items: center; padding: 0px 10px;">
           <status-icon [status]="HealthStatus.Critical" class="mr-3"></status-icon>
           <div style="font-weight: 600;">Your detector {{detectorName}} publish failed </div>
         </div>
@@ -236,14 +247,14 @@
           <div style="font-weight: 600;">Failed to save your detector </div>
         </div>
 
-        <div *ngIf="publishSuccess && detectorGraduation" style="display: flex; align-items: center; padding: 0px 10px;">
+        <div *ngIf="publishSuccess && detectorGraduation && !useAutoMergeText" style="display: flex; align-items: center; padding: 0px 10px;">
           <status-icon [status]="HealthStatus.Success" class="mr-3"></status-icon>
           <div>
             <h5 style="font-weight: 600;">Pull request sent successfully</h5>
           </div>
         </div>
 
-        <div *ngIf="publishFailed && detectorGraduation" style="display: flex; align-items: center; padding: 0px 10px;">
+        <div *ngIf="publishFailed && detectorGraduation && !useAutoMergeText" style="display: flex; align-items: center; padding: 0px 10px;">
           <status-icon [status]="HealthStatus.Critical" class="mr-3"></status-icon>
           <div style="font-weight: 600;">Pull request failed to send</div>
         </div>
@@ -253,8 +264,8 @@
         <h5>{{currentTime}}</h5>
       </div>
     </div>
-    <div *ngIf="publishSuccess && !detectorGraduation" style="margin-left: 4px;">You can find it in "Your detectors" later.</div>
-    <div *ngIf="publishSuccess && detectorGraduation" style="margin-left: 4px;">You can view your PR <a target="_blank" rel="noopener noreferrer" [href]="PRLink">here</a>.</div>
+    <div *ngIf="publishSuccess && (!detectorGraduation || useAutoMergeText)" style="margin-left: 4px;">You can find it in "Your detectors" later.</div>
+    <div *ngIf="publishSuccess && detectorGraduation && !useAutoMergeText" style="margin-left: 4px;">You can view your PR <a target="_blank" rel="noopener noreferrer" [href]="PRLink">here</a>.</div>
     <div *ngIf="saveSuccess" style="margin-left: 4px;">You can view your code <a target="_blank" rel="noopener noreferrer" [href]="PRLink">here</a>.</div>
     <div *ngIf="saveFailed" style="margin-left: 4px;">{{saveFailMessage}}</div>
   </fab-panel>
@@ -446,21 +457,21 @@
           </div>
         </div> -->
 
-        <div style="padding:10px">
+        <!-- <div style="padding:10px"> -->
           <!-- <detector-view *ngIf="queryResponse && !showDataSources" [detectorResponse]="queryResponse.invocationOutput"
             [startTime]="startTime" [endTime]="endTime" [error]="errorState" [showEdit]="false" [developmentMode]="true" [script]="code" [compilationPackage]="compilationPackage"></detector-view> -->
 
           <!-- <tab-data-sources *ngIf="queryResponse && showDataSources" [onboardingMode]="true"
             [detectorResponse]="queryResponse.invocationOutput">
           </tab-data-sources> -->
-          <nav class="dev-options">
+          <!-- <nav class="dev-options">
             <a (click)="getDevOptions()" tooltip="Local VS Development" class="buttons">
               <span>
                 <span class="rotate"></span>
               </span>
             </a>
           </nav>
-        </div>
+        </div> -->
       </split-area>
     </split>
   </div>
@@ -469,7 +480,7 @@
   <div *ngIf="isProd && detectorGraduation" style="display: flex;">
     <status-icon [status]="HealthStatus.Warning" class="mr-3"></status-icon>
     <div>
-      <p>To ensure the quality, accuracy, and security of detectors, the <b>{{resourceService.searchSuffix}}</b> team is now utilizing the <a [href]="PPELink">AppLens PPE Environment</a> for detector development.</p>
+      <p>To ensure the quality, accuracy, and security of detectors, the <b>{{resourceService.searchSuffix}}</b> team is now utilizing the <a target="_blank" [href]="PPELink">AppLens PPE Environment</a> for detector development.</p>
       <p>To learn more about this new experience, click <a target="_blank" href="https://applensdiagnostics.azurewebsites.net/?p=715">here</a>.</p>
       <p>You will be redirected there in {{PPERedirectTimer}} seconds...</p>
     </div>

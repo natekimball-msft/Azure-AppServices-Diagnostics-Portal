@@ -120,26 +120,9 @@ export class DiagnosticApiService {
     return useCache ? this._cacheService.get(this.getCacheKey(HttpMethod.POST, url + body.toString()), request, invalidateCache) : request;
   }
 
-  public getHasTestersAccess(useCache: boolean = true, invalidateCache: boolean = false): Observable<any> {
-    let url: string = `${this.diagnosticApi}api/hasTestersAccess`;
-    let request = this._httpClient.get(url, {
-      headers: this._getHeaders()
-    });
-
-    return useCache ? this._cacheService.get(this.getCacheKey(HttpMethod.POST, url), request, invalidateCache) : request;
-  }
-
   public getKustoClusterForGeoRegion(geoRegion: string, useCache: boolean = true, invalidateCache: boolean = false): Observable<any> {
     let path = `api/kustogeo/${geoRegion}`;
     return this.get(path, invalidateCache);
-  }
-
-  public requestTemporaryAccess(): Observable<any> {
-    let url: string = `${this.diagnosticApi}temporaryAccess/requestAccess`;
-    let request = this._httpClient.post(url, {}, {
-      headers: this._getHeaders()
-    });
-    return request;
   }
 
   public getSupportTopics(pesId: any, useCache: boolean = true, invalidateCache: boolean = false): Observable<any> {

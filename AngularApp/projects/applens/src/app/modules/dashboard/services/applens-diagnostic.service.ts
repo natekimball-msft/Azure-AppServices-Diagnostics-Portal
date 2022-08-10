@@ -146,10 +146,6 @@ export class ApplensDiagnosticService {
     return this._diagnosticApi.getUserInfo(userId);
   }
 
-  getHasTestersAccess(): Observable<any> {
-    return this._diagnosticApi.getHasTestersAccess();
-  }
-
   getCompilerResponse(body: any, isSystemInvoker: boolean, detectorId: string = '', startTime: string = '', endTime: string = '', dataSource: string = '', timeRange: string = '', additionalParams: any, publishingDetectorId: string): Observable<QueryResponse<DetectorResponse>> {
     if (isSystemInvoker === false) {
       return this._diagnosticApi.getCompilerResponse(

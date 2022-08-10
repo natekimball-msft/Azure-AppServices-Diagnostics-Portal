@@ -20,7 +20,6 @@
     </div>
 
     <div class="user-photo-container" (click)="openCallout()" (keyup.enter)="openCallout()" tabindex="0">
-      <span class="image-label"> New! </span>
       <img *ngIf="userPhotoSource !== '';else userInitial" id="userId" [src]="userPhotoSource" alt="User Profile Photo" class="avatar">
     </div>
   </nav>

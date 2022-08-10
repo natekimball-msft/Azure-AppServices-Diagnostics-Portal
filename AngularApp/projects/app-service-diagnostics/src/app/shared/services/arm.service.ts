@@ -188,7 +188,7 @@ export class ArmService {
         const request = this._http.get<ResponseMessageEnvelope<T>>(url, {
             headers: requestHeaders
         }).pipe(
-            timeout(20000),
+            timeout(60000),
             retryWhen((attempts: Observable<any>) => {
                 let maxRetryAttempts = 3;
                 let scalingDuration = 1000;

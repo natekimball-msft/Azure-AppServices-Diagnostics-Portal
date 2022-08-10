@@ -203,6 +203,7 @@ export class OnboardingFlowComponent implements OnInit {
   failureMessage: string = "";
   PPERedirectTimer: number = 10;
   DevopsConfig: DevopsConfig;
+  useAutoMergeText: boolean = false;
   runButtonStyle: any = {
     root: { cursor: "default" }
   };
@@ -270,7 +271,7 @@ export class OnboardingFlowComponent implements OnInit {
 
   publishDialogStyles: IDialogContentProps['styles'] = {
     inner: {
-      padding: "0px"
+      paddingLeft: "24px"
     },
     innerContent: {
       padding: "0px"
@@ -326,7 +327,7 @@ export class OnboardingFlowComponent implements OnInit {
   showBranchInfo:boolean = false;
   owners: string[] = [];
 
-  codeOnDefaultBranch: boolean = true;
+  codeOnDefaultBranch: boolean = false;
 
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService, private detectorGistApiService: DetectorGistApiService,
     private diagnosticApiService: ApplensDiagnosticService, private _diagnosticApi: DiagnosticApiService, private resourceService: ResourceService,
@@ -462,7 +463,7 @@ export class OnboardingFlowComponent implements OnInit {
       this.commitHistoryVisibilityStyle = !(this.detectorGraduation === true && this.mode !== DevelopMode.Create) ? { display: "none" } : {};
 
 
-      this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
+      this.modalPublishingButtonText = this.detectorGraduation && !devopsConfig.autoMerge ? "Create PR" : "Publish";
 
       this._themeService.currentThemeSub.subscribe((theme) => {
         this.editorOptions = theme == "dark" ? this.darkOptions : this.lightOptions;
@@ -1204,6 +1205,8 @@ export class OnboardingFlowComponent implements OnInit {
             this.disablePublishButton();
           }
           else {
+            this.useAutoMergeText = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.code) && !this.IsDetectorMarkedPublic(this.originalCode));
+            this.modalPublishingButtonText = !this.useAutoMergeText ? "Create PR" : "Publish";
             this.enablePublishButton();
           }
 
@@ -1350,6 +1353,7 @@ export class OnboardingFlowComponent implements OnInit {
     this.publishFailed = false;
     this.saveSuccess = false;
     this.saveFailed = false;
+    //this.autoMergeText = false;
   }
 
 
@@ -1400,13 +1404,36 @@ export class OnboardingFlowComponent implements OnInit {
     }
   }
 
+  addReviewers(){
+    let reviewers = "";
+    this.queryResponse.invocationOutput['appFilter']['AppType'].split(',').forEach(apt => {
+        if(Object.keys(this.DevopsConfig.appTypeReviewers).includes(apt)){
+          this.DevopsConfig.appTypeReviewers[apt].forEach(rev => {
+            if (!this.owners.includes(rev)) this.owners.push(rev);
+          });
+        }
+      });
+      this.queryResponse.invocationOutput['appFilter']['PlatformType'].split(',').forEach(plt => {
+        if(Object.keys(this.DevopsConfig.platformReviewers).includes(plt)){
+          this.DevopsConfig.platformReviewers[plt].forEach(rev => {
+            if (!this.owners.includes(rev)) this.owners.push(rev);
+          });
+        }
+      });
+      this.owners.forEach(o => {
+        if(o.match(/^\s*$/) == null) reviewers = reviewers.concat(o, '\n');
+      });
+      
+      return reviewers;
+  }
+  
   gradPublish() {
     this.publishDialogHidden = true;
 
-    var pushToMain = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && this.queryResponse.invocationOutput['appFilter']['InternalOnly'] === 'True' && !this.IsDetectorMarkedPublic(this.originalCode));
+    //var pushToMain = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && this.queryResponse.invocationOutput['appFilter']['InternalOnly'] === 'True' && !this.IsDetectorMarkedPublic(this.originalCode));
 
-    const commitType = this.mode == DevelopMode.Create && !this.isSaved || (pushToMain && !this.codeOnDefaultBranch) ? "add" : "edit";
-    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved || (pushToMain && !this.codeOnDefaultBranch) ? "Adding" : "Editing";
+    const commitType = this.mode == DevelopMode.Create && !this.isSaved || (this.useAutoMergeText && !this.codeOnDefaultBranch) ? "add" : "edit";
+    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved || (this.useAutoMergeText && !this.codeOnDefaultBranch) ? "Adding" : "Editing";
 
     let gradPublishFiles: string[] = [
       this.publishingPackage.codeString,
@@ -1424,30 +1451,15 @@ export class OnboardingFlowComponent implements OnInit {
     let reviewers = "";
 
     if(Object.keys(this.DevopsConfig.appTypeReviewers).length > 0 || Object.keys(this.DevopsConfig.platformReviewers).length > 0){
-      this.queryResponse.invocationOutput['appFilter']['AppType'].split(',').forEach(apt => {
-        if(Object.keys(this.DevopsConfig.appTypeReviewers).includes(apt)){
-          this.DevopsConfig.appTypeReviewers[apt].forEach(rev => {
-            if (!this.owners.includes(rev)) this.owners.push(rev);
-          });
-        }
-      });
-      this.queryResponse.invocationOutput['appFilter']['PlatformType'].split(',').forEach(plt => {
-        if(Object.keys(this.DevopsConfig.platformReviewers).includes(plt)){
-          this.DevopsConfig.platformReviewers[plt].forEach(rev => {
-            if (!this.owners.includes(rev)) this.owners.push(rev);
-          });
-        }
-      });
-      this.owners.forEach(o => {
-        if(o.match(/^\s*$/) == null) reviewers = reviewers.concat(o, '\n');
-      })
+      reviewers = this.addReviewers();
       gradPublishFileTitles.push(`/${this.publishingPackage.id.toLowerCase()}/owners.txt`);
       gradPublishFiles.push(reviewers);
     }
 
     var requestBranch = this.Branch;
-    if (pushToMain) {
+    if (this.useAutoMergeText) {
       requestBranch = this.defaultBranch;
+      this.useAutoMergeText = true;
     }
 
     
@@ -1457,7 +1469,7 @@ export class OnboardingFlowComponent implements OnInit {
     const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, this.PRTitle, this.resourceId, this.owners, description);
 
     DetectorObservable.subscribe(_ => {
-      if (!pushToMain) {
+      if (!this.useAutoMergeText) {
         makePullRequestObservable.subscribe(_ => {
           this.PRLink = `${_["webUrl"]}/pullrequest/${_["prId"]}`
           this.publishSuccess = true;
@@ -1487,7 +1499,7 @@ export class OnboardingFlowComponent implements OnInit {
   deleteDetector() {
     this.deletingDetector = true;
 
-    var pushToMain = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.code) && !this.IsDetectorMarkedPublic(this.originalCode));
+    this.useAutoMergeText = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.code) && !this.IsDetectorMarkedPublic(this.originalCode));
 
     let gradPublishFiles: string[] = [
       "delete code",
@@ -1508,14 +1520,14 @@ export class OnboardingFlowComponent implements OnInit {
     }
 
     var requestBranch = this.Branch;
-    if (pushToMain) {
+    if (this.useAutoMergeText) {
       requestBranch = this.defaultBranch;
     }
 
     const deleteDetectorFiles = this.diagnosticApiService.pushDetectorChanges(requestBranch, gradPublishFiles, gradPublishFileTitles, `deleting detector: ${this.id} Author : ${this.userName}`, "delete", this.resourceId);
     const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, `Deleting ${this.id}`, this.resourceId, this.owners);
     deleteDetectorFiles.subscribe(_ => {
-      if (!this.DevopsConfig.autoMerge && !(this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.originalCode))) {
+      if (!this.useAutoMergeText) {
         makePullRequestObservable.subscribe(_ => {
           this.PRLink = `${_["webUrl"]}/pullrequest/${_["prId"]}`
           this.publishSuccess = true;
@@ -1570,19 +1582,7 @@ export class OnboardingFlowComponent implements OnInit {
     let reviewers = "";
 
     if(Object.keys(this.DevopsConfig.appTypeReviewers).length > 0 || Object.keys(this.DevopsConfig.platformReviewers).length > 0){
-      this.queryResponse.invocationOutput['appFilter']['AppType'].split(',').forEach(apt => {
-        if(Object.keys(this.DevopsConfig.appTypeReviewers).includes(apt)){
-          if (!this.owners.includes(this.DevopsConfig.appTypeReviewers[apt])) this.owners.push(this.DevopsConfig.appTypeReviewers[apt]);
-        }
-      });
-      this.queryResponse.invocationOutput['appFilter']['PlatformType'].split(',').forEach(plt => {
-        if(Object.keys(this.DevopsConfig.platformReviewers).includes(plt)){
-          if (!this.owners.includes(this.DevopsConfig.platformReviewers[plt])) this.owners.push(this.DevopsConfig.platformReviewers[plt]);
-        }
-      });
-      this.owners.forEach(o => {
-        if(o.match(/^\s*$/) == null) reviewers = reviewers.concat(o, '\n');
-      })
+      reviewers = this.addReviewers();
       gradPublishFileTitles.push(`/${this.publishingPackage.id.toLowerCase()}/owners.txt`);
       gradPublishFiles.push(reviewers);
     }
@@ -1747,6 +1747,7 @@ export class OnboardingFlowComponent implements OnInit {
     this.resourceId = this.resourceService.getCurrentResourceId();
     this.hideModal = localStorage.getItem("localdevmodal.hidden") === "true";
     let detectorFile: Observable<string>;
+    let isGradEdit: boolean = false;
     this.recommendedUtterances = [];
     this.utteranceInput = "";
     
@@ -1789,6 +1790,7 @@ export class OnboardingFlowComponent implements OnInit {
       }
       case DevelopMode.Edit: {
         if (this.detectorGraduation) {
+          isGradEdit = true;
           this.fileName = `${this.id.toLowerCase()}.csx`;
           this.deleteAvailable = true;
           detectorFile = this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId)
@@ -1867,21 +1869,36 @@ export class OnboardingFlowComponent implements OnInit {
         this.configuration['dependencies'] = {};
       }
     }
-    // For each gist listed in package.json, the commit content is set in the references map.
-    forkJoin(detectorFile, configuration, this.diagnosticApiService.getGists()).subscribe(res => {
-      this.codeLoaded = true;
+    
+    detectorFile.subscribe(res => {
       // if (!this.code)
-      this.code = this.addCodePrefix(res[0]);
+      this.code = this.addCodePrefix(res);
       this.originalCode = this.code;
-      if (res[1] !== null) {
+      this.codeLoaded = true;
+    }, err => {
+      if (isGradEdit && this.Branch === this.defaultBranch && this.showBranches.length > 1){
+        this.Branch = this.showBranches.filter(branch => { return branch.key != this.defaultBranch })[0].key;
+        this.displayBranch = this.Branch;
+        this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId).subscribe(c => {
+          // if (!this.code)
+          this.code = this.addCodePrefix(c);
+          this.originalCode = this.code;
+          this.codeLoaded = true;
+        });
+      }
+    });
+
+    // For each gist listed in package.json, the commit content is set in the references map.
+    forkJoin(configuration, this.diagnosticApiService.getGists()).subscribe(res => {
+      if (res[0] !== null) {
         this.gists = Object.keys(this.configuration['dependencies']);
         this.gists.forEach((name, index) => {
-          this.reference[name] = res[1][index];
+          this.reference[name] = res[0][index];
         });
       }
 
-      if (res[2] !== null) {
-        res[2].forEach(m => {
+      if (res[1] !== null) {
+        res[1].forEach(m => {
           this.allGists.push(m.id);
         });
       }
