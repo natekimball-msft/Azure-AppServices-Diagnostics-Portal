@@ -1871,23 +1871,23 @@ export class OnboardingFlowComponent implements OnInit {
     }
     
     detectorFile.subscribe(res => {
-      this.codeLoaded = true;
       // if (!this.code)
       this.code = this.addCodePrefix(res);
       this.originalCode = this.code;
+      this.codeLoaded = true;
     }, err => {
       if (isGradEdit && this.Branch === this.defaultBranch && this.showBranches.length > 1){
         this.Branch = this.showBranches.filter(branch => { return branch.key != this.defaultBranch })[0].key;
         this.displayBranch = this.Branch;
         this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId).subscribe(c => {
-          this.codeLoaded = true;
           // if (!this.code)
           this.code = this.addCodePrefix(c);
           this.originalCode = this.code;
+          this.codeLoaded = true;
         });
       }
     });
-    
+
     // For each gist listed in package.json, the commit content is set in the references map.
     forkJoin(configuration, this.diagnosticApiService.getGists()).subscribe(res => {
       if (res[0] !== null) {
