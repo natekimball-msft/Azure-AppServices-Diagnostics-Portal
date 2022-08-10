@@ -1,5 +1,5 @@
 import { Connection } from '@angular/http';
-import { FormStepView, InfoStepView, InfoType, StatusStyles, StepView } from 'diagnostic-data';
+import { CheckStepView, FormStepView, InfoStepView, InfoType, StatusStyles, StepView } from 'diagnostic-data';
 import { InputType } from 'projects/diagnostic-data/src/lib/models/form';
 import { DiagProvider } from '../diag-provider';
 import { NetworkCheckFlow } from "../network-check-flow";
@@ -74,14 +74,20 @@ function generateHopTable(hops: ConnectivityHopContract[]): string {
 
 function generatePingDataDisplay(data: ConnectivityCheckResponse): StepView {
 
+    let severityRating = {
+        "Error": 2,
+        "Warning": 1
+    }
+    let worstError = Math.max(...data.hops.map(hop => Math.max(...hop.issues.map(issue => severityRating[issue.severity]), 0)));
+
     switch(data.connectionStatus) {
         case ConnectionStatus.CONNECTED: 
         case ConnectionStatus.REACHABLE:
-            return new InfoStepView({
+            return new CheckStepView({
                 title: "Ping Status",
-                infoType: InfoType.recommendation,
+                level: worstError,
                 id: "dataDisp",
-                markdown: `
+                bodyMarkdown: `
                     **Average Latency**: ${data.avgLatencyInMs}ms</br>
                     **Min Latency**: ${data.minLatencyInMs}ms</br>
                     **Max Latency**: ${data.maxLatencyInMs}ms</br>
@@ -98,11 +104,12 @@ function generatePingDataDisplay(data: ConnectivityCheckResponse): StepView {
         case ConnectionStatus.UNKNOWN: 
         case ConnectionStatus.UNREACHABLE:
         default: 
-            return new InfoStepView({
+            return new CheckStepView({
                 title: "Ping Status",
-                infoType: InfoType.recommendation,
-                id: "dataDisp",
-                markdown: `
+                level: worstError,
+                expandByDefault: true,
+                id: "step2",
+                bodyMarkdown: `
                     **Probes Sent**: ${data.probesSent}</br>
                     **Probes Failed**: ${data.probesFailed}</br>
                     ${generateHopTable(data.hops)}
