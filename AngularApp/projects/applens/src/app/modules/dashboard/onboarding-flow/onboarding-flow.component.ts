@@ -1747,6 +1747,7 @@ export class OnboardingFlowComponent implements OnInit {
     this.resourceId = this.resourceService.getCurrentResourceId();
     this.hideModal = localStorage.getItem("localdevmodal.hidden") === "true";
     let detectorFile: Observable<string>;
+    let isGradEdit: boolean = false;
     this.recommendedUtterances = [];
     this.utteranceInput = "";
     
@@ -1789,6 +1790,7 @@ export class OnboardingFlowComponent implements OnInit {
       }
       case DevelopMode.Edit: {
         if (this.detectorGraduation) {
+          isGradEdit = true;
           this.fileName = `${this.id.toLowerCase()}.csx`;
           this.deleteAvailable = true;
           detectorFile = this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId)
@@ -1867,21 +1869,36 @@ export class OnboardingFlowComponent implements OnInit {
         this.configuration['dependencies'] = {};
       }
     }
-    // For each gist listed in package.json, the commit content is set in the references map.
-    forkJoin(detectorFile, configuration, this.diagnosticApiService.getGists()).subscribe(res => {
-      this.codeLoaded = true;
+    
+    detectorFile.subscribe(res => {
       // if (!this.code)
-      this.code = this.addCodePrefix(res[0]);
+      this.code = this.addCodePrefix(res);
       this.originalCode = this.code;
-      if (res[1] !== null) {
+      this.codeLoaded = true;
+    }, err => {
+      if (isGradEdit && this.Branch === this.defaultBranch && this.showBranches.length > 1){
+        this.Branch = this.showBranches.filter(branch => { return branch.key != this.defaultBranch })[0].key;
+        this.displayBranch = this.Branch;
+        this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId).subscribe(c => {
+          // if (!this.code)
+          this.code = this.addCodePrefix(c);
+          this.originalCode = this.code;
+          this.codeLoaded = true;
+        });
+      }
+    });
+
+    // For each gist listed in package.json, the commit content is set in the references map.
+    forkJoin(configuration, this.diagnosticApiService.getGists()).subscribe(res => {
+      if (res[0] !== null) {
         this.gists = Object.keys(this.configuration['dependencies']);
         this.gists.forEach((name, index) => {
-          this.reference[name] = res[1][index];
+          this.reference[name] = res[0][index];
         });
       }
 
-      if (res[2] !== null) {
-        res[2].forEach(m => {
+      if (res[1] !== null) {
+        res[1].forEach(m => {
           this.allGists.push(m.id);
         });
       }
