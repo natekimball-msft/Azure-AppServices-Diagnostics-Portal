@@ -100,6 +100,9 @@ export const TelemetryEventNames = {
     FavoriteDetectorAdded: 'FavoriteDetectorAdded',
     FavoriteDetectorClicked: 'FavoriteDetectorClicked',
     FavoriteDetectorRemoved: 'FavoriteDetectorRemoved',
+    ICMTemplateManagementPage: 'ICMTemplateManagementPage',
+    ICMTeamTemplateLoaded: 'ICMTeamTemplateLoaded',
+    ICMTeamTemplateUpdate: 'ICMTeamTemplateUpdate',
 };
 
 export const TelemetrySource = {

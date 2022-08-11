@@ -97,7 +97,7 @@ export const Routes = RouterModule.forRoot([
             loadChildren: './modules/stamp/stamp.module#StampModule'
           },
           {
-            path: 'icm/:incidentId',
+            path: 'icm',
             loadChildren: './modules/incidentassist/incidentassist.module#IncidentAssistModule'
           },
           {
