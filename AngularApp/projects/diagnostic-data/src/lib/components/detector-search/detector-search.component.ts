@@ -221,6 +221,11 @@ export class DetectorSearchComponent extends DataRenderBaseComponent implements 
         this.showCharAlert = false;
     }
 
+    clearButtonEnter(event){
+        event.preventDefault();
+        this.clearSearchTerm();
+    }
+
     hitSearch(autofocus: boolean=false){
         if (autofocus) {this.autoFocus = true;}
         this.resetAlert();
@@ -385,6 +390,7 @@ export class DetectorSearchComponent extends DataRenderBaseComponent implements 
 
     clearSearchTerm() {
         this.searchTerm = "";
+        this.searchInputBox.nativeElement.focus();
     }
 
     getChildrenOfAnalysis(analysisId, detectorList) {
