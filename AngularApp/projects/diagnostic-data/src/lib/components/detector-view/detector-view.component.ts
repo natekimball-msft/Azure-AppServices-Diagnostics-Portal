@@ -387,7 +387,11 @@ export class DetectorViewComponent implements OnInit {
           }
         });
       }
-    });
+    },(err => {
+      console.log(err);
+    }),( () => {
+      console.log("complete");
+    }));
   }
 
   resetGlobals() {

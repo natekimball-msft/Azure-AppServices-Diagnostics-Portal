@@ -11,6 +11,7 @@ import { map } from 'rxjs/operators';
 @Injectable()
 export class ApplensDiagnosticService {
   public resourceId: string = "";
+  documentationResource: string = `subscriptions/1402be24-4f35-4ab7-a212-2cd496ebdf14/resourceGroups/Default-Web-WestUS/providers/Microsoft.Web/sites/buggyapp`;
   constructor(private _diagnosticApi: DiagnosticApiService, private _resourceService: ResourceService) {
     this.resourceId = this._resourceService.getCurrentResourceId(true);
     if (!this.resourceId.startsWith("/")) this.resourceId = "/" + this.resourceId;
@@ -144,6 +145,10 @@ export class ApplensDiagnosticService {
 
   getUserInfo(userId: string = ""): Observable<any> {
     return this._diagnosticApi.getUserInfo(userId);
+  }
+
+  getHasTestersAccess(): Observable<any> {
+    return this._diagnosticApi.getHasTestersAccess();
   }
 
   getCompilerResponse(body: any, isSystemInvoker: boolean, detectorId: string = '', startTime: string = '', endTime: string = '', dataSource: string = '', timeRange: string = '', additionalParams: any, publishingDetectorId: string): Observable<QueryResponse<DetectorResponse>> {
