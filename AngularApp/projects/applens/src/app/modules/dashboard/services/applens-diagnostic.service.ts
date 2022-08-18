@@ -147,12 +147,25 @@ export class ApplensDiagnosticService {
     return this._diagnosticApi.getUserInfo(userId);
   }
 
-  getHasTestersAccess(): Observable<any> {
-    return this._diagnosticApi.getHasTestersAccess();
-  }
-
-  getCompilerResponse(body: any, isSystemInvoker: boolean, detectorId: string = '', startTime: string = '', endTime: string = '', dataSource: string = '', timeRange: string = '', additionalParams: any, publishingDetectorId: string): Observable<QueryResponse<DetectorResponse>> {
-    if (isSystemInvoker === false) {
+  getCompilerResponse(body: any, isSystemInvoker: boolean, detectorId: string = '', startTime: string = '', endTime: string = '', dataSource: string = '', timeRange: string = '', additionalParams: any, publishingDetectorId: string, isDocumentation: boolean = false): Observable<QueryResponse<DetectorResponse>> {
+    if (isDocumentation === true){
+      return this._diagnosticApi.getCompilerResponse(
+        this._resourceService.versionPrefix,
+        //this._resourceService.getCurrentResourceId(true),
+        this.documentationResource,
+        body,
+        startTime,
+        endTime,
+        additionalParams, publishingDetectorId);
+      // return this._diagnosticApi.getSystemCompilerResponse(
+      //   this._resourceService.getCurrentResourceId(true),
+      //   body,
+      //   detectorId,
+      //   dataSource,
+      //   timeRange,
+      //   additionalParams);
+    }
+    else if (isSystemInvoker === false) {
       return this._diagnosticApi.getCompilerResponse(
         this._resourceService.versionPrefix,
         this._resourceService.getCurrentResourceId(true),

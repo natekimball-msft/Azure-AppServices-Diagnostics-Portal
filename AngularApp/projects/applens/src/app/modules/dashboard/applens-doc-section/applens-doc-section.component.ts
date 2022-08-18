@@ -119,6 +119,7 @@ export class ApplensDocSectionComponent implements OnInit {
   }
 
   runCompilation(code: string) {
+    this.queryResponse = undefined;
     // let code = `${this.detectorCodeStart}${sample}${this.detectorCodeEnd}`;
     if (this.runButtonDisabled) {
       return;
