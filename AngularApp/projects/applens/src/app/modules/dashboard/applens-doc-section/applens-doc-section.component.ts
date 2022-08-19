@@ -1,7 +1,8 @@
+import { ICommandBarItemOptions } from '@angular-react/fabric';
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { inputControlHeight } from '@uifabric/azure-themes/lib/azure/Constants';
-import { ICommandBarItemProps, ICommandBarProps } from 'office-ui-fabric-react';
+import { IButtonStyles, ICommandBarItemProps, ICommandBarProps, IPivotProps } from 'office-ui-fabric-react';
 import { CompilationProperties } from 'projects/diagnostic-data/src/lib/models/compilation-properties';
 import { CompilationTraceOutputDetails, LocationSpan, Position, QueryResponse } from 'projects/diagnostic-data/src/lib/models/compiler-response';
 import { DetectorResponse, HealthStatus } from 'projects/diagnostic-data/src/lib/models/detector';
@@ -61,22 +62,49 @@ export class ApplensDocSectionComponent implements OnInit {
 
   commandbarStyle: ICommandBarProps['styles'] = {
     root: {
-      backgroundColor: '#e6e6e6',
+      backgroundColor: '#e6e6e6 !important',
       color: '#e6e6e6',
       height: '29px'
     },
     primarySet: {
-      backgroundColor: '#e6e6e6',
+      backgroundColor: '#e6e6e6 !important',
       color: '#e6e6e6',
+      height: '29px'
+    },
+    secondarySet: {
+      backgroundColor: '#e6e6e6 !important',
+      color: '#e6e6e6',
+      height: '29px'
     }
-    // secondarySet: {
-    //   backgroundColor: '#e6e6e6',
-    //   color: '#e6e6e6',
-    // }
   }
 
-  commandBarButtonStyle: ICommandBarItemProps['buttonStyles'] = {
+  commandBarButtonStyle: IButtonStyles = {
     root: {
+      backgroundColor: '#e6e6e6',
+      padding: '0px'
+    },
+    // icon: {
+    //   backgroundColor: '#e6e6e6'
+    // },
+    // textContainer: {
+    //   backgroundColor: '#e6e6e6'
+    // },
+    flexContainer: {
+      backgroundColor: '#e6e6e6',
+      paddingRight: '8px'
+    }
+  }
+
+  pivotStyle: IPivotProps['styles'] = {
+    linkIsSelected: {
+      selectors: {
+        '::before': {
+        bottom: '39px',
+        height: '5px',
+        left: '0px',
+        right: '0px'
+        }
+      },
       backgroundColor: '#e6e6e6'
     }
   }
@@ -89,12 +117,22 @@ export class ApplensDocSectionComponent implements OnInit {
   compilationPackage: CompilationProperties  = new CompilationProperties();
   queryResponse: QueryResponse<DetectorResponse>;
   public showDetailedCompilationTraces: boolean = true;
-  runButtonStyle: any = {
-    root: { cursor: "default" }
+  runButtonStyle: IButtonStyles = {
+    root: {
+      cursor: 'default',
+      backgroundColor: '#e6e6e6 !important'
+    },
+    rootDisabled: {
+      pointerEvents: 'auto',
+      cursor: "not-allowed",
+      color: "grey",
+      backgroundColor: '#e6e6e6 !important'
+    }
   };
   runIcon: any = { iconName: 'Play' };
   private _monacoEditor: monaco.editor.ICodeEditor = null;
   errorState: any;
+  
 
   constructor(private diagnosticApiService: ApplensDiagnosticService, private _activatedRoute: ActivatedRoute, private _detectorControlService: DetectorControlService) { }
 
@@ -116,6 +154,10 @@ export class ApplensDocSectionComponent implements OnInit {
   
   testrun(line: string){
     console.log(line);
+  }
+  copyCode(code){
+    const copy = require('clipboard-copy')
+    copy(code);
   }
 
   runCompilation(code: string) {
@@ -317,12 +359,13 @@ export class ApplensDocSectionComponent implements OnInit {
 
   disableRunButton() {
     this.runButtonDisabled = true;
-    this.runButtonStyle = {
-      root: {
-        cursor: "not-allowed",
-        color: "grey"
-      }
-    };
+    // this.runButtonStyle = {
+    //   root: {
+    //     cursor: "not-allowed",
+    //     color: "grey",
+    //     backgroundColor: '#e6e6e6 !important'
+    //   }
+    // };
     this.runIcon = {
       iconName: 'Play',
       styles: {
@@ -335,9 +378,12 @@ export class ApplensDocSectionComponent implements OnInit {
 
   enableRunButton() {
     this.runButtonDisabled = false;
-    this.runButtonStyle = {
-      root: { cursor: "default" }
-    };
+    // this.runButtonStyle = {
+    //   root: {
+    //     cursor: 'default',
+    //     backgroundColor: '#e6e6e6 !important'
+    //   }
+    // };
     this.runIcon = { iconName: 'Play' };
   }
 
