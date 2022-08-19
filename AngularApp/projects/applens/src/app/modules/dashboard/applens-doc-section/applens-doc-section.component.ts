@@ -10,6 +10,9 @@ import { DetectorControlService } from 'projects/diagnostic-data/src/lib/service
 import { BehaviorSubject } from 'rxjs';
 import { getConfigFileParsingDiagnostics } from 'typescript';
 import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
+import * as momentNs from 'moment';
+
+const moment = momentNs;
 
 @Component({
   selector: 'applens-doc-section',
@@ -132,6 +135,9 @@ export class ApplensDocSectionComponent implements OnInit {
   runIcon: any = { iconName: 'Play' };
   private _monacoEditor: monaco.editor.ICodeEditor = null;
   errorState: any;
+  startTime: momentNs.Moment = moment.utc().subtract(1, 'days')
+  endTime: momentNs.Moment = moment.utc();
+  
   
 
   constructor(private diagnosticApiService: ApplensDiagnosticService, private _activatedRoute: ActivatedRoute, private _detectorControlService: DetectorControlService) { }
