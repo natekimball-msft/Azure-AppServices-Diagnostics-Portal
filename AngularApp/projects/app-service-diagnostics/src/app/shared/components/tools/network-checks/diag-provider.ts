@@ -6,6 +6,7 @@ import { Observable, of, throwError, timer } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
 import { ResponseMessageEnvelope } from '../../../models/responsemessageenvelope';
 import { Site, SiteInfoMetaData } from '../../../models/site';
+import { NetworkTroubleshooterPostAPIBody, Credentials, CredentialReference, ResourceMetadata } from '../../../models/network-troubleshooter/post-request-body'
 import { ArmService } from '../../../services/arm.service';
 import { SiteService } from '../../../services/site.service';
 
