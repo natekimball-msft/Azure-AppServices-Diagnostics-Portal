@@ -130,22 +130,6 @@ export class ArmService {
     createUrl(resourceUri: string, apiVersion?: string) {
         const uri = `${this.armUrl}${resourceUri}${resourceUri.indexOf('?') >= 0 ? '&' : '?'}` +
             `api-version=${this.getApiVersion(resourceUri, apiVersion)}`
-
-        //Temporary solution for checking dependency call for missing api version exception, will remove after resolve exception
-        const exceptionUri = "management.azure.com/?clientOptimizations=undefined&l=en.en-us&trustedAuthority=https:%2F%2Fportal.azure.com&shellVersion=undefined#";
-        if (uri.includes(exceptionUri)) {
-            if (this.telemetryService) {
-                this.telemetryService.logEvent("MissingApiVersionParameter", {
-                    "resourceUri": resourceUri,
-                    "uri": uri,
-                    "armUrl": this.armUrl,
-                    "isInCaseSubmissionFlow": `${this.isInCaseSubmissionFlow}`,
-                    "effectivLocale": `${this.effectiveLocale}`
-                });
-            }
-            throw new Error("ARM Call Cause MissingApiVersionParameter Exception");
-        }
-
         return uri;
     }
 

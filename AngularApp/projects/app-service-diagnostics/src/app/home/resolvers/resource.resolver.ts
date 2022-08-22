@@ -31,7 +31,7 @@ export class ResourceResolver implements Resolve<Observable<{} | ArmResource>> {
 
         //Try get resourceUri from activatedRoute,if not then get from Routerstate
         let resourceUri = activatedRouteSnapshot.parent.url
-            .filter(x => x.path !== 'new' && x.path !== 'categories')
+            .filter(x => x.path !== 'categories')
             .map(x => x.path)
             .join('/');
 
