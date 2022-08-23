@@ -11,6 +11,7 @@ import { TelemetryEventNames } from '../../../../../../diagnostic-data/src/lib/s
 import { environment } from '../../../../environments/environment';
 import { UserSettingService } from '../services/user-setting.service';
 import { BreadcrumbService } from '../services/breadcrumb.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'side-nav',
@@ -30,6 +31,13 @@ export class SideNavComponent implements OnInit {
 
   gists: CollapsibleMenuItem[] = [];
   gistsCopy: CollapsibleMenuItem[] = [];
+
+  docs: CollapsibleMenuItem[] = [];
+  //docCategories: CollapsibleMenuItem[] = [];
+  docsCopy: CollapsibleMenuItem[] = [];
+  docsRepoRoot: string = `Documentation`;
+  docsBranch: string = `darreldonald/documentationTestBranch`;
+  docsResource: string = `/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/`
 
   favoriteDetectors: CollapsibleMenuItem[] = [];
   favoriteDetectorsCopy: CollapsibleMenuItem[] = [];
@@ -194,6 +202,15 @@ export class SideNavComponent implements OnInit {
     this.navigateTo(`users/${this.userId}/detectors`);
   }
 
+  getDocCategories(){
+    const categoriesObservable = this._diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/content`, this.docsBranch, this.docsResource);
+    return categoriesObservable;
+  }
+  getDocFiles(category: string){
+    const fileObservalbe = this._diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${category}/content`, this.docsBranch, this.docsResource);
+    return fileObservalbe;
+  }
+
   initializeDetectors() {
     this._diagnosticApiService.getDetectors().subscribe(detectorList => {
       if (detectorList) {
@@ -254,6 +271,45 @@ export class SideNavComponent implements OnInit {
         if (error && error.status === 404) {
         }
       });
+    
+    this.getDocCategories().subscribe(content => {
+      let docCatIndex = 0;
+      let categories = content.split(/[\n\r]+/);
+      let fileNamesObservables = [];
+      categories.forEach(cat => {
+        fileNamesObservables.push(this.getDocFiles(cat));
+        //if (this.docs.length < this.docCategories.length + 1) this.docs.push([]);
+        let catItem = new CollapsibleMenuItem(cat, "", null, null, null, false);
+        this.docs.push(catItem);
+      });
+      forkJoin(fileNamesObservables).subscribe(files => {
+        let fileNames = []
+        files.forEach((f, filesIndex) => {
+          fileNames.push(f.split(/[\n\r]+/));
+          // let docItems: CollapsibleMenuItem[] = [];
+          fileNames[filesIndex].forEach(d => {
+            let docItem: CollapsibleMenuItem = {
+              label: d,
+              id: "",
+              onClick: () => {
+                this.navigateTo(`docs/${categories[filesIndex]}/${d}`);
+              },
+              expanded: false,
+              subItems: null,
+              isSelected: () => {
+                return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `docs/${categories[filesIndex]}/${d}`;
+              },
+              icon: null
+            }
+            //this.docs.push(docItem);
+            this.docs[this.docs.findIndex(x => {return x.label === categories[filesIndex]})].subItems.push(docItem)
+          });
+          // this.docs[docCatIndex] = docItems;
+          // docCatIndex += 1;
+        });
+        this.docsCopy = this.deepCopyArray(this.docs);
+      });
+    });
   }
 
   private createDetectorMenuItem(element: DetectorMetaData, categories: CollapsibleMenuItem[], isAnalysis: boolean = false, isFavoriteDetector: boolean = false) {

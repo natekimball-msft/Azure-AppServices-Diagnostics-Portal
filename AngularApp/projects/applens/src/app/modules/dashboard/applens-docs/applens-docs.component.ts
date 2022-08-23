@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ApplensGlobal } from '../../../applens-global';
 import { applensDocs } from '../../../shared/utilities/applens-docs-constant';
@@ -11,7 +12,7 @@ import { ApplensDiagnosticService } from '../services/applens-diagnostic.service
 })
 export class ApplensDocsComponent implements OnInit {
   applensDocs = applensDocs;
-  constructor(private _applensGlobal:ApplensGlobal, private diagnosticApiService: ApplensDiagnosticService, private ref: ChangeDetectorRef) { }
+  constructor(private _applensGlobal:ApplensGlobal, private diagnosticApiService: ApplensDiagnosticService, private ref: ChangeDetectorRef, private _activatedRoute: ActivatedRoute) { }
   
   markdownCode = [];
   folders = []
@@ -22,20 +23,32 @@ export class ApplensDocsComponent implements OnInit {
   htmlToAdd = "";
   fileNames: string[][] = [];
 
+  category: string;
+  doc: string;
+
   files:any[][] = [];
+
+  docsRepoRoot: string = `Documentation`;
+  docsBranch: string = `darreldonald/documentationTestBranch`;
+  docsResource: string = `/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/`
 
   // editorTestString: string = "editor test test";
   // editorOptions = {theme: 'vs-dark', language: 'javascript'};
   
   ngOnInit() {
       this._applensGlobal.updateHeader("");
-
-      this.diagnosticApiService.getDetectorCode(`documentation/insight/insightmarkdown.txt`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(x=>{
-        this.markdownCode = x.split(this.codeRegEx);
-        this.folders = this.getCodeFolders(x);
-        this.folders.forEach(f => {
-          this.getFiles(f);
+      this._activatedRoute.paramMap.subscribe(params => {
+        this.category = params.get('category');
+        this.doc = params.get('doc');
+        this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${this.doc}`, this.docsBranch, this.docsResource).subscribe(x=>{
+          this.markdownCode = x.split(this.codeRegEx);
+          this.folders = this.getCodeFolders(x);
+          this.folders.forEach(f => {
+            this.getFiles(f);
+          });
         });
+      
+      
         //for(var i = 0; i < this.markdownCode.length; i++){
           //this.htmlToAdd = this.htmlToAdd.concat(`<markdown ngPreserveWhitespaces [data]="markdownCode[${i}]"></markdown>\n`);
           //this.htmlToAdd = this.htmlToAdd.concat(`${this.markdownCode[i]}\n`);
@@ -61,13 +74,14 @@ export class ApplensDocsComponent implements OnInit {
     return folders;
   }
   getFiles(folderName: string){
+    this.files = [];
     let fileIndex = this.files.length;
     this.files.push([]);
-    this.diagnosticApiService.getDetectorCode(`documentation/insight/${folderName}/content`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(names => {
+    this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${folderName}/content`, this.docsBranch, this.docsResource).subscribe(names => {
       this.fileNames[fileIndex] = names.split('\n');
       let getFileObservables = [];
       this.fileNames[fileIndex].forEach(f => {
-        getFileObservables.push(this.diagnosticApiService.getDetectorCode(`documentation/insight/${folderName}/${f.replace(/\s/g,"")}`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/")); 
+        getFileObservables.push(this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${folderName}/${f.replace(/\s/g,"")}`, this.docsBranch, this.docsResource)); 
       });
       forkJoin(getFileObservables).subscribe(fileContent => {
         this.files[fileIndex] = fileContent;

@@ -171,7 +171,7 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
                 component: SolutionOrchestratorComponent
             },
             {
-                path: 'docs',
+                path: 'docs/:category/:doc',
                 component: ApplensDocsComponent
             },
             {
