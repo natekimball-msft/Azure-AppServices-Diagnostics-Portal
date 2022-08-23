@@ -33,7 +33,6 @@ export class SideNavComponent implements OnInit {
   gistsCopy: CollapsibleMenuItem[] = [];
 
   docs: CollapsibleMenuItem[] = [];
-  //docCategories: CollapsibleMenuItem[] = [];
   docsCopy: CollapsibleMenuItem[] = [];
   docsRepoRoot: string = `Documentation`;
   docsBranch: string = `darreldonald/documentationTestBranch`;
@@ -278,7 +277,6 @@ export class SideNavComponent implements OnInit {
       let fileNamesObservables = [];
       categories.forEach(cat => {
         fileNamesObservables.push(this.getDocFiles(cat));
-        //if (this.docs.length < this.docCategories.length + 1) this.docs.push([]);
         let catItem = new CollapsibleMenuItem(cat, "", null, null, null, false);
         this.docs.push(catItem);
       });
@@ -286,7 +284,6 @@ export class SideNavComponent implements OnInit {
         let fileNames = []
         files.forEach((f, filesIndex) => {
           fileNames.push(f.split(/[\n\r]+/));
-          // let docItems: CollapsibleMenuItem[] = [];
           fileNames[filesIndex].forEach(d => {
             let docItem: CollapsibleMenuItem = {
               label: d,
@@ -301,11 +298,8 @@ export class SideNavComponent implements OnInit {
               },
               icon: null
             }
-            //this.docs.push(docItem);
             this.docs[this.docs.findIndex(x => {return x.label === categories[filesIndex]})].subItems.push(docItem)
           });
-          // this.docs[docCatIndex] = docItems;
-          // docCatIndex += 1;
         });
         this.docsCopy = this.deepCopyArray(this.docs);
       });

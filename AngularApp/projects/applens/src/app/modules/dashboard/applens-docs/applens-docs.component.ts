@@ -31,9 +31,6 @@ export class ApplensDocsComponent implements OnInit {
   docsRepoRoot: string = `Documentation`;
   docsBranch: string = `darreldonald/documentationTestBranch`;
   docsResource: string = `/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/`
-
-  // editorTestString: string = "editor test test";
-  // editorOptions = {theme: 'vs-dark', language: 'javascript'};
   
   ngOnInit() {
       this._applensGlobal.updateHeader("");
@@ -47,20 +44,6 @@ export class ApplensDocsComponent implements OnInit {
             this.getFiles(f);
           });
         });
-      
-      
-        //for(var i = 0; i < this.markdownCode.length; i++){
-          //this.htmlToAdd = this.htmlToAdd.concat(`<markdown ngPreserveWhitespaces [data]="markdownCode[${i}]"></markdown>\n`);
-          //this.htmlToAdd = this.htmlToAdd.concat(`${this.markdownCode[i]}\n`);
-          // if (i < this.folders.length)
-          // this.htmlToAdd = this.htmlToAdd.concat(`<p>folder name: ${this.folders[i]}</p>\n`);
-        //}
-        // this.markdownCode.forEach(mdSection => {
-        //   this.htmlToAdd = this.htmlToAdd.concat(`<markdown ngPreserveWhitespaces [data]="'${mdSection}'"></markdown>\n`);
-        // });
-        // folders.forEach(f => {
-        //   this.htmlToAdd = this.htmlToAdd.concat(`<p>folder name: ${f}</p>\n`);
-        // })
       });
   }
   getCodeFolders(markdown: string){
@@ -85,7 +68,6 @@ export class ApplensDocsComponent implements OnInit {
       });
       forkJoin(getFileObservables).subscribe(fileContent => {
         this.files[fileIndex] = fileContent;
-        // console.log(caller, fileContent)
       });
     });
   }

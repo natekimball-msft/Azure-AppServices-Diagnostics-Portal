@@ -21,21 +21,9 @@ const moment = momentNs;
 })
 export class ApplensDocSectionComponent implements OnInit {
   codeObservable: BehaviorSubject<string> = new BehaviorSubject("");
-  // list<string> name = new list<string>();
-
-  // @Input() set files(s:string[]){
-  //   if(!!s) {
-  //     this.codeObservable.next(s);
-  //   }
-  // }
-
-  // @Input() folderName = "";
 
   @Input() files = [];
   @Input() fileNames = [];
-
-  //files: string[];
-  //fileNames: string[];
 
   lightOptions = {
     theme: 'vs',
@@ -48,16 +36,6 @@ export class ApplensDocSectionComponent implements OnInit {
     },
     folding: true
   };
-
-//   detectorCodeStart = `[SystemFilter]
-//   [Definition(Id = "__documentation_sample__", Name = "sample code", Author = "darreldonald", Description = "")]
-//   public async static Task<Response> Run(DataProviders dp, Dictionary<string, dynamic> cxt, Response res)
-//   {
-//     await Task.Delay(1);
-//       `;
-//   detectorCodeEnd = `
-//   return res;
-// }`
 
   editorOptions = this.lightOptions
 
@@ -86,12 +64,6 @@ export class ApplensDocSectionComponent implements OnInit {
       backgroundColor: '#e6e6e6',
       padding: '0px'
     },
-    // icon: {
-    //   backgroundColor: '#e6e6e6'
-    // },
-    // textContainer: {
-    //   backgroundColor: '#e6e6e6'
-    // },
     flexContainer: {
       backgroundColor: '#e6e6e6',
       paddingRight: '8px'
@@ -143,24 +115,11 @@ export class ApplensDocSectionComponent implements OnInit {
   constructor(private diagnosticApiService: ApplensDiagnosticService, private _activatedRoute: ActivatedRoute, private _detectorControlService: DetectorControlService) { }
 
   ngOnInit() {
-    this.isMultipleSamples = this.files.length > 1;
-    //this.getFiles();
-    //console.log(`${this.files}`);
   }
 
   ngOnChanges(){
-    this.isMultipleSamples = this.files.length > 1;
-    // this.getFiles("changes");
-    // //console.log(`change\nfoldername: ${this.folderName}\n`);
-  }
-
-  run(){
-    console.log("ran");
   }
   
-  testrun(line: string){
-    console.log(line);
-  }
   copyCode(code){
     const copy = require('clipboard-copy')
     copy(code);
@@ -168,7 +127,6 @@ export class ApplensDocSectionComponent implements OnInit {
 
   runCompilation(code: string) {
     this.queryResponse = undefined;
-    // let code = `${this.detectorCodeStart}${sample}${this.detectorCodeEnd}`;
     if (this.runButtonDisabled) {
       return;
     }
@@ -190,7 +148,6 @@ export class ApplensDocSectionComponent implements OnInit {
       } as LocationSpan
     } as CompilationTraceOutputDetails);
     let currentCode = code;
-    //this.markCodeLinesInEditor(null);
 
     var body = {
       script: code,
@@ -201,7 +158,6 @@ export class ApplensDocSectionComponent implements OnInit {
     this.disableRunButton();
     this.runButtonText = "Running";
 
-    // let isSystemInvoker: boolean = this.mode === DevelopMode.EditMonitoring || this.mode === DevelopMode.EditAnalytics;
     let isSystemInvoker: boolean = false;
 
     this._activatedRoute.queryParams.subscribe((params: Params) => {
@@ -324,7 +280,6 @@ export class ApplensDocSectionComponent implements OnInit {
             });
           }
 
-          //this.markCodeLinesInEditor(this.detailedCompilationTraces);
         }, ((error: any) => {
           this.enableRunButton();
           this.runButtonText = "Run";
@@ -358,20 +313,12 @@ export class ApplensDocSectionComponent implements OnInit {
               }
             }
           });
-          //this.markCodeLinesInEditor(this.detailedCompilationTraces);
         }));
     });
   }
 
   disableRunButton() {
     this.runButtonDisabled = true;
-    // this.runButtonStyle = {
-    //   root: {
-    //     cursor: "not-allowed",
-    //     color: "grey",
-    //     backgroundColor: '#e6e6e6 !important'
-    //   }
-    // };
     this.runIcon = {
       iconName: 'Play',
       styles: {
@@ -384,12 +331,6 @@ export class ApplensDocSectionComponent implements OnInit {
 
   enableRunButton() {
     this.runButtonDisabled = false;
-    // this.runButtonStyle = {
-    //   root: {
-    //     cursor: 'default',
-    //     backgroundColor: '#e6e6e6 !important'
-    //   }
-    // };
     this.runIcon = { iconName: 'Play' };
   }
 
@@ -401,85 +342,4 @@ export class ApplensDocSectionComponent implements OnInit {
       }
     return str.join("&");
   }
-
-  // markCodeLinesInEditor(compilerTraces: CompilationTraceOutputDetails[]) {
-  //   if (!!this._monacoEditor) {
-  //     if (compilerTraces == null) {
-  //       //Clear off all code decorations/underlines
-  //       this._oldCodeDecorations = this._monacoEditor.deltaDecorations(this._oldCodeDecorations, []);
-  //     }
-  //     else {
-  //       let newDecorations = [];
-  //       compilerTraces.forEach(traceEntry => {
-  //         if (this.isCompilationTraceClickable(traceEntry)) {
-  //           let underLineColor = '';
-  //           if (traceEntry.severity == HealthStatus.Critical) underLineColor = 'codeUnderlineError';
-  //           if (traceEntry.severity == HealthStatus.Warning) underLineColor = 'codeUnderlineWarning';
-  //           if (traceEntry.severity == HealthStatus.Info) underLineColor = 'codeUnderlineInfo';
-  //           if (traceEntry.severity == HealthStatus.Success) underLineColor = 'codeUnderlineSuccess';
-
-  //           newDecorations.push({
-  //             range: new monaco.Range(traceEntry.location.start.linePos + 1, traceEntry.location.start.colPos + 1, traceEntry.location.end.linePos + 1, traceEntry.location.end.colPos + 1),
-  //             options: {
-  //               isWholeLine: false,
-  //               inlineClassName: `codeUnderline ${underLineColor}`,
-  //               hoverMessage: [{
-  //                 value: traceEntry.message,
-  //                 isTrusted: true,
-  //               } as monaco.IMarkdownString]
-  //             }
-  //           } as monaco.editor.IModelDeltaDecoration);
-  //         }
-  //       });
-  //       if (newDecorations.length > 0) {
-  //         this._oldCodeDecorations = this._monacoEditor.deltaDecorations(this._oldCodeDecorations, newDecorations);
-  //       }
-  //     }
-  //   }
-  // }
-
-  // track(index: number, file: any){
-  //   return file.id;
-  // }
-
-  // getFiles(){
-  //   this.diagnosticApiService.getDetectorCode(`documentation/insight/${this.folderName}/content`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(names => {
-  //     this.fileNames = names.split('\n');
-  //     this.fileNames.forEach(f => {
-  //       this.diagnosticApiService.getDetectorCode(`documentation/insight/${this.folderName}/${f.replace(/\s/g,"")}`, "darreldonald/documentationTestBranch", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/").subscribe(fileContent => {
-  //         this.files.push(fileContent);
-  //         // console.log(caller, fileContent)
-  //       });
-  //     });
-  //   });
-  // }
-
-  // onInit(editor: any) {
-  //   this._monacoEditor = editor;
-  //   let getEnabled = this._diagnosticApi.get('api/appsettings/CodeCompletion:Enabled');
-  //   let getServerUrl = this._diagnosticApi.get('api/appsettings/CodeCompletion:LangServerUrl');
-  //   forkJoin([getEnabled, getServerUrl]).subscribe(resList => {
-  //     this.codeCompletionEnabled = resList[0] == true || resList[0].toString().toLowerCase() == "true";
-  //     this.languageServerUrl = resList[1];
-  //     if (this.codeCompletionEnabled && this.languageServerUrl && this.languageServerUrl.length > 0) {
-  //       if (this.code.indexOf(codePrefix) < 0) {
-  //         this.code = this.addCodePrefix(this.code);
-  //       }
-  //       let fileName = uuid();
-  //       let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse(`file:///workspace/${fileName}.cs`));
-  //       editor.setModel(editorModel);
-  //       MonacoServices.install(editor, { rootUri: "file:///workspace" });
-  //       const webSocket = this.createWebSocket(this.languageServerUrl);
-  //       listen({
-  //         webSocket,
-  //         onConnection: connection => {
-  //           // create and start the language client
-  //           const languageClient = this.createLanguageClient(connection);
-  //           const disposable = languageClient.start();
-  //           connection.onClose(() => disposable.dispose());
-  //         }
-  //       });
-  //     }
-  //   });
-  // }
 }
