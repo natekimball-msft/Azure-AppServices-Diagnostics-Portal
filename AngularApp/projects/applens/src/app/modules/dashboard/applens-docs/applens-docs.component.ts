@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ApplensGlobal } from '../../../applens-global';
+import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
 import { applensDocs } from '../../../shared/utilities/applens-docs-constant';
 import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
 
@@ -12,7 +13,7 @@ import { ApplensDiagnosticService } from '../services/applens-diagnostic.service
 })
 export class ApplensDocsComponent implements OnInit {
   applensDocs = applensDocs;
-  constructor(private _applensGlobal:ApplensGlobal, private diagnosticApiService: ApplensDiagnosticService, private ref: ChangeDetectorRef, private _activatedRoute: ActivatedRoute) { }
+  constructor(private _applensGlobal:ApplensGlobal, private diagnosticApiService: ApplensDiagnosticService, private ref: ChangeDetectorRef, private _activatedRoute: ActivatedRoute, private _diagnosticApi: DiagnosticApiService) { }
   
   markdownCode = [];
   folders = []
@@ -29,19 +30,23 @@ export class ApplensDocsComponent implements OnInit {
   files:any[][] = [];
 
   docsRepoRoot: string = `Documentation`;
-  docsBranch: string = `darreldonald/documentationTestBranch`;
-  docsResource: string = `/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd/`
+  docsBranch = null;
+  docsResource: string = `AppServiceDiagnostics`
+  docStagingBranch: string = 'DocumentationStagingBranch';
   
   ngOnInit() {
       this._applensGlobal.updateHeader("");
       this._activatedRoute.paramMap.subscribe(params => {
         this.category = params.get('category');
         this.doc = params.get('doc');
-        this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${this.doc}`, this.docsBranch, this.docsResource).subscribe(x=>{
-          this.markdownCode = x.split(this.codeRegEx);
-          this.folders = this.getCodeFolders(x);
-          this.folders.forEach(f => {
-            this.getFiles(f);
+        this._diagnosticApi.isStaging().subscribe(isStaging => {
+          if (isStaging){this.docsBranch = this.docStagingBranch;}
+          this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${this.doc}`, this.docsBranch, this.docsResource).subscribe(x=>{
+            this.markdownCode = x.split(this.codeRegEx);
+            this.folders = this.getCodeFolders(x);
+            this.folders.forEach(f => {
+              this.getFiles(f);
+            });
           });
         });
       });
