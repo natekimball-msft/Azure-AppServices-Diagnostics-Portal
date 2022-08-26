@@ -10,7 +10,7 @@
           </far-items>
         </fab-command-bar>
         <div style="background-color: #e9e9e9; padding-left: 15px; padding-right: 15px; padding-top: 4px; padding-bottom: 10px;">
-          <ngx-monaco-editor [options]="editorOptions" [(ngModel)]="file"></ngx-monaco-editor>
+          <ngx-monaco-editor [options]="editorOptions" [(ngModel)]="file" style="height:300px"></ngx-monaco-editor>
           <h5 *ngIf="queryResponse" style="font-weight: bold">Run output example</h5>
           <detector-view *ngIf="queryResponse" [detectorResponse]="queryResponse.invocationOutput" [startTime]="startTime"
             [endTime]="endTime" [error]="errorState" [showEdit]="false" [developmentMode]="true" [script]="file"
@@ -33,7 +33,7 @@
     </fab-command-bar>
     <div
       style="background-color: #e9e9e9; padding-left: 15px; padding-right: 15px; padding-top: 4px; padding-bottom: 10px;">
-      <ngx-monaco-editor [options]="editorOptions" [(ngModel)]="files[0]"></ngx-monaco-editor>
+      <ngx-monaco-editor [options]="editorOptions" [(ngModel)]="files[0]" style="height:300px"></ngx-monaco-editor>
       <h5 *ngIf="queryResponse" style="font-weight: bold">Run output example</h5>
       <detector-view *ngIf="queryResponse" [detectorResponse]="queryResponse.invocationOutput" [startTime]="startTime"
         [endTime]="endTime" [error]="errorState" [showEdit]="false" [developmentMode]="true" [script]="files[0]"
