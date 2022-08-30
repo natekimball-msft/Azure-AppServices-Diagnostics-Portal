@@ -1530,24 +1530,25 @@ export class OnboardingFlowComponent implements OnInit {
       gradPublishFileTitles.push(`/${this.id.toLowerCase()}/owners.txt`);
     }
 
-    // check if .npmrc file exists before deleting it 
-    let npmRcExists: boolean = false;
-    this.diagnosticApiService.getDetectorCode(`/${this.id.toLowerCase()}/.npmrc`, requestBranch, this.resourceId).subscribe( s => {
-      npmRcExists = true;
-    }, err => {
-      npmRcExists = false;
-    });
-
-    if (npmRcExists) {
-      gradPublishFiles.push("Delete npmrc");
-      gradPublishFileTitles.push(`/${this.id.toLowerCase()}/.npmrc`);
-    }
-
     var requestBranch = this.Branch;
     if (this.useAutoMergeText) {
       requestBranch = this.defaultBranch;
     }
 
+    this.npmRCFileExists(`/${this.id.toLowerCase()}/.npmrc`, requestBranch, this.resourceId).subscribe( s => {
+      gradPublishFiles.push("Delete npmrc");
+      gradPublishFileTitles.push(`/${this.id.toLowerCase()}/.npmrc`);
+      this.deleteOperation(requestBranch, gradPublishFiles, gradPublishFileTitles);
+    }, err => {
+      this.deleteOperation(requestBranch, gradPublishFiles, gradPublishFileTitles);
+    }, () => {      
+    this.dismissDeleteDialog();
+    this.deletingDetector = false;
+    });
+
+  }
+
+  deleteOperation(requestBranch:string, gradPublishFiles:string[], gradPublishFileTitles:string[]) {
     const deleteDetectorFiles = this.diagnosticApiService.pushDetectorChanges(requestBranch, gradPublishFiles, gradPublishFileTitles, `deleting detector: ${this.id} Author : ${this.userName}`, "delete", this.resourceId);
     const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, `Deleting ${this.id}`, this.resourceId, this.owners);
     deleteDetectorFiles.subscribe(_ => {
@@ -1571,13 +1572,14 @@ export class OnboardingFlowComponent implements OnInit {
       this.publishFailed = true;
       this.postPublish();
     });
-
-    this.dismissDeleteDialog();
-    this.deletingDetector = false
   }
 
   deleteBranch(branch: string, resourceId: string){
     this.diagnosticApiService.deleteBranches(branch, resourceId).subscribe();
+  }
+
+  npmRCFileExists(filepath:string, branch:string, resourceId:string):Observable<string> {
+    return this.diagnosticApiService.getDetectorCode(filepath, branch, resourceId);
   }
 
   saveTempId: string = "";
