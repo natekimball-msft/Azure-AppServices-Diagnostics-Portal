@@ -28,6 +28,7 @@ using Newtonsoft.Json.Linq;
 using SendGrid.Helpers.Mail;
 using Microsoft.Extensions.Hosting;
 using static AppLensV3.Helpers.HeaderConstants;
+using AppLensV3.Services.DiagnosticClientService;
 
 namespace AppLensV3.Controllers
 {
@@ -101,6 +102,12 @@ namespace AppLensV3.Controllers
         public IActionResult Ping()
         {
             return new OkResult();
+        }
+
+        [HttpGet("isStaging")]
+        public IActionResult GetIsStaging()
+        {
+            return Ok(DiagnosticClient.IsStaging());
         }
 
         [HttpGet("appsettings/{name}")]
