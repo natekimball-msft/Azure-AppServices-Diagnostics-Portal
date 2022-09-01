@@ -35,7 +35,7 @@ export class SideNavComponent implements OnInit {
 
   docs: CollapsibleMenuItem[] = [];
   docsCopy: CollapsibleMenuItem[] = [];
-  docsRepoRoot: string = `Documentation`;
+  docsRepoRoot: string = `AppLensDocumentation`;
   docsBranch = null;
   docsResource: string = `AppServiceDiagnostics`;
   docStagingBranch: string = 'DocumentationStagingBranch';

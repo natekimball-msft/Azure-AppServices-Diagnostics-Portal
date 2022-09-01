@@ -29,7 +29,7 @@ export class ApplensDocsComponent implements OnInit {
 
   files:any[][] = [];
 
-  docsRepoRoot: string = `Documentation`;
+  docsRepoRoot: string = `AppLensDocumentation`;
   docsBranch = null;
   docsResource: string = `AppServiceDiagnostics`
   docStagingBranch: string = 'DocumentationStagingBranch';
