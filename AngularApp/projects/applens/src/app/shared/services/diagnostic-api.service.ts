@@ -553,4 +553,11 @@ export class DiagnosticApiService {
     let path = `internal/idExists?detectorId=${id}`;
     return this.invoke(path, HttpMethod.GET, null, false);
   }
+
+  public isStaging(): Observable<boolean> {
+    let path = `api/isStaging`;
+    return this.get(path).pipe(map((res: boolean) => {
+      return res;
+    }));
+  }
 }
