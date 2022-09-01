@@ -121,8 +121,7 @@ export class ApplensDocSectionComponent implements OnInit {
   }
   
   copyCode(code){
-    const copy = require('clipboard-copy')
-    copy(code);
+    navigator.clipboard.writeText(code);
   }
 
   runCompilation(code: string) {

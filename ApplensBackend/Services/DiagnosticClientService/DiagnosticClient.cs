@@ -104,11 +104,6 @@ namespace AppLensV3.Services.DiagnosticClientService
             return response;
         }
 
-        public bool IsStaging()
-        {
-            return environment.IsStaging();
-        }
-
         private void AddAdditionalHeaders(HttpRequestHeaders additionalHeaders, ref HttpRequestMessage request)
         {
             foreach (var header in additionalHeaders)

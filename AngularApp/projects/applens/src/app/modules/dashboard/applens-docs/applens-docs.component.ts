@@ -29,7 +29,7 @@ export class ApplensDocsComponent implements OnInit {
 
   files:any[][] = [];
 
-  docsRepoRoot: string = `Documentation`;
+  docsRepoRoot: string = `AppLensDocumentation`;
   docsBranch = null;
   docsResource: string = `AppServiceDiagnostics`
   docStagingBranch: string = 'DocumentationStagingBranch';
@@ -62,7 +62,6 @@ export class ApplensDocsComponent implements OnInit {
     return folders;
   }
   getFiles(folderName: string){
-    this.files = [];
     let fileIndex = this.files.length;
     this.files.push([]);
     this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${folderName}/content`, this.docsBranch, this.docsResource).subscribe(names => {

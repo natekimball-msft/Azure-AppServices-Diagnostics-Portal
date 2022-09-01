@@ -49,7 +49,6 @@
     "admin-lte": "^2.4.3",
     "angular-split-ng6": "^1.0.0-rc.5",
     "bootstrap": "^3.4.1",
-    "clipboard-copy": "^4.0.1",
     "copy-html-to-clipboard": "^4.0.1",
     "core-js": "^3.6.5",
     "font-awesome": "^4.7.0",
