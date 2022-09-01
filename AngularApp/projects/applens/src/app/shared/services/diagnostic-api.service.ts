@@ -453,7 +453,7 @@ export class DiagnosticApiService {
   }
 
   public getDetectorCode(detectorPath: string, branch: string, resourceUri: string): Observable<string> {
-    let path = `devops/getCode?filePathInRepo=${detectorPath}&branch=${branch}&resourceUri=${resourceUri}`;
+    let path = branch === null ? `devops/getCode?filePathInRepo=${detectorPath}&resourceUri=${resourceUri}` :`devops/getCode?filePathInRepo=${detectorPath}&branch=${branch}&resourceUri=${resourceUri}`;
     return this.invoke(path, HttpMethod.GET, null, false);
   }
 

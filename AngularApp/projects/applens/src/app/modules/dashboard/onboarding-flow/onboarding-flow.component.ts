@@ -1406,24 +1406,29 @@ export class OnboardingFlowComponent implements OnInit {
 
   addReviewers(){
     let reviewers = "";
-    this.queryResponse.invocationOutput['appFilter']['AppType'].split(',').forEach(apt => {
+    if (!!this.queryResponse.invocationOutput['appFilter']){
+      if (!!this.queryResponse.invocationOutput['appFilter']['AppType']){
+        this.queryResponse.invocationOutput['appFilter']['AppType'].split(',').forEach(apt => {
         if(Object.keys(this.DevopsConfig.appTypeReviewers).includes(apt)){
           this.DevopsConfig.appTypeReviewers[apt].forEach(rev => {
             if (!this.owners.includes(rev)) this.owners.push(rev);
           });
         }
       });
-      this.queryResponse.invocationOutput['appFilter']['PlatformType'].split(',').forEach(plt => {
+    }
+      if (!!this.queryResponse.invocationOutput['appFilter']['PlatformType']){
+        this.queryResponse.invocationOutput['appFilter']['PlatformType'].split(',').forEach(plt => {
         if(Object.keys(this.DevopsConfig.platformReviewers).includes(plt)){
           this.DevopsConfig.platformReviewers[plt].forEach(rev => {
             if (!this.owners.includes(rev)) this.owners.push(rev);
           });
         }
       });
+    }
       this.owners.forEach(o => {
         if(o.match(/^\s*$/) == null) reviewers = reviewers.concat(o, '\n');
       });
-      
+    }
       return reviewers;
   }
   

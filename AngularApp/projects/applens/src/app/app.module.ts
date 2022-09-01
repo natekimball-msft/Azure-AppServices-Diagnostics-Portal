@@ -117,6 +117,11 @@ export const Routes = RouterModule.forRoot([
             loadChildren: './modules/dashboard/dashboard.module#DashboardModule',
             resolve: { validResources: ValidResourceResolver }
           },
+          //For '/resourceGroup' case insensitive
+          {
+            path: 'subscriptions/:subscriptionId/resourcegroups/:resourceGroup/providers/:provider/:resourceTypeName/:resourceName',
+            redirectTo: 'subscriptions/:subscriptionId/resourceGroups/:resourceGroup/providers/:provider/:resourceTypeName/:resourceName',
+          },
           {
             path: 'stamps/:stampName',
             loadChildren: './modules/dashboard/dashboard.module#DashboardModule',
