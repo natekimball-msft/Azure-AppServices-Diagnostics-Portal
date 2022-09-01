@@ -104,12 +104,6 @@ namespace AppLensV3.Controllers
             return new OkResult();
         }
 
-        [HttpGet("isStaging")]
-        public IActionResult GetIsStaging()
-        {
-            return Ok(DiagnosticClient.IsStaging());
-        }
-
         [HttpGet("appsettings/{name}")]
         public IActionResult GetAppSettingValue(string name)
         {

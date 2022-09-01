@@ -555,9 +555,9 @@ export class DiagnosticApiService {
   }
 
   public isStaging(): Observable<boolean> {
-    let path = `api/isStaging`;
-    return this.get(path).pipe(map((res: boolean) => {
-      return res;
+    let path = "api/appsettings/APPLENS_ENVIRONMENT";
+    return this.get<boolean>(path).pipe(map((res: string) => {
+      return res === 'staging';
     }));
   }
 }
