@@ -220,6 +220,9 @@ export class OnboardingFlowComponent implements OnInit {
   saveButtonDisabled: boolean = false;
   PRLink: string = "";
 
+  existingMetadata: string = "";
+  existingPackage: string = "";
+
   detectorGraduation: boolean = false;
   disableDelete: boolean = false;
 
@@ -1581,8 +1584,8 @@ export class OnboardingFlowComponent implements OnInit {
       this.publishingPackage.packageConfig
     ] : [
       this.code,
-      "",
-      ""
+      this.existingMetadata,
+      this.existingPackage
     ];
 
     
@@ -1795,6 +1798,7 @@ export class OnboardingFlowComponent implements OnInit {
     }
     if (this.detectorGraduation && this.mode != DevelopMode.Create) {
       this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/metadata.json`, this.Branch, this.resourceId).subscribe(res => {
+        this.existingMetadata = res;
         this.allUtterances = JSON.parse(res).utterances;
       },
         (err) => {
@@ -1891,6 +1895,7 @@ export class OnboardingFlowComponent implements OnInit {
       else {
         configuration = this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/package.json`, this.Branch, this.resourceId).pipe(
           map(config => {
+          this.existingPackage = config;
           let c: object = JSON.parse(config)
           c['dependencies'] = c['dependencies'] || {};
           this.configuration = c;
