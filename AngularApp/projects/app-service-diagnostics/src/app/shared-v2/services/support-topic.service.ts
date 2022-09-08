@@ -1,5 +1,5 @@
 
-import { of as observableOf, Observable, of } from 'rxjs';
+import { of as observableOf, Observable, of, throwError } from 'rxjs';
 import { map, flatMap, catchError } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -84,6 +84,7 @@ export class SupportTopicService {
                 return this.cleanSelfHelpContentApollo(response);
             }));
         }
+        return throwError("Cannot get self content from Apollo");
     }
 
     private cleanSelfHelpContentLegacy(selfHelpResponse) {
@@ -119,7 +120,9 @@ export class SupportTopicService {
 
     public getSelfHelpContentDocument(): Observable<any> {
         //Call Apollo API, if error then fallback on legacy API
-        return this.getSelfHelpContentApollo().pipe(map(res => res), catchError(err => { return this.getSelfHelpContentLegacy(); }));
+        return this.getSelfHelpContentApollo().pipe(map(res => res), catchError(err => { 
+            return this.getSelfHelpContentLegacy(); 
+        }));
     }
 
 
