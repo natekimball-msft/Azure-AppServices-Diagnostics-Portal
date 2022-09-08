@@ -27,5 +27,9 @@ export var cleanApolloSolutions = (docContent) => {
 
 	//Also remove the FIRST SECTION if it has h2 tag or if it doesn't contain any links
 	targetParts = targetParts[0].includes("<h2>") || !targetParts[0].includes("a href") ? targetParts.slice(1, targetParts.length): targetParts;
-	return targetParts ? targetParts.join('\n'): '';
+	let result = targetParts ? targetParts.join('\n'): '';
+	const hrefTerm = "a href";
+	const searchRegExp = new RegExp(hrefTerm, 'g');
+	result = result.replace(searchRegExp, 'a target="_blank" href');
+	return result;
 }
