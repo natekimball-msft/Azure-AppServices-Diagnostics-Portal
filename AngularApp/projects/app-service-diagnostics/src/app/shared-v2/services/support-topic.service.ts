@@ -81,7 +81,13 @@ export class SupportTopicService {
             };
             let resourceUri = `${this._resourceService.resource.id}/${this.apolloApiConfig.apolloResourceProvider}/${apolloResourceId}`;
             return this._armService.putResource(resourceUri, requestBody, this.apolloApiConfig.apiVersion, true).pipe(map((response: ResponseMessageEnvelope<any>) => {
-                return this.cleanSelfHelpContentApollo(response);
+                let apolloCleaned = this.cleanSelfHelpContentApollo(response);
+                if (apolloCleaned && apolloCleaned.length > 1) {
+                    return apolloCleaned;
+                }
+                else {
+                    throw new Error("No meaningful content came from Apollo");
+                }
             }));
         }
         return throwError("Cannot get self content from Apollo");
