@@ -1579,8 +1579,8 @@ export class OnboardingFlowComponent implements OnInit {
       this.publishingPackage.packageConfig
     ] : [
       this.code,
-      "",
-      ""
+      JSON.stringify({ "utterances": this.allUtterances }),
+      JSON.stringify(this.configuration)
     ];
 
     
