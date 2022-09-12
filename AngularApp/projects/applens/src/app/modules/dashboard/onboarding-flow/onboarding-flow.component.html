@@ -135,7 +135,7 @@
     </div>
   </ngx-smart-modal>
 
-  <fab-dialog [hidden]="publishDialogHidden || !detectorGraduation || useAutoMergeText" (onDismiss)="publishDialogCancel()">
+  <fab-dialog [hidden]="publishDialogHidden || !detectorGraduation || useAutoMergeText" (onDismiss)="publishDialogCancel()" [minWidth]="'80%'">
     <div class="callout-padding">
     <fab-dialog-content [title]="dialogTitle" [subText]="dialogSubText" [styles]="publishDialogStyles">
       <p>Branch Name: </p><p style="text-decoration: underline; font-weight: bold; word-wrap: break-word;">{{Branch}}</p>
@@ -143,6 +143,8 @@
       <fab-text-field [label]="PRName" [(value)]="PRTitle" [placeholder]="PRPlaceholder" [required]="true"></fab-text-field>
       <!-- <fab-text-field [label]="PRDescription" [(value)]="PRDesc" [placeholder]="PRDescriptionPlaceholder"
         [required]="true" [multiline]="true"></fab-text-field> -->
+        <search-term-addition [allUtterances]="allUtterances" [recommendedUtterances]="recommendedUtterances"
+        [utteranceInput]="utteranceInput" [detectorId]="id"></search-term-addition>
       <div style="border-top: 1px solid gray;" class="pt-3 pb-3 callout-padding">
         <fab-primary-button [text]="publishButtonText" (onClick)="publish()"></fab-primary-button>
         <fab-default-button [text]="cancelButtonText" (onClick)="publishDialogCancel()"></fab-default-button>
@@ -154,9 +156,11 @@
     </fab-dialog-footer>
   </fab-dialog>
 
-  <fab-dialog [hidden]="publishDialogHidden || !detectorGraduation || !useAutoMergeText" (onDismiss)="publishDialogCancel()">
+  <fab-dialog [hidden]="publishDialogHidden || !detectorGraduation || !useAutoMergeText" (onDismiss)="publishDialogCancel()"  [minWidth]="'80%'">
     <div>
       <fab-dialog-content [title]="'Publish'" [subText]="'This detector will be pushed directly to main and no pull request will be created'" [styles]="publishDialogStyles">
+        <search-term-addition [allUtterances]="allUtterances" [recommendedUtterances]="recommendedUtterances"
+        [utteranceInput]="utteranceInput" [detectorId]="id"></search-term-addition>
         <div class="pt-3 pb-3 callout-padding" style="padding-left: 0px">
           <fab-primary-button [text]="'Publish'" (onClick)="publish()"></fab-primary-button>
           <fab-default-button [text]="cancelButtonText" (onClick)="publishDialogCancel()"></fab-default-button>
@@ -330,7 +334,7 @@
         (click)="showDeleteDialog()"></fab-command-bar-item>
       <!-- <fab-command-bar-item key="internal" [text]="internalExternalText" [iconProps]="{ iconName: 'View' }"
         (click)="internalExternalToggle()"></fab-command-bar-item> -->
-      <far-items>
+      <far-items>        
         <fab-command-bar-item *ngIf="detectorGraduation" key="brachSelectorPill" text="custom text">
           <render>
             <ng-template let-item="item">
@@ -381,7 +385,7 @@
             </ng-template>
           </render-icon>
         </fab-command-bar-item>
-      </far-items>
+      </far-items>    
     </items>
   </fab-command-bar>
   <loader-view *ngIf="!codeLoaded" message="Starting onboarding flow ..."></loader-view>
