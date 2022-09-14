@@ -9,8 +9,8 @@ import {
   forkJoin
   , Observable, of
 } from 'rxjs';
-import { flatMap, map } from 'rxjs/operators'
-import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import { flatMap, last, map } from 'rxjs/operators'
+import { ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, Injectable, Input, OnChanges, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { Package } from '../../../shared/models/package';
 import { GithubApiService } from '../../../shared/services/github-api.service';
 import { DetectorGistApiService } from '../../../shared/services/detectorgist-template-api.service';
@@ -19,7 +19,7 @@ import { ApplensDiagnosticService } from '../services/applens-diagnostic.service
 import { RecommendedUtterance } from '../../../../../../diagnostic-data/src/public_api';
 import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.service';
 import { TelemetryEventNames } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
-import { ActivatedRoute, Params, Router } from "@angular/router";
+import { ActivatedRoute, ActivatedRouteSnapshot, CanDeactivate, Params, Router, RouterStateSnapshot } from "@angular/router";
 import { DiagnosticApiService } from "../../../shared/services/diagnostic-api.service";
 import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
 import ReconnectingWebSocket from 'reconnecting-websocket';
@@ -32,6 +32,7 @@ import { Commit } from '../../../shared/models/commit';
 import { ApplensCommandBarService } from '../services/applens-command-bar.service';
 import { DevopsConfig } from '../../../shared/models/devopsConfig';
 import { ApplensGlobal } from '../../../applens-global';
+import { IDeactivateComponent } from '../develop-navigation-guard.service';
 
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
@@ -102,7 +103,7 @@ export enum DevelopMode {
   templateUrl: './onboarding-flow.component.html',
   styleUrls: ['./onboarding-flow.component.scss']
 })
-export class OnboardingFlowComponent implements OnInit {
+export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   @Input() mode: DevelopMode = DevelopMode.Create;
   @Input() id: string = '';
   @Input() dataSource: string = '';
@@ -309,6 +310,9 @@ export class OnboardingFlowComponent implements OnInit {
   initialized = false;
   codeLoaded: boolean = false;
 
+  lastSavedVersion: string;
+  detectorDeleted: boolean = false;
+
   codeCompletionEnabled: boolean = false;
   languageServerUrl: any = null;
 
@@ -382,6 +386,23 @@ export class OnboardingFlowComponent implements OnInit {
     this.publishAccessControlResponse = {};
   }
 
+  canExit() : boolean {
+    if (this.detectorDeleted)
+      return true;
+    else if (!!this.lastSavedVersion && this.code != this.lastSavedVersion)
+      {
+        if (confirm("Your unsaved changes will be lost. Press OK to continue.")){
+          return true;
+        }
+        else {
+          return false;
+        }
+      }
+    else {
+      return true
+    }
+  }
+
   updateDataSources(event: string) {
     console.log(event);
   }
@@ -404,6 +425,7 @@ export class OnboardingFlowComponent implements OnInit {
     this.displayBranch = this.Branch;
     this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId).subscribe(x => {
       this.code = x;
+      this.lastSavedVersion = this.code
     });
     this.closeCallout();
   }
@@ -597,6 +619,7 @@ export class OnboardingFlowComponent implements OnInit {
       if (this.codeCompletionEnabled && this.languageServerUrl && this.languageServerUrl.length > 0) {
         if (this.code.indexOf(codePrefix) < 0) {
           this.code = this.addCodePrefix(this.code);
+          this.lastSavedVersion = this.code
         }
         let fileName = uuid();
         let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse(`file:///workspace/${fileName}.cs`));
@@ -942,6 +965,7 @@ export class OnboardingFlowComponent implements OnInit {
     let savedCode: string = localStorage.getItem(`${this.id.toLowerCase()}_code`)
     if (savedCode) {
       this.code = savedCode;
+      this.lastSavedVersion = this.code
     }
   }
 
@@ -1478,6 +1502,7 @@ export class OnboardingFlowComponent implements OnInit {
         makePullRequestObservable.subscribe(_ => {
           this.PRLink = `${_["webUrl"]}/pullrequest/${_["prId"]}`
           this.publishSuccess = true;
+          this.lastSavedVersion = this.publishingPackage.codeString;
           this.postPublish();
           this._applensCommandBarService.refreshPage();
         }, err => {
@@ -1488,6 +1513,7 @@ export class OnboardingFlowComponent implements OnInit {
       else {
         this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.publishingPackage.id.toLowerCase()}/${this.publishingPackage.id.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.publishingPackage.id.toLowerCase()}/${this.publishingPackage.id.toLowerCase()}.csx&version=GB${this.defaultBranch}`;
         this.publishSuccess = true;
+        this.lastSavedVersion = this.publishingPackage.codeString;
         this.postPublish();
         this.codeOnDefaultBranch = true;
         this.deleteBranch(this.Branch, this.resourceId);
@@ -1502,6 +1528,7 @@ export class OnboardingFlowComponent implements OnInit {
   }
 
   deleteDetector() {
+    this.detectorDeleted = true;
     this.deletingDetector = true;
 
     this.useAutoMergeText = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && !this.IsDetectorMarkedPublic(this.code) && !this.IsDetectorMarkedPublic(this.originalCode));
@@ -1581,8 +1608,6 @@ export class OnboardingFlowComponent implements OnInit {
       JSON.stringify(this.configuration)
     ];
 
-    
-
     let idForSave = !!this.publishingPackage ? this.publishingPackage.id.toLowerCase() : this.saveTempId;
     if (this.mode == DevelopMode.Edit) idForSave = this.id;
 
@@ -1611,6 +1636,7 @@ export class OnboardingFlowComponent implements OnInit {
       DetectorObservable.subscribe(_ => {
         this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${idForSave}/${idForSave}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${idForSave}/${idForSave}.csx&version=GB${this.Branch}`;
         this.saveSuccess = true;
+        this.lastSavedVersion = gradPublishFiles[0]
         this.postSave();
         this.isSaved = true;
         this._applensCommandBarService.refreshPage();
@@ -1908,6 +1934,7 @@ export class OnboardingFlowComponent implements OnInit {
     detectorFile.subscribe(res => {
       // if (!this.code)
       this.code = this.addCodePrefix(res);
+      this.lastSavedVersion = this.code
       this.originalCode = this.code;
       this.codeLoaded = true;
     }, err => {
@@ -1917,6 +1944,7 @@ export class OnboardingFlowComponent implements OnInit {
         this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId).subscribe(c => {
           // if (!this.code)
           this.code = this.addCodePrefix(c);
+          this.lastSavedVersion = this.code
           this.originalCode = this.code;
           this.codeLoaded = true;
         });

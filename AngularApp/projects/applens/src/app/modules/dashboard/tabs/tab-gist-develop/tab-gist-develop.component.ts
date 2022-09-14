@@ -1,5 +1,5 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { DevelopMode } from '../../onboarding-flow/onboarding-flow.component';
+import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { DevelopMode, OnboardingFlowComponent } from '../../onboarding-flow/onboarding-flow.component';
 import { ActivatedRoute, Params } from '@angular/router';
 
 @Component({
@@ -20,6 +20,12 @@ export class TabGistDevelopComponent implements OnInit {
       this.refresh();
     });
   }
+
+  @ViewChild("onboardingFlow",{static: true}) onboardingFlowComponent: OnboardingFlowComponent;
+
+  canExit(): boolean {
+    return this.onboardingFlowComponent.canExit();
+  };
 
   refresh() {
     this.id = this._route.snapshot.params["gist"].toLowerCase();

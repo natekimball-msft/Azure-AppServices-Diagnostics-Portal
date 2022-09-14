@@ -70,6 +70,7 @@ import { UserActivePullrequestsComponent } from './user-active-pullrequests/user
 import { BreadcrumbService } from './services/breadcrumb.service';
 import { FavoriteDetectorsComponent } from './favoite-detectors/favorite-detectors.component';
 import { ApplensDocSectionComponent } from './applens-doc-section/applens-doc-section.component';
+import { DevelopNavigationGuardService } from './develop-navigation-guard.service';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
@@ -160,11 +161,13 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
             },
             {
                 path: 'create',
-                component: OnboardingFlowComponent
+                component: OnboardingFlowComponent,
+                canDeactivate:[DevelopNavigationGuardService]
             },
             {
                 path: 'createGist',
-                component: GistComponent
+                component: GistComponent,
+                canDeactivate:[DevelopNavigationGuardService]
             },
             {
                 path: 'solutionOrchestrator',
@@ -181,12 +184,14 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
                     {
                         path: '',
                         component: TabGistDevelopComponent,
+                        canDeactivate:[DevelopNavigationGuardService],
                         data: {
                             tabKey: TabKey.Develop
                         }
                     }, {
                         path: 'edit',
-                        redirectTo: ''
+                        redirectTo: '',
+                        canDeactivate:[DevelopNavigationGuardService]
                     }, {
                         path: 'changelist',
                         component: TabChangelistComponent,
@@ -297,6 +302,7 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
                     {
                         path: 'edit',
                         component: TabDevelopComponent,
+                        canDeactivate:[DevelopNavigationGuardService],
                         data: {
                             tabKey: TabKey.Develop
                         }
@@ -431,6 +437,7 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
         InitResolver,
         ApplensGlobals,
         BreadcrumbService,
+        //ModelDirtyGuardService,
         {
             provide: ResourceService,
             useFactory: ResourceServiceFactory,
