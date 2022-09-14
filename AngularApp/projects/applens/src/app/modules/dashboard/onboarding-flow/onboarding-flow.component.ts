@@ -391,7 +391,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       return true;
     else if (!!this.lastSavedVersion && this.code != this.lastSavedVersion)
       {
-        if (confirm("Your unsaved changes will be lost. Press OK to continue.")){
+        if (confirm("Are you sure you want to leave? You have some unsaved changes.")){
           return true;
         }
         else {
@@ -923,7 +923,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     return '';
   }
 
-  confirm() {
+  confirmGistChanges() {
     Object.keys(this.temporarySelection).forEach(id => {
       if (this.temporarySelection[id]['version'] !== this.configuration['dependencies'][id]) {
         this.configuration['dependencies'][id] = this.temporarySelection[id]['version'];
