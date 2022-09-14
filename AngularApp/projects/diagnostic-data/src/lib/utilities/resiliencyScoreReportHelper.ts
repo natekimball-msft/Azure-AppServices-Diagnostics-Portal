@@ -1,17 +1,16 @@
-import * as vfsfonts from "./vfs_fonts"
+//import * as vfsfonts from "./vfs_fonts"
 import * as pdfMake from "pdfmake/build/pdfmake";
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from "../models/resiliencyReportData";
 import { DataTableResponseObject } from '../models/detector';
 //pdfMake = pdfMake || {};
-
-
 //pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
+export class ResiliencyScoreReportHelper { 
+    vfsfonts: JSON;       
+    constructor(private http: HttpClient) {}  
 
-
-export class ResiliencyScoreReportHelper {
-
-    
     // Creates the ResiliencyResource object from a DataTableResponseObject and calls PDFMake to generate the PDF using the provided file name
     static generateResiliencyReport(table: DataTableResponseObject, fileName: string, generatedOn: string) {
 
@@ -20,8 +19,7 @@ export class ResiliencyScoreReportHelper {
         const resiliencyFeaturesListRow = 2;
         let _fileName: string = fileName;
         let _generatedOn: string = generatedOn;
-        let customerName: string;
-
+        let customerName: string;        
 
         customerName = JSON.parse(table.rows[0][customerNameRow]).CustomerName;
         let resiliencyResourceList: ResiliencyResource[] = JSON.parse(table.rows[resiliencyResourceListRow][0]);
@@ -225,7 +223,11 @@ export class ResiliencyScoreReportHelper {
     }
 
     static GeneratePDF(resiliencyReportData: ResiliencyReportData, fileName: string, generatedOn: string) {
-        
+        let vfsfonts: any;
+        let http: HttpClient;
+        http.get<JSON>('assets/pdfmake/vfs_fonts.json').subscribe((data) => {
+            vfsfonts = data
+        })
         var docDefinition = {
             footer: function (currentPage, pageCount, pageSize) {
                 return [
@@ -2067,7 +2069,7 @@ export class ResiliencyScoreReportHelper {
                 },
             }
         };
-        pdfMake.createPdf(docDefinition, null, vfsfonts.fonts, vfsfonts.vfs).download(`ResiliencyReport-${fileName.replace(":", "-").replace(".", "_")}.pdf`);
+        pdfMake.createPdf(docDefinition, null, JSON.parse(vfsfonts).fonts, vfsfonts.vfs).download(`ResiliencyReport-${fileName.replace(":", "-").replace(".", "_")}.pdf`);
 
     }
 
