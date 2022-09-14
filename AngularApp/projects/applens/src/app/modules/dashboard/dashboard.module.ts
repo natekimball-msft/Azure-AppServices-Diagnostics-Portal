@@ -437,7 +437,6 @@ export const DashboardModuleRoutes: ModuleWithProviders = RouterModule.forChild(
         InitResolver,
         ApplensGlobals,
         BreadcrumbService,
-        //ModelDirtyGuardService,
         {
             provide: ResourceService,
             useFactory: ResourceServiceFactory,
