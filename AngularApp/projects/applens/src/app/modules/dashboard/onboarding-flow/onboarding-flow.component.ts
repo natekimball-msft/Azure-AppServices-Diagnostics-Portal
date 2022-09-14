@@ -527,7 +527,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this.showBranches = [];
     this.resourceId = this.resourceId == undefined || this.resourceId == '' ? this.resourceService.getCurrentResourceId() : this.resourceId;
     this.diagnosticApiService.getBranches(this.resourceId).subscribe(branches => {
-      var branchRegEx = new RegExp(`^dev\/.*\/detector\/${this.id}$`, "i");
+      var branchRegEx = this.gistMode ? new RegExp(`^dev\/.*\/gist\/${this.id}$`, "i") : new RegExp(`^dev\/.*\/detector\/${this.id}$`, "i");
       branches.forEach(option => {
         this.optionsForSingleChoice.push({
           key: String(option["branchName"]),
