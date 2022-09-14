@@ -399,7 +399,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         }
       }
     else {
-      return true
+      return true;
     }
   }
 
