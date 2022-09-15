@@ -13,6 +13,7 @@ import { UserSettingService } from '../services/user-setting.service';
 import { BreadcrumbService } from '../services/breadcrumb.service';
 import { forkJoin } from 'rxjs';
 import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
+import { element } from 'protractor';
 
 @Component({
   selector: 'side-nav',
@@ -204,11 +205,11 @@ export class SideNavComponent implements OnInit {
   }
 
   getDocCategories(){
-    const categoriesObservable = this._diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/content`, this.docsBranch, this.docsResource);
+    const categoriesObservable = this._diagnosticApiService.getDevOpsTree(`${this.docsRepoRoot}`, this.docsBranch, this.docsResource);
     return categoriesObservable;
   }
   getDocFiles(category: string){
-    const fileObservalbe = this._diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${category}/content`, this.docsBranch, this.docsResource);
+    const fileObservalbe = this._diagnosticApiService.getDevOpsTree(`${this.docsRepoRoot}/${category}`, this.docsBranch, this.docsResource);
     return fileObservalbe;
   }
 
@@ -276,9 +277,12 @@ export class SideNavComponent implements OnInit {
       this._diagnosticApi.isStaging().subscribe(isStaging => {
         if (isStaging){this.docsBranch = this.docStagingBranch;}
         this.getDocCategories().subscribe(content => {
-          let categories = content.split(/[\n\r]+/).filter((element) => {
-            return element.replace(/\s/g,"") != "";
-          });
+          let categories = [];
+          content.folders.forEach(element => {
+            let cn = element.split('/').at(-1);
+            if ( cn != this.docsRepoRoot)
+                  categories.push(cn)
+          })
           let fileNamesObservables = [];
           categories.forEach(cat => {
             fileNamesObservables.push(this.getDocFiles(cat));
@@ -288,9 +292,14 @@ export class SideNavComponent implements OnInit {
           forkJoin(fileNamesObservables).subscribe(files => {
             let fileNames = []
             files.forEach((f, filesIndex) => {
-              fileNames.push(f.split(/[\n\r]+/).filter((element) => {
-                return element.replace(/\s/g,"") != "";
-              }));
+              let folderList = [];
+              f.folders.forEach(element => {
+                let fn = element.split('/').at(-1);
+                let parent = element.split('/').at(-2);
+                if ( fn != categories[filesIndex] || fn === parent)
+                  folderList.push(fn);
+              });
+              fileNames.push(folderList);
               fileNames[filesIndex].forEach(d => {
                 let docItem: CollapsibleMenuItem = {
                   label: d,

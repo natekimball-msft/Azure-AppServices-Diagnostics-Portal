@@ -222,6 +222,10 @@ export class ApplensDiagnosticService {
     return this._diagnosticApi.getDetectorCode(detectorPath, branch, resourceUri);
   }
 
+  getDevOpsTree(devOpsPath: string, branch: string, resourceUri: string): Observable<any> {
+    return this._diagnosticApi.getDevOpsTree(devOpsPath, branch, resourceUri);
+  }
+
   pushDetectorChanges(branch: string, files: string[], repoPaths: string[], comment: string, changeType: string, resourceUri: string) {
     return this._diagnosticApi.pushDetectorChanges(branch, files, repoPaths, comment, changeType, resourceUri);
   }

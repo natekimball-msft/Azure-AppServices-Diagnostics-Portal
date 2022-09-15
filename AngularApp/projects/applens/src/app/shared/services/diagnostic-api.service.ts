@@ -457,6 +457,11 @@ export class DiagnosticApiService {
     return this.invoke(path, HttpMethod.GET, null, false);
   }
 
+  public getDevOpsTree(devOpsPath: string, branch: string, resourceUri: string): Observable<any> {
+    let path = branch === null ? `devops/getTree?filePathInRepo=${devOpsPath}&resourceUri=${resourceUri}` :`devops/getTree?filePathInRepo=${devOpsPath}&branch=${branch}&resourceUri=${resourceUri}`;
+    return this.invoke(path, HttpMethod.GET, null, false);
+  }
+
   public pushDetectorChanges(branch: string, files: string[], repoPaths: string[], comment: string, changeType: string, resourceUri: string) {
 
     var body = {};
