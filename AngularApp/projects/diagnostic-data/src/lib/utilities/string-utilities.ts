@@ -92,8 +92,18 @@ export class StringUtilities {
         return patternTable;
     }
 
+    private static EscapeRegExp(inputString: string): string {
+        return inputString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    private static ReplaceNewlines(inputString: string): string {
+        return inputString.replace(/(?:\r\n|\r|\n)/g, '--NEWLINE--');
+    }
+
     public static ReplaceAll(input: string, target: string, replacement: string) {
-        const searchRegExp = new RegExp(target, 'g');
-        return input.replace(searchRegExp, replacement);
+        const searchRegExp = new RegExp(StringUtilities.ReplaceNewlines(StringUtilities.EscapeRegExp(target)), 'g');
+        input = StringUtilities.ReplaceNewlines(input);
+        input = input.replace(searchRegExp, replacement);
+        return input.replace(/--NEWLINE--/g, '\n');
     }
 }
