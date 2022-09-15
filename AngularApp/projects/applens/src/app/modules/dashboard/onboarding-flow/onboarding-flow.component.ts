@@ -16,7 +16,7 @@ import { GithubApiService } from '../../../shared/services/github-api.service';
 import { DetectorGistApiService } from '../../../shared/services/detectorgist-template-api.service';
 import { ResourceService } from '../../../shared/services/resource.service';
 import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
-import { RecommendedUtterance } from '../../../../../../diagnostic-data/src/public_api';
+import { RecommendedUtterance, RenderingType } from '../../../../../../diagnostic-data/src/public_api';
 import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.service';
 import { TelemetryEventNames } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
 import { ActivatedRoute, Params, Router } from "@angular/router";
@@ -115,6 +115,7 @@ export class OnboardingFlowComponent implements OnInit {
   HealthStatus = HealthStatus;
   PanelType = PanelType;
 
+  isShieldEmbedded: boolean = false;
   hideModal: boolean = true;
   fileName: string;
   editorOptions: any;
@@ -1073,6 +1074,8 @@ export class OnboardingFlowComponent implements OnInit {
           this.queryResponse = response.body;
           if (this.queryResponse.invocationOutput && this.queryResponse.invocationOutput.metadata && this.queryResponse.invocationOutput.metadata.id && !isSystemInvoker) {
             this.id = this.queryResponse.invocationOutput.metadata.id;
+            let dataset = this.queryResponse.invocationOutput.dataset;
+            this.isShieldEmbedded = dataset && dataset.findIndex(x => x.renderingProperties.type == RenderingType.SearchComponent) >= 0 ? true: false; 
           }
           if (this.queryResponse.invocationOutput.suggestedUtterances && this.queryResponse.invocationOutput.suggestedUtterances.results) {
             this.recommendedUtterances = this.queryResponse.invocationOutput.suggestedUtterances.results;
@@ -1275,7 +1278,7 @@ export class OnboardingFlowComponent implements OnInit {
   }
 
   prepareMetadata() {
-    this.publishingPackage.metadata = JSON.stringify({ "utterances": this.allUtterances });
+    this.publishingPackage.metadata = JSON.stringify({ "utterances": this.allUtterances, "shieldEmbedded": this.isShieldEmbedded });
   }
 
   setBranch() {
