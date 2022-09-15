@@ -570,23 +570,26 @@ export class OnboardingFlowComponent implements OnInit {
 
   addCodePrefix(codeString) {
     if (this.codeCompletionEnabled) {
-      var isLoadIndex = codeString.indexOf("#load");
-      // If gist is being loaded in the code
-      if (isLoadIndex >= 0) {
-        codeString = StringUtilities.ReplaceAll(codeString, codePrefix, "");
-        var splitted = codeString.split("\n");
-        var lastIndex = splitted.slice().reverse().findIndex(x => x.startsWith("#load"));
-        lastIndex = lastIndex > 0 ? splitted.length - 1 - lastIndex : lastIndex;
-        if (lastIndex >= 0) {
-          var finalJoin = [...splitted.slice(0, lastIndex + 1), codePrefix, ...splitted.slice(lastIndex + 1,)].join("\n");
-          return finalJoin;
+      try {
+        var isLoadIndex = codeString.indexOf("#load");
+        // If gist is being loaded in the code
+        if (isLoadIndex >= 0) {
+          codeString = StringUtilities.ReplaceAll(codeString, codePrefix, "");
+          var splitted = codeString.split("\n");
+          var lastIndex = splitted.slice().reverse().findIndex(x => x.startsWith("#load"));
+          lastIndex = lastIndex > 0 ? splitted.length - 1 - lastIndex : lastIndex;
+          if (lastIndex >= 0) {
+            var finalJoin = [...splitted.slice(0, lastIndex + 1), codePrefix, ...splitted.slice(lastIndex + 1,)].join("\n");
+            return finalJoin;
+          }
         }
+        // No gist scenario
+        else {
+          codeString = StringUtilities.ReplaceAll(codeString, codePrefix, "");
+        }
+        return codePrefix + codeString;
       }
-      // No gist scenario
-      else {
-        codeString = StringUtilities.ReplaceAll(codeString, codePrefix, "");
-      }
-      return codePrefix + codeString;
+      catch (err) {}
     }
     return codeString;
   }
@@ -1768,7 +1771,7 @@ export class OnboardingFlowComponent implements OnInit {
     update.subscribe(_ => {
       this.publishingPackage = {
         id: queryResponse.invocationOutput.metadata.id,
-        codeString: this.codeCompletionEnabled ? StringUtilities.ReplaceAll(code, codePrefix, "") : code,
+        codeString: StringUtilities.ReplaceAll(code, codePrefix, ""),
         committedByAlias: this.userName,
         dllBytes: this.compilationPackage.assemblyBytes,
         pdbBytes: this.compilationPackage.pdbBytes,

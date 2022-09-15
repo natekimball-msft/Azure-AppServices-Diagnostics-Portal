@@ -97,13 +97,12 @@ export class StringUtilities {
     }
 
     private static ReplaceNewlines(inputString: string): string {
-        return inputString.replace(/(?:\r\n|\r|\n)/g, '--NEWLINE--');
+        return inputString.replace(/(?:\r\n|\r|\n)/g, '\n');
     }
 
     public static ReplaceAll(input: string, target: string, replacement: string) {
         const searchRegExp = new RegExp(StringUtilities.ReplaceNewlines(StringUtilities.EscapeRegExp(target)), 'g');
         input = StringUtilities.ReplaceNewlines(input);
-        input = input.replace(searchRegExp, replacement);
-        return input.replace(/--NEWLINE--/g, '\n');
+        return input.replace(searchRegExp, replacement);
     }
 }
