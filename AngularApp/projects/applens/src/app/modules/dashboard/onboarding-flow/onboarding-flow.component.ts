@@ -1985,7 +1985,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
   getIdFromCodeString(): string {
     var trimmedCode = this.code.toLowerCase().replace(/\s/g, "");
-    let id = trimmedCode.match(/(?<=\[definition\(id=").*?(?=",Name=")/gmi);
+    let id = trimmedCode.match(/(?<=\[definition\(id=").*?(?=",)/gmi);
     return id == null ? null : id[0];
   }
 
