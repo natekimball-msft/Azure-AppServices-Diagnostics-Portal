@@ -1075,7 +1075,7 @@ export class OnboardingFlowComponent implements OnInit {
           if (this.queryResponse.invocationOutput && this.queryResponse.invocationOutput.metadata && this.queryResponse.invocationOutput.metadata.id && !isSystemInvoker) {
             this.id = this.queryResponse.invocationOutput.metadata.id;
             let dataset = this.queryResponse.invocationOutput.dataset;
-            this.isShieldEmbedded = dataset && dataset.findIndex(x => x.renderingProperties.type == RenderingType.SearchComponent) >= 0 ? true: false; 
+            this.isShieldEmbedded = dataset && dataset.findIndex(x => x.renderingProperties && (x.renderingProperties.type == RenderingType.SearchComponent)) >= 0 ? true: false; 
           }
           if (this.queryResponse.invocationOutput.suggestedUtterances && this.queryResponse.invocationOutput.suggestedUtterances.results) {
             this.recommendedUtterances = this.queryResponse.invocationOutput.suggestedUtterances.results;
