@@ -76,13 +76,14 @@ export class ApplensDocsComponent implements OnInit {
   getFiles(folderName: string){
     let fileIndex = this.files.length;
     this.files.push([]);
-    this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${folderName}/content`, this.docsBranch, this.docsResource).subscribe(names => {
-      this.fileNames[fileIndex] = names.split('\n').filter((element) => {
-        return element.replace(/\s/g,"") != "";
+    this.fileNames.push([]);
+    this.diagnosticApiService.getDevOpsTree(`${this.docsRepoRoot}/${this.category}/${this.doc}/${folderName}`, this.docsBranch, this.docsResource).subscribe(names => {
+      names.files.forEach(element => {
+        this.fileNames[fileIndex].push(element.split('/').at(-1));
       });
       let getFileObservables = [];
       this.fileNames[fileIndex].forEach(f => {
-        getFileObservables.push(this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${folderName}/${f.replace(/\s/g,"")}`, this.docsBranch, this.docsResource)); 
+        getFileObservables.push(this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${folderName}/${f}`, this.docsBranch, this.docsResource)); 
       });
       forkJoin(getFileObservables).subscribe(fileContent => {
         this.files[fileIndex] = fileContent;
