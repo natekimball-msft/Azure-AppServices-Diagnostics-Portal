@@ -292,12 +292,12 @@ export class SideNavComponent implements OnInit {
           forkJoin(fileNamesObservables).subscribe(files => {
             let fileNames = []
             files.forEach((f, filesIndex) => {
-              let folderList = []
+              let folderList = [];
               f.folders.forEach(element => {
                 let fn = element.split('/').at(-1);
                 let parent = element.split('/').at(-2);
                 if ( fn != categories[filesIndex] || fn === parent)
-                  folderList.push(fn)
+                  folderList.push(fn);
               });
               fileNames.push(folderList);
               fileNames[filesIndex].forEach(d => {
