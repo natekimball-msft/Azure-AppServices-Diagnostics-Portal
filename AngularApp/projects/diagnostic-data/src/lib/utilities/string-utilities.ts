@@ -91,4 +91,9 @@ export class StringUtilities {
         }
         return patternTable;
     }
+
+    public static ReplaceAll(input: string, target: string, replacement: string) {
+        const searchRegExp = new RegExp(target, 'g');
+        return input.replace(searchRegExp, replacement);
+    }
 }

@@ -1,6 +1,6 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
@@ -573,7 +573,7 @@ export class OnboardingFlowComponent implements OnInit {
       var isLoadIndex = codeString.indexOf("#load");
       // If gist is being loaded in the code
       if (isLoadIndex >= 0) {
-        codeString = codeString.replace(codePrefix, "");
+        codeString = StringUtilities.ReplaceAll(codeString, codePrefix, "");
         var splitted = codeString.split("\n");
         var lastIndex = splitted.slice().reverse().findIndex(x => x.startsWith("#load"));
         lastIndex = lastIndex > 0 ? splitted.length - 1 - lastIndex : lastIndex;
@@ -583,6 +583,9 @@ export class OnboardingFlowComponent implements OnInit {
         }
       }
       // No gist scenario
+      else {
+        codeString = StringUtilities.ReplaceAll(codeString, codePrefix, "");
+      }
       return codePrefix + codeString;
     }
     return codeString;
@@ -1765,7 +1768,7 @@ export class OnboardingFlowComponent implements OnInit {
     update.subscribe(_ => {
       this.publishingPackage = {
         id: queryResponse.invocationOutput.metadata.id,
-        codeString: this.codeCompletionEnabled ? code.replace(codePrefix, "") : code,
+        codeString: this.codeCompletionEnabled ? StringUtilities.ReplaceAll(code, codePrefix, "") : code,
         committedByAlias: this.userName,
         dllBytes: this.compilationPackage.assemblyBytes,
         pdbBytes: this.compilationPackage.pdbBytes,
