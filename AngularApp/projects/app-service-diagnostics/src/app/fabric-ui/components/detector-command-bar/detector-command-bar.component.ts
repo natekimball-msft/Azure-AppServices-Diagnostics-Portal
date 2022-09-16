@@ -98,7 +98,13 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       let _severityLevel: SeverityLevel = SeverityLevel.Warning;
       this.telemetryService.logException(loggingError, null, null, _severityLevel);
     }
-    
+
+    //
+    // Retrieving custom fonts from assets/vfs_fonts.json in each project, to be passed to 
+    // PDFMake to generate ResiliencyScoreReport. 
+    // Using this as an alternative to using the vfs_fonts.js build with PDFMake's build-vfs.js
+    // as this file caused problems when being compiled in a library project like diagnostic-data
+    //
     this.http.get<any>('assets/vfs_fonts.json').subscribe((data: any) => {this.vfsFonts=data}); 
   }
 
