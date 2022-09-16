@@ -1755,7 +1755,7 @@ export class ResiliencyScoreReportHelper {
                 // ------------------------------------------
                 // Start of ARR Affinity Check (Recommendation. Not counted against the score) section
                 {
-                    text: 'ARR Affinity Check (Recommendation. Not counted against the score)',
+                    text: 'ARR Affinity Disabled Check (Recommendation. Not counted against the score)',
                     id: '1aRRAffinity',
                     style: 'header3',
                     pageOrientation: 'portrait',
@@ -1850,7 +1850,7 @@ export class ResiliencyScoreReportHelper {
                         }
                     ]
                 },
-                // End of ARR Affinity Check (Recommendation. Not counted against the score) section
+                // End of ARR Affinity Disabled Check (Recommendation. Not counted against the score) section
                 // ------------------------------------------
                 // Start of Production SKU used section
                 {
