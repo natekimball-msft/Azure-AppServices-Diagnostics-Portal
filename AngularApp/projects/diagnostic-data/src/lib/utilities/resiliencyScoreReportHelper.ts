@@ -1,25 +1,19 @@
-//import * as vfsfonts from "./vfs_fonts"
 import * as pdfMake from "pdfmake/build/pdfmake";
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from "../models/resiliencyReportData";
 import { DataTableResponseObject } from '../models/detector';
-//pdfMake = pdfMake || {};
-//pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
-export class ResiliencyScoreReportHelper { 
-    vfsfonts: JSON;       
-    constructor(private http: HttpClient) {}  
+export class ResiliencyScoreReportHelper {
 
     // Creates the ResiliencyResource object from a DataTableResponseObject and calls PDFMake to generate the PDF using the provided file name
-    static generateResiliencyReport(table: DataTableResponseObject, fileName: string, generatedOn: string) {
+    static generateResiliencyReport(table: DataTableResponseObject, fileName: string, generatedOn: string, vfsfonts: any) {
 
         const customerNameRow = 0;
         const resiliencyResourceListRow = 1;
         const resiliencyFeaturesListRow = 2;
         let _fileName: string = fileName;
         let _generatedOn: string = generatedOn;
-        let customerName: string;        
+        let customerName: string;
 
         customerName = JSON.parse(table.rows[0][customerNameRow]).CustomerName;
         let resiliencyResourceList: ResiliencyResource[] = JSON.parse(table.rows[resiliencyResourceListRow][0]);
@@ -32,11 +26,8 @@ export class ResiliencyScoreReportHelper {
             i++;
         }
         let resiliencyReportData = new ResiliencyReportData(customerName, resiliencyResourceList);
-        ResiliencyScoreReportHelper.GeneratePDF(resiliencyReportData, _fileName, _generatedOn);
+        this.generatePDF(resiliencyReportData, _fileName, _generatedOn, vfsfonts);
     }
-
-
-
 
     //
     // Calculates the background color for the Score
@@ -222,12 +213,8 @@ export class ResiliencyScoreReportHelper {
         return d.toISOString();
     }
 
-    static GeneratePDF(resiliencyReportData: ResiliencyReportData, fileName: string, generatedOn: string) {
-        let vfsfonts: any;
-        let http: HttpClient;
-        http.get<JSON>('assets/pdfmake/vfs_fonts.json').subscribe((data) => {
-            vfsfonts = data
-        })
+    static generatePDF(resiliencyReportData: ResiliencyReportData, fileName: string, generatedOn: string, vfsfonts: any) {
+        let vfsFonts = vfsfonts;
         var docDefinition = {
             footer: function (currentPage, pageCount, pageSize) {
                 return [
@@ -432,7 +419,7 @@ export class ResiliencyScoreReportHelper {
                             lineWidth: 6,
                             lineCap: 'round'
                         },
-                        
+
                         // Gauge's outer black border
                         {
                             type: 'ellipse',
@@ -2069,8 +2056,6 @@ export class ResiliencyScoreReportHelper {
                 },
             }
         };
-        pdfMake.createPdf(docDefinition, null, JSON.parse(vfsfonts).fonts, vfsfonts.vfs).download(`ResiliencyReport-${fileName.replace(":", "-").replace(".", "_")}.pdf`);
-
+        pdfMake.createPdf(docDefinition, null, vfsfonts.fonts, vfsfonts.vfs).download(`ResiliencyReport-${fileName.replace(":", "-").replace(".", "_")}.pdf`);
     }
-
 }

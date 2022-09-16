@@ -1,5 +1,5 @@
 import {
-  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource, ResiliencyScoreReportHelper
+  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource, ResiliencyScoreReportHelper, VFSFonts
 } from 'diagnostic-data';
 import { Component, AfterViewInit, Input } from '@angular/core';
 import { Globals } from '../../../globals';
@@ -10,9 +10,10 @@ import { OperatingSystem } from '../../../shared/models/site';
 import { AppType } from '../../../shared/models/portal';
 import { SeverityLevel } from '@microsoft/applicationinsights-web';
 import { DirectionalHint } from 'office-ui-fabric-react';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { DemoSubscriptions } from '../../../betaSubscriptions';
 import { Sku } from '../../../shared/models/server-farm';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'detector-command-bar',
@@ -49,6 +50,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   resourcePlatform: OperatingSystem = OperatingSystem.any;
   resourceAppType: AppType = AppType.WebApp;
   resourceSku: Sku = Sku.All;
+  vfsFonts: any;
 
   public _checkIsWindowsApp(): boolean {
     let webSiteService = this._resourceService as WebSitesService;
@@ -96,9 +98,11 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       let _severityLevel: SeverityLevel = SeverityLevel.Warning;
       this.telemetryService.logException(loggingError, null, null, _severityLevel);
     }
+    
+    this.http.get<any>('assets/vfs_fonts.json').subscribe((data: any) => {this.vfsFonts=data}); 
   }
 
-  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private _resourceService: ResourceService) {
+  constructor(private globals: Globals, private _detectorControlService: DetectorControlService, private _diagnosticService: DiagnosticService, private _route: ActivatedRoute, private router: Router, private telemetryService: TelemetryService, private _resourceService: ResourceService, private http: HttpClient) {
   }
 
   toggleOpenState() {
@@ -151,20 +155,22 @@ export class DetectorCommandBarComponent implements AfterViewInit {
         }
       }
     };
-    this.gRPDFButtonDisabled = true;
+    this.gRPDFButtonDisabled = true;    
     this._diagnosticService.getDetector("ResiliencyScore", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString)
       .subscribe((httpResponse: DetectorResponse) => {
         //If the page hasn't been refreshed this will use a cached request, so changing File Name to use the same name + "(cached)" to let them know they are seeing a cached version.
         let eT = new Date();
         let detectorTimeTaken = eT.getTime() - sT.getTime();
+        
+        
         if (this.gRPDFFileName == undefined) {
           this.generatedOn = ResiliencyScoreReportHelper.generatedOn();
-          this.gRPDFFileName = `ResiliencyReport-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":", "-")}`;
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}`, this.generatedOn);
+          this.gRPDFFileName = `ResiliencyReport-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":", "-")}`;          
+          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}`, this.generatedOn, this.vfsFonts);
         }
         else {
           this.gRPDFFileName = `${this.gRPDFFileName}`;
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}_(cached)`, this.generatedOn);
+          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}_(cached)`, this.generatedOn, this.vfsFonts);
         }
         // Time after downloading report
         eT = new Date();
