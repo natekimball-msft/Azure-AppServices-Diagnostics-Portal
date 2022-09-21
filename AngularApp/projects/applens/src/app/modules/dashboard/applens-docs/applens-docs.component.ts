@@ -18,17 +18,10 @@ export class ApplensDocsComponent implements OnInit {
     this._router.routeReuseStrategy.shouldReuseRoute = function () {
       return false;
     };
-    this.someSubscription = this._router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        this._router.navigated = false;
-      }
-    });
    }
   
   markdownCode = [];
   folders = []
-
-  someSubscription: any;
 
   codeRegEx = new RegExp("<applens-code.*?\/>","g");
   folderRegEx = new RegExp("(?<=folder=\").*?(?=\")", "g");
@@ -89,10 +82,5 @@ export class ApplensDocsComponent implements OnInit {
         this.files[fileIndex] = fileContent;
       });
     });
-  }
-  ngOnDestroy() {
-    if (this.someSubscription) {
-      this.someSubscription.unsubscribe();
-    }
   }
 }

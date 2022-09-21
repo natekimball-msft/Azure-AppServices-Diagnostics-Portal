@@ -12,17 +12,10 @@ export class TabGistDevelopComponent implements OnInit {
   id: string;
   gradId: string;
 
-  someSubscription: any;
-
   constructor(private _route: ActivatedRoute, private _router: Router) {
     this._router.routeReuseStrategy.shouldReuseRoute = function () {
       return false;
     };
-    this.someSubscription = this._router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        this._router.navigated = false;
-      }
-    });
   }
 
   ngOnInit() {
@@ -40,10 +33,5 @@ export class TabGistDevelopComponent implements OnInit {
   refresh() {
     this.id = this._route.snapshot.params["gist"].toLowerCase();
     this.gradId = this._route.snapshot.params["gist"];
-  }
-  ngOnDestroy() {
-    if (this.someSubscription) {
-      this.someSubscription.unsubscribe();
-    }
   }
 }
