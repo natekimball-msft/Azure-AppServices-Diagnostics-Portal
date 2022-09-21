@@ -15,9 +15,9 @@ export class ApplensDocsComponent implements OnInit {
   applensDocs = applensDocs;
   constructor(private _applensGlobal:ApplensGlobal, private diagnosticApiService: ApplensDiagnosticService, private ref: ChangeDetectorRef,
     private _activatedRoute: ActivatedRoute, private _diagnosticApi: DiagnosticApiService, private _router: Router) {
-    this._router.routeReuseStrategy.shouldReuseRoute = function () {
-      return false;
-    };
+    // this._router.routeReuseStrategy.shouldReuseRoute = function () {
+    //   return false;
+    // };
    }
   
   markdownCode = [];

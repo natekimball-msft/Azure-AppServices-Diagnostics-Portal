@@ -474,6 +474,9 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   redirectTimer: NodeJS.Timer;
 
   ngOnInit() {
+    this._activatedRoute.params.subscribe((params: Params) => {
+      console.log(params);
+    });
     this.detectorGraduation = true;
     this.branchInput = this._activatedRoute.snapshot.queryParams['branchInput'];
     this.diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(devopsConfig => {
