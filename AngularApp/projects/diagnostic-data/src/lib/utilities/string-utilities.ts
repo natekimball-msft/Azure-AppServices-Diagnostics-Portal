@@ -100,7 +100,7 @@ export class StringUtilities {
         return inputString.replace(/(?:\r\n|\r|\n)/g, '\n');
     }
 
-    public static ReplaceAll(input: string, target: string, replacement: string) {
+    public static ReplaceAll(input: string, target: string, replacement: string): string {
         const searchRegExp = new RegExp(StringUtilities.ReplaceNewlines(StringUtilities.EscapeRegExp(target)), 'g');
         input = StringUtilities.ReplaceNewlines(input);
         return input.replace(searchRegExp, replacement);
