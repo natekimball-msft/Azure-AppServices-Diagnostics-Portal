@@ -1,7 +1,6 @@
 import { Component, OnInit, Input, ViewChild } from '@angular/core';
 import { DevelopMode, OnboardingFlowComponent } from '../../onboarding-flow/onboarding-flow.component';
 import { ActivatedRoute, NavigationEnd, Params, Router } from '@angular/router';
-import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'tab-gist-develop',
@@ -12,8 +11,6 @@ export class TabGistDevelopComponent implements OnInit {
   DevelopMode = DevelopMode;
   id: string;
   gradId: string;
-
-  
 
   constructor(private _route: ActivatedRoute, private _router: Router) {
     this._router.routeReuseStrategy.shouldReuseRoute = function () {
