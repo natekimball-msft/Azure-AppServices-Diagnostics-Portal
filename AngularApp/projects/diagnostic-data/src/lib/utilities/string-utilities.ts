@@ -92,12 +92,14 @@ export class StringUtilities {
         return patternTable;
     }
 
-    private static EscapeRegExp(inputString: string): string {
-        return inputString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    private static EscapeRegExp(input: string): string {
+        const regex = new RegExp('[.*+?^${}()|[\]\\]', 'g');
+        return input.replace(regex, '\\$&');
     }
 
-    private static ReplaceNewlines(inputString: string): string {
-        return inputString.replace(/(?:\r\n|\r|\n)/g, '\n');
+    private static ReplaceNewlines(input: string): string {
+        const regex = new RegExp('(?:\r\n|\r|\n)', 'g');
+        return input.replace(regex, '\n');
     }
 
     public static ReplaceAll(input: string, target: string, replacement: string): string {
