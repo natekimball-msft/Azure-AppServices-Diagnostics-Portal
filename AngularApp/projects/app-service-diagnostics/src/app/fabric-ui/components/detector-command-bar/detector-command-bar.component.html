@@ -22,10 +22,19 @@
     <fab-command-bar-item key="sendFeedback" text="Feedback" [iconProps]="{ iconName: 'Emoji2' }"
       (click)="sendFeedback()"></fab-command-bar-item>
     <fab-command-bar-item *ngIf="displayRPDFButton" [id]="'generateResiliencyPDF'" key="generateResiliencyPDF" [text]="gRPDFButtonText"
-      [iconProps]="gRPDFButtonIcon" (click)="generateResiliencyPDF()" [disabled]="gRPDFButtonDisabled" >
-    </fab-command-bar-item>
+        [iconProps]="gRPDFButtonIcon" (click)="generateResiliencyPDF()" [disabled]="gRPDFButtonDisabled" >
+        <div *ngIf="!generatingResiliencyReport else loading">
+          <span style="padding-left:25px"></span>
+      </div>
+      </fab-command-bar-item>
   </items>
 </fab-command-bar>
+
+<ng-template #loading>
+  <div class="home-spinner" style="padding-top: 32px; padding-left: 5px">
+    <fab-spinner [ariaLabel]="'Generating Resiliency Score Report'"></fab-spinner>
+  </div>
+</ng-template> 
 
 <fab-coachmark 
    *ngIf="showCoachmark==true"

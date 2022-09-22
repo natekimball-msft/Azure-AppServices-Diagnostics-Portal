@@ -39,6 +39,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   gRPDFButtonDisabled: boolean;
   showCoachmark: boolean = true;
   showTeachingBubble: boolean = false;
+  generatingResiliencyReport: boolean = false;
   generatedOn: string;
   coachmarkPositioningContainerProps = {
     directionalHint: DirectionalHint.bottomLeftEdge,
@@ -117,6 +118,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   }
 
   generateResiliencyPDF() {
+    this.generatingResiliencyReport = true;
     let sT = new Date();
     const rSEventProperties = {
       'Subscription': this._route.parent.snapshot.params['subscriptionid'],
@@ -180,6 +182,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
           'DetectorTimeTaken': detectorTimeTaken.toString(),
           'TotalTimeTaken': totalTimeTaken.toString()
         };
+        this.generatingResiliencyReport = false;
         this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportDownloaded, eventProperties);
         this.gRPDFButtonText = "Get Resiliency Score report";
         this.gRPDFButtonIcon = { iconName: 'Download' };
