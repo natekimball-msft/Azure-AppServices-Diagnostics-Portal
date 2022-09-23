@@ -3,6 +3,5 @@
   <markdown ngPreserveWhitespaces *ngIf="component.Type == ComponentType.Markdown" [data]="markdownCode[component.Component].trim()"></markdown>
   <applens-doc-section *ngIf="component.Type == ComponentType.CodeWindow" [files]="files[component.Component]" [fileNames]="fileNames[component.Component]" ></applens-doc-section>
   <a *ngIf="component.Type == ComponentType.InPageLink" (click)="scrollToSection(inPageLinks[component.Component].Target)">{{inPageLinks[component.Component].Text}}</a>
-  <!-- <a *ngIf="component.Type == ComponentType.InPageLink" [routerLink]="['./']" [fragment]="'home'">{{inPageLinks[component.Component].Target}}</a> -->
 </div>
 </div>
