@@ -6,11 +6,11 @@ import { ApplensDiagnosticService } from '../../services/applens-diagnostic.serv
 import { DetectorControlService } from 'diagnostic-data';
 import { ApplensCommandBarService } from '../../services/applens-command-bar.service';
 import { ApplensGlobal } from 'projects/applens/src/app/applens-global';
-import { StartupService } from '../../../../shared/services/startup.service';
 import { ResourceService } from '../../../../shared/services/resource.service';
 import { ObserverService } from '../../../../shared/services/observer.service';
 import { SeverityLevel } from '@microsoft/applicationinsights-web';
 import { DirectionalHint } from 'office-ui-fabric-react';
+import { HttpClient } from '@angular/common/http';
 
 
 
@@ -21,7 +21,7 @@ import { DirectionalHint } from 'office-ui-fabric-react';
 })
 export class TabDataComponent implements OnInit {
 
-  constructor(private _route: ActivatedRoute, private _startupService: StartupService, public resourceService: ResourceService,  private _observerService: ObserverService, private telemetryService: TelemetryService, private _diagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService,private _applensCommandBarService:ApplensCommandBarService,private _applensGlobal:ApplensGlobal) { }
+  constructor(private _route: ActivatedRoute, public resourceService: ResourceService,  private _observerService: ObserverService, private telemetryService: TelemetryService, private _diagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService, private _applensCommandBarService:ApplensCommandBarService, private _applensGlobal:ApplensGlobal, private _http:HttpClient) { }
 
   detectorResponse: DetectorResponse;
 
@@ -41,6 +41,8 @@ export class TabDataComponent implements OnInit {
   
   resourceReady: Observable<any>;
   resource: any;  
+  siteSku: any;
+  subscriptionId: string;
   displayDownloadReportButton: boolean = false;
   displayDownloadReportButtonStyle: any = {};
   downloadReportId: string;
@@ -59,43 +61,26 @@ export class TabDataComponent implements OnInit {
   teachingBubbleCalloutProps = {
     directionalHint: DirectionalHint.bottomLeftEdge
   };
-
+  vfsFonts: any;
   
+  // Check if the app is an App Service Windows Standard or higher SKU
+  private checkIsWindowsApp() {          
+    return this.siteSku && this.siteSku.kind.toLowerCase() === "app" && !this.siteSku.is_linux && this.siteSku.sku > 8; //Only for Web App (Windows) in Standard or higher SKU 
+  }       
 
-  public _checkIsWindowsApp() {
-
-    let serviceInputs = this._startupService.getInputs();
-    this.resourceReady = this.resourceService.getCurrentResource();
-    this.resourceReady.subscribe(resource => {
-      if (resource) {  
-        this.resource = resource;
-        if (serviceInputs.resourceType.toString().toLowerCase() === 'microsoft.web/sites') {
-          this._observerService.getSiteRequestDetails(this.resource.SiteName, this.resource.InternalStampName).subscribe(siteInfo => {            
-            this.resource['IsWindows'] = siteInfo.details.islinux === false ? true : false;
-            if (this.resource['IsWindows'] === true) {
-              this.displayDownloadReportButton = this.detector === "ResiliencyScore" ? true: false;
-              this.displayDownloadReportButtonStyle = !(this.displayDownloadReportButton === true) ? { display: "none"} : {};
-            }            
-        })      
-        }
-      }
-    });   
-  }    
-   
-
-  ngOnInit() {    
-    this._route.params.subscribe((params: Params) => {      
-      this.refresh();
-      this._checkIsWindowsApp();
-    });
-    // If route query params contains detectorQueryParams, setting the values in shared service so it is accessible in all components
+  ngOnInit() {
+    this._route.params.subscribe((params: Params) => {   
+      this.subscriptionId = params["subscriptionId"];
+      this.refresh();      
+    });     
+    // If route query params contains detectorQueryParams, setting the values in shared service so it is accessible in all components    
     this._route.queryParams.subscribe((queryParams: Params) => {
       if (queryParams.detectorQueryParams != undefined) {
         this._detectorControlService.setDetectorQueryParams(queryParams.detectorQueryParams);
       } else {
         this._detectorControlService.setDetectorQueryParams("");
       }
-      this.detector = this._route.snapshot.params['detector'];               
+      this.detector = this._route.snapshot.params['detector'];                     
       this.telemetryService.logEvent(TelemetryEventNames.DownloadReportButtonDisplayed, { 'DownloadReportButtonDisplayed': this.displayDownloadReportButton.toString(), 'Detector:': this.detector, 'SubscriptionId': this._route.parent.snapshot.params['subscriptionid'], 'Resource': this.resource.SiteName });
     });    
     if (this._detectorControlService.isInternalView){
@@ -104,26 +89,66 @@ export class TabDataComponent implements OnInit {
     else{
       this.internalExternalText = this.externalViewText;
     }
+    // 
+    
+    this.resourceReady = this.resourceService.getCurrentResource();
+    this.resourceReady.subscribe(resource => {
+      if (resource) {  
+        this.resource = resource;
+      }
+    });
+    // Retrieving info about the site 
+    // Sample response: {"kind":"app","is_linux":false,"sku":"Standard","actual_number_of_workers":3,"current_worker_size":1}    
+    this._observerService.getSiteSKU(this.resource.SiteName, this.resource.InternalStampName).subscribe(siteSku => {
+      if (siteSku) {
+        this.siteSku = siteSku.details;
+      }
+      });
+    // Detecting whether Download Report button should be displayed or not
+    this.displayDownloadReportButton = this.checkIsWindowsApp();
+
+    // Logging telemetry for Download Report button
+    const dRBDEventProperties = {
+      'ResiliencyScoreButtonDisplayed': this.displayDownloadReportButton.toString(),
+      'Subscription': this._route.parent.snapshot.params['subscriptionid'],
+      'Platform': this.siteSku.is_linux != undefined ? !this.siteSku.is_linux ? "Windows" : "Linux" : "",
+      'AppType': this.siteSku.kind != undefined ? this.siteSku.kind.toLowerCase() === "app" ? "WebApp" : this.siteSku.kind.toString() : "",
+      'resourceSku': this.siteSku.sku != undefined ? this.siteSku.sku.toString(): "",
+      'ReportType': 'ResiliencyScore',      
+    };
+    this.telemetryService.logEvent(TelemetryEventNames.DownloadReportButtonDisplayed, dRBDEventProperties);
     const loggingError = new Error();
+    
+    // Enabling Download Report button
     this.downloadReportButtonDisabled = false;
-        //Get showCoachMark value(string) from local storage (if exists), then convert to boolean   
-        try {
-          if (this.displayDownloadReportButton){
-            if (localStorage.getItem("showCoachmark") != undefined) {
-              this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
-            }
-            else {
-              this.showCoachmark = true;
-            }
-          }
+
+    //Get showCoachMark value(string) from local storage (if exists), then convert to boolean
+    try {
+      if (this.displayDownloadReportButton){
+        if (localStorage.getItem("showCoachmark") != undefined) {
+          this.showCoachmark = localStorage.getItem("showCoachmark") === "true";
         }
-        catch (error) {
-          loggingError.message = 'Error trying to retrieve showCoachmark from localStorage';
-          loggingError.stack = error;
-          let _severityLevel: SeverityLevel = SeverityLevel.Warning;
-          this.telemetryService.logException(loggingError, null, null, _severityLevel);
-        }    
-  }
+        else {
+          this.showCoachmark = true;
+        }
+      }
+    }
+    catch (error) {
+      loggingError.message = 'Error trying to retrieve showCoachmark from localStorage';
+      loggingError.stack = error;
+      let _severityLevel: SeverityLevel = SeverityLevel.Warning;
+      this.telemetryService.logException(loggingError, null, null, _severityLevel);
+    }
+
+    //
+    // Retrieving custom fonts from assets/vfs_fonts.json in each project, to be passed to 
+    // PDFMake to generate ResiliencyScoreReport. 
+    // Using this as an alternative to using the vfs_fonts.js build with PDFMake's build-vfs.js
+    // as this file caused problems when being compiled in a library project like diagnostic-data
+    //
+    this._http.get<any>('assets/vfs_fonts.json').subscribe((data: any) => {this.vfsFonts=data});
+}
+
 
   refresh() {
     this.detector = this._route.snapshot.params['detector'];
@@ -191,7 +216,16 @@ export class TabDataComponent implements OnInit {
   }
 
 
-  downloadReport() {
+  downloadReport() {   
+    // Start time when download report button is clicked
+    let sT = new Date();
+
+    const rSEventProperties = {
+      'Subscription': this.subscriptionId,
+      'TimeClicked': sT.toUTCString(),
+      'ReportType': 'ResiliencyScore',
+    };
+    this.telemetryService.logEvent(TelemetryEventNames.DownloadReportButtonClicked, rSEventProperties);
     // Once the button is clicked no need to show Coachmark anymore:
     const loggingError = new Error();
     try {
@@ -210,8 +244,7 @@ export class TabDataComponent implements OnInit {
       let _severityLevel: SeverityLevel = SeverityLevel.Warning;
       this.telemetryService.logException(loggingError, null, null, _severityLevel);
     }
-    // Taking starting time
-    let sT = new Date();
+    
     this.downloadReportText = "Downloading report...";
     this.downloadReportIcon = {
       iconName: 'Download',
@@ -247,11 +280,11 @@ export class TabDataComponent implements OnInit {
         if (this.downloadReportFileName == undefined) {
           this.generatedOn = ResiliencyScoreReportHelper.generatedOn();
           this.downloadReportFileName = `ResiliencyReport-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":", "-")}`;
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}`, this.generatedOn);
+          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}`, this.generatedOn, this.vfsFonts);
         }
         else {
           this.downloadReportFileName = `${this.downloadReportFileName}`;
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}_(cached)`, this.generatedOn);
+          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}_(cached)`, this.generatedOn, this.vfsFonts);
         }
         // Time after downloading report
         eT = new Date();
@@ -264,7 +297,8 @@ export class TabDataComponent implements OnInit {
           'NameSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].Name,
           'ScoreSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].OverallScore,
           'DetectorTimeTaken': detectorTimeTaken.toString(),
-          'TotalTimeTaken': totalTimeTaken.toString()
+          'TotalTimeTaken': totalTimeTaken.toString(),
+          'ReportType': 'ResiliencyScore',
         };
         this.telemetryService.logEvent(TelemetryEventNames.DownloadReportButtonClicked, eventProperties);
         this.downloadReportText = "Download report";

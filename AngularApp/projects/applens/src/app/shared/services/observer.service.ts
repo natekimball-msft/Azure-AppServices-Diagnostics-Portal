@@ -23,6 +23,10 @@ export class ObserverService {
       }));
   }
 
+  public getSiteSKU(site: string, stamp: string): Observable<Observer.ObserverSiteSkuResponse> {
+    return this._diagnosticApiService.get<Observer.ObserverSiteSkuResponse>(`api/stamps/${stamp}/sites/${site}/sku`);
+  }
+
   public getContainerApp(containerAppName: string): Observable<Observer.ObserverContainerAppResponse> {
     return this._diagnosticApiService.get<Observer.ObserverContainerAppResponse>(`api/containerapps/${containerAppName}`).pipe(
       map((containerAppRes: Observer.ObserverContainerAppResponse) => {
