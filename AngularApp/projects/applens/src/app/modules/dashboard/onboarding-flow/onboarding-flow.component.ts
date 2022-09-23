@@ -1782,7 +1782,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     if (this.detectorGraduation && newPackage.length > 0 ) {
     // Get the commit id of each reference and the gist content.
       update = forkJoin(newPackage.map(r => this.diagnosticApiService.getDevopsChangeList(r, this.resourceId).pipe(
-        map(c => this.configuration['dependencies'][r] = c[c.length - 1].commitId),
+        map(c => this.configuration['dependencies'][r] = c[0].commitId),
         flatMap(v => this.diagnosticApiService.getDevopsCommitContent(`${this.DevopsConfig.folderPath}/${r}/${r}.csx`, v, this.resourceId).pipe(map(s => this.reference[r] = s ))))))
     
     } else {
