@@ -15,9 +15,6 @@ export class TabGistDevelopComponent implements OnInit {
   gradId: string;
 
   constructor(private _route: ActivatedRoute, private _router: Router, private _diagnosticApiService: ApplensDiagnosticService, private _applensGlobal: ApplensGlobal) {
-    // this._router.routeReuseStrategy.shouldReuseRoute = function () {
-    //   return false;
-    // };
   }
 
   ngOnInit() {
@@ -39,7 +36,5 @@ export class TabGistDevelopComponent implements OnInit {
       const gist = gistList.find(g => g.id.toLowerCase() === this.id.toLowerCase());
       this._applensGlobal.updateHeader(gist.name);
     });
-    // this.onboardingFlowComponent.initialized = false;
-    // this.onboardingFlowComponent.ngOnInit();
   }
 }
