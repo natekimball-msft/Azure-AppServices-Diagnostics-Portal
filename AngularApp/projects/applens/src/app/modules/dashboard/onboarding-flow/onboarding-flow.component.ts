@@ -641,15 +641,20 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         editor.setModel(editorModel);
         MonacoServices.install(editor, { rootUri: "file:///workspace" });
         const webSocket = this.createWebSocket(this.languageServerUrl);
-        listen({
-          webSocket,
-          onConnection: connection => {
-            // create and start the language client
-            const languageClient = this.createLanguageClient(connection);
-            const disposable = languageClient.start();
-            connection.onClose(() => disposable.dispose());
-          }
-        });
+        
+        //
+        // TODO :: Take Ajay's help in fixing this error. This is generating an error like this
+        // WebSocket objects not assignable to TypeScript WebSocket type because they do not implement the dispatchEvent method
+
+        // listen({
+        //   webSocket,
+        //   onConnection: connection => {
+        //     // create and start the language client
+        //     const languageClient = this.createLanguageClient(connection);
+        //     const disposable = languageClient.start();
+        //     connection.onClose(() => disposable.dispose());
+        //   }
+        // });
       }
     });
   }
@@ -675,7 +680,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     });
   }
 
-  createWebSocket(url: string): WebSocket {
+  createWebSocket(url: string): ReconnectingWebSocket {
     const socketOptions = {
       maxReconnectionDelay: 10000,
       minReconnectionDelay: 1000,

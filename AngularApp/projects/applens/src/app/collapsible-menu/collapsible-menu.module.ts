@@ -7,7 +7,8 @@ import { SectionDividerComponent } from './components/section-divider/section-di
 import { SearchBoxComponent } from './components/search-box/search-box.component';
 import { MenuScrollComponent } from './components/menu-scroll/menu-scroll.component';
 import { SearchPipe, SearchMatchPipe } from './pipes/search.pipe';
-import { FabIconModule, FabTooltipModule } from '@angular-react/fabric';
+import { FabIconModule } from '@angular-react/fabric/lib/components/icon';
+import { FabTooltipModule } from '@angular-react/fabric/lib/components/tooltip';
 
 @NgModule({
   imports: [
