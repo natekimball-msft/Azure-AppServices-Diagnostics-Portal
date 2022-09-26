@@ -58,7 +58,7 @@ export class TemplateManagementComponent implements OnInit {
   checklistIcon: any = { iconName: 'CheckList' };
   availableValidationsError: string = null;
   availableValidations: AvailableValidation[] = [];
-  showAvailableValidations: bool = false;
+  showAvailableValidations: boolean = false;
 
   editorOptions: any = null;
   lightOptions = {
