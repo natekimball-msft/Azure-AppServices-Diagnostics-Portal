@@ -1633,7 +1633,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
     if(Object.keys(this.DevopsConfig.appTypeReviewers).length > 0 || Object.keys(this.DevopsConfig.platformReviewers).length > 0){
       reviewers = this.addReviewers();
-      gradPublishFileTitles.push(`/${idForSave}/owners.txt`);
+      gradPublishFileTitles.push(`/${idForSave.toLowerCase()}/owners.txt`);
       gradPublishFiles.push(reviewers);
     }
 
