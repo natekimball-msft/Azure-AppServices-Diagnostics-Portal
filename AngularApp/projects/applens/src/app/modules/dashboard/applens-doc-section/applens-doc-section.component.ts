@@ -11,6 +11,7 @@ import { BehaviorSubject } from 'rxjs';
 import { getConfigFileParsingDiagnostics } from 'typescript';
 import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
 import * as momentNs from 'moment';
+import { GenericThemeService } from 'projects/diagnostic-data/src/lib/services/generic-theme.service';
 
 const moment = momentNs;
 
@@ -36,6 +37,20 @@ export class ApplensDocSectionComponent implements OnInit {
     },
     folding: true
   };
+
+  darkOptions = {
+    theme: 'vs-dark',
+    language: 'csharp',
+    fontSize: 14,
+    automaticLayout: true,
+    scrollBeyondLastLine: false,
+    minimap: {
+      enabled: false
+    },
+    folding: true
+  };
+
+  darkMode = false;
 
   editorOptions = this.lightOptions
 
@@ -84,6 +99,11 @@ export class ApplensDocSectionComponent implements OnInit {
     }
   }
 
+  codeWindowStyle = "background-color: #e9e9e9; padding-left: 15px; padding-right: 15px; padding-top: 4px; padding-bottom: 10px;"
+
+  displayCodeButtonText = "Show Code";
+  codeHidden = true;
+
   runButtonDisabled: boolean = false;
   buildOutput: string[];
   detailedCompilationTraces: CompilationTraceOutputDetails[];
@@ -112,9 +132,69 @@ export class ApplensDocSectionComponent implements OnInit {
   
   
 
-  constructor(private diagnosticApiService: ApplensDiagnosticService, private _activatedRoute: ActivatedRoute, private _detectorControlService: DetectorControlService) { }
+  constructor(private diagnosticApiService: ApplensDiagnosticService, private _activatedRoute: ActivatedRoute, private _detectorControlService: DetectorControlService, private _themeService: GenericThemeService) { }
 
   ngOnInit() {
+    this._themeService.currentThemeSub.subscribe((theme) => {
+      let themeColor = this._themeService.getPropertyValue("--docsCodeWindowCommandbar");
+      this.editorOptions = theme == "dark" ? this.darkOptions : this.lightOptions;
+      
+        this.commandbarStyle = {
+          root: {
+            backgroundColor: `${themeColor} !important`,
+            color: themeColor,
+            height: '29px'
+          },
+          primarySet: {
+            backgroundColor: `${themeColor} !important`,
+            color: themeColor,
+            height: '29px'
+          },
+          secondarySet: {
+            backgroundColor: `${themeColor} !important`,
+            color: themeColor,
+            height: '29px'
+          }
+        };
+
+        this.commandBarButtonStyle = {
+          root: {
+            backgroundColor: themeColor,
+            padding: '0px'
+          },
+          flexContainer: {
+            backgroundColor: themeColor,
+            paddingRight: '8px'
+          }
+        };
+
+        this.pivotStyle = {
+          linkIsSelected: {
+            selectors: {
+              '::before': {
+              bottom: '39px',
+              height: '5px',
+              left: '0px',
+              right: '0px'
+              }
+            },
+            backgroundColor: themeColor
+          }
+        };
+
+        this.runButtonStyle = {
+          root: {
+            cursor: 'default',
+            backgroundColor: `${themeColor} !important`
+          },
+          rootDisabled: {
+            pointerEvents: 'auto',
+            cursor: "not-allowed",
+            color: "grey",
+            backgroundColor: `${themeColor} !important`
+          }
+        };
+    });
   }
 
   ngOnChanges(){
@@ -122,6 +202,11 @@ export class ApplensDocSectionComponent implements OnInit {
   
   copyCode(code){
     navigator.clipboard.writeText(code);
+  }
+
+  toggleDisplayCode(){
+    this.codeHidden = !this.codeHidden;
+    this.displayCodeButtonText = this.displayCodeButtonText === "Show Code" ? "Hide Code" : "Show Code";
   }
 
   runCompilation(code: string) {
