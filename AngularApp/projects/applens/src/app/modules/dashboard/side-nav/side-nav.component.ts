@@ -422,6 +422,7 @@ export class SideNavComponent implements OnInit {
 
 
   updateSearch(searchTerm: string) {
+    if(searchTerm === null || searchTerm === undefined) return;
     this.searchValue = searchTerm;
     this.categories = this.updateMenuItems(this.categoriesCopy, searchTerm);
     this.gists = this.updateMenuItems(this.gistsCopy, searchTerm);
