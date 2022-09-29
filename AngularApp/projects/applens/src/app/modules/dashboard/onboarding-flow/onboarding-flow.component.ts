@@ -23,7 +23,6 @@ import { ActivatedRoute, ActivatedRouteSnapshot, CanDeactivate, Params, Router, 
 import { DiagnosticApiService } from "../../../shared/services/diagnostic-api.service";
 import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import { WebSocket } from "ws";
 import { MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection } from 'monaco-languageclient';
 import { v4 as uuid } from 'uuid';
 import { IButtonStyles, IChoiceGroupOption, IDialogContentProps, IDropdownOption, IDropdownProps, IPanelProps, IPivotProps, MessageBarType, PanelType, TagItemSuggestion } from 'office-ui-fabric-react';
@@ -641,20 +640,16 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         editor.setModel(editorModel);
         MonacoServices.install(editor, { rootUri: "file:///workspace" });
         const webSocket = this.createWebSocket(this.languageServerUrl);
-        
-        //
-        // TODO :: Take Ajay's help in fixing this error. This is generating an error like this
-        // WebSocket objects not assignable to TypeScript WebSocket type because they do not implement the dispatchEvent method
 
-        // listen({
-        //   webSocket,
-        //   onConnection: connection => {
-        //     // create and start the language client
-        //     const languageClient = this.createLanguageClient(connection);
-        //     const disposable = languageClient.start();
-        //     connection.onClose(() => disposable.dispose());
-        //   }
-        // });
+        listen({
+          webSocket,
+          onConnection: connection => {
+            // create and start the language client
+            const languageClient = this.createLanguageClient(connection);
+            const disposable = languageClient.start();
+            connection.onClose(() => disposable.dispose());
+          }
+        });
       }
     });
   }
@@ -680,7 +675,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     });
   }
 
-  createWebSocket(url: string): ReconnectingWebSocket {
+  createWebSocket(url: string): WebSocket {
     const socketOptions = {
       maxReconnectionDelay: 10000,
       minReconnectionDelay: 1000,
@@ -689,7 +684,11 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       maxRetries: 3,
       debug: false
     };
-    return new ReconnectingWebSocket(url, undefined, socketOptions);
+
+    return new WebSocket(url);
+
+    // TODO :: Check with Ajay if this can work
+    //return new ReconnectingWebSocket(url, undefined, socketOptions);
   }
 
   // ngOnChanges() {
