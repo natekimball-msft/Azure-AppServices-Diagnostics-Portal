@@ -168,4 +168,5 @@ namespace Observer {
         name: string;
         details: any;
     }
+
   }
