@@ -59,6 +59,7 @@ import 'core-js/es/reflect';  // Run `npm install --save web-animations-js`.
 (window as any).process = { env: { DEBUG: undefined }, };
 // @ts-ignore
 window.Buffer = window.Buffer || require('buffer').Buffer;
+require("setimmediate"); 
 
 /***************************************************************************************************
  * Zone JS is required by default for Angular itself.
