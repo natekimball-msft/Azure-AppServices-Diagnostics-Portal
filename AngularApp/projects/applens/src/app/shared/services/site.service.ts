@@ -85,7 +85,7 @@ export class SiteService extends ResourceService {
     }
 
     private getSiteASPAndSKu(siteSku: Observer.ObserverSiteSku): string {
-        const priceTire = SkuUtilities.getPriceTireBySkuAndSize(siteSku.sku, siteSku.current_worker_size);
+        const priceTire = SkuUtilities.getPriceTireBySkuAndSize(siteSku.sku.toString(), siteSku.current_worker_size);
         const numberOfWorkers = siteSku.actual_number_of_workers;
         const aspName = siteSku.server_farm_name;
         return `${aspName} (${priceTire}: ${numberOfWorkers})`;

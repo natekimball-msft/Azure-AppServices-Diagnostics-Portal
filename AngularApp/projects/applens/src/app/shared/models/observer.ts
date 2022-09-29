@@ -36,7 +36,7 @@ namespace Observer {
     export interface ObserverSiteSku {
         kind: string;
         is_linux: boolean;
-        sku: string;
+        sku: Sku;
         server_farm_name: string;
         actual_number_of_workers: number;
         current_worker_size: number;
@@ -169,4 +169,21 @@ namespace Observer {
         details: any;
     }
 
+    export enum Sku {
+        Free = 1 << 0,
+        Shared = 1 << 1,
+        Dynamic = 1 << 2,
+        Basic = 1 << 3,
+        Standard = 1 << 4,
+        Premium = 1 << 5,
+        PremiumV2 = 1 << 6,
+        Isolated = 1 << 7,
+        PremiumContainer = 1 << 8, // 100000000
+        ElasticPremium = 1 << 9, // 1000000000
+        Paid = 1016,         // 1111111000
+        NotDynamicAndElasticPremium = 507,    // 111111011 Not Dynamic or ElasticPremium
+        NotDynamic = 1019,   // 1111111011
+        PaidDedicated =  504, // 111111000: Paid & Dedicated
+        All = (1 << 10) - 1           // 1111111111
+    }
   }
