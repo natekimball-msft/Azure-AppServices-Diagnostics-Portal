@@ -341,6 +341,10 @@ export class DashboardComponent implements OnDestroy {
           this.observerLink = "https://wawsobserver.azurewebsites.windows.net/partner/containerapp/" + this.resource.ContainerAppName;
         }
 
+        if(resource.Sku) {
+          this._diagnosticApiService.Sku = resource.Sku;
+        }
+
         this.keys = Object.keys(this.resource);
         if (this.keys.indexOf("StampName")>=0){
           this.stampAppLensLink = `${window.location.origin}/stamps/${this.resource.StampName}`;

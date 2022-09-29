@@ -310,7 +310,7 @@ export class SideNavComponent implements OnInit {
                   expanded: false,
                   subItems: null,
                   isSelected: () => {
-                    return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `docs/${categories[filesIndex]}/${d}`;
+                    return this.currentRoutePath && this.currentRoutePath.join('/') === `docs/${categories[filesIndex]}/${d}`;
                   },
                   icon: null
                 }

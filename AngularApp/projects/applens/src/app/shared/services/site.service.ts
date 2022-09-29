@@ -31,6 +31,7 @@ export class SiteService extends ResourceService {
                                 site.AppServicePlan = "";
                             } else {
                                 site.AppServicePlan = this.getSiteASPAndSKu(siteSku);
+                                site.Sku = siteSku.sku;
                             }
                             return site;
                         }), catchError(_ => of(site)));

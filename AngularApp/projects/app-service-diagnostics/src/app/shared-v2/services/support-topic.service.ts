@@ -75,7 +75,9 @@ export class SupportTopicService {
                     }
                   ],
                   "parameters": {
-                    "SearchText": "error found"
+                    "SearchText": "error found",
+                    "ProductId": this.pesId,
+                    "LegacyTopicId": this.supportTopicId
                   }
                 }
             };

@@ -22,6 +22,7 @@ export class DiagnosticApiService {
   public GeomasterServiceAddress: string = null;
   public GeomasterName: string = null;
   public Location: string = null;
+  public Sku: string = null;
   public effectiveLocale: string = "";
   public CustomerCaseNumber: string = null;
   public caseNumberNeededForUser: boolean = false;
@@ -358,6 +359,9 @@ export class DiagnosticApiService {
 
     if (this.GeomasterName)
       headers = headers.set("x-ms-geomaster-name", this.GeomasterName);
+
+    if(this.Sku)
+      headers = headers.set("x-ms-sku",this.Sku);
 
     if (path) {
       headers = headers.set('x-ms-path-query', encodeURI(path));

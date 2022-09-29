@@ -31,6 +31,7 @@ namespace Observer {
         LinuxFxVersion: string;
         WindowsFxVersion: string;
         AppServicePlan?: string;
+        Sku?: string;
     }
 
     export interface ObserverSiteSku {

@@ -1,6 +1,6 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
@@ -16,7 +16,7 @@ import { GithubApiService } from '../../../shared/services/github-api.service';
 import { DetectorGistApiService } from '../../../shared/services/detectorgist-template-api.service';
 import { ResourceService } from '../../../shared/services/resource.service';
 import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
-import { RecommendedUtterance } from '../../../../../../diagnostic-data/src/public_api';
+import { RecommendedUtterance, RenderingType } from '../../../../../../diagnostic-data/src/public_api';
 import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.service';
 import { TelemetryEventNames } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
 import { ActivatedRoute, ActivatedRouteSnapshot, CanDeactivate, Params, Router, RouterStateSnapshot } from "@angular/router";
@@ -116,6 +116,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   HealthStatus = HealthStatus;
   PanelType = PanelType;
 
+  isShieldEmbedded: boolean = false;
   hideModal: boolean = true;
   fileName: string;
   editorOptions: any;
@@ -474,6 +475,14 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   redirectTimer: NodeJS.Timer;
 
   ngOnInit() {
+    this._activatedRoute.params.subscribe((params: Params) => {
+      this.initialized = false;
+      this.startUp();
+    });
+    this.startUp();
+  }
+
+  startUp(){
     this.detectorGraduation = true;
     this.branchInput = this._activatedRoute.snapshot.queryParams['branchInput'];
     this.diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(devopsConfig => {
@@ -591,20 +600,26 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
   addCodePrefix(codeString) {
     if (this.codeCompletionEnabled) {
-      var isLoadIndex = codeString.indexOf("#load");
-      // If gist is being loaded in the code
-      if (isLoadIndex >= 0) {
-        codeString = codeString.replace(codePrefix, "");
-        var splitted = codeString.split("\n");
-        var lastIndex = splitted.slice().reverse().findIndex(x => x.startsWith("#load"));
-        lastIndex = lastIndex > 0 ? splitted.length - 1 - lastIndex : lastIndex;
-        if (lastIndex >= 0) {
-          var finalJoin = [...splitted.slice(0, lastIndex + 1), codePrefix, ...splitted.slice(lastIndex + 1,)].join("\n");
-          return finalJoin;
+      try {
+        var isLoadIndex = codeString.indexOf("#load");
+        // If gist is being loaded in the code
+        if (isLoadIndex >= 0) {
+          codeString = StringUtilities.ReplaceAll(codeString, codePrefix, "");
+          var splitted = codeString.split("\n");
+          var lastIndex = splitted.slice().reverse().findIndex(x => x.startsWith("#load"));
+          lastIndex = lastIndex > 0 ? splitted.length - 1 - lastIndex : lastIndex;
+          if (lastIndex >= 0) {
+            var finalJoin = [...splitted.slice(0, lastIndex + 1), codePrefix, ...splitted.slice(lastIndex + 1,)].join("\n");
+            return finalJoin;
+          }
         }
+        // No gist scenario
+        else {
+          codeString = StringUtilities.ReplaceAll(codeString, codePrefix, "");
+        }
+        return codePrefix + codeString;
       }
-      // No gist scenario
-      return codePrefix + codeString;
+      catch (err) {}
     }
     return codeString;
   }
@@ -1097,6 +1112,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
           this.queryResponse = response.body;
           if (this.queryResponse.invocationOutput && this.queryResponse.invocationOutput.metadata && this.queryResponse.invocationOutput.metadata.id && !isSystemInvoker) {
             this.id = this.queryResponse.invocationOutput.metadata.id;
+            let dataset = this.queryResponse.invocationOutput.dataset;
+            this.isShieldEmbedded = dataset && dataset.findIndex(x => x.renderingProperties && (x.renderingProperties.type == RenderingType.SearchComponent)) >= 0 ? true: false; 
           }
           if (this.queryResponse.invocationOutput.suggestedUtterances && this.queryResponse.invocationOutput.suggestedUtterances.results) {
             this.recommendedUtterances = this.queryResponse.invocationOutput.suggestedUtterances.results;
@@ -1299,7 +1316,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   }
 
   prepareMetadata() {
-    this.publishingPackage.metadata = JSON.stringify({ "utterances": this.allUtterances });
+    this.publishingPackage.metadata = JSON.stringify({ "utterances": this.allUtterances, "shieldEmbedded": this.isShieldEmbedded });
   }
 
   setBranch() {
@@ -1621,7 +1638,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
     if(Object.keys(this.DevopsConfig.appTypeReviewers).length > 0 || Object.keys(this.DevopsConfig.platformReviewers).length > 0){
       reviewers = this.addReviewers();
-      gradPublishFileTitles.push(`/${idForSave}/owners.txt`);
+      gradPublishFileTitles.push(`/${idForSave.toLowerCase()}/owners.txt`);
       gradPublishFiles.push(reviewers);
     }
 
@@ -1634,7 +1651,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     // successfully ran or edit mode
     if (!!this.publishingPackage || this.mode == DevelopMode.Edit){
       DetectorObservable.subscribe(_ => {
-        this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${idForSave}/${idForSave}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${idForSave}/${idForSave}.csx&version=GB${this.Branch}`;
+        this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${idForSave}/${idForSave}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${idForSave.toLowerCase()}/${idForSave.toLowerCase()}.csx&version=GB${this.Branch}`;
         this.saveSuccess = true;
         this.lastSavedVersion = gradPublishFiles[0]
         this.postSave();
@@ -1650,7 +1667,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       this._diagnosticApi.idExists(this.saveTempId).subscribe(idExists =>{
         if (!idExists){
           DetectorObservable.subscribe(_ => {
-            this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${idForSave}/${idForSave}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${idForSave}/${idForSave}.csx&version=GB${this.Branch}`;
+            this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${idForSave.toLowerCase()}/${idForSave.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${idForSave.toLowerCase()}/${idForSave.toLowerCase()}.csx&version=GB${this.Branch}`;
             this.saveSuccess = true;
             this.postSave();
             this.isSaved = true;
@@ -1773,7 +1790,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     if (this.detectorGraduation && newPackage.length > 0 ) {
     // Get the commit id of each reference and the gist content.
       update = forkJoin(newPackage.map(r => this.diagnosticApiService.getDevopsChangeList(r, this.resourceId).pipe(
-        map(c => this.configuration['dependencies'][r] = c[c.length - 1].commitId),
+        map(c => this.configuration['dependencies'][r] = c[0].commitId),
         flatMap(v => this.diagnosticApiService.getDevopsCommitContent(`${this.DevopsConfig.folderPath}/${r}/${r}.csx`, v, this.resourceId).pipe(map(s => this.reference[r] = s ))))))
     
     } else {
@@ -1788,7 +1805,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     update.subscribe(_ => {
       this.publishingPackage = {
         id: queryResponse.invocationOutput.metadata.id,
-        codeString: this.codeCompletionEnabled ? code.replace(codePrefix, "") : code,
+        codeString: StringUtilities.ReplaceAll(code, codePrefix, ""),
         committedByAlias: this.userName,
         dllBytes: this.compilationPackage.assemblyBytes,
         pdbBytes: this.compilationPackage.pdbBytes,
