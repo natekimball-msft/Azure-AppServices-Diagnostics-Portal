@@ -121,7 +121,7 @@ blockquote p{
 // https://github.com/jfcere/ngx-markdown/pull/108
 
 
-markdown {
+markdown, .markdown {
     table {
         border-spacing: 0;
         border-collapse: collapse;
