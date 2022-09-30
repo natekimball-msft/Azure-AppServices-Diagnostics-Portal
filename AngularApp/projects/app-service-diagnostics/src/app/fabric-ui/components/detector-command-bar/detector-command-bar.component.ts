@@ -27,6 +27,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   openTimePickerSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
   detector: DetectorMetaData;
   fullReportPath: string;
+  subscriptionId: string;
 
   displayRPDFButton: boolean = false;
   _isBetaSubscription: boolean = false;
@@ -52,28 +53,28 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   resourceSku: Sku = Sku.All;
   vfsFonts: any;
 
-  public _checkIsWindowsApp(): boolean {
+  private _checkIsWebAppProdSku(platform: OperatingSystem): boolean {
     let webSiteService = this._resourceService as WebSitesService;
     this.resourcePlatform = webSiteService.platform;
     this.resourceAppType = webSiteService.appType;
     this.resourceSku = webSiteService.sku;
     return this._resourceService && this._resourceService instanceof WebSitesService
-      && (webSiteService.platform === OperatingSystem.windows) && (webSiteService.appType === AppType.WebApp) && (webSiteService.sku > 8); //Only for Web App (Windows) in Standard or higher
+      && ((webSiteService.platform === platform) && (webSiteService.appType === AppType.WebApp) && (webSiteService.sku > 8)); //Only for Web Apps  in Standard or higher
   }
 
   ngOnInit(): void {
-    let subscriptionId = this._route.parent.snapshot.params['subscriptionid'];
+    this.subscriptionId = this._route.parent.snapshot.params['subscriptionid'];
     // allowlisting beta subscriptions for testing purposes
-    this._isBetaSubscription = DemoSubscriptions.betaSubscriptions.indexOf(subscriptionId) >= 0;
+    this._isBetaSubscription = DemoSubscriptions.betaSubscriptions.indexOf(this.subscriptionId) >= 0;
     // add logic for presenting initially to 100% of Subscriptions:  percentageToRelease = 1 (1=100%)
-    let percentageToRelease = 1;
+    let percentageToRelease = 0;
     // roughly split of percentageToRelease of subscriptions to use new feature.
 
-    let firstDigit = "0x" + subscriptionId.substr(0, 1);
-    this.displayRPDFButton = ((16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease || this._isBetaSubscription) && this._checkIsWindowsApp();
+    let firstDigit = "0x" + this.subscriptionId.substring(0, 1);
+    this.displayRPDFButton = ((this._checkIsWebAppProdSku(OperatingSystem.linux) && (16 - parseInt(firstDigit, 16) / 16 <= percentageToRelease) && this._isBetaSubscription) || this._checkIsWebAppProdSku(OperatingSystem.windows));
     const rSBDEventProperties = {
       'ResiliencyScoreButtonDisplayed': this.displayRPDFButton.toString(),
-      'Subscription': this._route.parent.snapshot.params['subscriptionid'],
+      'Subscription': this.subscriptionId,
       'Platform': this.resourcePlatform != undefined ? this.resourcePlatform.toString() : "",
       'AppType': this.resourceAppType != undefined ? this.resourceAppType.toString(): "",
       'resourceSku': this.resourceSku != undefined ? this.resourceSku.toString(): "",
@@ -128,7 +129,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   generateResiliencyPDF() {
     let sT = new Date();
     const rSEventProperties = {
-      'Subscription': this._route.parent.snapshot.params['subscriptionid'],
+      'Subscription': this.subscriptionId,
       'TimeClicked': sT.toUTCString()
     };
     this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportButtonClicked, rSEventProperties);
@@ -184,7 +185,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
         let totalTimeTaken = eT.getTime() - sT.getTime();
         // log telemetry for interaction
         const eventProperties = {
-          'Subscription': this._route.parent.snapshot.params['subscriptionid'],
+          'Subscription': this.subscriptionId,
           'CustomerName': JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName,
           'NameSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].Name,
           'ScoreSite1': JSON.parse(httpResponse.dataset[0].table.rows[1][0])[0].OverallScore,
