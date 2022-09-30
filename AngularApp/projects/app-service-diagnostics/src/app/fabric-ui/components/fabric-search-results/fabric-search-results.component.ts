@@ -26,6 +26,7 @@ export class FabricSearchResultsComponent {
   features: Feature[] = [];
   searchLogTimout: any;
   hideSearchIcon: boolean = false;
+  searchBoxInFocus: boolean = false;
   showSearchResults: boolean;
   clickSearchBox: BlurType = BlurType.Blur;
   //Only ture when press ESC and no word in search box,collapse search result.
@@ -158,6 +159,7 @@ export class FabricSearchResultsComponent {
   }
 
   onSearchBoxFocus() {
+    this.searchBoxInFocus = true;
     this.showSearchResults = true;
     this.hideSearchIcon = true;
     this.features = this.featureService.getFeatures(this.searchValue);
@@ -173,13 +175,19 @@ export class FabricSearchResultsComponent {
     this.features = this.featureService.getFeatures(this.searchValue);
   }
 
-  clearSearchWithKey() {
-    //only true when trigger ESC
-    this.isEscape = this.searchValue === "";
+  @HostListener('keydown.Escape', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) { 
+    this.clearSearchWithKey(event);
+  }
+
+  clearSearchWithKey(event) {
+    this.clearSearch();
+    this.isEscape = true;
   }
 
   onBlurHandler() {
     this.hideSearchIcon = false;
+    this.searchBoxInFocus = false;
     switch (this.clickSearchBox) {
       case BlurType.Blur:
         this.clearSearch();

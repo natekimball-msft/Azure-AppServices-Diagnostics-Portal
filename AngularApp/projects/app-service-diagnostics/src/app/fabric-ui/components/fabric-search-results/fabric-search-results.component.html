@@ -1,12 +1,12 @@
 <div role="search" class="search-result-container" #fabSearchResult>
   <div class="search-box">
-    <div role="search" class="vanilla-search-box">
-      <div class="vanilla-search-icon-container" *ngIf="!hideSearchIcon">
-        <fab-icon [iconName]="'Search'" aria-hidden="true"></fab-icon>
+    <div role="search" class="vanilla-search-box" [style.border]="searchBoxInFocus? '1px solid rgb(0, 120, 212)': ''">
+      <div class="vanilla-search-icon-container" [style.width]="hideSearchIcon? '0px': ''">
+        <fab-icon *ngIf="!hideSearchIcon" [iconName]="'Search'" aria-hidden="true"></fab-icon>
       </div>
       <input class="vanilla-search-box-input" id="fabSearchBox" type="search" [placeholder]="searchPlaceHolder" [ngModel]="searchValue"
         [attr.aria-label]="inputAriaLabel" (ngModelChange)="updateSearchValue($event)" (focus)="onSearchBoxFocus()"
-        (blur)="onBlurHandler()" (keydown.escape)="clearSearchWithKey()"/>
+        (blur)="onBlurHandler()" (keydown.escape)="clearSearchWithKey($event)"/>
     </div>
   </div>
   <div class="result-container" *ngIf="showSearchResults">
