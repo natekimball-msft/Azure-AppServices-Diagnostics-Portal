@@ -17,7 +17,7 @@ export class SearchBoxComponent {
   @Input() ariaLabel: string = "";
 
   constructor(){
-    this.searchControl.valueChanges.pipe(debounceTime(100)).subscribe(res => {
+    this.searchControl.valueChanges.pipe(debounceTime(300)).subscribe(res => {
       this.searchValueChange.emit(this.searchValue);
     });
   }
