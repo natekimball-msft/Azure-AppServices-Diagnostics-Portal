@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'search-box',
@@ -9,10 +11,14 @@ export class SearchBoxComponent {
 
   @Output() searchValueChange: EventEmitter<string> = new EventEmitter<string>();
 
-  @Input()
-  set searchValue(val: string) {
-    this.searchValueChange.emit(val);
-  }
+  searchValue: string = "";
+  searchControl: FormControl = new FormControl();
   
   @Input() ariaLabel: string = "";
+
+  constructor(){
+    this.searchControl.valueChanges.pipe(debounceTime(100)).subscribe(res => {
+      this.searchValueChange.emit(this.searchValue);
+    });
+  }
 }
