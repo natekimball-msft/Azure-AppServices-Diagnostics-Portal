@@ -26,7 +26,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import { WebSocket } from "ws";
 import { MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection } from 'monaco-languageclient';
 import { v4 as uuid } from 'uuid';
-import { IButtonStyles, IChoiceGroupOption, IDialogContentProps, IDropdownOption, IDropdownProps, IPanelProps, IPivotProps, MessageBarType, PanelType, TagItemSuggestion } from 'office-ui-fabric-react';
+import { IButtonStyles, IChoiceGroupOption, IDialogContentProps, IDialogProps, IDropdownOption, IDropdownProps, IPanelProps, IPivotProps, MessageBarType, PanelType, TagItemSuggestion } from 'office-ui-fabric-react';
 import { BehaviorSubject } from 'rxjs';
 import { Commit } from '../../../shared/models/commit';
 import { ApplensCommandBarService } from '../services/applens-command-bar.service';
@@ -499,7 +499,19 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
       this._themeService.currentThemeSub.subscribe((theme) => {
         this.editorOptions = theme == "dark" ? this.darkOptions : this.lightOptions;
-      })
+        this.submittedPanelStyles = {
+          root: {
+            height: "100px",
+            color: this._themeService.getPropertyValue("--bodyText"),
+          },
+          content: {
+            padding: "0px"
+          },
+          navigation: {
+            height: "18px"
+          }
+        }
+      });
 
       if (this.detectorGraduation)
         this.getBranchList();

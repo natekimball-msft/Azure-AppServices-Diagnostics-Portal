@@ -82,6 +82,7 @@ export class ApplensDocsComponent implements OnInit {
     this.files = [];
     this.fileNames = [];
     this.markdownCode = [];
+    this.images = [];
   }
   getInPageLinks(source: string){
     let linkList = [];
@@ -124,7 +125,7 @@ export class ApplensDocsComponent implements OnInit {
     markdown.match(this.codeRegEx).forEach(x => {
       folders.push(x.match(this.folderRegEx)[0]);
       var imageList = x.match(this.imageRegEx);
-      this.images.push(imageList.length > 0 ? imageList[0] : "");
+      this.images.push(!!imageList ? imageList[0] : "");
     });
 
     return folders;

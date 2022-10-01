@@ -209,7 +209,9 @@ export class ApplensDocSectionComponent implements OnInit {
   toggleDisplayCode(){
     this.codeHidden = !this.codeHidden;
     this.displayCodeButtonText = this.displayCodeButtonText === "Show Code" ? "Hide Code" : "Show Code";
-    this.codeHidden ? $(`#${this.image}`).hide() : $(`#${this.image}`).show();
+    if(this.image != "")
+      document.getElementById(this.image).style.display = this.codeHidden ? 'unset' : 'none';
+    //this.codeHidden ? $(`#${this.image}`).hide() : $(`#${this.image}`).show();
   }
 
   runCompilation(code: string) {
