@@ -71,7 +71,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
     // roughly split of percentageToRelease of subscriptions to use new feature.
 
     let firstDigit = "0x" + this.subscriptionId.substring(0, 1);
-    this.displayRPDFButton = ((this._checkIsWebAppProdSku(OperatingSystem.linux) && (16 - parseInt(firstDigit, 16) / 16 <= percentageToRelease) && this._isBetaSubscription) || this._checkIsWebAppProdSku(OperatingSystem.windows));
+    this.displayRPDFButton = ((this._checkIsWebAppProdSku(OperatingSystem.linux) && (((16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease) || this._isBetaSubscription)) || this._checkIsWebAppProdSku(OperatingSystem.windows));
     const rSBDEventProperties = {
       'ResiliencyScoreButtonDisplayed': this.displayRPDFButton.toString(),
       'Subscription': this.subscriptionId,
