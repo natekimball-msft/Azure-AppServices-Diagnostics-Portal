@@ -12,7 +12,6 @@ import { getConfigFileParsingDiagnostics } from 'typescript';
 import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
 import * as momentNs from 'moment';
 import { GenericThemeService } from 'projects/diagnostic-data/src/lib/services/generic-theme.service';
-import { $ } from 'protractor';
 
 const moment = momentNs;
 
