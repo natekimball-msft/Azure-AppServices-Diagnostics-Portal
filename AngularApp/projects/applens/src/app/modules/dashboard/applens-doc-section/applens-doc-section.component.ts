@@ -25,6 +25,7 @@ export class ApplensDocSectionComponent implements OnInit {
 
   @Input() files = [];
   @Input() fileNames = [];
+  @Input() image = "";
 
   lightOptions = {
     theme: 'vs',
@@ -207,6 +208,8 @@ export class ApplensDocSectionComponent implements OnInit {
   toggleDisplayCode(){
     this.codeHidden = !this.codeHidden;
     this.displayCodeButtonText = this.displayCodeButtonText === "Show Code" ? "Hide Code" : "Show Code";
+    if(this.image != "")
+      document.getElementById(this.image).style.display = this.codeHidden ? 'unset' : 'none';
   }
 
   runCompilation(code: string) {
