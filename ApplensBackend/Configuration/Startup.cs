@@ -58,6 +58,7 @@ namespace AppLensV3
             services.AddSingleton(Configuration);
 
             GenericCertLoader.Instance.Initialize();
+            SupportObserverCertLoader.Instance.Initialize(Configuration);
 
             services.AddSingleton<IObserverClientService, SupportObserverClientService>();
             services.AddSingleton<IDiagnosticClientService, DiagnosticClient>();
