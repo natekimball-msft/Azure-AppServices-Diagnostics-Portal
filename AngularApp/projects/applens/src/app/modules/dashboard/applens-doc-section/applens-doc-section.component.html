@@ -1,4 +1,4 @@
-<button type="button" class="btn btn-primary" (click)="toggleDisplayCode()">{{displayCodeButtonText}}</button>
+<fab-default-button (onClick)="toggleDisplayCode()" [text]="displayCodeButtonText"></fab-default-button>
 <ng-container *ngIf="!codeHidden">
   <div *ngIf="files.length > 1; else singleSample" style="padding-top: 5px">
     <fab-pivot [styles]="pivotStyle">

@@ -103,7 +103,7 @@ export class ApplensDocsComponent implements OnInit {
     let inPageLinks = 0;
 
     while(sourceIndex < source.length){
-      if (!!customTags[ctIndex] && source.indexOf(customTags[ctIndex]) == sourceIndex){
+      if (!!customTags && !!customTags[ctIndex] && source.indexOf(customTags[ctIndex]) == sourceIndex){
         if (customTags[ctIndex].match(this.codeRegEx) != null)
           this.componentsList.push({Type: ComponentType.CodeWindow, Component: codeWindows++})// add code window
         else if (customTags[ctIndex].match(this.inPageLinkRegEx) != null)
@@ -111,7 +111,7 @@ export class ApplensDocsComponent implements OnInit {
         sourceIndex += customTags[ctIndex].length;
         ctIndex += 1;
       }
-      else if (!!markdownList[mdIndex]) {
+      else if (!!markdownList && !!markdownList[mdIndex]) {
         this.componentsList.push({Type: ComponentType.Markdown, Component: mdIndex});
         sourceIndex += markdownList[mdIndex].length;
         mdIndex += 1;
