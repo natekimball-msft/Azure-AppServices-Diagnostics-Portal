@@ -29,8 +29,7 @@ export class DetectorCommandBarComponent implements AfterViewInit {
   fullReportPath: string;
   subscriptionId: string;
 
-  displayRPDFButton: boolean = false;
-  _isBetaSubscription: boolean = false;
+  displayRPDFButton: boolean = false;  
   gRPDFButtonChild: Element;
   gRPDFButtonId: string;
   gRPDFCoachmarkId: string;
@@ -62,16 +61,24 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       && ((webSiteService.platform === platform) && (webSiteService.appType === AppType.WebApp) && (webSiteService.sku > 8)); //Only for Web Apps  in Standard or higher
   }
 
+  // add logic for presenting initially to 100% of Subscriptions:  percentageToRelease = 1 (1=100%)
+  private _percentageOfSubscriptions(subscriptionId: string, percentageToRelease: number): boolean {
+    let firstDigit = "0x" + subscriptionId.substring(0, 1);
+    // roughly split of percentageToRelease of subscriptions to use new feature.
+     return ((16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease);
+  }
+
   ngOnInit(): void {
+    let _isSubIdInPercentageToRelease: boolean = false;
+    let _isBetaSubscription: boolean = false;
     this.subscriptionId = this._route.parent.snapshot.params['subscriptionid'];
     // allowlisting beta subscriptions for testing purposes
-    this._isBetaSubscription = DemoSubscriptions.betaSubscriptions.indexOf(this.subscriptionId) >= 0;
-    // add logic for presenting initially to 100% of Subscriptions:  percentageToRelease = 1 (1=100%)
-    let percentageToRelease = 0;
-    // roughly split of percentageToRelease of subscriptions to use new feature.
+    _isBetaSubscription = DemoSubscriptions.betaSubscriptions.indexOf(this.subscriptionId) >= 0;
+    // allowing 0% of subscriptions to use new feature
+    _isSubIdInPercentageToRelease = this._percentageOfSubscriptions(this.subscriptionId, 0);
 
-    let firstDigit = "0x" + this.subscriptionId.substring(0, 1);
-    this.displayRPDFButton = ((this._checkIsWebAppProdSku(OperatingSystem.linux) && (((16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease) || this._isBetaSubscription)) || this._checkIsWebAppProdSku(OperatingSystem.windows));
+    // Releasing to only Beta Subscriptions for Web App (Linux) in standard or higher and all Web App (Windows) in standard or higher
+    this.displayRPDFButton = ((this._checkIsWebAppProdSku(OperatingSystem.linux) && (_isSubIdInPercentageToRelease || _isBetaSubscription)) || this._checkIsWebAppProdSku(OperatingSystem.windows));
     const rSBDEventProperties = {
       'ResiliencyScoreButtonDisplayed': this.displayRPDFButton.toString(),
       'Subscription': this.subscriptionId,
