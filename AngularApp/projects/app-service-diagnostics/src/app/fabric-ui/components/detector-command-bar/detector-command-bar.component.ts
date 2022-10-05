@@ -152,11 +152,13 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       }
     }
     catch (error) {
-      //Use TelemetryService logException
-      loggingError.message = 'Error accessing localStorage. Most likely accessed via in InPrivate or Incognito mode';
-      loggingError.stack = error;
-      let _severityLevel: SeverityLevel = SeverityLevel.Warning;
-      this.telemetryService.logException(loggingError, null, null, _severityLevel);
+      // Use TelemetryService logEvent when not able to access local storage.
+      // Most likely due to browsing in InPrivate/Incognito mode.
+      const eventProperties = {
+        'Subscription': this.subscriptionId,
+        'Error': error
+      }
+      this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportInPrivateAccess, eventProperties);
     }
     // Taking starting time
 
@@ -298,11 +300,13 @@ export class DetectorCommandBarComponent implements AfterViewInit {
       localStorage.setItem("showCoachmark", "false");
     }
     catch (error) {
-      //Use TelemetryService logException
-      loggingError.message = 'Error accessing localStorage. Most likely accessed via in InPrivate or Incognito mode';
-      loggingError.stack = error;
-      let _severityLevel: SeverityLevel = SeverityLevel.Warning;
-      this.telemetryService.logException(loggingError, null, null, _severityLevel);
+      // Use TelemetryService logEvent when not able to access local storage.
+      // Most likely due to browsing in InPrivate/Incognito mode.
+      const eventProperties = {
+        'Subscription': this.subscriptionId,
+        'Error': error
+      }
+      this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportInPrivateAccess, eventProperties);
     }
 
     this.removeTeachingBubbleFromDom();

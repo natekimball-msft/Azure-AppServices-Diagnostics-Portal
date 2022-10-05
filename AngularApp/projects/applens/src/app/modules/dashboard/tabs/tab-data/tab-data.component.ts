@@ -158,10 +158,17 @@ private checkIsLinuxApp() {
       }
     }
     catch (error) {
-      loggingError.message = 'Error trying to retrieve showCoachmark from localStorage';
-      loggingError.stack = error;
-      let _severityLevel: SeverityLevel = SeverityLevel.Warning;
-      this._telemetryService.logException(loggingError, null, null, _severityLevel);
+      // Use TelemetryService logEvent when not able to access local storage.
+      // Most likely due to browsing in InPrivate/Incognito mode.
+      const eventProperties = {
+        'Subscription': this._route.parent.snapshot.params['subscriptionid'],
+        'Platform': this.siteSku.is_linux != undefined ? !this.siteSku.is_linux ? "Windows" : "Linux" : "",
+        'AppType': this.siteSku.kind != undefined ? this.siteSku.kind.toLowerCase() === "app" ? "WebApp" : this.siteSku.kind.toString() : "",
+        'resourceSku': this.siteSku.sku != undefined ? this.siteSku.sku.toString(): "",
+        'ReportType': 'ResiliencyScore',  
+        'Error': error
+      }
+      this._telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportInPrivateAccess, eventProperties);
     }
 
     //
@@ -319,11 +326,15 @@ private checkIsLinuxApp() {
       }
     }
     catch (error) {
-      //Use TelemetryService logException
-      loggingError.message = 'Error accessing localStorage. Most likely accessed via in InPrivate or Incognito mode';
-      loggingError.stack = error;
-      let _severityLevel: SeverityLevel = SeverityLevel.Warning;
-      this._telemetryService.logException(loggingError, null, null, _severityLevel);
+      // Use TelemetryService logEvent when not able to access local storage.
+      // Most likely due to browsing in InPrivate/Incognito mode.
+      const eventProperties = {
+        'Subscription': this.subscriptionId,
+        'TimeClicked': sT.toUTCString(),
+        'ReportType': 'ResiliencyScore',
+        'Error': error
+      }
+      this._telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportInPrivateAccess, eventProperties);
     }
 
     this.downloadReportText = "Downloading report...";

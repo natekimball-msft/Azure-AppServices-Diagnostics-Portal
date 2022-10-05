@@ -98,6 +98,7 @@ export const TelemetryEventNames = {
     ResiliencyScoreReportButtonDisplayed: 'ResiliencyScoreReportButtonDisplayed',
     ResiliencyScoreReportButtonClicked: 'ResiliencyScoreReportButtonClicked', 
     ResiliencyScoreReportDownloaded: 'ResiliencyScoreReportDownloaded',
+    ResiliencyScoreReportInPrivateAccess: 'ResiliencyScoreReportInPrivateAccess',
     ResourceOutOfScopeUserResponse: 'ResourceOutOfScopeUserResponse',    
     DownloadReportButtonDisplayed: 'DownloadReportButtonDisplayed',
     DownloadReportButtonClicked: 'DownloadReportButtonClicked',    
