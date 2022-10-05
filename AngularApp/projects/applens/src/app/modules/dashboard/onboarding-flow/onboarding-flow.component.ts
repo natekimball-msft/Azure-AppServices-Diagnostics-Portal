@@ -479,7 +479,6 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       this.initialized = false;
       this.startUp();
     });
-    this.startUp();
   }
 
   startUp(){
