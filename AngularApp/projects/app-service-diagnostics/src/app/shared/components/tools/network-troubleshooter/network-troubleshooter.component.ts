@@ -108,6 +108,8 @@ export class NetworkTroubleshooterComponent extends DataRenderBaseComponent impl
   async loadFlowsAsync(): Promise<void> {
       try {
           var globals = this._globals;
+          var mgr = this.stepFlowManager;
+          
           globals.messagesData.currentNetworkCheckFlow = null;
           var telemetryService = this._telemetryService;
           var flowSet:NetworkCheckFlowSet;
@@ -137,7 +139,6 @@ export class NetworkTroubleshooterComponent extends DataRenderBaseComponent impl
             flows = flows.concat(this.processFlows([sampleFlow]));
           }
 
-          var mgr = this.stepFlowManager;
           if (this.debugMode) {
             window["logDebugMessage"] = console.log.bind(console);
             var remoteFlows: any = await CheckManager.loadRemoteCheckAsync(true);
