@@ -12,6 +12,7 @@ import { ObserverService } from '../../../../shared/services/observer.service';
 import { SeverityLevel } from '@microsoft/applicationinsights-web';
 import { DirectionalHint } from 'office-ui-fabric-react';
 import { HttpClient } from '@angular/common/http';
+import { Sku } from 'projects/app-service-diagnostics/src/app/shared/models/server-farm';
 
 @Component({
   selector: 'tab-data',
@@ -60,7 +61,7 @@ export class TabDataComponent implements OnInit {
 // Variables used by Download Report button
 resourceReady: Observable<any>;
 resource: any;  
-siteSku: any;
+siteSku: Observer.ObserverSiteSku;
 subscriptionId: string;
 displayDownloadReportButton: boolean = false;
 displayDownloadReportButtonStyle: any = {};
@@ -82,15 +83,19 @@ teachingBubbleCalloutProps = {
 };
 vfsFonts: any;
 
-// Check if the app is an App Service Windows Standard or higher SKU
-private checkIsWindowsApp() {          
-  return this.siteSku && this.siteSku.kind.toLowerCase() === "app" && !this.siteSku.is_linux && this.siteSku.sku > 8; //Only for Web App (Windows) in Standard or higher SKU 
-}
+  // Check if the app is an App Service Windows Standard or higher SKU
+  private checkIsWindowsApp() {
+    let _sku: Sku = Sku.All;      
+    _sku = Sku[this.siteSku.sku];
+    return this.siteSku && this.siteSku.kind.toLowerCase() === "app" && !this.siteSku.is_linux && _sku > 8; //Only for Web App (Windows) in Standard or higher SKU     
+  }
 
-// Check if the app is an App Service Linux Standard or higher SKU
-private checkIsLinuxApp() {          
-  return this.siteSku && this.siteSku.kind.toLowerCase() === "app" && this.siteSku.is_linux && this.siteSku.sku > 8; //Only for Web App (Windows) in Standard or higher SKU 
-}
+  // Check if the app is an App Service Linux Standard or higher SKU
+  private checkIsLinuxApp() {
+    let _sku: Sku = Sku.All;  
+    _sku = Sku[this.siteSku.sku];
+    return this.siteSku && this.siteSku.kind.toLowerCase() === "app,linux" && this.siteSku.is_linux && _sku > 8; //Only for Web App (Windows) in Standard or higher SKU 
+  }
 
   ngOnInit() {
     this._route.params.subscribe((params: Params) => {
@@ -105,7 +110,7 @@ private checkIsLinuxApp() {
         this._detectorControlService.setDetectorQueryParams("");
       }
       this.analysisMode = this._route.snapshot.data['analysisMode'];
-      this.detector = this._route.snapshot.params['detector'];
+      this.detector = this._route.snapshot.params['detector']? this._route.snapshot.params['detector']: null;
       this._telemetryService.logEvent(TelemetryEventNames.DownloadReportButtonDisplayed, { 'DownloadReportButtonDisplayed': this.displayDownloadReportButton.toString(), 'Detector:': this.detector, 'SubscriptionId': this._route.parent.snapshot.params['subscriptionid'], 'Resource': this.resource.SiteName });
     });
 

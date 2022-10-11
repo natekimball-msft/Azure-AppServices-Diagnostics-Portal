@@ -11,7 +11,7 @@
       (click)="internalExternalToggle()"></fab-command-bar-item>
     <fab-command-bar-item key="favoriteDetector" [text]="pinUnpinDetectorText"
       [iconProps]="{ iconName: pinUnpinDetectorIcon }" (click)="addOrRemoveDetector()"></fab-command-bar-item>
-    <fab-command-bar-item key="downloadReport" [text]="downloadReportText" [style]="displayDownloadReportButtonStyle" [id]="'downloadReportId'" 
+    <fab-command-bar-item *ngIf="displayDownloadReportButton" key="downloadReport" [text]="downloadReportText" [style]="displayDownloadReportButtonStyle" [id]="'downloadReportId'" 
       [iconProps]="downloadReportIcon" (click)="downloadReport()" [disabled]="downloadReportButtonDisabled"></fab-command-bar-item>    
   </items>
 </fab-command-bar>

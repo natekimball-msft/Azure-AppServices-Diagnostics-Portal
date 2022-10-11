@@ -36,7 +36,7 @@ namespace Observer {
     export interface ObserverSiteSku {
         kind: string;
         is_linux: boolean;
-        sku: Sku;
+        sku: string;
         server_farm_name: string;
         actual_number_of_workers: number;
         current_worker_size: number;
