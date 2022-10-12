@@ -11,6 +11,7 @@ import { HealthStatus } from "diagnostic-data";
   providedIn: 'root'
 })
 export class AppLensInterceptorService implements HttpInterceptor {
+  tokenRefreshRetry: boolean = true;
   constructor(private _alertService: AlertService, private _adalService: AdalService) { }
 
   raiseAlert(event){
@@ -48,6 +49,7 @@ export class AppLensInterceptorService implements HttpInterceptor {
         }
         else if ((error.status === 401 || error.status === 403) && error.url.includes("api/invoke")) {
           if (errorObj.DetailText && errorObj.DetailText.includes("the token is expired")) {
+            this._adalService.clearCache();
             return this._adalService.acquireToken(this._adalService.config.clientId).pipe(mergeMap((token: string) => {
               this._adalService.userInfo.token = token;
               return next.handle(req);
