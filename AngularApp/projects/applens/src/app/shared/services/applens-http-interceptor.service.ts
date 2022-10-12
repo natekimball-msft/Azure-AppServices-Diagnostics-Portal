@@ -46,7 +46,13 @@ export class AppLensInterceptorService implements HttpInterceptor {
           this.raiseAlert(error);
         }
         else if ((error.status === 401 || error.status === 403) && error.url.includes("api/invoke")) {
-          this._alertService.notifyUnAuthorized(error);
+          let errorObj = JSON.parse(error.error);
+          if (errorObj.DetailText && errorObj.DetailText.includes("the token is expired")) {
+            location.reload();
+          }
+          else {
+            this._alertService.notifyUnAuthorized(error);
+          }
         }
         return Observable.throw(error);
       }));
