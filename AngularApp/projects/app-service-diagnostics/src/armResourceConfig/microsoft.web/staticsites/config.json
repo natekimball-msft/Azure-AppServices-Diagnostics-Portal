@@ -1,7 +1,7 @@
 {
   "homePageText": {
     "title": "Static Web Apps Diagnostics",
-    "description": "Use Static Web Apps Diagnostics to investigate how your service is performing, diagnose issues, and discover how to improve its reliability. Select the problem category that best matches the information or tool that you're interested in:",
+    "description": "Investigate how your static web app is performing, diagnose issues, and discover how to improve its reliability.",
     "searchBarPlaceHolder": "Search Static Web Apps Diagnostics"
   },
   "matchRegEx": "/Microsoft.Web/staticSites/",
