@@ -61,6 +61,22 @@ export class SitesCategoryService extends CategoryService {
         overviewDetectorId: 'LinuxAvailabilityAndPerformance',
         description: 'Check your app’s health and discover app or platform issues.',
         keywords: ['Downtime', '5xx', '4xx', 'CPU', 'Memory','SNAT'],
+        categoryQuickLinks:[{
+          type:DetectorType.Detector,
+          id:'LinuxLogViewer',
+          displayText:'Application Logs'
+          },
+          {
+            type:DetectorType.Detector,
+            id:'LinuxContainerCrash',
+            displayText:'Container Crash'
+          },
+          {
+            type:DetectorType.Detector,
+            id:'http server errors',
+            displayText:'HTTP Server Errors'
+          }
+        ],
         color: 'rgb(208, 175, 239)',
         createFlowForCategory: false,
         chatEnabled: false
@@ -81,7 +97,7 @@ export class SitesCategoryService extends CategoryService {
         categoryQuickLinks:[{
           type:DetectorType.Detector,
           id:'EasyAuth',
-          displayText:'Authentication Configuration and Investigation (EasyAuth)'
+          displayText:'Investigate EasyAuth errors'
           },
           {
             type:DetectorType.Detector,
@@ -112,6 +128,22 @@ export class SitesCategoryService extends CategoryService {
         overviewDetectorId: 'linuxconfigurationandmanagement',
         description: 'Find out if your app service features are misconfigured.',
         keywords: ['Backups', 'Slots', 'Swaps', 'Scaling','IP Config'],
+        categoryQuickLinks:[{
+          type:DetectorType.Detector,
+          id:'EasyAuth',
+          displayText:'Investigate EasyAuth errors'
+          },
+          {
+            type:DetectorType.Detector,
+            id:'ipconfiguration',
+            displayText:'IP Address Configuration'
+          },
+          {
+            type:DetectorType.Detector,
+            id:'allscalingoperations',
+            displayText:'All Scaling Operations'
+          }
+        ],
         color: 'rgb(249, 213, 180)',
         createFlowForCategory: true,
         chatEnabled: false
@@ -192,6 +224,17 @@ export class SitesCategoryService extends CategoryService {
         overviewDetectorId: 'LinuxBestPractices',
         description: 'Analyze your app for optimal performance and configurations.',
         keywords: ['Autoscale','AlwaysOn','Density','ARR','Health Check'],
+        categoryQuickLinks:[{
+          type:DetectorType.Detector,
+          id:'ParentAvailabilityAndPerformance',
+          displayText:'Availability risks'
+          },
+          {
+            type:DetectorType.Detector,
+            id:'ParentConfigurationManagement',
+            displayText:'Configuration risks'
+          }
+        ],
         color: 'rgb(208, 228, 176)',
         createFlowForCategory: true,
         chatEnabled: false
@@ -420,6 +463,22 @@ export class SitesCategoryService extends CategoryService {
           overviewDetectorId:'LinuxDiagnosticTools',
           description: 'Run proactive tools to automatically mitigate the app.',
           keywords: ['Auto-Heal'],
+          categoryQuickLinks:[{
+              type: DetectorType.DiagnosticTool,
+              id: ToolIds.AutoHealing,
+              displayText: 'Auto-Heal'
+            },
+            {
+              type: DetectorType.DiagnosticTool,
+              id: ToolIds.NetworkChecks,
+              displayText: 'Network Troubleshooter'
+            },
+            {
+              type: DetectorType.DiagnosticTool,
+              id: ToolIds.AdvancedAppRestart,
+              displayText: 'Advanced Application Restart'
+            }
+          ],
           color: 'rgb(170, 192, 208)',
           createFlowForCategory: false,
           overridePath: `resource${siteId}/diagnosticTools`
