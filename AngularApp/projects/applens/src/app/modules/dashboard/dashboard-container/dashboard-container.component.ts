@@ -65,6 +65,7 @@ export class DashboardContainerComponent implements OnInit {
     }
   }
 
+
   ngOnInit() {
     this.subscriptionId = this._activatedRoute.snapshot.queryParams['subscriptionId'];
     this.showMetrics = !(this._resourceService.overviewPageMetricsId == undefined || this._resourceService.overviewPageMetricsId == "");
@@ -224,7 +225,6 @@ export class DashboardContainerComponent implements OnInit {
     this.downloadReportId = `#${downloadButtonId}`;
     this.coachmarkId = `#${coachMarkId}`;
   }
-
 
   updateAscLink() {
     if(this.ascResourceExplorerLink && this.resource!= null ) {

@@ -83,7 +83,8 @@ teachingBubbleCalloutProps = {
 };
 vfsFonts: any;
 
-  ngOnInit() {
+
+ngOnInit() {
     this._route.params.subscribe((params: Params) => {
       this.subscriptionId = params["subscriptionId"];
       this.refresh();
@@ -296,8 +297,9 @@ vfsFonts: any;
       return "LinuxApp";      
     } else return "WebApp";
   }
+  
 
-  updateDownloadReportId() {
+updateDownloadReportId() {
     const btns = document.querySelectorAll("button");
     const downloadButtonId = "downloadReportId";
     const coachMarkId = "fab-coachmark";
