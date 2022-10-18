@@ -75,6 +75,7 @@ export const TelemetryEventNames = {
     OpenFeedbackPanel: 'OpenFeedbackPanel',
     RefreshClicked: 'RefreshClicked',
     QuickLinkClicked: 'QuickLinkClicked',
+    QuickLinkOnCategoryTileClicked: 'QuickLinkOnCategoryTileClicked',
     RiskTileClicked: 'RiskTileClicked',
     RiskTileLoaded: 'RiskTileLoaded',
     ArmConfigMergeError: 'ArmConfigMergeError',
