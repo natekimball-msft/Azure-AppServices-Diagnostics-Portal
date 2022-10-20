@@ -83,21 +83,8 @@ teachingBubbleCalloutProps = {
 };
 vfsFonts: any;
 
-  // Check if the app is an App Service Windows Standard or higher SKU
-  private checkIsWindowsApp() {
-    let _sku: Sku = Sku.All;      
-    _sku = Sku[this.siteSku.sku];
-    return this.siteSku && this.siteSku.kind.toLowerCase() === "app" && !this.siteSku.is_linux && _sku > 8; //Only for Web App (Windows) in Standard or higher SKU     
-  }
 
-  // Check if the app is an App Service Linux Standard or higher SKU
-  private checkIsLinuxApp() {
-    let _sku: Sku = Sku.All;  
-    _sku = Sku[this.siteSku.sku];
-    return this.siteSku && this.siteSku.kind.toLowerCase() === "app,linux" && this.siteSku.is_linux && _sku > 8; //Only for Web App (Windows) in Standard or higher SKU 
-  }
-
-  ngOnInit() {
+ngOnInit() {
     this._route.params.subscribe((params: Params) => {
       this.subscriptionId = params["subscriptionId"];
       this.refresh();
@@ -134,7 +121,7 @@ vfsFonts: any;
       }
       });
     // Detecting whether Download Report button should be displayed or not
-    this.displayDownloadReportButton = this.checkIsWindowsApp() || this.checkIsLinuxApp();
+    this.displayDownloadReportButton = this.detector === "ResiliencyScore" && (this.checkIsWindowsApp() || this.checkIsLinuxApp());
 
     // Logging telemetry for Download Report button
     const dRBDEventProperties = {
@@ -286,7 +273,33 @@ vfsFonts: any;
     });
   }
 
-  updateDownloadReportId() {
+  // Check if the app is an App Service Windows Standard or higher SKU
+  private checkIsWindowsApp() {
+    let _sku: Sku = Sku.All;      
+    _sku = Sku[this.siteSku.sku];
+    return this.siteSku && this.getAppType(this.siteSku.kind.toLowerCase()) === "WebApp" && !this.siteSku.is_linux && _sku > 8; //Only for Web App (Windows) in Standard or higher SKU     
+  }
+
+  // Check if the app is an App Service Linux Standard or higher SKU
+  private checkIsLinuxApp() {
+    let _sku: Sku = Sku.All;  
+    _sku = Sku[this.siteSku.sku];
+    return this.siteSku && this.getAppType(this.siteSku.kind.toLowerCase()) === "LinuxApp" && this.siteSku.is_linux && _sku > 8; //Only for Web App (Windows) in Standard or higher SKU 
+  }
+
+  //To do, Add a utility method to check kind and use in main.component and site.service
+  private getAppType(kind: string) {
+    if (kind && kind.toLowerCase().indexOf("workflowapp") !== -1) {
+      return "WorkflowApp";
+    } else if (kind && kind.toLowerCase().indexOf("functionapp") !== -1) {
+      return "FunctionApp";	
+    } else if (kind && kind.toLowerCase().indexOf("linux") !== -1) {
+      return "LinuxApp";      
+    } else return "WebApp";
+  }
+  
+
+updateDownloadReportId() {
     const btns = document.querySelectorAll("button");
     const downloadButtonId = "downloadReportId";
     const coachMarkId = "fab-coachmark";
