@@ -127,7 +127,9 @@ export enum RenderingType {
     Tab,
     Section,
     StepViews,
-    Report
+    Report,
+    EventCorrelationBase,
+    EventCorrelationDataPoints,
 }
 
 export enum TimeSeriesType {

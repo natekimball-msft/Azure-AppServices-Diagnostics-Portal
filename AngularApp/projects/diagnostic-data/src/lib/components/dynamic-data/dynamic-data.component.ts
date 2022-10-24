@@ -46,6 +46,7 @@ import { InfoStepComponent } from '../step-views/info-step-view/info-step.compon
 import { DropDownStepComponent } from '../step-views/dropdown-step-view/dropdown-step.component';
 import { CheckStepComponent } from '../step-views/check-step-view/check-step.component';
 import { ButtonStepComponent } from '../step-views/button-step-view/button-step.component';
+import { EventCorrelationGraphComponent } from '../event-correlation-graph/event-correlation-graph.component';
 
 @Component({
   selector: 'dynamic-data',
@@ -199,6 +200,8 @@ export class DynamicDataComponent implements OnInit {
         return SectionsComponent;
       case RenderingType.StepViews:
         return StepViewsRendererComponent;
+      case RenderingType.EventCorrelationBase:
+        return EventCorrelationGraphComponent;
       default:
         return null;
     }
