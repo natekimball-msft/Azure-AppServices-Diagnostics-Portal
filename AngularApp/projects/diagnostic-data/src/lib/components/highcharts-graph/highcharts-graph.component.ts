@@ -880,4 +880,6 @@ export interface HighchartGraphSeries {
     data: any;
     events: Function;
     accessibility: any;
+    marker: { radius: number };
+    yAxis: number;
 }
