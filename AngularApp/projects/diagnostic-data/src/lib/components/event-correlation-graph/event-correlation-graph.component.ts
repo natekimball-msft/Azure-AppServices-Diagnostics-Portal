@@ -46,7 +46,9 @@ export class EventCorrelationGraphComponent extends DataRenderBaseComponent impl
   scatterPointValue: number;
   labelFontColor: string = "A9A9A9" // Dark gray to comply with contrast requirements with a transparent background for Accessibility purposes
 
-  @Input() eventCorrelationBaseSeries: TimeSeries[] = [];
+  @Input() set eventCorrelationBaseSeries (data: DiagnosticData) {
+    this.processData(data);
+  }
   @Input() set eventCorrelationDataPointsSeries(data: DiagnosticData) {
     this.processData(data);
   }
@@ -344,6 +346,7 @@ export class EventCorrelationGraphComponent extends DataRenderBaseComponent impl
                 highchartTimeSeriesDictionary[key].series.type = "scatter";
                 highchartTimeSeriesDictionary[key].series.marker = { radius: 4 };
                 highchartTimeSeriesDictionary[key].series.yAxis = 1;
+                highchartTimeSeriesDictionary[key].series.tooltip = { pointFormat: '{point.x:%a, %b %e, %H:%M%p}'};
             });
         }
         this.allSeries.push(timeSeriesDictionary[key]);
