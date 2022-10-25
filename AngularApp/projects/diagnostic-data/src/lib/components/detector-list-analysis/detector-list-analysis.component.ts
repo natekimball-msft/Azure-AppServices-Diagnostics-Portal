@@ -124,6 +124,8 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     solutionPanelOpenSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
     solutionTitle: string = "";
     expandIssuedAnalysisChecks: boolean = false;
+    eventCorrelationBaseSeries: DiagnosticData;
+    eventCorrelationDataPointsSeries: DiagnosticData;
 
     constructor(public _activatedRoute: ActivatedRoute, private _router: Router,
         private _diagnosticService: DiagnosticService, private _detectorControl: DetectorControlService,
@@ -317,6 +319,11 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                 if (this.detectorId == "" && !!this._activatedRoute.firstChild && this._activatedRoute.firstChild.snapshot && this._activatedRoute.firstChild.snapshot.paramMap.has(this.detectorParmName) && this._activatedRoute.firstChild.snapshot.paramMap.get(this.detectorParmName).length > 1) {
                     this.detectorId = this._activatedRoute.firstChild.snapshot.paramMap.get(this.detectorParmName);
                 }
+
+                this._diagnosticService.getDetector(this.analysisId, this._detectorControl.startTimeString, this._detectorControl.endTimeString, false).subscribe(detectorResponse => {
+                    this.eventCorrelationBaseSeries = this.extractEventCorrelationBase(detectorResponse);
+                });
+
                 if (this.analysisId != 'searchResultsAnalysis' && this.detectorId == "") this.goBackToAnalysis();
                 this.populateSupportTopicDocument();
                 this.analysisContainsDowntime().subscribe(containsDownTime => {
@@ -563,6 +570,9 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
             requests.push((<Observable<DetectorResponse>>metaData.request).pipe(
                 map((response: DetectorResponse) => {
                     this.evaluateAndEmitDowntimeInteractionState(containsDownTime, this.detectorViewModels.length, zoomBehaviors.CancelZoom | zoomBehaviors.FireXAxisSelectionEvent | zoomBehaviors.UnGreyGraph);
+                    if (this.extractEventCorrelationDataPoints(response, downTime)) {
+                        this.extractEventCorrelationDataPoints(response, downTime);
+                    }
                     this.detectorViewModels[index] = this.updateDetectorViewModelSuccess(metaData, response);
 
                     if (this.detectorViewModels[index].loadingStatus !== LoadingStatus.Failed) {
@@ -861,8 +871,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                         // Case submission flow search result navigation
                         this.logEvent(TelemetryEventNames.SearchResultClicked, { searchMode: this.searchMode, searchId: this.searchId, detectorId: detectorId, rank: 0, title: clickDetectorEventProperties.ChildDetectorName, status: clickDetectorEventProperties.Status, ts: Math.floor((new Date()).getTime() / 1000).toString() });
                         let dest = `../../../analysis/${this.analysisId}/search/detectors/${detectorId}`;
-                        if (this._activatedRoute.snapshot.paramMap.has("detectorName"))
-                        {
+                        if (this._activatedRoute.snapshot.paramMap.has("detectorName")) {
                             dest = `../${detectorId}`;
                         }
                         this._router.navigate([dest], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', preserveFragment: true, queryParams: { searchTerm: this.searchTerm } });
@@ -986,6 +995,81 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
             isDetector: false,
             queryParams: queryParams
         });
+    }
+
+    private extractEventCorrelationBase(response: DetectorResponse): DiagnosticData {
+        const slaCharts: DiagnosticData[] = JSON.parse(response.dataset[0].table.rows[0][3]);
+        const data = slaCharts[0];
+        data.renderingProperties = {
+            type: RenderingType.EventCorrelationBase,
+            title: "Sample Table-Correlation",
+            description: null,
+            isVisible: true
+        };
+        return { ...data };
+    }
+
+    private extractEventCorrelationDataPoints(response: DetectorResponse, downTime: DownTime): DiagnosticData {
+        const eventEmitDetectorIds = ["http4xx", "httpservererrors"];
+        const detectorId = response.metadata.id;
+        const detectorName = response.metadata.name;
+        const randomDowntimes: number = this.getRandomInt(3, 1);
+        if (eventEmitDetectorIds.findIndex(id => id.toLowerCase() === detectorId.toLowerCase()) === -1) {
+            return null;
+        }
+
+        const data = {
+            "table": {
+                "columns": [{
+                    "columnName": "TIMESTAMP",
+                    "dataType": "DateTime",
+                    "columnType": null
+                }, {
+                    "columnName": "DetectorName",
+                    "dataType": "String",
+                    "columnType": null
+                }
+                ],
+                "rows": [
+                    // [
+                    //     "2022-10-18T09:00:00",
+                    //     detectorName
+                    // ],
+                    // [
+                    //     "2022-10-18T08:00:00",
+                    //     detectorName
+                    // ],
+                ]
+            },
+            "renderingProperties": {
+                "type": RenderingType.EventCorrelationDataPoints,
+                "title": "CorrelationDataPoint",
+                "description": null,
+                "isVisible": true
+            }
+        };
+
+        for (let i = 0; i < randomDowntimes; i++) {
+            const down = [
+                this.generateRandomDownTime(downTime.StartTime, downTime.EndTime),
+                detectorName
+            ]
+            data.table.rows.push(down);
+        }
+
+
+        return data;
+    }
+
+    private generateRandomDownTime(startTime: momentNs.Moment, endTime: momentNs.Moment): string {
+        const diffTimeInMin: number = moment.duration(endTime.diff(startTime)).asMinutes();
+        const randomDownTime = startTime.clone().add(this.getRandomInt(diffTimeInMin), 'minutes');
+        const downTimeStr = randomDownTime.format(this.stringFormat);
+        return downTimeStr;
+    }
+
+    private getRandomInt(max: number, min: number = 0): number {
+        return Math.floor(Math.random() * (max - min + 1) + min);
     }
 }
 
