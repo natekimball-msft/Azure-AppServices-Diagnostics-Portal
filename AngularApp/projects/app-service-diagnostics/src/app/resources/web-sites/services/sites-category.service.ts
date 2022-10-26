@@ -537,6 +537,24 @@ export class SitesCategoryService extends CategoryService {
             createFlowForCategory: false,
             overridePath: `resource${siteId}/diagnosticTools`
           }
+        },
+        // For Workflow app on Windows
+        {
+          appType: AppType.WorkflowApp,
+          platform: OperatingSystem.windows,
+          stack: 'ASP.NET Core',
+          sku: Sku.NotDynamic,
+          hostingEnvironmentKind: HostingEnvironmentKind.All,
+          item: {
+            id: 'DiagnosticTools',
+            name: 'Diagnostic Tools',
+            overviewDetectorId:'DiagnosticTools',
+            description: 'Run proactive tools to automatically mitigate the app.',
+            keywords: ['Auto-Heal'],
+            color: 'rgb(170, 192, 208)',
+            createFlowForCategory: false,
+            overridePath: `resource${siteId}/diagnosticTools`
+          }
         }];
   }
 

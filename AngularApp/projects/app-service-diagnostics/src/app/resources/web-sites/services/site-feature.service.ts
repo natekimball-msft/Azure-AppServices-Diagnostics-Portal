@@ -195,7 +195,7 @@ export class SiteFeatureService extends FeatureService {
   addDiagnosticTools(resourceId: string) {
     this.diagnosticTools = [
       {
-        appType: AppType.WebApp | AppType.FunctionApp,
+        appType: AppType.WebApp | AppType.FunctionApp | AppType.WorkflowApp,
         platform: OperatingSystem.windows,
         sku: Sku.NotDynamic,
         hostingEnvironmentKind: HostingEnvironmentKind.All,
@@ -217,7 +217,7 @@ export class SiteFeatureService extends FeatureService {
         }
       },
       {
-        appType: AppType.WebApp | AppType.FunctionApp,
+        appType: AppType.WebApp | AppType.FunctionApp | AppType.WorkflowApp,
         platform: OperatingSystem.windows,
         sku: Sku.NotDynamic,
         hostingEnvironmentKind: HostingEnvironmentKind.All,
@@ -239,7 +239,7 @@ export class SiteFeatureService extends FeatureService {
         }
       },
       {
-        appType: AppType.WebApp | AppType.FunctionApp,
+        appType: AppType.WebApp | AppType.FunctionApp | AppType.WorkflowApp,
         platform: OperatingSystem.windows,
         sku: Sku.NotDynamic,
         hostingEnvironmentKind: HostingEnvironmentKind.All,
@@ -283,7 +283,7 @@ export class SiteFeatureService extends FeatureService {
         }
       },
       {
-        appType: AppType.WebApp | AppType.FunctionApp,
+        appType: AppType.WebApp | AppType.FunctionApp | AppType.WorkflowApp,
         platform: OperatingSystem.windows,
         sku: Sku.NotDynamic,
         hostingEnvironmentKind: HostingEnvironmentKind.All,
@@ -388,28 +388,6 @@ export class SiteFeatureService extends FeatureService {
               this._router.navigateByUrl(`resource${resourceId}/tools/networkchecks`);
             } else {
               this.navigateTo(resourceId, ToolIds.NetworkChecks);
-            }
-          })
-        }
-      },
-      {
-        appType: AppType.WorkflowApp,
-        platform: OperatingSystem.any,
-        sku: Sku.All,
-        hostingEnvironmentKind: HostingEnvironmentKind.All,
-        stack: '',
-        item: {
-          id: ToolIds.NetworkChecks,
-          name: ToolNames.NetworkChecks,
-          category: 'Networking',
-          description: '',
-          featureType: DetectorType.DiagnosticTool,
-          clickAction: this._createFeatureAction(ToolNames.NetworkChecks, 'Networking', () => {
-            //Need remove after A/B test
-            if (this.isLegacy) {
-              this._router.navigateByUrl(`resource${resourceId}/tools/networkchecks`);
-            } else {
-              this.navigateTo(resourceId, ToolIds.NetworkChecks, "Networking");
             }
           })
         }
