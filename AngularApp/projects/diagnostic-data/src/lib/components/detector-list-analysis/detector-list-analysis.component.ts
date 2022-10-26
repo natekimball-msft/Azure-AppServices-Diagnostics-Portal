@@ -1001,10 +1001,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
         const slaCharts: DiagnosticData[] = JSON.parse(response.dataset[0].table.rows[0][3]);
         const data = slaCharts[0];
         data.renderingProperties = {
-            type: RenderingType.EventCorrelationBase,
-            title: "Sample Table-Correlation",
-            description: null,
-            isVisible: true
+             type: RenderingType.EventCorrelationBase,
         };
         return { ...data };
     }
