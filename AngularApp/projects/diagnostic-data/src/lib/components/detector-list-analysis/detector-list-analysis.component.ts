@@ -570,9 +570,9 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
             requests.push((<Observable<DetectorResponse>>metaData.request).pipe(
                 map((response: DetectorResponse) => {
                     this.evaluateAndEmitDowntimeInteractionState(containsDownTime, this.detectorViewModels.length, zoomBehaviors.CancelZoom | zoomBehaviors.FireXAxisSelectionEvent | zoomBehaviors.UnGreyGraph);
-                    if (this.extractEventCorrelationDataPoints(response, downTime)) {
-                        this.extractEventCorrelationDataPoints(response, downTime);
-                    }
+                    // if (this.extractEventCorrelationDataPoints(response, downTime)) {
+                    //     this.extractEventCorrelationDataPoints(response, downTime);
+                    // }
                     this.detectorViewModels[index] = this.updateDetectorViewModelSuccess(metaData, response);
 
                     if (this.detectorViewModels[index].loadingStatus !== LoadingStatus.Failed) {
@@ -1000,9 +1000,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     private extractEventCorrelationBase(response: DetectorResponse): DiagnosticData {
         const slaCharts: DiagnosticData[] = JSON.parse(response.dataset[0].table.rows[0][3]);
         const data = slaCharts[0];
-        data.renderingProperties = {
-             type: RenderingType.EventCorrelationBase,
-        };
+        data.renderingProperties.type = RenderingType.EventCorrelationBase;
         return { ...data };
     }
 

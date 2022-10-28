@@ -6,8 +6,7 @@ import { TimeSeries, TablePoint, HighChartTimeSeries, MetricType, GraphSeries, G
 import * as momentNs from 'moment';
 import { TimeUtilities } from '../../utilities/time-utilities';
 import { TelemetryService } from '../../services/telemetry/telemetry.service';
-import { Data } from '@microsoft/applicationinsights-common';
-
+import { DetectorControlService } from '../../services/detector-control.service';
 
 const moment = momentNs;
 
@@ -22,7 +21,8 @@ export class EventCorrelationGraphComponent extends DataRenderBaseComponent impl
 
   TimeStampColumn = "TIMESTAMP";
   DetectorNameColumn = "DetectorName";
-
+  startTime = this._detectorControl.startTime;
+  endTime = this._detectorControl.endTime;
 
   allSeries: TimeSeries[] = [];
   allSeriesNames: string[] = [];
@@ -46,6 +46,91 @@ export class EventCorrelationGraphComponent extends DataRenderBaseComponent impl
   scatterPointValue: number;
   labelFontColor: string = "A9A9A9" // Dark gray to comply with contrast requirements with a transparent background for Accessibility purposes
 
+  dataCorrelation: DiagnosticData = {
+    "table": {
+        "columns": [{
+            "columnName": "TIMESTAMP",
+            "dataType": "DateTime",
+            "columnType": null
+        }, {
+            "columnName": "DetectorName",
+            "dataType": "String",
+            "columnType": null
+        }
+        ],
+        "rows": [
+            [
+                 "2022-10-02T00:10:00",
+                "Application Deployment"
+            ],
+            [
+                "2022-10-02T00:40:00",
+                "Application Deployment"
+            ],
+        ]
+    },
+    "renderingProperties": {
+        "type": RenderingType.EventCorrelationDataPoints,
+        "title": "CorrelationDataPoint",
+        "description": null,
+        "isVisible": true
+    }
+};
+
+dataCorrelation2: DiagnosticData = {
+  "table": {
+      "columns": [{
+          "columnName": "TIMESTAMP",
+          "dataType": "DateTime",
+          "columnType": null
+      }, {
+          "columnName": "DetectorName",
+          "dataType": "String",
+          "columnType": null
+      }
+      ],
+      "rows": [
+          [
+               "2022-10-01T23:30:00",
+               "Platform Deployment"
+          ],
+      ]
+  },
+  "renderingProperties": {
+      "type": RenderingType.EventCorrelationDataPoints,
+      "title": "CorrelationDataPoint",
+      "description": null,
+      "isVisible": true
+  }
+};
+
+dataCorrelation3: DiagnosticData = {
+  "table": {
+      "columns": [{
+          "columnName": "TIMESTAMP",
+          "dataType": "DateTime",
+          "columnType": null
+      }, {
+          "columnName": "DetectorName",
+          "dataType": "String",
+          "columnType": null
+      }
+      ],
+      "rows": [
+          [
+               "2022-10-01T23:40:00",
+               "Application Insights Codeless Agent Upgrade"
+          ],
+      ]
+  },
+  "renderingProperties": {
+      "type": RenderingType.EventCorrelationDataPoints,
+      "title": "CorrelationDataPoint",
+      "description": null,
+      "isVisible": true
+  }
+};
+
   @Input() set eventCorrelationBaseSeries (data: DiagnosticData) {
     this.processData(data);
   }
@@ -53,7 +138,7 @@ export class EventCorrelationGraphComponent extends DataRenderBaseComponent impl
     this.processData(data);
   }
 
-  constructor(private t: TelemetryService) {
+  constructor(private t: TelemetryService, private _detectorControl: DetectorControlService,) {
     super(t);
   }
 
@@ -109,7 +194,8 @@ export class EventCorrelationGraphComponent extends DataRenderBaseComponent impl
 
       if (this.renderingProperties.type === RenderingType.EventCorrelationBase) {
         this.scatterPointValue = 1;
-        this._processEventCorrelationBaseDiagnosticData(data);
+        //this._processEventCorrelationBaseDiagnosticData(data);
+        this._processEventCorrelationDataPointsDiagnosticData(this.dataCorrelation);
       }
       else if (this.renderingProperties.type === RenderingType.EventCorrelationDataPoints) {
         this.scatterPointValue = this.scatterPointValue + 0.1
@@ -242,8 +328,10 @@ export class EventCorrelationGraphComponent extends DataRenderBaseComponent impl
       }
 
       this.allSeries.push(timeSeriesDictionary[key]);
-
       this.allHighChartSeries.push(highchartTimeSeriesDictionary[key]);
+      this._processEventCorrelationDataPointsDiagnosticData(this.dataCorrelation);
+      this._processEventCorrelationDataPointsDiagnosticData(this.dataCorrelation2);
+      this._processEventCorrelationDataPointsDiagnosticData(this.dataCorrelation3);
     });
   }
 
@@ -286,9 +374,11 @@ export class EventCorrelationGraphComponent extends DataRenderBaseComponent impl
 
             lastTimeStamp = timestamp;
             let pointValue = 1;
+            let hCSTemp = this.allHighChartSeries.filter(timeSeries => { timeSeries.series.type === "scatter" });
             // if there's a series with value during this time, increase the value by 0.1 to make it visible
-            this.allHighChartSeries.filter(timeSeries => { timeSeries.series.type === "scatter" }).forEach(series => { series.series.data.forEach(value => { value === timestamp.valueOf()? pointValue = pointValue + 0.1 : pointValue } ) });             
-            
+      //      if (hCSTemp) {
+      //        hCSTemp.forEach(series => { series.series.data.forEach(value => { value === timestamp.valueOf()? pointValue = pointValue + 0.1 : pointValue } ) });             
+      //      }
             if (counterNameColumnIndex > -1 && row[counterNameColumnIndex] != null) {
                 const point: TablePoint = <TablePoint>{
                     timestamp: timestamp,
@@ -317,25 +407,32 @@ export class EventCorrelationGraphComponent extends DataRenderBaseComponent impl
                 .sort((b, a) => !this.customizeXAxis ? a.timestamp.diff(b.timestamp) : b.timestamp.diff(a.timestamp));
 
         if (!this.customizeXAxis) {
-            let pointToAdd = pointsForThisSeries.pop();
+            //let pointToAdd = pointsForThisSeries.pop();
 
             // Remove the points that earlier than starttime
-            while (pointToAdd && pointToAdd.timestamp && pointToAdd.timestamp.isBefore(this.startTime)) {
-                pointToAdd = pointsForThisSeries.pop();
-            }
+            // while (pointToAdd && pointToAdd.timestamp && pointToAdd.timestamp.isBefore(this.startTime)) {
+            //     pointToAdd = pointsForThisSeries.pop();
+            // }
 
-            for (const d = this.startTime.clone(); d.isBefore(this.endTime); d.add(this.timeGrain)) {
-                let value = this.defaultValue;
-                if (pointToAdd && d.isSame(moment.utc(pointToAdd.timestamp))) {
-                    value = pointToAdd.value;
-                    pointToAdd = pointsForThisSeries.pop();
-                }
-                timeSeriesDictionary[key].series.values.push(<GraphPoint>{ x: d.clone(), y: value });
-                highchartTimeSeriesDictionary[key].series.data.push([d.clone().valueOf(), value]);
+            // for (const d = this.startTime.clone(); d.isBefore(this.endTime); d.add(this.timeGrain)) {
+            //     let value = this.defaultValue;
+            //     if (pointToAdd && d.isSame(moment.utc(pointToAdd.timestamp))) {
+            //         value = pointToAdd.value;
+            //         pointToAdd = pointsForThisSeries.pop();
+            //     }
+            //     timeSeriesDictionary[key].series.values.push(<GraphPoint>{ x: d.clone(), y: value });
+            //     highchartTimeSeriesDictionary[key].series.data.push([d.clone().valueOf(), value]);
+            //     highchartTimeSeriesDictionary[key].series.type = "scatter";
+            //     highchartTimeSeriesDictionary[key].series.marker = { radius: 4 };
+            //     highchartTimeSeriesDictionary[key].series.yAxis = 1;
+            // }
+                timeSeriesDictionary[key].series.values = tablePoints.map(tp => <GraphPoint>{ x: tp.timestamp.clone(), y: tp.value });
+                 highchartTimeSeriesDictionary[key].series.data = tablePoints.map(tp => {
+                  return [tp.timestamp.clone().valueOf(),tp.value];
+                 });
                 highchartTimeSeriesDictionary[key].series.type = "scatter";
                 highchartTimeSeriesDictionary[key].series.marker = { radius: 4 };
                 highchartTimeSeriesDictionary[key].series.yAxis = 1;
-            }
         } else {
             pointsForThisSeries.forEach(pointToAdd => {
                 if (pointToAdd.timestamp.isBefore(this.startTime)) {
