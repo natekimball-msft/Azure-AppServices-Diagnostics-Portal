@@ -317,7 +317,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                 if (this.detectorId == "" && !!this._activatedRoute.firstChild && this._activatedRoute.firstChild.snapshot && this._activatedRoute.firstChild.snapshot.paramMap.has(this.detectorParmName) && this._activatedRoute.firstChild.snapshot.paramMap.get(this.detectorParmName).length > 1) {
                     this.detectorId = this._activatedRoute.firstChild.snapshot.paramMap.get(this.detectorParmName);
                 }
-                if (this.analysisId != 'searchResultsAnalysis' && this.analysisId != "supportTopicAnalysis" && this.detectorId == "") this.goBackToAnalysis();
+                if (this.analysisId != 'searchResultsAnalysis' && this.detectorId == "") this.goBackToAnalysis();
                 this.populateSupportTopicDocument();
                 this.analysisContainsDowntime().subscribe(containsDownTime => {
                     if ((containsDownTime && !!this._downTime) || !containsDownTime) {
@@ -347,10 +347,10 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                         }
                         else {
                             if (this.analysisId == "supportTopicAnalysis") {
+                                this.showAppInsightsSection = false;
                                 this._diagnosticService.getDetectors().subscribe(detectorList => {
-                                    if (detectorList) {
+                                    if (detectorList) {                                        
                                         this._supportTopicService.getMatchingDetectors().subscribe(matchingDetectors => {
-                                            this.detectors = [];
                                             var analysisToProcess: string[] = [];
                                             matchingDetectors.forEach(matchingDetector => {
                                                 if (matchingDetector.type === DetectorType.Analysis) {
@@ -387,7 +387,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                                                 if (currViewModel.model.startTime != null && currViewModel.model.endTime != null) {
                                                     this._router.navigate([`./detectors/${currentDetector.id}`], {
                                                         relativeTo: this._activatedRoute,
-                                                        queryParams: { startTime: currViewModel.model.startTime, endTime: currViewModel.model.endTime },
+                                                        queryParams: { startTime: currViewModel.model.startTime, endTime: currViewModel.model.endTime, searchTerm: this.searchTerm },
                                                         queryParamsHandling: 'merge',
                                                         replaceUrl: true
                                                     });
@@ -848,8 +848,13 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
             this._router.navigate([`../../../../${this.analysisId}/search`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', queryParams: { searchTerm: this.searchTerm } });
         }
         else {
-            if (this.analysisId === 'supportTopicAnalysis' && this.searchTerm) {
-                this._router.navigate([`../../../../${this.analysisId}/dynamic`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', queryParams: { searchTerm: this.searchTerm } });
+            if (this.analysisId === 'supportTopicAnalysis' && this.searchTerm) {                
+                if(this.detectorId == '') {
+                    this._router.navigate([`../../${this.analysisId}/dynamic`],  { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', queryParams: { searchTerm: this.searchTerm }, replaceUrl: true });
+                }
+                else {
+                    this._router.navigate([`../../../../${this.analysisId}/dynamic/`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', queryParams: { searchTerm: this.searchTerm }, replaceUrl: true });
+                }
             }
             else {
                 if (!!this.analysisId && this.analysisId.length > 0) {
@@ -930,11 +935,13 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                 }
                 else {
                     if (this.analysisId === 'supportTopicAnalysis') {
-                        let dest = `../../../analysis/${this.analysisId}/dynamic/detectors/${detectorId}`;
-                        if (this._activatedRoute.snapshot.paramMap.has("detectorName")) {
-                            dest = `../${detectorId}`;
-                        }
-                        this._router.navigate([dest], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', preserveFragment: true, queryParams: { searchTerm: this.searchTerm } });
+                        let dest = `../../../detectors/${detectorId}`;
+                        this._router.navigate([dest], {
+                            relativeTo: this._activatedRoute,
+                            queryParamsHandling: 'merge',
+                            preserveFragment: true,
+                            queryParams: { startTime: viewModel.model.startTime, endTime: viewModel.model.endTime, searchTerm: this.searchTerm } 
+                        });
                     }
                     else {
                         if (detectorId === 'appchanges' && !this._detectorControl.internalClient) {
