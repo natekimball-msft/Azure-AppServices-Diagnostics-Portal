@@ -1,5 +1,5 @@
 
-import { of as observableOf, Observable, of, throwError } from 'rxjs';
+import { of as observableOf, Observable, of, throwError, noop } from 'rxjs';
 import { map, flatMap, catchError } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -137,6 +137,12 @@ export class SupportTopicService {
     // detector-list-analysis component will use this method to identify detectors that should be loaded in the dynamically generated analysis view.
     public getMatchingDetectors(): Observable<any[]> {
         if (this.supportTopicId || this.sapSupportTopicId) {
+            
+            //Mock data for local testing. Remove before commit
+            return this._diagnosticService.getDetectors().pipe(map(detectors => {
+                return detectors.filter(detector => detector.id == 'appDownAnalysis1' || detector.id == 'AlwaysOnCheckForBestPractice' || detector.id == 'ARRAffinityCheck' );
+            }));
+
             return this._diagnosticService.getDetectors().pipe(map(detectors => {
                 return detectors.filter(detector =>
                     detector.supportTopicList &&
@@ -147,6 +153,21 @@ export class SupportTopicService {
         else {
             return Observable.of(null);
         }
+    }
+
+    addStartAndEndTimeIfNotPresent(queryParams:any): any {
+        let startTime, endTime: momentNs.Moment;
+        endTime = moment.utc().subtract(16, 'minutes');
+        startTime = endTime.clone().subtract(1, 'days');
+        let defaultStartTimeString = startTime.format('YYYY-MM-DD HH:mm');
+        let defaultEndTimeString = endTime.format('YYYY-MM-DD HH:mm');
+
+        queryParams = !queryParams? {} : queryParams;
+
+        !queryParams.startTime? queryParams["startTime"] = defaultStartTimeString : noop;
+        !queryParams.endTime? queryParams["endTime"] = defaultEndTimeString : noop;
+
+        return queryParams;
     }
 
     getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string, sapSupportTopicId: string = "", sapProductId: string = ""): Observable<any> {
@@ -214,6 +235,9 @@ export class SupportTopicService {
                         });
                     }
 
+                    //Mock data for local testing. Remove before commit
+                    matchingDetectors = detectors.filter(detector => detector.id == 'appDownAnalysis1' || detector.id == 'AlwaysOnCheckForBestPractice' || detector.id == 'ARRAffinityCheck' );
+
                     if (matchingDetectors) {
                         if (matchingDetectors.length === 1 && matchingDetectors[0] && matchingDetectors[0].id) {
                             if (matchingDetectors[0].type === DetectorType.Analysis) {
@@ -274,6 +298,10 @@ export class SupportTopicService {
                                     "KeystoneSolutionApplied": String(keystoneSolutionApplied)
                                 });
                             }
+                            
+                            if(detectorPath.indexOf('/analysis/supportTopicAnalysis/dynamic')>-1) {
+                                queryParamsDic = this.addStartAndEndTimeIfNotPresent(queryParamsDic);
+                            }
 
                             return { path: detectorPath, queryParams: queryParamsDic };
                         }),
@@ -283,10 +311,16 @@ export class SupportTopicService {
                                     "details": JSON.stringify(err)
                                 });
 
+                                if(detectorPath.indexOf('/analysis/supportTopicAnalysis/dynamic')>-1) {
+                                    queryParamsDic = this.addStartAndEndTimeIfNotPresent(queryParamsDic);
+                                }
                                 return observableOf({ path: detectorPath, queryParams: queryParamsDic });
                             }))
                     }
 
+                    if(detectorPath.indexOf('/analysis/supportTopicAnalysis/dynamic')>-1) {
+                        queryParamsDic = this.addStartAndEndTimeIfNotPresent(queryParamsDic);
+                    }
                     return observableOf({ path: detectorPath, queryParams: queryParamsDic });
                 }))
             }));
