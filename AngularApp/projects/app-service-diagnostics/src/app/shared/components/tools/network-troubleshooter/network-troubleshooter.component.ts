@@ -9,13 +9,13 @@ import { SiteInfoMetaData, Site } from '../../../models/site';
 import { ArmService } from '../../../services/arm.service';
 import { SiteService } from '../../../services/site.service';
 import { CheckManager } from '../network-checks/check-manager';
-import { DiagProvider } from '../network-checks/diag-provider';
 import { FunctionAppFlowSet } from '../network-checks/functionapp-flows';
 import { LogicAppFlowSet } from '../network-checks/logicapp-flows';
 import { NetworkCheckFlow } from '../network-checks/network-check-flow';
 import { NetworkCheckFlowSet } from '../network-checks/network-check-flow-set';
 import { WebAppFlowSet } from '../network-checks/webapp-flow-set';
 import { sampleFlow } from '../network-checks/network-check-flows/sampleFlow.js'
+import { DiagProvider } from 'projects/app-service-diagnostics/src/app/shared/components/tools/network-checks/diag-provider';
 
 
 @Component({

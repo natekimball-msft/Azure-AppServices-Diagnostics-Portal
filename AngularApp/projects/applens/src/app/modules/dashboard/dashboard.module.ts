@@ -89,6 +89,8 @@ import { FabBreadcrumbModule } from '@angular-react/fabric/lib/components/breadc
 import { FabMessageBarModule } from '@angular-react/fabric/lib/components/message-bar';
 import { CreateWorkflowComponent } from './workflow/create-workflow/create-workflow.component';
 import { NgFlowchartModule } from 'projects/ng-flowchart/dist';
+import { GenericClientScriptService } from 'projects/diagnostic-data/src/lib/services/generic-client-script.service';
+import { ClientScriptService } from './services/client-script.service';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
@@ -463,6 +465,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         InitResolver,
         ApplensGlobals,
         BreadcrumbService,
+        ClientScriptService,
         {
             provide: ResourceService,
             useFactory: ResourceServiceFactory,
@@ -478,7 +481,8 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         { provide: SolutionService, useExisting: GenericSolutionService },
         { provide: GenieGlobals, useExisting: ApplensGlobals },
         { provide: GenericBreadcrumbService, useExisting: BreadcrumbService },
-        { provide: GenericUserSettingService, useExisting: UserSettingService }
+        { provide: GenericUserSettingService, useExisting: UserSettingService },
+        { provide: GenericClientScriptService, useExisting: ClientScriptService}
     ],
     declarations: [DashboardComponent, SideNavComponent, ResourceMenuItemComponent, ResourceHomeComponent, OnboardingFlowComponent, SearchTermAdditionComponent,
         SearchMenuPipe, TabDataComponent, TabDevelopComponent, TabCommonComponent, TabDataSourcesComponent, TabMonitoringComponent,
