@@ -1,5 +1,5 @@
 export class WrappedManagementApiBody {
-    Properties: any
+    properties: any
 }
 
 export class NetworkTroubleshooterPostAPIBody {
@@ -11,6 +11,11 @@ export class NetworkTroubleshooterPostAPIBody {
 export class NetworkTroubleshooterPostTcpPingBody {
     Host: string;
     Port: number;
+}
+
+export class NetworkTroubleshooterTcpPingResponse {
+    connectionStatus: string;
+    connectionStatusDetails: string;
 }
 
 export class Credentials {

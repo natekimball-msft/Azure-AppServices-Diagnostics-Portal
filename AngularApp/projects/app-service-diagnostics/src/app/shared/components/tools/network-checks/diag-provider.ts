@@ -5,7 +5,7 @@ import { stringify } from 'querystring';
 import { Observable, of, throwError, timer } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
 import { ResponseMessageEnvelope } from '../../../models/responsemessageenvelope';
-import { NetworkTroubleshooterPostAPIBody, Credentials, CredentialReference, ResourceMetadata, NetworkTroubleshooterPostTcpPingBody, WrappedManagementApiBody } from '../../../models/network-troubleshooter/post-request-body'
+import { NetworkTroubleshooterPostAPIBody, Credentials, CredentialReference, ResourceMetadata, NetworkTroubleshooterPostTcpPingBody, WrappedManagementApiBody, NetworkTroubleshooterTcpPingResponse } from '../../../models/network-troubleshooter/post-request-body'
 import { Site, SiteInfoMetaData } from '../../../models/site';
 import { ArmService } from '../../../services/arm.service';
 import { SiteService } from '../../../services/site.service';
@@ -195,13 +195,13 @@ export class DiagProvider {
         // Managment requests need to be wrapped and unwrapped.
         // The content that we are after should be nested in Properties
         var managementRequestBody = new WrappedManagementApiBody();
-        managementRequestBody.Properties = body;
+        managementRequestBody.properties = body;
         return managementRequestBody;
     }
 
-    public static unWrapManagementRequest(response: any): any
+    public static unWrapManagementRequest(response: WrappedManagementApiBody): any
     {
-        return response.Properties;
+        return response.properties;
     }
 
     public async checkConnectionViaAppSettingAsync(appSetting: string, type: string, entityName?: string, timeoutInSec: number = 30): Promise<any> {
@@ -216,12 +216,17 @@ export class DiagProvider {
         requestBody.ResourceMetadata.EntityName = entityName;
 
         var wrappedBody = DiagProvider.wrapManagementRequest(requestBody);
-        var response: any = await this.postNetworkTroubleshooterApiAsync("connectivityCheck", wrappedBody, timeoutInSec);
-        if (response == null || response.statusText == null)
+        var wrappedResponse: WrappedManagementApiBody = await this.postNetworkTroubleshooterApiAsync("connectivityCheck", wrappedBody, timeoutInSec);
+        var response = DiagProvider.unWrapManagementRequest(wrappedResponse);
+        if (response == null )
         {
           throw Error("No response received when calling the network troubleshooter endpoint via postNetworkTroubleshooterApiAsync().");
         }
-        return DiagProvider.unWrapManagementRequest(response);
+        else if (response.statusText == null)
+        {
+            throw Error("Invalid response without statusText received when calling the network troubleshooter endpoint via postNetworkTroubleshooterApiAsync().");
+        }
+        return response;
     }
 
     public getKuduApiAsync(uri: string, instance?: string, timeoutInSec: number = 15, scm = false): Promise<any> {
@@ -334,8 +339,8 @@ export class DiagProvider {
         requestBody.Host = hostname;
         requestBody.Port = port;
         var wrappedBody = DiagProvider.wrapManagementRequest(requestBody);
-        var wrappedResponse: any = await this.postNetworkTroubleshooterApiAsync("tcpPingCheck", wrappedBody, timeout);
-        var response = DiagProvider.unWrapManagementRequest(wrappedResponse)
+        var wrappedResponse: WrappedManagementApiBody = await this.postNetworkTroubleshooterApiAsync("tcpPingCheck", wrappedBody, timeout);
+        var response : NetworkTroubleshooterTcpPingResponse = DiagProvider.unWrapManagementRequest(wrappedResponse)
         if (response == null)
         {
           throw Error("No response received when calling the Network Troubleshooter for tcpPingNetworkTroubleshooterAsync().");
@@ -345,9 +350,9 @@ export class DiagProvider {
         }
         else 
         {
-            var responseConnectionStatus = response.ConnectionStatus;
+            var responseConnectionStatus = response.connectionStatus;
             var status: ConnectionCheckStatus;
-            if (responseConnectionStatus.equals("Success")) 
+            if (responseConnectionStatus == "Success") 
             {
                 status = ConnectionCheckStatus.success;
             }
