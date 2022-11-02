@@ -137,12 +137,6 @@ export class SupportTopicService {
     // detector-list-analysis component will use this method to identify detectors that should be loaded in the dynamically generated analysis view.
     public getMatchingDetectors(): Observable<any[]> {
         if (this.supportTopicId || this.sapSupportTopicId) {
-            
-            //Mock data for local testing. Remove before commit
-            return this._diagnosticService.getDetectors().pipe(map(detectors => {
-                return detectors.filter(detector => detector.id == 'appDownAnalysis1' || detector.id == 'AlwaysOnCheckForBestPractice' || detector.id == 'ARRAffinityCheck' );
-            }));
-
             return this._diagnosticService.getDetectors().pipe(map(detectors => {
                 return detectors.filter(detector =>
                     detector.supportTopicList &&
@@ -234,10 +228,7 @@ export class SupportTopicService {
                             "CaseSubject": searchTerm
                         });
                     }
-
-                    //Mock data for local testing. Remove before commit
-                    matchingDetectors = detectors.filter(detector => detector.id == 'appDownAnalysis1' || detector.id == 'AlwaysOnCheckForBestPractice' || detector.id == 'ARRAffinityCheck' );
-
+                    
                     if (matchingDetectors) {
                         if (matchingDetectors.length === 1 && matchingDetectors[0] && matchingDetectors[0].id) {
                             if (matchingDetectors[0].type === DetectorType.Analysis) {
