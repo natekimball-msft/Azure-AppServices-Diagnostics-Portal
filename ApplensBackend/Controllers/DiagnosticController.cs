@@ -160,102 +160,94 @@ namespace AppLensV3.Controllers
         [HttpOptions("invoke")]
         public async Task<IActionResult> Invoke([FromBody] JToken body)
         {
-            try
+            var invokeHeaders = ProcessInvokeHeaders();
+
+            if (string.IsNullOrWhiteSpace(invokeHeaders.Path))
             {
-                var invokeHeaders = ProcessInvokeHeaders();
-
-                if (string.IsNullOrWhiteSpace(invokeHeaders.Path))
-                {
-                    return BadRequest($"Missing {PathQueryHeader} header");
-                }
-
-                if (!IsApiAllowed(invokeHeaders.Path))
-                {
-                    throw new InvalidOperationException("The api is not allowed to be executed in this environment");
-                }
-
-                string detectorId = null;
-                if (body?.GetType() != typeof(JArray))
-                {
-                    detectorId = body?["id"] != null ? body["id"].ToString() : string.Empty;
-                }
-
-                string applensLink = "https://applens.azurewebsites.net/" + invokeHeaders.Path.Replace("resourcegroup", "resourceGroup").Replace("diagnostics/publish", string.Empty) + "detectors/" + detectorId;
-
-                var detectorAuthorEmails = new List<EmailAddress>();
-                if (invokeHeaders.DetectorAuthors.Any())
-                {
-                    detectorAuthorEmails = invokeHeaders.DetectorAuthors
-                        .Select(x => x.EndsWith("@microsoft.com") ? x : $"{x}@microsoft.com")
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .Select(x => new EmailAddress(x)).ToList();
-                }
-
-                HttpRequestHeaders headers = new HttpRequestMessage().Headers;
-
-                var locationPlacementId = await GetLocationPlacementId(invokeHeaders);
-                if (!string.IsNullOrWhiteSpace(locationPlacementId))
-                {
-                    headers.Add("x-ms-subscription-location-placementid", locationPlacementId);
-                }
-
-                foreach (var header in Request.Headers)
-                {
-                    if ((header.Key.StartsWith("x-ms-") || header.Key.StartsWith("diag-")) && !headers.Contains(header.Key))
-                    {
-                        headers.Add(header.Key, header.Value.ToString());
-                    }
-                }
-
-                headers.Add("x-ms-user-token", Request.Headers["Authorization"].ToString());
-
-                // For Publishing Detector Calls, validate if user has access to publish the detector
-                if (invokeHeaders.Path.EndsWith("/diagnostics/publish", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!TryFetchPublishAcessParametersFromRequestBody(body, out string resourceType, out string detectorCode, out bool isOriginalCodeMarkedPublic, out string errMsg))
-                    {
-                        return BadRequest(errMsg);
-                    }
-
-                    string userAlias = Utilities.GetUserIdFromToken(Request.Headers["Authorization"].ToString());
-                    var resourceConfig = await this.resourceConfigService.GetResourceConfig(resourceType);
-                    bool hasAccess = await Utilities.IsUserAllowedToPublishDetector(userAlias, resourceConfig, detectorCode, isOriginalCodeMarkedPublic);
-
-                    if (!hasAccess)
-                    {
-                        return Unauthorized();
-                    }
-                }
-
-
-                var response = await DiagnosticClient.Execute(invokeHeaders.Method, invokeHeaders.Path, body?.ToString(), invokeHeaders.InternalClient, invokeHeaders.InternalView, headers);
-                if (response == null)
-                {
-                    return StatusCode(500, "Null response from DiagnosticClient");
-                }
-
-                var responseTask = response.Content.ReadAsStringAsync();
-                if (!response.IsSuccessStatusCode)
-                {
-                    return StatusCode((int)response.StatusCode, await responseTask);
-                }
-
-                if (response.Headers.Contains(ScriptEtagHeader))
-                {
-                    Request.HttpContext.Response.Headers.Add(ScriptEtagHeader, response.Headers.GetValues(ScriptEtagHeader).First());
-                }
-
-                if (invokeHeaders.Path.EndsWith("/diagnostics/publish", StringComparison.OrdinalIgnoreCase) && detectorAuthorEmails.Count > 0 && Env.IsProduction())
-                {
-                    EmailNotificationService.SendPublishingAlert(invokeHeaders.ModifiedBy, detectorId, applensLink, detectorAuthorEmails);
-                }
-
-                return Ok(JsonConvert.DeserializeObject(await responseTask));
+                return BadRequest($"Missing {PathQueryHeader} header");
             }
-            catch (Exception e)
+
+            if (!IsApiAllowed(invokeHeaders.Path))
             {
-                throw;
+                throw new InvalidOperationException("The api is not allowed to be executed in this environment");
             }
+
+            string detectorId = null;
+            if (body?.GetType() != typeof(JArray))
+            {
+                detectorId = body?["id"] != null ? body["id"].ToString() : string.Empty;
+            }
+
+            string applensLink = "https://applens.azurewebsites.net/" + invokeHeaders.Path.Replace("resourcegroup", "resourceGroup").Replace("diagnostics/publish", string.Empty) + "detectors/" + detectorId;
+
+            var detectorAuthorEmails = new List<EmailAddress>();
+            if (invokeHeaders.DetectorAuthors.Any())
+            {
+                detectorAuthorEmails = invokeHeaders.DetectorAuthors
+                    .Select(x => x.EndsWith("@microsoft.com") ? x : $"{x}@microsoft.com")
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Select(x => new EmailAddress(x)).ToList();
+            }
+
+            HttpRequestHeaders headers = new HttpRequestMessage().Headers;
+
+            var locationPlacementId = await GetLocationPlacementId(invokeHeaders);
+            if (!string.IsNullOrWhiteSpace(locationPlacementId))
+            {
+                headers.Add("x-ms-subscription-location-placementid", locationPlacementId);
+            }
+
+            foreach (var header in Request.Headers)
+            {
+                if ((header.Key.StartsWith("x-ms-") || header.Key.StartsWith("diag-")) && !headers.Contains(header.Key))
+                {
+                    headers.Add(header.Key, header.Value.ToString());
+                }
+            }
+
+            headers.Add("x-ms-user-token", Request.Headers["Authorization"].ToString());
+            
+            // For Publishing Detector Calls, validate if user has access to publish the detector
+            if (invokeHeaders.Path.EndsWith("/diagnostics/publish", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!TryFetchPublishAcessParametersFromRequestBody(body, out string resourceType, out string detectorCode, out bool isOriginalCodeMarkedPublic, out string errMsg))
+                {
+                    return BadRequest(errMsg);
+                }
+
+                string userAlias = Utilities.GetUserIdFromToken(Request.Headers["Authorization"].ToString());
+                var resourceConfig = await this.resourceConfigService.GetResourceConfig(resourceType);
+                bool hasAccess = await Utilities.IsUserAllowedToPublishDetector(userAlias, resourceConfig, detectorCode, isOriginalCodeMarkedPublic);
+
+                if (!hasAccess)
+                {
+                    return Unauthorized();
+                }
+            }
+
+            var response = await DiagnosticClient.Execute(invokeHeaders.Method, invokeHeaders.Path, body?.ToString(), invokeHeaders.InternalClient, invokeHeaders.InternalView, headers);
+            if (response == null)
+            {
+                return StatusCode(500, "Null response from DiagnosticClient");
+            }
+
+            var responseTask = response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                return StatusCode((int)response.StatusCode, await responseTask);
+            }
+
+            if (response.Headers.Contains(ScriptEtagHeader))
+            {
+                Request.HttpContext.Response.Headers.Add(ScriptEtagHeader, response.Headers.GetValues(ScriptEtagHeader).First());
+            }
+
+            if (invokeHeaders.Path.EndsWith("/diagnostics/publish", StringComparison.OrdinalIgnoreCase) && detectorAuthorEmails.Count > 0 && Env.IsProduction())
+            {
+                EmailNotificationService.SendPublishingAlert(invokeHeaders.ModifiedBy, detectorId, applensLink, detectorAuthorEmails);
+            }
+
+            return Ok(JsonConvert.DeserializeObject(await responseTask));
         }
 
         private bool IsApiAllowed(string path)

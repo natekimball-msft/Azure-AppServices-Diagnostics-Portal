@@ -14,19 +14,19 @@ import { FormsModule } from '@angular/forms';
 import { CardSelectionComponent } from './components/card-selection/card-selection.component';
 import { CommAlertComponent } from './components/comm-alert/comm-alert.component';
 import {
-  CopyInsightDetailsComponent
+    CopyInsightDetailsComponent
 } from './components/copy-insight-details/copy-insight-details.component';
 import { DataContainerComponent } from './components/data-container/data-container.component';
 import { DataRenderBaseComponent } from './components/data-render-base/data-render-base.component';
 import { DataSummaryComponent } from './components/data-summary/data-summary.component';
 import {
-  DetectorContainerComponent
+    DetectorContainerComponent
 } from './components/detector-container/detector-container.component';
 import {
-  DetectorControlComponent, InternalPipe
+    DetectorControlComponent, InternalPipe
 } from './components/detector-control/detector-control.component';
 import {
-  DetectorListComponent, DetectorOrderPipe
+    DetectorListComponent, DetectorOrderPipe
 } from './components/detector-list/detector-list.component';
 import { DetectorViewComponent } from './components/detector-view/detector-view.component';
 import { DropdownComponent } from './components/dropdown/dropdown.component';
@@ -39,18 +39,18 @@ import { LoaderViewComponent } from './components/loader-view/loader-view.compon
 import { MarkdownEditorComponent } from './components/markdown-editor/markdown-editor.component';
 import { MarkdownViewComponent } from './components/markdown-view/markdown-view.component';
 import {
-  StarRatingFeedbackComponent
+    StarRatingFeedbackComponent
 } from './components/star-rating-feedback/star-rating-feedback.component';
 import { StarRatingComponent } from './components/star-rating/star-rating.component';
 import { StatusIconComponent } from './components/status-icon/status-icon.component';
 import {
-  TimeSeriesGraphComponent
+    TimeSeriesGraphComponent
 } from './components/time-series-graph/time-series-graph.component';
 import {
-  TimeSeriesInstanceGraphComponent
+    TimeSeriesInstanceGraphComponent
 } from './components/time-series-instance-graph/time-series-instance-graph.component';
 import {
-  DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig, INTERNAL_PROD_CONFIGURATION
+    DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig, INTERNAL_PROD_CONFIGURATION
 } from './config/diagnostic-data-config';
 import { ClipboardService } from './services/clipboard.service';
 import { CommsService } from './services/comms.service';
@@ -147,167 +147,167 @@ import { FabTextFieldModule } from '@angular-react/fabric/lib/components/text-fi
 import { ClientScriptViewComponent } from './components/client-script-view/client-script-view.component';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    MarkdownModule.forRoot({
-      sanitize: SecurityContext.STYLE
-    }),
-    FormsModule,
-    MonacoEditorModule.forRoot(),
-    CustomMaterialModule,
-    HighchartsChartModule,
-    RouterModule,
-    FabPanelModule,
-    FabIconModule,
-    FabChoiceGroupModule,
-    FabSearchBoxModule,
-    FabCoachmarkModule,
-    FabTeachingBubbleModule,
-    FabCommandBarModule,
-    FabDropdownModule,
-    InViewportModule,
-    FabDetailsListModule,
-    FabTextFieldModule,
-    FabMessageBarModule,
-    FabButtonModule,
-    FabTooltipModule,
-    FabSpinnerModule,
-    FabCalloutModule,
-    FabCheckboxModule,
-    FabPivotModule,
-    FabLinkModule,
-    FabBreadcrumbModule,
-    RouterModule,
-    FabDatePickerModule,
-    FabCalendarModule
-  ],
-  providers: [
-    ClipboardService
-  ],
-  declarations: [
-    TimeSeriesGraphComponent, DynamicDataComponent,
-    DataRenderBaseComponent, DataContainerComponent, TimeSeriesInstanceGraphComponent, DetectorViewComponent, DetectorSearchComponent,
-    DataSummaryComponent, EmailComponent, InsightsComponent, LoaderViewComponent, DynamicInsightComponent,
-    MarkdownViewComponent, DetectorListComponent, DetectorOrderPipe, StarRatingComponent, StarRatingFeedbackComponent,
-    DropdownComponent, StatusIconComponent, DetectorControlComponent, DetectorContainerComponent, InternalPipe,
-    CommAlertComponent, FeedbackComponent, CopyInsightDetailsComponent, MarkdownEditorComponent, CardSelectionComponent,
-    GuageGraphicComponent, GuageControlComponent, SolutionComponent, SolutionsComponent, FormComponent,
-    VerticalDisplayListComponent, VerticalDisplayListItemComponent, SolutionTypeTagComponent, SolutionDisplayComponent,
-    SolutionDisplayItemComponent,
-    ChangeAnalysisOnboardingComponent,
-    ChangesetsViewComponent,
-    ChangesViewComponent,
-    DetectorListAnalysisComponent,
-    AppDependenciesComponent,
-    AppInsightsMarkdownComponent,
-    HighchartsGraphComponent,
-    SummaryCardsComponent,
-    InsightsV4Component,
-    CardSelectionV4Component,
-    DropdownV4Component,
-    CxpChatLauncherComponent,
-    AppInsightsEnablementComponent,
-    ConnectAppInsightsComponent,
-    WebSearchComponent,
-    RenderFilterPipe,
-    DynamicInsightV4Component,
-    ClientScriptViewComponent,
-    MarkdownTextComponent,
-    DataTableV4Component,
-    DocumentsSearchComponent,
-    LoaderDetectorViewComponent,
-    KeystoneInsightComponent,
-    SolutionViewContainerComponent,
-    FabDataTableFilterComponent,
-    NotificationRenderingComponent,
-    FabTabComponent,
-    SectionsComponent,
-    CollapsibleListComponent,
-    CollapsibleListFabricComponent,
-    CollapsibleListItemComponent,
-    InputStepComponent,
-    StepViewsRendererComponent,
-    InfoStepComponent,
-    DropDownStepComponent,
-    ButtonStepComponent,
-    CheckStepComponent,
-    CheckComponent,
-    ConvertLevelToHealthStatusPipe,
-    GetDropdownOptionsPipe,
-    SolutionOrchestratorComponent,
-    FabCardComponent,
-    FabDataTableComponent,
-    SolutionsPanelComponent,
-    DetectorTimePickerComponent,
-    FabricFeedbackComponent,
-    ClientScriptViewComponent
-  ],
-  exports: [
-    FormsModule, TimeSeriesGraphComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent, ClientScriptViewComponent,
-    DataSummaryComponent, LoaderViewComponent, LoaderDetectorViewComponent, StatusIconComponent, DetectorControlComponent,
-    DetectorContainerComponent, InternalPipe, CommAlertComponent, GuageControlComponent, SolutionComponent,
-    FormComponent, VerticalDisplayListComponent, VerticalDisplayListItemComponent, SolutionTypeTagComponent, DataContainerComponent,
-    ChangeAnalysisOnboardingComponent,
-    ChangesetsViewComponent,
-    ChangesViewComponent,
-    DetectorListAnalysisComponent,
-    AppInsightsMarkdownComponent,
-    FeedbackComponent,
-    CxpChatLauncherComponent,
-    AppInsightsEnablementComponent,
-    ConnectAppInsightsComponent,
-    WebSearchComponent,
-    SolutionViewContainerComponent,
-    FabTabComponent,
-    CollapsibleListComponent,
-    CollapsibleListFabricComponent,
-    CollapsibleListItemComponent,
-    InputStepComponent,
-    StepViewsRendererComponent,
-    ClientScriptViewComponent,
-    InfoStepComponent,
-    DropDownStepComponent,
-    ButtonStepComponent,
-    CheckStepComponent,
-    CheckComponent,
-    ConvertLevelToHealthStatusPipe,
-    GetDropdownOptionsPipe,
-    SolutionOrchestratorComponent,
-    FabCoachmarkModule,
-    FabTeachingBubbleModule,
-    FabTabComponent,
-    FabricFeedbackComponent,
-    FabDataTableComponent,
-    DetectorTimePickerComponent,
-    FabCardComponent
-  ]
+    imports: [
+        CommonModule,
+        MarkdownModule.forRoot({
+            sanitize: SecurityContext.STYLE
+        }),
+        FormsModule,
+        MonacoEditorModule.forRoot(),
+        CustomMaterialModule,
+        HighchartsChartModule,
+        RouterModule,
+        FabPanelModule,
+        FabIconModule,
+        FabChoiceGroupModule,
+        FabSearchBoxModule,
+        FabCoachmarkModule,
+        FabTeachingBubbleModule,
+        FabCommandBarModule,
+        FabDropdownModule,
+        InViewportModule,
+        FabDetailsListModule,
+        FabTextFieldModule,
+        FabMessageBarModule,
+        FabButtonModule,
+        FabTooltipModule,
+        FabSpinnerModule,
+        FabCalloutModule,
+        FabCheckboxModule,
+        FabPivotModule,
+        FabLinkModule,
+        FabBreadcrumbModule,
+        RouterModule,
+        FabDatePickerModule,
+        FabCalendarModule
+    ],
+    providers: [
+        ClipboardService
+    ],
+    declarations: [
+        TimeSeriesGraphComponent, DynamicDataComponent,
+        DataRenderBaseComponent, DataContainerComponent, TimeSeriesInstanceGraphComponent, DetectorViewComponent, DetectorSearchComponent,
+        DataSummaryComponent, EmailComponent, InsightsComponent, LoaderViewComponent, DynamicInsightComponent,
+        MarkdownViewComponent, DetectorListComponent, DetectorOrderPipe, StarRatingComponent, StarRatingFeedbackComponent,
+        DropdownComponent, StatusIconComponent, DetectorControlComponent, DetectorContainerComponent, InternalPipe,
+        CommAlertComponent, FeedbackComponent, CopyInsightDetailsComponent, MarkdownEditorComponent, CardSelectionComponent,
+        GuageGraphicComponent, GuageControlComponent, SolutionComponent, SolutionsComponent, FormComponent,
+        VerticalDisplayListComponent, VerticalDisplayListItemComponent, SolutionTypeTagComponent, SolutionDisplayComponent,
+        SolutionDisplayItemComponent,
+        ChangeAnalysisOnboardingComponent,
+        ChangesetsViewComponent,
+        ChangesViewComponent,
+        DetectorListAnalysisComponent,
+        AppDependenciesComponent,
+        AppInsightsMarkdownComponent,
+        HighchartsGraphComponent,
+        SummaryCardsComponent,
+        InsightsV4Component,
+        CardSelectionV4Component,
+        DropdownV4Component,
+        CxpChatLauncherComponent,
+        AppInsightsEnablementComponent,
+        ConnectAppInsightsComponent,
+        WebSearchComponent,
+        RenderFilterPipe,
+        DynamicInsightV4Component,
+        ClientScriptViewComponent,
+        MarkdownTextComponent,
+        DataTableV4Component,
+        DocumentsSearchComponent,
+        LoaderDetectorViewComponent,
+        KeystoneInsightComponent,
+        SolutionViewContainerComponent,
+        FabDataTableFilterComponent,
+        NotificationRenderingComponent,
+        FabTabComponent,
+        SectionsComponent,
+        CollapsibleListComponent,
+        CollapsibleListFabricComponent,
+        CollapsibleListItemComponent,
+        InputStepComponent,
+        StepViewsRendererComponent,
+        InfoStepComponent,
+        DropDownStepComponent,
+        ButtonStepComponent,
+        CheckStepComponent,
+        CheckComponent,
+        ConvertLevelToHealthStatusPipe,
+        GetDropdownOptionsPipe,
+        SolutionOrchestratorComponent,
+        FabCardComponent,
+        FabDataTableComponent,
+        SolutionsPanelComponent,
+        DetectorTimePickerComponent,
+        FabricFeedbackComponent,
+        ClientScriptViewComponent
+    ],
+    exports: [
+        FormsModule, TimeSeriesGraphComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent, ClientScriptViewComponent,
+        DataSummaryComponent, LoaderViewComponent, LoaderDetectorViewComponent, StatusIconComponent, DetectorControlComponent,
+        DetectorContainerComponent, InternalPipe, CommAlertComponent, GuageControlComponent, SolutionComponent,
+        FormComponent, VerticalDisplayListComponent, VerticalDisplayListItemComponent, SolutionTypeTagComponent, DataContainerComponent,
+        ChangeAnalysisOnboardingComponent,
+        ChangesetsViewComponent,
+        ChangesViewComponent,
+        DetectorListAnalysisComponent,
+        AppInsightsMarkdownComponent,
+        FeedbackComponent,
+        CxpChatLauncherComponent,
+        AppInsightsEnablementComponent,
+        ConnectAppInsightsComponent,
+        WebSearchComponent,
+        SolutionViewContainerComponent,
+        FabTabComponent,
+        CollapsibleListComponent,
+        CollapsibleListFabricComponent,
+        CollapsibleListItemComponent,
+        InputStepComponent,
+        StepViewsRendererComponent,
+        ClientScriptViewComponent,
+        InfoStepComponent,
+        DropDownStepComponent,
+        ButtonStepComponent,
+        CheckStepComponent,
+        CheckComponent,
+        ConvertLevelToHealthStatusPipe,
+        GetDropdownOptionsPipe,
+        SolutionOrchestratorComponent,
+        FabCoachmarkModule,
+        FabTeachingBubbleModule,
+        FabTabComponent,
+        FabricFeedbackComponent,
+        FabDataTableComponent,
+        DetectorTimePickerComponent,
+        FabCardComponent
+    ]
 })
 export class DiagnosticDataModule {
-  static forRoot(config: DiagnosticDataConfig = INTERNAL_PROD_CONFIGURATION): ModuleWithProviders<DiagnosticDataModule> {
-    return {
-      ngModule: DiagnosticDataModule,
-      providers: [
-        DiagnosticService,
-        GenericSupportTopicService,
-        GenericThemeService,
-        GenericContentService,
-        GenericDocumentsSearchService,
-        GenericBreadcrumbService,
-        GenericUserSettingService,
-        GenericPortalService,
-        { provide: DIAGNOSTIC_DATA_CONFIG, useValue: config },
-        CXPChatService,
-        KustoTelemetryService,
-        GenieGlobals,
-        AppInsightsTelemetryService,
-        TelemetryService,
-        DetectorControlService,
-        CommsService,
-        FeatureNavigationService,
-        AppInsightsQueryService,
-        ParseResourceService,
-        HighChartsHoverService
-      ]
-    };
-  }
+    static forRoot(config: DiagnosticDataConfig = INTERNAL_PROD_CONFIGURATION): ModuleWithProviders<DiagnosticDataModule> {
+        return {
+            ngModule: DiagnosticDataModule,
+            providers: [
+                DiagnosticService,
+                GenericSupportTopicService,
+                GenericThemeService,
+                GenericContentService,
+                GenericDocumentsSearchService,
+                GenericBreadcrumbService,
+                GenericUserSettingService,
+                GenericPortalService,
+                { provide: DIAGNOSTIC_DATA_CONFIG, useValue: config },
+                CXPChatService,
+                KustoTelemetryService,
+                GenieGlobals,
+                AppInsightsTelemetryService,
+                TelemetryService,
+                DetectorControlService,
+                CommsService,
+                FeatureNavigationService,
+                AppInsightsQueryService,
+                ParseResourceService,
+                HighChartsHoverService
+            ]
+        };
+    }
 }
