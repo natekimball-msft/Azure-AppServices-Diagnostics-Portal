@@ -36,6 +36,8 @@ import { GenericUserSettingService } from '../../services/generic-user-setting.s
 
 const WAIT_TIME_IN_SECONDS_TO_ALLOW_DOWNTIME_INTERACTION: number = 58;
 const PERCENT_CHILD_DETECTORS_COMPLETED_TO_ALLOW_DOWNTIME_INTERACTION: number = 0.9;
+const DEFAULT_DESCRIPTION_FOR_DETECTORS_WITH_NO_INSIGHT:string = 'View more details here';
+
 @Component({
     selector: 'detector-list-analysis',
     templateUrl: './detector-list-analysis.component.html',
@@ -124,6 +126,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     solutionPanelOpenSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
     solutionTitle: string = "";
     expandIssuedAnalysisChecks: boolean = false;
+    
 
     constructor(public _activatedRoute: ActivatedRoute, private _router: Router,
         private _diagnosticService: DiagnosticService, private _detectorControl: DetectorControlService,
@@ -633,6 +636,13 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                             this.issueDetectedViewModels = this.issueDetectedViewModels.sort((n1, n2) => n1.model.status - n2.model.status);
                         } else {
                             let insight = this.getDetectorInsight(this.detectorViewModels[index]);
+                            if(!insight) {
+                                // The detector loaded successfully, however did not generate an insight.
+                                insight = { title: DEFAULT_DESCRIPTION_FOR_DETECTORS_WITH_NO_INSIGHT, description: '' };
+                                if(!this.detectorViewModels[index].status || this.detectorViewModels[index].status == HealthStatus.None ) {
+                                    this.detectorViewModels[index].status = HealthStatus.Info;
+                                }
+                            }
                             let successViewModel = { model: this.detectorViewModels[index], insightTitle: insight.title, insightDescription: insight.description };
 
                             if (this.successfulViewModels.length > 0) {
