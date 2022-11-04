@@ -1,5 +1,5 @@
 
-import { of as observableOf, Observable, of, throwError } from 'rxjs';
+import { of as observableOf, Observable, of, throwError, noop } from 'rxjs';
 import { map, flatMap, catchError } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -62,23 +62,23 @@ export class SupportTopicService {
 
     private getSelfHelpContentApollo(): Observable<any> {
         if (this.pesId && this.pesId.length > 0 && this.sapSupportTopicId && this.sapSupportTopicId.length > 0) {
-            
+
             // To generate a unique apollo search Id, we use resource name, current timestamp and a guid.
             let apolloResourceId = `${this._resourceService.resource.name}-${Math.floor(Date.now() / 1000)}-${uuid()}`;
             let requestBody =
             {
-                "properties" : {
-                  "triggerCriteria": [
-                    {
-                      "name": "SapId",
-                      "value": this.sapSupportTopicId
+                "properties": {
+                    "triggerCriteria": [
+                        {
+                            "name": "SapId",
+                            "value": this.sapSupportTopicId
+                        }
+                    ],
+                    "parameters": {
+                        "SearchText": "error found",
+                        "ProductId": this.pesId,
+                        "LegacyTopicId": this.supportTopicId
                     }
-                  ],
-                  "parameters": {
-                    "SearchText": "error found",
-                    "ProductId": this.pesId,
-                    "LegacyTopicId": this.supportTopicId
-                  }
                 }
             };
             let resourceUri = `${this._resourceService.resource.id}/${this.apolloApiConfig.apolloResourceProvider}/${apolloResourceId}`;
@@ -128,11 +128,41 @@ export class SupportTopicService {
 
     public getSelfHelpContentDocument(): Observable<any> {
         //Call Apollo API, if error then fallback on legacy API
-        return this.getSelfHelpContentApollo().pipe(map(res => res), catchError(err => { 
-            return this.getSelfHelpContentLegacy(); 
+        return this.getSelfHelpContentApollo().pipe(map(res => res), catchError(err => {
+            return this.getSelfHelpContentLegacy();
         }));
     }
 
+    // This is expected to be called only from case submission detector-list-analysis component when it has already been established (via getPathForSupportTopic method) that more than one detector is mapped to the same support topic.
+    // detector-list-analysis component will use this method to identify detectors that should be loaded in the dynamically generated analysis view.
+    public getMatchingDetectors(): Observable<any[]> {
+        if (this.supportTopicId || this.sapSupportTopicId) {
+            return this._diagnosticService.getDetectors().pipe(map(detectors => {
+                return detectors.filter(detector =>
+                    detector.supportTopicList &&
+                    detector.supportTopicList.findIndex(supportTopicId =>
+                        supportTopicId.sapSupportTopicId === this.sapSupportTopicId || supportTopicId.id === this.supportTopicId) >= 0);
+            }));
+        }
+        else {
+            return Observable.of(null);
+        }
+    }
+
+    addStartAndEndTimeIfNotPresent(queryParams:any): any {
+        let startTime, endTime: momentNs.Moment;
+        endTime = moment.utc().subtract(16, 'minutes');
+        startTime = endTime.clone().subtract(1, 'days');
+        let defaultStartTimeString = startTime.format('YYYY-MM-DD HH:mm');
+        let defaultEndTimeString = endTime.format('YYYY-MM-DD HH:mm');
+
+        queryParams = !queryParams? {} : queryParams;
+
+        !queryParams.startTime? queryParams["startTime"] = defaultStartTimeString : noop;
+        !queryParams.endTime? queryParams["endTime"] = defaultEndTimeString : noop;
+
+        return queryParams;
+    }
 
     getPathForSupportTopic(supportTopicId: string, pesId: string, searchTerm: string, sapSupportTopicId: string = "", sapProductId: string = ""): Observable<any> {
 
@@ -167,11 +197,12 @@ export class SupportTopicService {
                 let queryParamsDic = { "searchTerm": searchTerm };
 
                 if (detectors) {
-                    var matchingDetector = null;
+
+                    var matchingDetectors = [];
                     if (sapSupportTopicId != "") {
-                        matchingDetector = detectors.find(detector =>
+                        matchingDetectors = detectors.filter(detector =>
                             detector.supportTopicList &&
-                            detector.supportTopicList.findIndex(supportTopic => supportTopic.sapSupportTopicId === sapSupportTopicId) >= 0);
+                            detector.supportTopicList.findIndex(supportTopicId => supportTopicId.sapSupportTopicId === sapSupportTopicId) >= 0);
 
                         this._telemetryService.logEvent("GetDetectorWithSuppotTopic", {
                             "UseSapId": "1",
@@ -183,8 +214,8 @@ export class SupportTopicService {
                         });
                     }
 
-                    if (matchingDetector == null) {
-                        matchingDetector = detectors.find(detector =>
+                    if (matchingDetectors.length < 1) {
+                        matchingDetectors = detectors.filter(detector =>
                             detector.supportTopicList &&
                             detector.supportTopicList.findIndex(supportTopic => supportTopic.id === supportTopicId) >= 0);
 
@@ -197,12 +228,25 @@ export class SupportTopicService {
                             "CaseSubject": searchTerm
                         });
                     }
-
-                    if (matchingDetector) {
-                        if (matchingDetector.type === DetectorType.Analysis) {
-                            detectorPath = `/analysis/${matchingDetector.id}`;
-                        } else {
-                            detectorPath = `/detectors/${matchingDetector.id}`;
+                    
+                    if (matchingDetectors) {
+                        if (matchingDetectors.length === 1 && matchingDetectors[0] && matchingDetectors[0].id) {
+                            if (matchingDetectors[0].type === DetectorType.Analysis) {
+                                detectorPath = `/analysis/${matchingDetectors[0].id}`;
+                            } else {
+                                detectorPath = `/detectors/${matchingDetectors[0].id}`;
+                            }
+                        }
+                        else {
+                            if ((this._resourceService.subscriptionId == "c258f9c0-3d64-4761-8697-cab631f28422")
+                                && this.solutionOrchestratorConfig && this.solutionOrchestratorConfig[this.pesId]
+                                && this.solutionOrchestratorConfig[this.pesId].length > 0 && this.solutionOrchestratorConfig[this.pesId].findIndex(s => s == this.supportTopicId) >= 0) {
+                                detectorPath = `solutionorchestrator`;
+                                return observableOf({ path: detectorPath, queryParams: queryParamsDic });
+                            }
+                            else {
+                                detectorPath = `/analysis/supportTopicAnalysis/dynamic`;
+                            }
                         }
                     }
                     else {
@@ -245,6 +289,10 @@ export class SupportTopicService {
                                     "KeystoneSolutionApplied": String(keystoneSolutionApplied)
                                 });
                             }
+                            
+                            if(detectorPath.indexOf('/analysis/supportTopicAnalysis/dynamic')>-1) {
+                                queryParamsDic = this.addStartAndEndTimeIfNotPresent(queryParamsDic);
+                            }
 
                             return { path: detectorPath, queryParams: queryParamsDic };
                         }),
@@ -254,10 +302,16 @@ export class SupportTopicService {
                                     "details": JSON.stringify(err)
                                 });
 
+                                if(detectorPath.indexOf('/analysis/supportTopicAnalysis/dynamic')>-1) {
+                                    queryParamsDic = this.addStartAndEndTimeIfNotPresent(queryParamsDic);
+                                }
                                 return observableOf({ path: detectorPath, queryParams: queryParamsDic });
                             }))
                     }
 
+                    if(detectorPath.indexOf('/analysis/supportTopicAnalysis/dynamic')>-1) {
+                        queryParamsDic = this.addStartAndEndTimeIfNotPresent(queryParamsDic);
+                    }
                     return observableOf({ path: detectorPath, queryParams: queryParamsDic });
                 }))
             }));
