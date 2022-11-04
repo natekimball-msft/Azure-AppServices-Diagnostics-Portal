@@ -12,7 +12,7 @@ import { Solution } from '../solution/solution';
 import { ActivatedRoute, Router, NavigationExtras } from '@angular/router';
 import { BehaviorSubject, forkJoin as observableForkJoin, Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { DetectorResponse, DetectorMetaData, HealthStatus, DetectorType, DownTime } from '../../models/detector';
+import { DetectorResponse, DetectorMetaData, HealthStatus, DetectorType, DownTime, DetectorListRendering } from '../../models/detector';
 import { Insight, InsightUtils } from '../../models/insight';
 import { DataTableResponseColumn, DataTableResponseObject, DiagnosticData, RenderingType, Rendering, TimeSeriesType, TimeSeriesRendering } from '../../models/detector';
 import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagnostic-data-config';
@@ -126,6 +126,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     solutionPanelOpenSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
     solutionTitle: string = "";
     expandIssuedAnalysisChecks: boolean = false;
+    allDetectors:DetectorMetaData[] = [];
     
 
     constructor(public _activatedRoute: ActivatedRoute, private _router: Router,
@@ -602,31 +603,106 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
         }
     }
 
-    startDetectorRendering(detectorList, downTime: DownTime, containsDownTime: boolean) {
+    containsAnyDisplayableRenderingType(response:DetectorResponse):boolean {
+        let DetctorNonDisplayableRenderingTypes:RenderingType[] = [
+            RenderingType.DetectorList, 
+            RenderingType.DownTime, 
+            RenderingType.AppInsightEnablement
+        ];        
+        let index = response.dataset.findIndex(set => 
+            DetctorNonDisplayableRenderingTypes.find(renderingType=>renderingType === (<Rendering>set.renderingProperties).type ) == undefined 
+            );
+        return index > -1;
+    }
+
+    containsChildDetectors(response:DetectorResponse):boolean {
+        return response.dataset.findIndex(set=> (<Rendering>set.renderingProperties).type === RenderingType.DetectorList) > -1;
+    }
+
+    processParentChildHierarchy(response:DetectorResponse, currDowntime:DownTime, containsDownTime:boolean) {
+        if(this.containsChildDetectors(response)) {
+            let currDetectorList:DetectorMetaData[] = [];
+            response.dataset.forEach(diagnosticData => {
+                if((<Rendering>diagnosticData.renderingProperties).type === RenderingType.DetectorList) {
+                    // Doesn't support cross resource child detectors yet.
+                    let currChildDetectorRendering:DetectorListRendering = <DetectorListRendering>diagnosticData.renderingProperties;
+                    if(!!currChildDetectorRendering.detectorIds && currChildDetectorRendering.detectorIds.length > 0) {
+                        currChildDetectorRendering.detectorIds.forEach(childDetectorId => {
+                            let matchingDetector = this.allDetectors.find(d=>d.id == childDetectorId);
+                            if(!!matchingDetector && !!matchingDetector.name && !!matchingDetector.id &&
+                                this.insertInDetectorArray({ name: matchingDetector.name, id: matchingDetector.id })) {
+                                currDetectorList.push(matchingDetector);
+                            }
+                        });
+                    }
+                }
+            });
+
+            if(currDetectorList.length > 0) {
+                this.startDetectorRendering(currDetectorList, currDowntime, containsDownTime, true);
+            }
+        }
+    }
+
+    insertInDetectorViewModel(detectorViewModel:any):boolean {
+        if(!this.detectorViewModels || (!!this.detectorViewModels && this.detectorViewModels.length < 1)) {
+            this.detectorViewModels.push(detectorViewModel);
+            return true;
+        } 
+        else {
+            if(this.detectorViewModels.findIndex(currViewModel=> 
+                (<DetectorMetaData>currViewModel.metadata).id == (<DetectorMetaData>detectorViewModel.metadata).id  && 
+                currViewModel.startTime == detectorViewModel.startTime &&
+                currViewModel.endTime == detectorViewModel.endTime
+            ) < 0) {
+                this.detectorViewModels.push(detectorViewModel);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    startDetectorRendering(detectorList, downTime: DownTime, containsDownTime: boolean, isReEntry:boolean = false) {
         if (this.showWebSearchTimeout) {
             clearTimeout(this.showWebSearchTimeout);
         }
         this.showWebSearchTimeout = setTimeout(() => { this.showWebSearch = true; }, 3000);
-        this.issueDetectedViewModels = [];
+
+        if(!isReEntry) {
+            this.allDetectors = detectorList;
+            this.issueDetectedViewModels = [];
+        }
+        
         const requests: Observable<any>[] = [];
 
         this.detectorMetaData = detectorList.filter(detector => this.detectors.findIndex(d => d.id === detector.id) >= 0);
-        this.detectorViewModels = this.detectorMetaData.map(detector => this.getDetectorViewModel(detector, downTime, containsDownTime));
+        
+        // Because startDetectorRendering is being called in a recursive manner, insert elements into detectorViewModels only if the current viewModel is not already in it.
+        let viewModelsToProcess = this.detectorMetaData.map(detector => this.getDetectorViewModel(detector, downTime, containsDownTime));
+        if(!isReEntry) {
+            this.detectorViewModels = viewModelsToProcess;
+        }
+        else {
+            viewModelsToProcess.forEach(vm => this.insertInDetectorViewModel(vm));
+        }
+
         if (this.detectorViewModels.length > 0) {
             this.loadingChildDetectors = true;
             this.startLoadingMessage();
             this.evaluateAndEmitDowntimeInteractionState(containsDownTime, this.detectorViewModels.length, zoomBehaviors.CancelZoom | zoomBehaviors.ShowXAxisSelectionDisabledMessage | zoomBehaviors.GeryOutGraph, false);
         }
-        this.detectorViewModels.forEach((metaData, index) => {
+        viewModelsToProcess.forEach((metaData, index) => {
             requests.push((<Observable<DetectorResponse>>metaData.request).pipe(
                 map((response: DetectorResponse) => {
-                    this.evaluateAndEmitDowntimeInteractionState(containsDownTime, this.detectorViewModels.length, zoomBehaviors.CancelZoom | zoomBehaviors.FireXAxisSelectionEvent | zoomBehaviors.UnGreyGraph);
-                    this.detectorViewModels[index] = this.updateDetectorViewModelSuccess(metaData, response);
+                    this.evaluateAndEmitDowntimeInteractionState(containsDownTime, viewModelsToProcess.length, zoomBehaviors.CancelZoom | zoomBehaviors.FireXAxisSelectionEvent | zoomBehaviors.UnGreyGraph);
+                    viewModelsToProcess[index] = this.updateDetectorViewModelSuccess(metaData, response);
 
-                    if (this.detectorViewModels[index].loadingStatus !== LoadingStatus.Failed) {
-                        if (this.detectorViewModels[index].status === HealthStatus.Critical || this.detectorViewModels[index].status === HealthStatus.Warning) {
-                            let insight = this.getDetectorInsight(this.detectorViewModels[index]);
-                            let issueDetectedViewModel = { model: this.detectorViewModels[index], insightTitle: insight.title, insightDescription: insight.description };
+                    this.processParentChildHierarchy(viewModelsToProcess[index].response, downTime, containsDownTime);
+
+                    if (viewModelsToProcess[index].loadingStatus !== LoadingStatus.Failed) {
+                        if (viewModelsToProcess[index].status === HealthStatus.Critical || viewModelsToProcess[index].status === HealthStatus.Warning) {
+                            let insight = this.getDetectorInsight(viewModelsToProcess[index]);
+                            let issueDetectedViewModel = { model: viewModelsToProcess[index], insightTitle: insight.title, insightDescription: insight.description };
 
                             if (this.issueDetectedViewModels.length > 0) {
                                 this.issueDetectedViewModels = this.issueDetectedViewModels.filter(iVM => (!!iVM.model && !!iVM.model.metadata && !!iVM.model.metadata.id && iVM.model.metadata.id != issueDetectedViewModel.model.metadata.id));
@@ -635,37 +711,40 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                             this.issueDetectedViewModels.push(issueDetectedViewModel);
                             this.issueDetectedViewModels = this.issueDetectedViewModels.sort((n1, n2) => n1.model.status - n2.model.status);
                         } else {
-                            let insight = this.getDetectorInsight(this.detectorViewModels[index]);
-                            if(!insight) {
-                                // The detector loaded successfully, however did not generate an insight.
-                                insight = { title: DEFAULT_DESCRIPTION_FOR_DETECTORS_WITH_NO_INSIGHT, description: '' };
-                                if(!this.detectorViewModels[index].status || this.detectorViewModels[index].status == HealthStatus.None ) {
-                                    this.detectorViewModels[index].status = HealthStatus.Info;
+                            if(this.containsAnyDisplayableRenderingType(response)) {
+                                let insight = this.getDetectorInsight(viewModelsToProcess[index]);
+                                if(!insight) {
+                                    // The detector loaded successfully, however did not generate an insight.
+                                    insight = { title: DEFAULT_DESCRIPTION_FOR_DETECTORS_WITH_NO_INSIGHT, description: '' };
+                                    if(!viewModelsToProcess[index].status || viewModelsToProcess[index].status == HealthStatus.None ) {
+                                        viewModelsToProcess[index].status = HealthStatus.Info;
+                                    }
                                 }
-                            }
-                            let successViewModel = { model: this.detectorViewModels[index], insightTitle: insight.title, insightDescription: insight.description };
+                            
+                                let successViewModel = { model: viewModelsToProcess[index], insightTitle: insight.title, insightDescription: insight.description };
 
-                            if (this.successfulViewModels.length > 0) {
-                                this.successfulViewModels = this.successfulViewModels.filter(sVM => (!!sVM.model && !!sVM.model.metadata && !!sVM.model.metadata.id && sVM.model.metadata.id != successViewModel.model.metadata.id));
-                            }
+                                if (this.successfulViewModels.length > 0) {
+                                    this.successfulViewModels = this.successfulViewModels.filter(sVM => (!!sVM.model && !!sVM.model.metadata && !!sVM.model.metadata.id && sVM.model.metadata.id != successViewModel.model.metadata.id));
+                                }
 
-                            this.successfulViewModels.push(successViewModel);
+                                this.successfulViewModels.push(successViewModel);
+                            }
                         }
                     }
 
                     return {
-                        'ChildDetectorName': this.detectorViewModels[index].title,
-                        'ChildDetectorId': this.detectorViewModels[index].metadata.id,
-                        'ChildDetectorStatus': this.detectorViewModels[index].status,
-                        'ChildDetectorLoadingStatus': this.detectorViewModels[index].loadingStatus
+                        'ChildDetectorName': viewModelsToProcess[index].title,
+                        'ChildDetectorId': viewModelsToProcess[index].metadata.id,
+                        'ChildDetectorStatus': viewModelsToProcess[index].status,
+                        'ChildDetectorLoadingStatus': viewModelsToProcess[index].loadingStatus
                     };
                 })
                 , catchError(err => {
-                    this.evaluateAndEmitDowntimeInteractionState(containsDownTime, this.detectorViewModels.length, zoomBehaviors.CancelZoom | zoomBehaviors.FireXAxisSelectionEvent | zoomBehaviors.UnGreyGraph);
-                    if (this.detectorViewModels[index] != null) {
-                        this.detectorViewModels[index].loadingStatus = LoadingStatus.Failed;
+                    this.evaluateAndEmitDowntimeInteractionState(containsDownTime, viewModelsToProcess.length, zoomBehaviors.CancelZoom | zoomBehaviors.FireXAxisSelectionEvent | zoomBehaviors.UnGreyGraph);
+                    if (viewModelsToProcess[index] != null) {
+                        viewModelsToProcess[index].loadingStatus = LoadingStatus.Failed;
                     }
-                    const viewModel = this.detectorViewModels[index];
+                    const viewModel = viewModelsToProcess[index];
                     if (viewModel && viewModel.title) {
                         this.failedLoadingViewModels.push({
                             model: viewModel
@@ -713,17 +792,20 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
         return detectorList.filter(element => (element.analysisTypes != null && element.analysisTypes.length > 0 && element.analysisTypes.findIndex(x => x == analysisId) >= 0)).map(element => { return { name: element.name, id: element.id }; });
     }
 
-    insertInDetectorArray(detectorItem) {
+    insertInDetectorArray(detectorItem):boolean {
         if (this.withinGenie) {
             if (this.detectors.findIndex(x => x.id === detectorItem.id) < 0 && detectorItem.score >= this.targetedScore) {
                 this.detectors.push(detectorItem);
                 this.loadingMessages.push("Checking " + detectorItem.name);
+                return true;
             }
         }
         else if (this.detectors.findIndex(x => x.id === detectorItem.id) < 0) {
             this.detectors.push(detectorItem);
             this.loadingMessages.push("Checking " + detectorItem.name);
+            return true;
         }
+        return false;
     }
 
     getPendingDetectorCount(): number {
