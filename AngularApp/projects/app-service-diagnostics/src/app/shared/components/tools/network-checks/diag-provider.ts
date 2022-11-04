@@ -1,6 +1,9 @@
+import { HttpResponse } from '@angular/common/http';
 import { TelemetryService } from 'diagnostic-data';
 import { Globals } from 'projects/app-service-diagnostics/src/app/globals';
 import { stringify } from 'querystring';
+import { Observable, of, throwError, timer } from 'rxjs';
+import { catchError, mergeMap } from 'rxjs/operators';
 import { ResponseMessageEnvelope } from '../../../models/responsemessageenvelope';
 import { Site, SiteInfoMetaData } from '../../../models/site';
 import { ArmService } from '../../../services/arm.service';
@@ -9,6 +12,11 @@ import { SiteService } from '../../../services/site.service';
 enum ConnectionCheckStatus { success, timeout, hostNotFound, blocked, refused }
 export enum OutboundType { SWIFT, gateway };
 export enum InboundType { privateEndpoint, serviceEndpoint }
+export interface DiagResponse {
+    body: any,
+    status: number,
+    [key: string]: any
+}
 
 function delay(second: number): Promise<void> {
     return new Promise(resolve =>
@@ -31,7 +39,8 @@ export class DiagProvider {
         this._globals = globals;
         this._telemetryService = telemetryService;
         this._dict = new Map<string, any>();
-        var scmHostNameState = this._siteInfo.hostNameSslStates.filter(h => h.hostType == 1)[0];
+        var filteredSslStates = this._siteInfo.hostNameSslStates && this._siteInfo.hostNameSslStates.filter(h => h.hostType == 1);
+        var scmHostNameState = filteredSslStates && filteredSslStates.length > 0 && filteredSslStates[0];
         this.scmHostName = scmHostNameState == null ? null : scmHostNameState.name;
         this.portalDomain = portalDomain;
         armService.clearCache();
@@ -71,18 +80,38 @@ export class DiagProvider {
         return result;
     }
 
+    public getResource<T>(resourceUri: string, apiVersion: string): Promise<HttpResponse<T>> {
+        return this._armService.getResourceFullResponse<T>(resourceUri, null, apiVersion).toPromise();
+    }
+
+    public getPlain<T>(uri: string): Observable<HttpResponse<T>> {
+        return this._armService.get(uri);
+    }
+
+    public getAuthorizationToken(): string {
+        return this._armService.getHeaders().get("Authorization");
+    }
+
     public getArmResourceAsync(resourceUri: string, apiVersion?: string, invalidateCache: boolean = false): Promise<any> {
         var stack = new Error("error_message_placeholder").stack;
         var key = "GET;" + resourceUri + ";" + apiVersion;
         if (!invalidateCache && this._dict.has(key)) {
             return this._dict.get(key);
         }
-        var result = this._armService.requestResource<any, any>("GET", resourceUri, null, apiVersion)
+        var result = this._armService.requestResource<DiagResponse, any>("GET", resourceUri, null, apiVersion)
             .toPromise()
             .then(t => {
-                var result = t.body;
-                result.status = t.status;
-                return result;
+                let responseResult: DiagResponse;
+                if ("body" in t) {
+                    responseResult = t.body;
+                    responseResult.body = t.body;
+                    responseResult.status = t.status;
+                    return responseResult;
+                } else {
+                    responseResult = <any>{};
+                    responseResult.status = (<any>t).status;
+                    return responseResult
+                }
             })
             .catch(e => {
                 e.stack = stack.replace("error_message_placeholder", e.message || "");
@@ -122,6 +151,25 @@ export class DiagProvider {
                 e.stack = stack.replace("error_message_placeholder", e.message || "");
                 throw e;
             });
+    }
+
+    private genObs2<T>() {
+
+        return resx => 
+        this.getPlain<T>(resx.headers.get('location'))
+        .flatMap(res2 => {
+            if (res2.status == 200) return of(res2.body);
+            if (res2.status == 202) return timer(5000).pipe(mergeMap(_ => throwError(res2)));
+            // shouldn't need this ideally
+            return of(res2.body);
+        })
+        .catch((err, caught) => caught);
+    }
+
+    public extendedPostResourceAsync<T, S>(resourceUri: string, body?: S, apiVersion?: string): Promise<T> {
+        return this._armService.requestResource<T, S>("POST", resourceUri, body, apiVersion).pipe<T>(
+            res1 => res1.flatMap(this.genObs2())
+        ).toPromise();
     }
 
     public postDaaSExtApiAsync(api: string, body?: any, timeoutInSec: number = 15): Promise<any> {
@@ -291,10 +339,10 @@ export class DiagProvider {
                 var result = resp.body;
                 if (result.Status == "success") {
                     ip = result.IpAddresses.join(";");
-                }else if(result.Status == "host not found"){
+                } else if (result.Status == "host not found") {
                     ip = "";
                 }
-                else{
+                else {
                     throw new Error("DaaS nameresolver failed, result: " + stringify(result));
                 }
             } else {

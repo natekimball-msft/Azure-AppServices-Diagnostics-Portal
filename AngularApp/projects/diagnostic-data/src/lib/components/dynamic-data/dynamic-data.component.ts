@@ -25,7 +25,6 @@ import { CompilationProperties } from '../../models/compilation-properties';
 import { ChangeAnalysisOnboardingComponent } from '../changeanalysis-onboarding/changeanalysis-onboarding.component';
 import { ChangesetsViewComponent } from '../changesets-view/changesets-view.component';
 import { AppDependenciesComponent } from '../app-dependencies/app-dependencies.component';
-import { DetectorListAnalysisComponent } from '../detector-list-analysis/detector-list-analysis.component';
 import { SummaryCardsComponent } from '../summary-cards/summary-cards.component';
 import { InsightsV4Component } from '../insights-v4/insights-v4.component';
 import { DropdownV4Component } from '../dropdown-v4/dropdown-v4.component';

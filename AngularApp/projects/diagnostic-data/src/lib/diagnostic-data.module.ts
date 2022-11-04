@@ -123,6 +123,7 @@ import { DetectorTimePickerComponent } from './components/detector-time-picker/d
 import { FabricFeedbackComponent } from './components/fabric-feedback/fabric-feedback.component';
 import { GenericBreadcrumbService } from './services/generic-breadcrumb.service';
 import { GenericUserSettingService } from './services/generic-user-setting.service';
+import { FormStepComponent } from './components/step-views/form-step-view/form-step.component';
 import { GenericPortalService } from './services/generic-portal.service';
 
 import { FabIconModule } from '@angular-react/fabric/lib/components/icon';
@@ -240,6 +241,7 @@ import { ClientScriptViewComponent } from './components/client-script-view/clien
         SolutionsPanelComponent,
         DetectorTimePickerComponent,
         FabricFeedbackComponent,
+        FormStepComponent,
         ClientScriptViewComponent
     ],
     exports: [
@@ -279,7 +281,8 @@ import { ClientScriptViewComponent } from './components/client-script-view/clien
         FabricFeedbackComponent,
         FabDataTableComponent,
         DetectorTimePickerComponent,
-        FabCardComponent
+        FabCardComponent,
+        FormStepComponent
     ]
 })
 export class DiagnosticDataModule {
