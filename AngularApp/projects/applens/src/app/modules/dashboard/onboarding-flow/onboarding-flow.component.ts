@@ -1,6 +1,6 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, TableColumnOption, TableFilterSelectionOption, DataTableResponseObject
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
@@ -176,7 +176,6 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   pastGistEvent: any;
   pastGistVersionEvent: any;
   gistVersionChanged: boolean = false;
-  //detectorReferencesList : any[]; 
   applyGistButtonDisabled: boolean = true;
   refreshGistButtonDisabled: boolean = true;
   loadingGistVersions: boolean = false;
@@ -209,6 +208,28 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   PPERedirectTimer: number = 10;
   DevopsConfig: DevopsConfig;
   useAutoMergeText: boolean = false;
+  detectorReferencesDialogHidden : boolean = true; 
+  detectorReferencesTable : DataTableResponseObject = null; 
+  detectorReferencesList : any[] = []; 
+  
+  
+  columnOptions: TableColumnOption[] = [
+    {
+      name: "Name",
+      selectionOption: TableFilterSelectionOption.Multiple
+    },
+    {
+      name: "Commit Id",
+      selectionOption: TableFilterSelectionOption.Multiple
+    },
+    {
+      name: "Up to Date",
+      selectionOption: TableFilterSelectionOption.Multiple
+    }
+  ];
+  
+
+
   runButtonStyle: any = {
     root: { cursor: "default" }
   };
@@ -416,6 +437,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   dismissDeleteDialog() {
     this.deleteDialogHidden = true;
   }
+  
 
   updateTempBranch(event: any) {
     this.tempBranch = event.option.key;
@@ -784,12 +806,12 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     
     
     this.diagnosticApiService.getGistId(this.id).subscribe( data=>{ 
-    //this.detectorReferencesList = data;
-    console.log(data); 
+    this.detectorReferencesList = data;
+    console.log(this.detectorReferencesList); 
     //this.detectorReferencesTable = this.generateDetectorReferenceTable(this.detectorReferencesList["detectorReferences"]); 
    }); 
    
-   //this.detectorRefDialogHidden = false; 
+   this.detectorReferencesDialogHidden = false; 
    
 
   }
@@ -827,6 +849,12 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     console.log("will update these detectors"); 
     return; 
   }
+
+  dismissDetectorRefDialog() {
+    console.log("will delete these detectors"); 
+    this.detectorReferencesDialogHidden = true; 
+  }
+  
 
 
 
