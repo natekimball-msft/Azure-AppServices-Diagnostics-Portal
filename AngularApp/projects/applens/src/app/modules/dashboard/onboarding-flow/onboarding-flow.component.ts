@@ -176,6 +176,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   pastGistEvent: any;
   pastGistVersionEvent: any;
   gistVersionChanged: boolean = false;
+  //detectorReferencesList : any[]; 
   applyGistButtonDisabled: boolean = true;
   refreshGistButtonDisabled: boolean = true;
   loadingGistVersions: boolean = false;
@@ -734,6 +735,100 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   openCommitHistory() {
     window.open(this.commitHistoryLink);
   }
+
+
+
+
+  showUpdateDetectorReferencesDialog() {
+    // this.diagnosticApiService.getGists(); 
+    
+    console.log("inside update detector references method"); 
+    
+    //create dummy table 
+    /*
+    let detectColumns: DataTableResponseColumn[] = [
+      { columnName: "Name" },
+      { columnName: "Commit Id" },
+      { columnName: "Up to Date" },
+    ];
+    let rows: any[][] = [];
+    const resourceId = this.diagnosticApiService.resourceId;
+    const name = "First Detector ID ";
+    const commitId = "Commit Id test";
+    const upToDate = "Yes"; 
+    //testing how angular might push the data element 
+    rows.push(["funny name", "funny id", "pls work"]);
+    const dataTableObject: DataTableResponseObject = {
+      columns: detectColumns,
+      rows: rows
+    }
+    
+    console.log(dataTableObject);
+    */ 
+    
+    //this.detectorReferencesTable = dataTableObject;
+    // this.detectorReferencesTable = { 
+    //   columns : [
+    //   { columnName: "Name" },
+    //   { columnName: "Commit Id" },
+    //   { columnName: "Up to Date" },
+    // ],
+    //   rows: [ 
+    //     [ "test name", "test id", "it works"]
+    //   ]
+    // };
+    // console.log(" assigned detector references table = =========== ", this.detectorReferencesTable); 
+    // this.detectorRefDialogHidden = false; 
+    
+    //end of dummy table code 
+    
+    
+    this.diagnosticApiService.getGistId(this.id).subscribe( data=>{ 
+    //this.detectorReferencesList = data;
+    console.log(data); 
+    //this.detectorReferencesTable = this.generateDetectorReferenceTable(this.detectorReferencesList["detectorReferences"]); 
+   }); 
+   
+   //this.detectorRefDialogHidden = false; 
+   
+
+  }
+  generateDetectorReferenceTable(detectors: any[]) {
+    
+    /*var detectorKeys = Object.keys(detectors); 
+    
+    const columns: DataTableResponseColumn[] = [
+      { columnName: "Name" },
+      { columnName: "Commit Id" },
+      { columnName: "Up to Date" },
+    ];
+    let rows: any[][] = [];
+    const resourceId = this.diagnosticApiService.resourceId;
+    rows = detectorKeys.map(key => {
+      
+     const name = key;
+     const commitId = detectors[key];
+     const upToDate = "Yes"; 
+      return [name, commitId, upToDate];
+    });
+    const dataTableObject: DataTableResponseObject = {
+      columns: columns,
+      rows: rows
+    }
+    console.log("finished generateDetectorReferenceTable method"); 
+    console.log(dataTableObject); 
+    return dataTableObject;
+    */
+
+  }
+  
+  
+  updateDetectorReferences() {
+    console.log("will update these detectors"); 
+    return; 
+  }
+
+
 
   updateGistVersionOptions(event: string) {
     this.loadingGistVersions = true;
