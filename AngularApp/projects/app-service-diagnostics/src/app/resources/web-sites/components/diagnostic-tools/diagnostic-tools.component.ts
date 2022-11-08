@@ -75,7 +75,7 @@ export class DiagnosticToolsComponent {
 
     this.toolCategories.push(<SiteFilteredItem<any>>{
       appType: AppType.WebApp | AppType.FunctionApp,
-      platform: OperatingSystem.windows | OperatingSystem.linux,
+      platform: OperatingSystem.windows,
       sku: Sku.All,
       hostingEnvironmentKind: HostingEnvironmentKind.All,
       stack: '',
