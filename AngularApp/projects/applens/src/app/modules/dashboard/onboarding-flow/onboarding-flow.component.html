@@ -179,7 +179,8 @@
 
   <fab-dialog [hidden]="detectorReferencesDialogHidden" (onDismiss)="dismissDetectorRefDialog()"  [minWidth]="'100%'">
     <fab-dialog-content [title]="deleteDetectorReferencesTitle">
-      <p>This action will update the gist commit versions that the detectors reference. Are you sure you want to proceed?</p>
+      <p>This action will update the gist commit versions that the detectors reference.<br>
+       <strong>Current Gist Commit Version:</strong> {{gistCommitVersion}} </p>
 
       <div class="detectorreferences-list" *ngIf = "detectorReferencesTable"> 
         <fab-data-table [table]="detectorReferencesTable" [columnOptions]="columnOptions" [allowColumnSearch]="true" [tableHeight]="'100%'">

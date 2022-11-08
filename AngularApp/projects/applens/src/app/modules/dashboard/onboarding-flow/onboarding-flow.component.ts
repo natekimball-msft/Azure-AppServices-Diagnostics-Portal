@@ -211,7 +211,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   detectorReferencesDialogHidden : boolean = true; 
   detectorReferencesTable : DataTableResponseObject = null; 
   detectorReferencesList : any[] = []; 
-  
+  gistCommitVersion : string = ""; 
   
   columnOptions: TableColumnOption[] = [
     {
@@ -227,7 +227,6 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       selectionOption: TableFilterSelectionOption.Multiple
     }
   ];
-  
 
 
   runButtonStyle: any = {
@@ -808,7 +807,9 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     
     this.diagnosticApiService.getGistId(this.id).subscribe( data=>{ 
     this.detectorReferencesList = data;
+    this.gistCommitVersion = this.detectorReferencesList["currentCommitVersion"]; 
     console.log(this.detectorReferencesList); 
+    console.log(this.gistCommitVersion); 
     this.detectorReferencesTable = this.generateDetectorReferenceTable(this.detectorReferencesList["detectorReferences"]); 
    }); 
    
@@ -817,6 +818,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
   }
   generateDetectorReferenceTable(detectors: any[]) {
+
     
     var detectorKeys = Object.keys(detectors); 
     
@@ -831,7 +833,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       
      const name = key;
      const commitId = detectors[key];
-     const upToDate = "Yes"; 
+     const upToDate = (this.gistCommitVersion == commitId) ? "Yes" : "No"; 
       return [name, commitId, upToDate];
     });
     const dataTableObject: DataTableResponseObject = {
@@ -854,6 +856,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   dismissDetectorRefDialog() {
     console.log("will delete these detectors"); 
     this.detectorReferencesDialogHidden = true; 
+    this.columnOptions = []; 
+
   }
   
 
