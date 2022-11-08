@@ -1,6 +1,6 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, TableColumnOption, TableFilterSelectionOption, DataTableResponseObject
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, TableColumnOption, TableFilterSelectionOption, DataTableResponseObject, DataTableResponseColumn
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
@@ -789,16 +789,17 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     */ 
     
     //this.detectorReferencesTable = dataTableObject;
-    // this.detectorReferencesTable = { 
-    //   columns : [
-    //   { columnName: "Name" },
-    //   { columnName: "Commit Id" },
-    //   { columnName: "Up to Date" },
-    // ],
-    //   rows: [ 
-    //     [ "test name", "test id", "it works"]
-    //   ]
-    // };
+    /*this.detectorReferencesTable = { 
+      columns : [
+      { columnName: "Name" },
+      { columnName: "Commit Id" },
+      { columnName: "Up to Date" },
+    ],
+      rows: [ 
+        [ "test name", "test id", "it works"]
+      ]
+    };
+    */
     // console.log(" assigned detector references table = =========== ", this.detectorReferencesTable); 
     // this.detectorRefDialogHidden = false; 
     
@@ -808,7 +809,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this.diagnosticApiService.getGistId(this.id).subscribe( data=>{ 
     this.detectorReferencesList = data;
     console.log(this.detectorReferencesList); 
-    //this.detectorReferencesTable = this.generateDetectorReferenceTable(this.detectorReferencesList["detectorReferences"]); 
+    this.detectorReferencesTable = this.generateDetectorReferenceTable(this.detectorReferencesList["detectorReferences"]); 
    }); 
    
    this.detectorReferencesDialogHidden = false; 
@@ -817,7 +818,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   }
   generateDetectorReferenceTable(detectors: any[]) {
     
-    /*var detectorKeys = Object.keys(detectors); 
+    var detectorKeys = Object.keys(detectors); 
     
     const columns: DataTableResponseColumn[] = [
       { columnName: "Name" },
@@ -840,7 +841,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     console.log("finished generateDetectorReferenceTable method"); 
     console.log(dataTableObject); 
     return dataTableObject;
-    */
+    
 
   }
   

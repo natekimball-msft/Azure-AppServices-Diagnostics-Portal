@@ -177,7 +177,7 @@
     </fab-dialog-content>
   </fab-dialog>
 
-  <fab-dialog [hidden]="detectorReferencesDialogHidden" (onDismiss)="dismissDetectorRefDialog()">
+  <fab-dialog [hidden]="detectorReferencesDialogHidden" (onDismiss)="dismissDetectorRefDialog()"  [minWidth]="'100%'">
     <fab-dialog-content [title]="deleteDetectorReferencesTitle">
       <p>This action will update the gist commit versions that the detectors reference. Are you sure you want to proceed?</p>
 
