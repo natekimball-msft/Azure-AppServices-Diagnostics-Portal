@@ -32,6 +32,7 @@ export class FabDataTableComponent implements AfterContentInit {
   @Input() allowColumnSearch: boolean = false;
   @Input() tableHeight: string = "";
   @Input() description: string = "";
+  @Input() checkboxes: boolean = false; 
   @Input("searchPlaceholder") private _searchPlaceholder: string = "";
 
   get searchPlaceholder() {
@@ -93,8 +94,16 @@ export class FabDataTableComponent implements AfterContentInit {
 
       this.createFabricDataTableObjects(t);
 
-
-      this.fabDetailsList.selectionMode = this.descriptionColumnName !== "" ? SelectionMode.single : SelectionMode.none;
+      //this.fabDetailsList.selectionMode = this.descriptionColumnName !== "" ? SelectionMode.single : SelectionMode.none;
+      if(this.descriptionColumnName == "Multiple"){
+        this.fabDetailsList.selectionMode = SelectionMode.multiple; 
+      }
+      else if(this.descriptionColumnName == "Single"){
+        this.fabDetailsList.selectionMode = SelectionMode.single; 
+      }
+      else{
+        this.fabDetailsList.selectionMode = SelectionMode.none; 
+      }
       this.fabDetailsList.selection = this.selection;
 
       //Ideally,it should be enable if table is too large.
@@ -311,4 +320,18 @@ export class FabDataTableComponent implements AfterContentInit {
     str = str.trim();
     return str.startsWith('<markdown>') && str.endsWith('</markdown>');
   }
+
+  /*
+  clickedCheckbox(name: string, col: string, ev: Event){
+     debugger; 
+    this.fabDetailsList.selection = this.selection;
+    console.log(`${name} was clicked`);
+    console.log(`${ev} was clicked`);
+    const currRow = this.rows.find( (el) => {
+      return el.Name == name; 
+    })
+    console.log(`${currRow[col]} is the row name`); 
+
+  }
+  */
 }
