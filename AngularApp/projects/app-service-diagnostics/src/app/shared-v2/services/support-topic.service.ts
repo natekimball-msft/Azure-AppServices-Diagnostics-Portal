@@ -229,7 +229,7 @@ export class SupportTopicService {
                         });
                     }
                     
-                    if (matchingDetectors) {
+                    if (matchingDetectors && matchingDetectors.length > 0) {
                         if (matchingDetectors.length === 1 && matchingDetectors[0] && matchingDetectors[0].id) {
                             if (matchingDetectors[0].type === DetectorType.Analysis) {
                                 detectorPath = `/analysis/${matchingDetectors[0].id}`;
