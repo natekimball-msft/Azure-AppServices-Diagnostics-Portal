@@ -640,7 +640,7 @@
         },
         {
             "service": "ResourceService",
-            "resourceType": "Microsoft.LoadTestService/LoadTests",
+            "resourceType": "Microsoft.LoadTestService/loadtests",
             "templateFileName": "LoadTest",
             "imgSrc": "assets/img/LoadTest-Logo.svg",
             "versionPrefix": "",
