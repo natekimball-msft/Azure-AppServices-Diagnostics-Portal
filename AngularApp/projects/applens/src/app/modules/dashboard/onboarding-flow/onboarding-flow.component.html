@@ -183,14 +183,15 @@
        <strong>Current Gist Commit Version:</strong> {{gistCommitVersion}} </p>
 
       <div class="detectorreferences-list" *ngIf = "detectorReferencesTable"> 
-        <fab-data-table [table]="detectorReferencesTable" [columnOptions]="columnOptions" [allowColumnSearch]="true" [tableHeight]="'100%'" [descriptionColumnName] = "'Multiple'">
+        <fab-data-table [table]="detectorReferencesTable" [columnOptions]="columnOptions" [allowColumnSearch]="true" [tableHeight]="'100%'" 
+        [descriptionColumnName] = "'Multiple'" [buttonText] = "'Update All'" (selectedItems) = updateDetectorReferences($event)>
         </fab-data-table>
         </div>
 
 
       <div class="mt-5">
-        <fab-primary-button text="Update All" (onClick)="updateDetectorReferences()" [contentClass]="'mr-3'">
-        </fab-primary-button>
+        <!-- <fab-primary-button text="Update All" (onClick)="updateDetectorReferences()" [contentClass]="'mr-3'">
+        </fab-primary-button> -->
         <fab-default-button text="Cancel" (onClick)="dismissDetectorRefDialog()"></fab-default-button>
       </div>
     </fab-dialog-content>

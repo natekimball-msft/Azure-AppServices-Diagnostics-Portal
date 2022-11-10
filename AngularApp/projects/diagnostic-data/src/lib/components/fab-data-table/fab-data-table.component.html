@@ -8,6 +8,10 @@
       <div *ngFor="let filter of tableFilters;let i = index" style="margin-left: 16px;">
         <fab-data-table-filter [tableFilter]="filter" [options]="getOptionsWithColName(filter.name)" (onFilterUpdate)="updateFilter(filter.name,$event)" [index]="i" [tableId]="tableId"></fab-data-table-filter>
       </div>
+    <div *ngIf = "buttonText != ''" style="display: flex;margin-top: -5px; margin-bottom: 0px; margin-left : 7px;">
+      <fab-primary-button text="Update All" (onClick) = "returnSelectedItems()" [contentClass]="'mr-3'">
+      </fab-primary-button>
+    </div>
     </div>
   </div>
 

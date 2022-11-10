@@ -1,6 +1,6 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, TableColumnOption, TableFilterSelectionOption, DataTableResponseObject, DataTableResponseColumn
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, TableColumnOption, TableFilterSelectionOption, DataTableResponseObject, DataTableResponseColumn, FabDataTableComponent
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
@@ -848,8 +848,11 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   }
   
   
-  updateDetectorReferences() {
-    console.log("will update these detectors"); 
+  updateDetectorReferences(detectorReferences : any[]) {
+    // this._fabDataTable.returnSelectedItems(); 
+    console.log("inside update detector references method");
+    console.log(detectorReferences); 
+    
     return; 
   }
 

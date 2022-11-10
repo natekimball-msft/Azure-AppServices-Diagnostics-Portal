@@ -1,11 +1,12 @@
-import { AfterContentInit, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { DetailsListLayoutMode, IColumn, IListProps, ISelection, SelectionMode, Selection } from 'office-ui-fabric-react';
+import { AfterContentInit, Component, Input, OnInit, Output, TemplateRef, ViewChild, EventEmitter } from '@angular/core';
+import { DetailsListLayoutMode, IColumn, IListProps, ISelection, SelectionMode, Selection, } from 'office-ui-fabric-react';
 import { BehaviorSubject } from 'rxjs';
 import { DataTableResponseObject } from '../../models/detector';
 import { TableColumnOption, TableFilter, TableFilterSelectionOption } from '../../models/data-table';
 import { TelemetryService } from '../../services/telemetry/telemetry.service';
 import { FabDetailsListComponent } from '@angular-react/fabric/lib/components/details-list';
 import { FabSearchBoxComponent } from '@angular-react/fabric/lib/components/search-box';
+
 
 
 const columnMinWidth: number = 100;
@@ -34,6 +35,8 @@ export class FabDataTableComponent implements AfterContentInit {
   @Input() description: string = "";
   @Input() checkboxes: boolean = false; 
   @Input("searchPlaceholder") private _searchPlaceholder: string = "";
+  @Input() buttonText: string = ""; 
+  @Output() selectedItems = new EventEmitter(); 
 
   get searchPlaceholder() {
     if (this._searchPlaceholder && this._searchPlaceholder.length > 0) {
@@ -67,12 +70,18 @@ export class FabDataTableComponent implements AfterContentInit {
       if (selectionCount === 0) {
         this.selectionText = "";
       } else if (selectionCount === 1) {
+        // console.log("enter else if condition on selection changes"); 
+
         const row = this.selection.getSelection()[0];
         if (this.descriptionColumnName) {
           const selectionText = row[this.descriptionColumnName];
           this.selectionText = selectionText !== undefined ? selectionText : "";
         }
       }
+      // else{
+      //   console.log("enter else condition on selection changes"); 
+      // }
+      // console.log(this.selection.getSelection()); 
     }
   });
 
@@ -319,6 +328,13 @@ export class FabDataTableComponent implements AfterContentInit {
     let str = `${s}`;
     str = str.trim();
     return str.startsWith('<markdown>') && str.endsWith('</markdown>');
+  }
+
+  returnSelectedItems() {
+    // console.log("entered returnSelectedItems"); 
+    // console.log(this.selection.getSelection()); 
+    this.selectedItems.emit(this.selection.getSelection()); 
+    //this.selectedItems.emit(this.selection.getSelection()); 
   }
 
   /*
