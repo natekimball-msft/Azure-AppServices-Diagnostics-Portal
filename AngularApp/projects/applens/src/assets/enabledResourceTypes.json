@@ -637,7 +637,18 @@
             "staticSelfHelpContent": "",
             "searchSuffix": "VIRTUAL NETWORK GATEWAYS",
             "displayName": "Virtual Network Gateways"
+        },
+        {
+            "service": "ResourceService",
+            "resourceType": "Microsoft.LoadTestService/loadtests",
+            "templateFileName": "LoadTest",
+            "imgSrc": "assets/img/LoadTest-Logo.svg",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "loadtest",
+            "pesId": "17708",
+            "staticSelfHelpContent": "microsoft.LoadTestService",
+            "searchSuffix": "Azure Load Testing",
+            "displayName": "Azure Load Testing"
         }
-        
     ]
 }
