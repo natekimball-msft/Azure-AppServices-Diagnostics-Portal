@@ -9,7 +9,7 @@ import {
   forkJoin
   , Observable, of
 } from 'rxjs';
-import { flatMap, last, map } from 'rxjs/operators'
+import { flatMap, last, map, mergeMap, switchMap } from 'rxjs/operators'
 import { ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, Injectable, Input, OnChanges, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { Package } from '../../../shared/models/package';
 import { GithubApiService } from '../../../shared/services/github-api.service';
@@ -23,7 +23,7 @@ import { ActivatedRoute, ActivatedRouteSnapshot, CanDeactivate, Params, Router, 
 import { DiagnosticApiService } from "../../../shared/services/diagnostic-api.service";
 import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import { MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection } from 'monaco-languageclient';
+import { MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection, ReferencesRequest } from 'monaco-languageclient';
 import { v4 as uuid } from 'uuid';
 import { IButtonStyles, IChoiceGroupOption, IDialogContentProps, IDialogProps, IDropdownOption, IDropdownProps, IPanelProps, IPivotProps, MessageBarType, PanelType, TagItemSuggestion } from 'office-ui-fabric-react';
 import { BehaviorSubject } from 'rxjs';
@@ -32,6 +32,8 @@ import { ApplensCommandBarService } from '../services/applens-command-bar.servic
 import { DevopsConfig } from '../../../shared/models/devopsConfig';
 import { ApplensGlobal } from '../../../applens-global';
 import { IDeactivateComponent } from '../develop-navigation-guard.service';
+import { HttpParams } from '@angular/common/http';
+import { ThemeService } from 'projects/app-service-diagnostics/src/app/theme/theme.service';
 
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
@@ -852,9 +854,151 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     // this._fabDataTable.returnSelectedItems(); 
     console.log("inside update detector references method");
     console.log(detectorReferences); 
-    
-    return; 
+
+    detectorReferences.forEach( detector =>{
+      this.checkCompilation(detector, detectorReferences.length); 
+    }); 
   }
+
+
+  private checkCompilation(detector : any, num: number) {
+   
+    
+    /*get detector code by calling getDetectorCode
+    get detector references  by calling getDetectorCode 
+    get detector utterances by calling getDetectorCode 
+
+    get detector reference code by calling getGistCommitContent 
+      iterate through above result of detector references 
+    
+    create variable "body" using detector code/references code/utterances 
+
+    use result of getqueryparams and body variable to then call getCompilerResponse method and output result 
+    */
+
+    
+    /*
+
+    call service 1 
+    call service 2 
+    call service 3 
+      returns an array, service 4 on each element of this array
+
+    
+    using above results I then want to call service 5 to output result 
+
+
+    */
+
+
+    let tempCode; 
+    let tempReference; 
+    let tempReferenceList = []; 
+    let tempUtterances; 
+    var body;
+   
+
+    let code = this.diagnosticApiService.getDetectorCode(`${detector.Name}/${detector.Name}.csx`, this.Branch, this.resourceId);
+    let utterances = this.diagnosticApiService.getDetectorCode(`${detector.Name}/metadata.json`, this.Branch, this.resourceId); 
+    let reference = this.diagnosticApiService.getDetectorCode(`${detector.Name}/package.json`, this.Branch, this.resourceId); 
+
+    /*reference.pipe(
+      map( r1 => {
+        
+        this.getGistCommitContent(r1[0], r1[1]); 
+      })
+    )
+    */
+
+
+    //forkjoin runs in parallel
+    //subscribe callback 
+    forkJoin(code, reference, utterances).subscribe( res =>{
+      //debugger; 
+      tempCode = res[0]; 
+      tempReference = JSON.parse(res[1])['dependencies'] || {}; // 
+      tempUtterances = JSON.parse(res[2]).utterances; 
+
+      let tempReferenceKeys = Object.keys(tempReference); 
+      let requestsArr = []; 
+
+      tempReferenceKeys.forEach(el => {
+        //somehow map this and push result to tempReferenceList 
+        //debugger;
+        // if( el == "firstgistid"){
+        //   requestsArr.push(this.getGistCommitContent(el, "f8a45ccc13abbdea2a7611cfd9fa4919c23d1a6f")); 
+        // }
+        requestsArr.push(this.getGistCommitContent(el,tempReference[el])); 
+        
+    });
+    
+      forkJoin(requestsArr).subscribe( res => {
+        //debugger; 
+        tempReferenceList = res; 
+        let refDict = {}; 
+
+        for(let i =0; i < tempReferenceKeys.length; i++){
+          refDict[tempReferenceKeys[i]] = res[i];
+          
+        }
+        
+        var body = {
+          script: tempCode,
+          references: refDict,
+          entityType: 'signal',
+          detectorUtterances: JSON.stringify(tempUtterances.map(x => x.text))
+        };
+        let isSystemInvoker: boolean = this.mode === DevelopMode.EditMonitoring || this.mode === DevelopMode.EditAnalytics;
+
+        //call another service 
+
+        this._activatedRoute.queryParams.subscribe((params: Params) => {
+          //debugger; 
+          let queryParams = JSON.parse(JSON.stringify(params));
+          queryParams.startTime = undefined;
+          queryParams.endTime = undefined;
+          let serializedParams = this.serializeQueryParams(queryParams);
+          if (serializedParams && serializedParams.length > 0) {
+            serializedParams = "&" + serializedParams;
+          };
+          this.diagnosticApiService.getCompilerResponse(body, isSystemInvoker, detector.Name.toLowerCase(), '',
+            '', this.dataSource, this.timeRange, {
+            scriptETag: this.compilationPackage.scriptETag,
+            assemblyName: this.compilationPackage.assemblyName,
+            formQueryParams: serializedParams,
+            getFullResponse: true
+          },detector.Name.toLowerCase())
+            .subscribe((response: any) => {
+              //debugger; 
+              this.queryResponse = response.body;
+      
+          if (this.queryResponse.compilationOutput.compilationSucceeded === true) {
+            console.log("========== Build: 1 succeeded, 0 failed =========="); 
+           
+          } else {
+           console.log('========== Build: 0 succeeded, 1 failed =========='); 
+          }
+          if (this.queryResponse.runtimeLogOutput) {
+            this.queryResponse.runtimeLogOutput.forEach(element => {
+              if (element.exception) {
+      
+                console.log(`${element.timeStamp}: ${element.message}: 
+                ${element.exception.ClassName}: ${element.exception.Message}: ${element.exception.StackTraceString}`);
+               
+                }
+              });
+              }
+            });
+          }); 
+  
+          }); 
+        }); 
+    
+    
+}
+
+
+
 
   dismissDetectorRefDialog() {
     console.log("will delete these detectors"); 
@@ -1228,7 +1372,6 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     } as CompilationTraceOutputDetails);
     let currentCode = this.code;
     this.markCodeLinesInEditor(null);
-
     var body = {
       script: this.code,
       references: this.reference,
