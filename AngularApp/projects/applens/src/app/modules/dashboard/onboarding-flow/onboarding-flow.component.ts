@@ -213,6 +213,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   detectorReferencesDialogHidden : boolean = true; 
   detectorReferencesTable : DataTableResponseObject = null; 
   detectorReferencesList : any[] = []; 
+  detectorCompilationList : object= {};
   gistCommitVersion : string = ""; 
   
   columnOptions: TableColumnOption[] = [
@@ -812,14 +813,52 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this.gistCommitVersion = this.detectorReferencesList["currentCommitVersion"]; 
     console.log(this.detectorReferencesList); 
     console.log(this.gistCommitVersion); 
-    this.detectorReferencesTable = this.generateDetectorReferenceTable(this.detectorReferencesList["detectorReferences"]); 
+
+
+
+    var detectorKeys = Object.keys(this.detectorReferencesList["detectorReferences"]); 
+    
+    const columns: DataTableResponseColumn[] = [
+      { columnName: "Name" },
+      { columnName: "Commit Id" },
+      { columnName: "Up to Date" },
+    ];
+    let rows: any[][] = [];
+    const resourceId = this.diagnosticApiService.resourceId;
+    rows = detectorKeys.map(key => {
+      
+     const name = key;
+     const commitId = this.detectorReferencesList["detectorReferences"][key];
+     const upToDate = (this.gistCommitVersion == commitId) ? "Yes" : "No"; 
+      return [name, commitId, upToDate];
+    });
+
+
+    this.detectorReferencesTable = this.generateDetectorReferenceTable(columns, rows); 
    }); 
    
    this.detectorReferencesDialogHidden = false; 
    
 
   }
-  generateDetectorReferenceTable(detectors: any[]) {
+  
+  generateDetectorReferenceTable(columns : DataTableResponseColumn[], rows: any[][]){
+
+
+
+    const dataTableObject: DataTableResponseObject = {
+      columns: columns,
+      rows: rows
+    }
+    console.log("finished generateDetectorReferenceTable method"); 
+    console.log(dataTableObject); 
+    return dataTableObject;
+
+
+
+  }
+  
+  /*generateDetectorReferenceTable(detectors: any[]) {
 
     
     var detectorKeys = Object.keys(detectors); 
@@ -828,6 +867,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       { columnName: "Name" },
       { columnName: "Commit Id" },
       { columnName: "Up to Date" },
+      { columnName: "Status of Update" },
     ];
     let rows: any[][] = [];
     const resourceId = this.diagnosticApiService.resourceId;
@@ -848,13 +888,44 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     
 
   }
+
+  generateUpdatedDetectorReferenceTable(detectors: any[]){
+    
+    
+    var detectorKeys = Object.keys(this.detectorReferencesList["detectorReferences"]); 
+    
+    const columns: DataTableResponseColumn[] = [
+      { columnName: "Name" },
+      { columnName: "Commit Id" },
+      { columnName: "Up to Date" },
+      {columnName: "Status"}
+    ];
+    let rows: any[][] = [];
+    const resourceId = this.diagnosticApiService.resourceId;
+    rows = detectorKeys.map(key => {
+      
+     const name = key;
+     const commitId = detectors[key];
+     const upToDate = (this.gistCommitVersion == commitId) ? "Yes" : "No"; 
+     const status = "lsdjfklsjdf"; 
+      return [name, commitId, upToDate];
+    });
+    const dataTableObject: DataTableResponseObject = {
+      columns: columns,
+      rows: rows
+    }
+    console.log("finished generateUpdateDetectorReferenceTable method"); 
+    console.log(dataTableObject); 
+    return dataTableObject;
+  }
+  */
   
   
   updateDetectorReferences(detectorReferences : any[]) {
     // this._fabDataTable.returnSelectedItems(); 
     console.log("inside update detector references method");
     console.log(detectorReferences); 
-
+    debugger; 
     detectorReferences.forEach( detector =>{
       this.checkCompilation(detector, detectorReferences.length); 
     }); 
@@ -862,33 +933,6 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
 
   private checkCompilation(detector : any, num: number) {
-   
-    
-    /*get detector code by calling getDetectorCode
-    get detector references  by calling getDetectorCode 
-    get detector utterances by calling getDetectorCode 
-
-    get detector reference code by calling getGistCommitContent 
-      iterate through above result of detector references 
-    
-    create variable "body" using detector code/references code/utterances 
-
-    use result of getqueryparams and body variable to then call getCompilerResponse method and output result 
-    */
-
-    
-    /*
-
-    call service 1 
-    call service 2 
-    call service 3 
-      returns an array, service 4 on each element of this array
-
-    
-    using above results I then want to call service 5 to output result 
-
-
-    */
 
 
     let tempCode; 
@@ -902,19 +946,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     let utterances = this.diagnosticApiService.getDetectorCode(`${detector.Name}/metadata.json`, this.Branch, this.resourceId); 
     let reference = this.diagnosticApiService.getDetectorCode(`${detector.Name}/package.json`, this.Branch, this.resourceId); 
 
-    /*reference.pipe(
-      map( r1 => {
-        
-        this.getGistCommitContent(r1[0], r1[1]); 
-      })
-    )
-    */
-
-
-    //forkjoin runs in parallel
-    //subscribe callback 
-    forkJoin(code, reference, utterances).subscribe( res =>{
-      //debugger; 
+    forkJoin([code, reference, utterances]).subscribe( res =>{
       tempCode = res[0]; 
       tempReference = JSON.parse(res[1])['dependencies'] || {}; // 
       tempUtterances = JSON.parse(res[2]).utterances; 
@@ -924,11 +956,14 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
       tempReferenceKeys.forEach(el => {
         //somehow map this and push result to tempReferenceList 
-        //debugger;
-        // if( el == "firstgistid"){
-        //   requestsArr.push(this.getGistCommitContent(el, "f8a45ccc13abbdea2a7611cfd9fa4919c23d1a6f")); 
-        // }
-        requestsArr.push(this.getGistCommitContent(el,tempReference[el])); 
+        if( el == this.id){
+          //this.gistCommitVersion = "f8a45ccc13abbdea2a7611cfd9fa4919c23d1a6f"; 
+          requestsArr.push(this.getGistCommitContent(el, this.gistCommitVersion)); 
+        }
+        else{
+          requestsArr.push(this.getGistCommitContent(el,tempReference[el])); 
+        }
+        
         
     });
     
@@ -950,7 +985,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         };
         let isSystemInvoker: boolean = this.mode === DevelopMode.EditMonitoring || this.mode === DevelopMode.EditAnalytics;
 
-        //call another service 
+        //call compilation 
 
         this._activatedRoute.queryParams.subscribe((params: Params) => {
           //debugger; 
@@ -973,10 +1008,12 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
               this.queryResponse = response.body;
       
           if (this.queryResponse.compilationOutput.compilationSucceeded === true) {
-            console.log("========== Build: 1 succeeded, 0 failed =========="); 
+            this.detectorCompilationList[detector.Name] = true; 
+            //console.log(`${detector.Name} ========== Build: 1 succeeded, 0 failed ==========`); 
            
           } else {
-           console.log('========== Build: 0 succeeded, 1 failed =========='); 
+            this.detectorCompilationList[detector.Name] = false; 
+           //console.log(`${detector.Name}========== Build: 0 succeeded, 1 failed ==========`); 
           }
           if (this.queryResponse.runtimeLogOutput) {
             this.queryResponse.runtimeLogOutput.forEach(element => {
@@ -988,6 +1025,10 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
                 }
               });
               }
+          debugger; 
+          if(Object.keys(this.detectorCompilationList).length == num){
+            this.displayUpdateDetectorResults(); 
+          }
             });
           }); 
   
@@ -997,6 +1038,22 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     
 }
 
+  displayUpdateDetectorResults(){
+    
+    Object.keys(this.detectorCompilationList).forEach( el => {
+      if( this.detectorCompilationList[el]){
+        console.log(`${el} ========== Build: 1 succeeded, 0 failed ==========`); 
+      }
+      else{
+        console.log(`${el} ========== Build: 1 succeeded, 0 failed ==========`); 
+      }
+    })
+   // this.detectorReferencesTable = null; 
+   // this.detectorReferencesTable = this.generateUpdatedDetectorReferenceTable(Object.keys(this.detectorCompilationList)); 
+   this.detectorCompilationList = {}; 
+
+
+  }
 
 
 
