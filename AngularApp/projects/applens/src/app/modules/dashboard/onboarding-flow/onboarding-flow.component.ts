@@ -333,6 +333,9 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   }
   showBranchInfo:boolean = false;
   owners: string[] = [];
+  //to direct system invoker detectors to the correct repo
+  private readonly SYSTEM_INVOKER_RESOURCE_ID: string = '/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd';
+  private readonly SYSTEM_INVOKER_MAIN_BRANCH: string = 'main-dev'
 
   codeOnDefaultBranch: boolean = false;
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService, private detectorGistApiService: DetectorGistApiService,
@@ -1534,8 +1537,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     
     let link = this.gistMode ? `${this.PPEHostname}/${this.resourceId}/gists/${this.publishingPackage.id}?branchInput=${this.Branch}` : `${this.PPEHostname}/${this.resourceId}/detectors/${this.publishingPackage.id}/edit?branchInput=${this.Branch}`;
     let description = `This Pull Request was created via AppLens. To make edits, go to ${link}`;
-    const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(requestBranch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.publishingPackage.id} Author : ${this.userName}`, commitType, this.resourceId);
-    const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, this.PRTitle, this.resourceId, this.owners, description);
+    const DetectorObservable = isSystemInvoker ? this.diagnosticApiService.pushDetectorChanges(this.SYSTEM_INVOKER_MAIN_BRANCH, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.publishingPackage.id} Author : ${this.userName}`, commitType, this.SYSTEM_INVOKER_RESOURCE_ID) : this.diagnosticApiService.pushDetectorChanges(requestBranch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.publishingPackage.id} Author : ${this.userName}`, commitType, this.resourceId);
+    const makePullRequestObservable = isSystemInvoker ? this.diagnosticApiService.makePullRequest(this.SYSTEM_INVOKER_MAIN_BRANCH, this.SYSTEM_INVOKER_MAIN_BRANCH, this.PRTitle, this.SYSTEM_INVOKER_RESOURCE_ID, this.owners, description) : this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, this.PRTitle, this.resourceId, this.owners, description);
 
     DetectorObservable.subscribe(_ => {
       if (!this.useAutoMergeText) {
@@ -1635,6 +1638,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this.setTargetBranch(this.saveTempId);
     this.publishDialogHidden = true;
 
+    let isSystemInvoker: boolean = this.mode === DevelopMode.EditMonitoring || this.mode === DevelopMode.EditAnalytics;
+
     const commitType = this.mode == DevelopMode.Create && !this.isSaved ? "add" : "edit";
     const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved ? "Adding" : "Editing";
 
@@ -1665,7 +1670,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       gradPublishFiles.push(reviewers);
     }
 
-    const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${idForSave} Author : ${this.userName}`, commitType, this.resourceId);
+    const DetectorObservable = isSystemInvoker ? this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${idForSave} Author : ${this.userName}`, commitType, this.SYSTEM_INVOKER_RESOURCE_ID) : this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${idForSave} Author : ${this.userName}`, commitType, this.resourceId);
     
     this.saveButtonText = "Saving";
     this.publishDialogHidden = true;
