@@ -1435,6 +1435,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this.modalPublishingButtonDisabled = true;
     this.modalPublishingButtonText = this.detectorGraduation ? "Sending PR" : "Publishing";
     var isOriginalCodeMarkedPublic: boolean = this.IsDetectorMarkedPublic(this.originalCode);
+
     if (this.detectorGraduation) {
       this.gradPublish();
     }
@@ -1498,8 +1499,10 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
     //var pushToMain = this.DevopsConfig.autoMerge || (this.DevopsConfig.internalPassthrough && this.queryResponse.invocationOutput['appFilter']['InternalOnly'] === 'True' && !this.IsDetectorMarkedPublic(this.originalCode));
 
-    const commitType = this.mode == DevelopMode.Create && !this.isSaved || (this.useAutoMergeText && !this.codeOnDefaultBranch) ? "add" : "edit";
-    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved || (this.useAutoMergeText && !this.codeOnDefaultBranch) ? "Adding" : "Editing";
+    let isSystemInvoker: boolean = this.mode === DevelopMode.EditMonitoring || this.mode === DevelopMode.EditAnalytics;
+    
+    const commitType = (this.mode == DevelopMode.Create && !this.isSaved || (this.useAutoMergeText && !this.codeOnDefaultBranch) && !isSystemInvoker) ? "add" : "edit";
+    const commitMessageStart = (this.mode == DevelopMode.Create && !this.isSaved || (this.useAutoMergeText && !this.codeOnDefaultBranch) && !isSystemInvoker) ? "Adding" : "Editing";
 
     let gradPublishFiles: string[] = [
       this.publishingPackage.codeString,
