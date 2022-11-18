@@ -36,10 +36,10 @@ export class SideNavComponent implements OnInit {
 
   docs: CollapsibleMenuItem[] = [];
   docsCopy: CollapsibleMenuItem[] = [];
-  docsRepoRoot: string = `AppLensDocumentation`;
+  docsRepoRoot: string = '';
   docsBranch = null;
-  docsResource: string = `AppServiceDiagnostics`;
-  docStagingBranch: string = 'DocumentationStagingBranch';
+  docsResource: string = '';
+  docStagingBranch: string = '';
   
   favoriteDetectors: CollapsibleMenuItem[] = [];
   favoriteDetectorsCopy: CollapsibleMenuItem[] = [];
@@ -287,50 +287,60 @@ export class SideNavComponent implements OnInit {
         }
       });
     
-      this._diagnosticApi.isStaging().subscribe(isStaging => {
-        if (isStaging){this.docsBranch = this.docStagingBranch;}
-        this.getDocCategories().subscribe(content => {
-          let categories = [];
-          content.folders.forEach(element => {
-            let cn = element.split('/').at(-1);
-            if ( cn != this.docsRepoRoot && cn.at(0) != "_")
-                  categories.push(cn)
-          })
-          let fileNamesObservables = [];
-          categories.forEach(cat => {
-            fileNamesObservables.push(this.getDocFiles(cat));
-            let catItem = new CollapsibleMenuItem(cat, "", null, null, null, false);
-            this.docs.push(catItem);
-          });
-          forkJoin(fileNamesObservables).subscribe(files => {
-            let fileNames = []
-            files.forEach((f:any, filesIndex) => {
-              let folderList = [];
-              f.folders.forEach(element => {
-                let fn = element.split('/').at(-1);
-                let parent = element.split('/').at(-2);
-                if ( (fn != categories[filesIndex] || fn === parent) && fn.at(0) != "_")
-                  folderList.push(fn);
-              });
-              fileNames.push(folderList);
-              fileNames[filesIndex].forEach(d => {
-                let docItem: CollapsibleMenuItem = {
-                  label: d,
-                  id: "",
-                  onClick: () => {
-                    this.navigateTo(`docs/${categories[filesIndex]}/${d}`);
-                  },
-                  expanded: false,
-                  subItems: null,
-                  isSelected: () => {
-                    return this.currentRoutePath && this.currentRoutePath.join('/') === `docs/${categories[filesIndex]}/${d}`;
-                  },
-                  icon: null
-                }
-                this.docs[this.docs.findIndex(x => {return x.label === categories[filesIndex]})].subItems.push(docItem)
+      this._diagnosticApi.getDocumentationRoot().subscribe(root => {
+        this.docsRepoRoot = root;
+        this._diagnosticApi.getDocumentationStagingBranch().subscribe(branch  => {
+          this.docStagingBranch = branch;
+          this._diagnosticApi.getSystemInvokerResourceIDString().subscribe(sysResourceID => {
+            this.docsResource = sysResourceID;
+            
+            this._diagnosticApi.isStaging().subscribe(isStaging => {
+              if (isStaging){this.docsBranch = this.docStagingBranch;}
+              this.getDocCategories().subscribe(content => {
+                let categories = [];
+                content.folders.forEach(element => {
+                  let cn = element.split('/').at(-1);
+                  if ( cn != this.docsRepoRoot && cn.at(0) != "_")
+                        categories.push(cn)
+                })
+                let fileNamesObservables = [];
+                categories.forEach(cat => {
+                  fileNamesObservables.push(this.getDocFiles(cat));
+                  let catItem = new CollapsibleMenuItem(cat, "", null, null, null, false);
+                  this.docs.push(catItem);
+                });
+                forkJoin(fileNamesObservables).subscribe(files => {
+                  let fileNames = []
+                  files.forEach((f:any, filesIndex) => {
+                    let folderList = [];
+                    f.folders.forEach(element => {
+                      let fn = element.split('/').at(-1);
+                      let parent = element.split('/').at(-2);
+                      if ( (fn != categories[filesIndex] || fn === parent) && fn.at(0) != "_")
+                        folderList.push(fn);
+                    });
+                    fileNames.push(folderList);
+                    fileNames[filesIndex].forEach(d => {
+                      let docItem: CollapsibleMenuItem = {
+                        label: d,
+                        id: "",
+                        onClick: () => {
+                          this.navigateTo(`docs/${categories[filesIndex]}/${d}`);
+                        },
+                        expanded: false,
+                        subItems: null,
+                        isSelected: () => {
+                          return this.currentRoutePath && this.currentRoutePath.join('/') === `docs/${categories[filesIndex]}/${d}`;
+                        },
+                        icon: null
+                      }
+                      this.docs[this.docs.findIndex(x => {return x.label === categories[filesIndex]})].subItems.push(docItem)
+                    });
+                  });
+                  this.docsCopy = this.deepCopyArray(this.docs);
+                });
               });
             });
-            this.docsCopy = this.deepCopyArray(this.docs);
           });
         });
       });

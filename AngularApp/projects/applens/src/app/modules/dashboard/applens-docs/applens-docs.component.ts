@@ -52,10 +52,10 @@ export class ApplensDocsComponent implements OnInit {
 
   componentsList: {Type: Number, Component: Number}[] = [];
 
-  docsRepoRoot: string = `AppLensDocumentation`;
+  docsRepoRoot: string = '';
   docsBranch = null;
-  docsResource: string = `AppServiceDiagnostics`
-  docStagingBranch: string = 'DocumentationStagingBranch';
+  docsResource: string = '';
+  docStagingBranch: string = '';
   
   ngOnInit() {
       this._applensGlobal.updateHeader("");
@@ -63,16 +63,26 @@ export class ApplensDocsComponent implements OnInit {
         this.reset();
         this.category = params.get('category');
         this.doc = params.get('doc');
-        this._diagnosticApi.isStaging().subscribe(isStaging => {
-          if (isStaging){this.docsBranch = this.docStagingBranch;}
-          this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${'index'}`, this.docsBranch, this.docsResource).subscribe(x=>{
-            this.populateComponentsList(x);
-            this.markdownCode = x.split(this.customTagRegEx);
-            this.folders = this.getCodeFolders(x);
-            this.folders.forEach(f => {
-              this.getFiles(f);
+        this._diagnosticApi.getDocumentationRoot().subscribe(root => {
+          this.docsRepoRoot = root;
+          this._diagnosticApi.getDocumentationStagingBranch().subscribe(branch  => {
+            this.docStagingBranch = branch;
+            this._diagnosticApi.getSystemInvokerResourceIDString().subscribe(sysResourceID => {
+              this.docsResource = sysResourceID;
+
+              this._diagnosticApi.isStaging().subscribe(isStaging => {
+                if (isStaging){this.docsBranch = this.docStagingBranch;}
+                this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${'index'}`, this.docsBranch, this.docsResource).subscribe(x=>{
+                  this.populateComponentsList(x);
+                  this.markdownCode = x.split(this.customTagRegEx);
+                  this.folders = this.getCodeFolders(x);
+                  this.folders.forEach(f => {
+                    this.getFiles(f);
+                  });
+                  this.inPageLinks = this.getInPageLinks(x);
+                });
+              });
             });
-            this.inPageLinks = this.getInPageLinks(x);
           });
         });
       });

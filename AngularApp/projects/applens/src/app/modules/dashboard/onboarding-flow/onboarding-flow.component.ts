@@ -32,6 +32,7 @@ import { ApplensCommandBarService } from '../services/applens-command-bar.servic
 import { DevopsConfig } from '../../../shared/models/devopsConfig';
 import { ApplensGlobal } from '../../../applens-global';
 import { IDeactivateComponent } from '../develop-navigation-guard.service';
+import { IssueType } from 'projects/app-service-diagnostics/src/app/shared/models/enumerations';
 
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
@@ -334,8 +335,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   showBranchInfo:boolean = false;
   owners: string[] = [];
   //to direct system invoker detectors to the correct repo
-  private readonly SYSTEM_INVOKER_RESOURCE_ID: string = '/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Fake-RG/providers/Microsoft.AzurePortal/sessions/adasdasdasdasd';
-  private readonly SYSTEM_INVOKER_MAIN_BRANCH: string = 'main-dev'
+  private readonly SYSTEM_INVOKER_RESOURCE_ID: string = 'AppServiceDiagnostics';
 
   codeOnDefaultBranch: boolean = false;
   constructor(private cdRef: ChangeDetectorRef, private githubService: GithubApiService, private detectorGistApiService: DetectorGistApiService,
@@ -1528,17 +1528,16 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       gradPublishFiles.push(reviewers);
     }
 
-    var requestBranch = this.Branch;
-    if (this.useAutoMergeText) {
+    var requestBranch = isSystemInvoker ? `dev/${this.userName.split("@")[0]}/detector/${this.publishingPackage.id.toLowerCase()}` : this.Branch;
+    if (this.useAutoMergeText && !isSystemInvoker) {
       requestBranch = this.defaultBranch;
       this.useAutoMergeText = true;
     }
-
     
     let link = this.gistMode ? `${this.PPEHostname}/${this.resourceId}/gists/${this.publishingPackage.id}?branchInput=${this.Branch}` : `${this.PPEHostname}/${this.resourceId}/detectors/${this.publishingPackage.id}/edit?branchInput=${this.Branch}`;
     let description = `This Pull Request was created via AppLens. To make edits, go to ${link}`;
-    const DetectorObservable = isSystemInvoker ? this.diagnosticApiService.pushDetectorChanges(this.SYSTEM_INVOKER_MAIN_BRANCH, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.publishingPackage.id} Author : ${this.userName}`, commitType, this.SYSTEM_INVOKER_RESOURCE_ID) : this.diagnosticApiService.pushDetectorChanges(requestBranch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.publishingPackage.id} Author : ${this.userName}`, commitType, this.resourceId);
-    const makePullRequestObservable = isSystemInvoker ? this.diagnosticApiService.makePullRequest(this.SYSTEM_INVOKER_MAIN_BRANCH, this.SYSTEM_INVOKER_MAIN_BRANCH, this.PRTitle, this.SYSTEM_INVOKER_RESOURCE_ID, this.owners, description) : this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, this.PRTitle, this.resourceId, this.owners, description);
+    const DetectorObservable = isSystemInvoker ? this.diagnosticApiService.pushDetectorChanges(requestBranch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.publishingPackage.id} Author : ${this.userName}`, commitType, this.SYSTEM_INVOKER_RESOURCE_ID) : this.diagnosticApiService.pushDetectorChanges(requestBranch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.publishingPackage.id} Author : ${this.userName}`, commitType, this.resourceId);
+    const makePullRequestObservable = isSystemInvoker ? this.diagnosticApiService.makePullRequest(requestBranch, null, this.PRTitle, this.SYSTEM_INVOKER_RESOURCE_ID, this.owners, description) : this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, this.PRTitle, this.resourceId, this.owners, description);
 
     DetectorObservable.subscribe(_ => {
       if (!this.useAutoMergeText) {
@@ -1670,14 +1669,19 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       gradPublishFiles.push(reviewers);
     }
 
-    const DetectorObservable = isSystemInvoker ? this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${idForSave} Author : ${this.userName}`, commitType, this.SYSTEM_INVOKER_RESOURCE_ID) : this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${idForSave} Author : ${this.userName}`, commitType, this.resourceId);
+    let invokerbranch = '';
+    if(isSystemInvoker){
+      invokerbranch = this.mode === DevelopMode.EditMonitoring ? `dev/${this.userName.split("@")[0]}/detector/__monitoring` : `dev/${this.userName.split("@")[0]}/detector/__analytics`
+    }
+
+    const DetectorObservable = isSystemInvoker ? this.diagnosticApiService.pushDetectorChanges(invokerbranch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${idForSave} Author : ${this.userName}`, commitType, this.SYSTEM_INVOKER_RESOURCE_ID) : this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${idForSave} Author : ${this.userName}`, commitType, this.resourceId);
     
     this.saveButtonText = "Saving";
     this.publishDialogHidden = true;
     this.disableSaveButton();
 
     // successfully ran or edit mode
-    if (!!this.publishingPackage || this.mode == DevelopMode.Edit){
+    if (!!this.publishingPackage || this.mode != DevelopMode.Create){
       DetectorObservable.subscribe(_ => {
         this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${idForSave}/${idForSave}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${idForSave.toLowerCase()}/${idForSave.toLowerCase()}.csx&version=GB${this.Branch}`;
         this.saveSuccess = true;

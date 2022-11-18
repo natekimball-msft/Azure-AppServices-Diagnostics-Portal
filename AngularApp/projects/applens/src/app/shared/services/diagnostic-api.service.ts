@@ -565,4 +565,25 @@ export class DiagnosticApiService {
       return res.toString().toLowerCase() === 'staging';
     }));
   }
+
+  public getSystemInvokerResourceIDString(): Observable<string> {
+    const path = "api/appsettings/SystemInvokers:ResourceIDString";
+    return this.get(path).pipe(map((res: string) => {
+      return res;
+    }));
+  }
+
+  public getDocumentationStagingBranch(): Observable<string> {
+    const path = "api/appsettings/SystemInvokers:DocumentationStagingBranch";
+    return this.get(path).pipe(map((res: string) => {
+      return res;
+    }));
+  }
+
+  public getDocumentationRoot(): Observable<string> {
+    const path = "api/appsettings/SystemInvokers:DocumentationRoot";
+    return this.get(path).pipe(map((res: string) => {
+      return res;
+    }));
+  }
 }
