@@ -9,7 +9,7 @@ import {
   forkJoin
   , Observable, of
 } from 'rxjs';
-import { flatMap, last, map, mergeMap, switchMap } from 'rxjs/operators'
+import { finalize, flatMap, last, map, mergeMap, switchMap } from 'rxjs/operators'
 import { ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, Injectable, Input, OnChanges, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { Package } from '../../../shared/models/package';
 import { GithubApiService } from '../../../shared/services/github-api.service';
@@ -216,6 +216,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   detectorReferencesList : any[] = []; 
   detectorCompilationList : object= {};
   gistCommitVersion : string = ""; 
+  updatedDetectors : object= {};
+  selectedDetectors: any; 
   
   columnOptions: TableColumnOption[] = [
     {
@@ -573,11 +575,13 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   }
 
   getBranchList() {
+    //debugger; 
     this.optionsForSingleChoice = [];
     //callout stops working if showBranches ever becomes empty
     this.showBranches = [{key: "", text: ""}];
     this.resourceId = this.resourceId == undefined || this.resourceId == '' ? this.resourceService.getCurrentResourceId() : this.resourceId;
     this.diagnosticApiService.getBranches(this.resourceId).subscribe(branches => {
+      //debugger; 
       var branchRegEx = this.gistMode ? new RegExp(`^dev\/.*\/gist\/${this.id}$`, "i") : new RegExp(`^dev\/.*\/detector\/${this.id}$`, "i");
       branches.forEach(option => {
         this.optionsForSingleChoice.push({
@@ -610,6 +614,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         this.noBranchesAvailable();
       }
       else {
+        //debugger; 
         var targetBranch = this.gistMode ? `dev/${this.userName.split("@")[0]}/gist/${this.id.toLowerCase()}` : `dev/${this.userName.split("@")[0]}/detector/${this.id.toLowerCase()}`;
         // if a branch is present via query params, default to that branch.
         if (this.branchInput != undefined && this.branchInput != '' && this.mode == DevelopMode.Edit) {
@@ -773,45 +778,12 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     // this.diagnosticApiService.getGists(); 
     
     console.log("inside update detector references method"); 
-    
-    //create dummy table 
-    /*
-    let detectColumns: DataTableResponseColumn[] = [
-      { columnName: "Name" },
-      { columnName: "Commit Id" },
-      { columnName: "Up to Date" },
-    ];
-    let rows: any[][] = [];
-    const resourceId = this.diagnosticApiService.resourceId;
-    const name = "First Detector ID ";
-    const commitId = "Commit Id test";
-    const upToDate = "Yes"; 
-    //testing how angular might push the data element 
-    rows.push(["funny name", "funny id", "pls work"]);
-    const dataTableObject: DataTableResponseObject = {
-      columns: detectColumns,
-      rows: rows
-    }
-    
-    console.log(dataTableObject);
-    */ 
-    
-    //this.detectorReferencesTable = dataTableObject;
-    /*this.detectorReferencesTable = { 
-      columns : [
-      { columnName: "Name" },
-      { columnName: "Commit Id" },
-      { columnName: "Up to Date" },
-    ],
-      rows: [ 
-        [ "test name", "test id", "it works"]
-      ]
-    };
-    */
-    // console.log(" assigned detector references table = =========== ", this.detectorReferencesTable); 
-    // this.detectorRefDialogHidden = false; 
-    
-    //end of dummy table code 
+    //debugger; 
+
+    // this.diagnosticApiService.getBranches(this.resourceService.getCurrentResourceId()).subscribe(branches => {
+    //   debugger; 
+    //   console.log(branches);
+    // });
     
     
     this.diagnosticApiService.getGistId(this.id).subscribe( data=>{ 
@@ -932,9 +904,11 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   
   updateDetectorReferences(detectorReferences : any[]) {
     // this._fabDataTable.returnSelectedItems(); 
+    
+    this.selectedDetectors = detectorReferences; 
     console.log("inside update detector references method");
     console.log(detectorReferences);  
-    detectorReferences.forEach( detector =>{
+    this.selectedDetectors.forEach( detector =>{
       this.checkCompilation(detector, detectorReferences.length); 
     }); 
   }
@@ -942,21 +916,30 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
   private checkCompilation(detector : any, num: number) {
 
+
+    //debugger; 
+    console.log(num == this.selectedDetectors.length); 
     let tempCode; 
     let tempReference; 
     let tempReferenceList = []; 
     let tempUtterances; 
     var body;
+
+    //this.Branch = ( this.Branch == '') ? 'MainMVP' : this.Branch; 
     
 
     let code = this.diagnosticApiService.getDetectorCode(`${detector.Name}/${detector.Name}.csx`, this.Branch, this.resourceId);
     let utterances = this.diagnosticApiService.getDetectorCode(`${detector.Name}/metadata.json`, this.Branch, this.resourceId); 
+    //let utterances = this.diagnosticApiService.getDetectorCode(`${detector.Name}/${detector.Name}.csx`, this.Branch, this.resourceId); 
+
     let reference = this.diagnosticApiService.getDetectorCode(`${detector.Name}/package.json`, this.Branch, this.resourceId); 
 
     forkJoin([code, reference, utterances]).subscribe( res =>{
+      debugger; 
       tempCode = res[0]; 
       tempReference = JSON.parse(res[1])['dependencies'] || {}; // 
       tempUtterances = JSON.parse(res[2]).utterances; 
+      //tempUtterances = ""; 
 
       let tempReferenceKeys = Object.keys(tempReference); 
       let requestsArr = []; 
@@ -1009,16 +992,19 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
                 getFullResponse: true
               },detector.Name.toLowerCase())
                 .subscribe((response: any) => {
-                    //debugger; 
+                    debugger; 
                     this.queryResponse = response.body;
             
                 if (this.queryResponse.compilationOutput.compilationSucceeded === true) {
                   this.detectorCompilationList[detector.Name] = true; 
+                  
+                  
                   this.updateDetectorPackageJson(res[1], detector.Name);
                   //console.log(`${detector.Name} ========== Build: 1 succeeded, 0 failed ==========`); 
                 
                 } else {
                   this.detectorCompilationList[detector.Name] = false; 
+                  this.updatedDetectors[detector.Name] == false; 
                 //console.log(`${detector.Name}========== Build: 0 succeeded, 1 failed ==========`); 
                 }
                 if (this.queryResponse.runtimeLogOutput) {
@@ -1032,9 +1018,9 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
                     });
                     }
                 //debugger; 
-                if(Object.keys(this.detectorCompilationList).length == num){
-                  this.displayUpdateDetectorResults(); 
-                }
+                // if(Object.keys(this.detectorCompilationList).length == num){
+                //   this.displayUpdateDetectorResults(); 
+                // }
                 });
             }); 
     
@@ -1082,17 +1068,40 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       gradPublishFiles.push(reviewers);
     }
 
+    //debugger; 
+    //push to dev branch or feature branch 
+    //
     const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${idForSave} Author : ${this.userName}`, commitType, this.resourceId);
     
-    DetectorObservable.subscribe(_ => {
+    DetectorObservable.pipe( finalize( () => {
+
+      if(Object.keys(this.updatedDetectors).length == this.selectedDetectors.length){
+        debugger; 
+        console.log(Object.keys(this.updatedDetectors).length); 
+        console.log(Object.keys(this.updatedDetectors)); 
+        console.log(this.updatedDetectors);
+        console.log(this.selectedDetectors); 
+        this.displayUpdateDetectorResults(); 
+      }
+      
+
+    })).subscribe(_ => {
       debugger; 
       this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${idForSave}/${idForSave}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${idForSave.toLowerCase()}/${idForSave.toLowerCase()}.csx&version=GB${this.Branch}`;
       console.log(`PR LINK: ${this.PRLink}`); 
+      this.updatedDetectors[detectorid] = true; 
     }, err => {
-      if (err.error.includes('Detector with this ID already exists. Please use a new ID')) this.saveIdFailure = true;
+      if (err.error.includes('Detector with this ID already exists. Please use a new ID')){
+        this.saveIdFailure = true;
+      }
+      this.updatedDetectors[detectorid] = false; 
       console.log(err);
-    });
+    }
+    
 
+    );
+
+    
 
   }
 
@@ -1124,8 +1133,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
      const upToDate = (this.gistCommitVersion == commitId) ? "Yes" : "No"; 
      let status = "N/A"; 
      debugger; 
-     if(key in this.detectorCompilationList){
-      if(this.detectorCompilationList[key]){
+     if(key in this.updatedDetectors){
+      if(this.updatedDetectors[key]){
         status = "SUCCESS";
       }
       else{
