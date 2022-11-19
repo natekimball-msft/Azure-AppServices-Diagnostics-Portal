@@ -58,34 +58,35 @@ export class ApplensDocsComponent implements OnInit {
   docStagingBranch: string = '';
   
   ngOnInit() {
-      this._applensGlobal.updateHeader("");
-      this._activatedRoute.paramMap.subscribe(params => {
-        this.reset();
-        this.category = params.get('category');
-        this.doc = params.get('doc');
-        this._diagnosticApi.getDocumentationRoot().subscribe(root => {
-          this.docsRepoRoot = root;
-          this._diagnosticApi.getDocumentationStagingBranch().subscribe(branch  => {
-            this.docStagingBranch = branch;
-            this._diagnosticApi.getSystemInvokerResourceIDString().subscribe(sysResourceID => {
-              this.docsResource = sysResourceID;
+    this._applensGlobal.updateHeader("");
+    this._activatedRoute.paramMap.subscribe(params => {
+      this.reset();
+      this.category = params.get('category');
+      this.doc = params.get('doc');
 
-              this._diagnosticApi.isStaging().subscribe(isStaging => {
-                if (isStaging){this.docsBranch = this.docStagingBranch;}
-                this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${'index'}`, this.docsBranch, this.docsResource).subscribe(x=>{
-                  this.populateComponentsList(x);
-                  this.markdownCode = x.split(this.customTagRegEx);
-                  this.folders = this.getCodeFolders(x);
-                  this.folders.forEach(f => {
-                    this.getFiles(f);
-                  });
-                  this.inPageLinks = this.getInPageLinks(x);
-                });
-              });
-            });
+      let repoRootObservable = this._diagnosticApi.getAppSetting("SystemInvokers:DocumentationRoot");
+      let stagingBranchObservable = this._diagnosticApi.getAppSetting("SystemInvokers:DocumentationStagingBranch");
+      let resourceObservable = this._diagnosticApi.getAppSetting("SystemInvokers:ResourceIDString");
+      let isStagingObservable = this._diagnosticApi.isStaging();
+
+      forkJoin([repoRootObservable, stagingBranchObservable, resourceObservable, isStagingObservable]).subscribe(repoSettings => {
+        this.docsRepoRoot = repoSettings[0];
+        this.docStagingBranch = repoSettings[1];
+        this.docsResource = repoSettings[2];
+        let isStaging = repoSettings[3]
+
+        if (isStaging) { this.docsBranch = this.docStagingBranch; }
+        this.diagnosticApiService.getDetectorCode(`${this.docsRepoRoot}/${this.category}/${this.doc}/${'index'}`, this.docsBranch, this.docsResource).subscribe(x => {
+          this.populateComponentsList(x);
+          this.markdownCode = x.split(this.customTagRegEx);
+          this.folders = this.getCodeFolders(x);
+          this.folders.forEach(f => {
+            this.getFiles(f);
           });
+          this.inPageLinks = this.getInPageLinks(x);
         });
       });
+    });
   }
   reset(){
     this.componentsList = [];

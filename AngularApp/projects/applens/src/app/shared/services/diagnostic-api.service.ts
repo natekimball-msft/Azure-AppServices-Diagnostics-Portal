@@ -566,22 +566,8 @@ export class DiagnosticApiService {
     }));
   }
 
-  public getSystemInvokerResourceIDString(): Observable<string> {
-    const path = "api/appsettings/SystemInvokers:ResourceIDString";
-    return this.get(path).pipe(map((res: string) => {
-      return res;
-    }));
-  }
-
-  public getDocumentationStagingBranch(): Observable<string> {
-    const path = "api/appsettings/SystemInvokers:DocumentationStagingBranch";
-    return this.get(path).pipe(map((res: string) => {
-      return res;
-    }));
-  }
-
-  public getDocumentationRoot(): Observable<string> {
-    const path = "api/appsettings/SystemInvokers:DocumentationRoot";
+  public getAppSetting(appSettingName: string): Observable<string> {
+    const path = `api/appsettings/${appSettingName}`;
     return this.get(path).pipe(map((res: string) => {
       return res;
     }));
