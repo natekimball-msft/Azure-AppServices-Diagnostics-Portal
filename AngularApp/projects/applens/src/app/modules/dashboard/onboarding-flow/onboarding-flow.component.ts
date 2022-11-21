@@ -32,7 +32,6 @@ import { ApplensCommandBarService } from '../services/applens-command-bar.servic
 import { DevopsConfig } from '../../../shared/models/devopsConfig';
 import { ApplensGlobal } from '../../../applens-global';
 import { IDeactivateComponent } from '../develop-navigation-guard.service';
-import { IssueType } from 'projects/app-service-diagnostics/src/app/shared/models/enumerations';
 
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****

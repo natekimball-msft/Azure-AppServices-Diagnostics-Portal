@@ -14,6 +14,8 @@ import { BreadcrumbService } from '../services/breadcrumb.service';
 import { forkJoin } from 'rxjs';
 import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
 import { element } from 'protractor';
+import { ApplensDocumentationService } from '../services/applens-documentation.service';
+import { DocumentationRepoSettings } from '../../../shared/models/documentationRepoSettings';
 
 @Component({
   selector: 'side-nav',
@@ -36,10 +38,8 @@ export class SideNavComponent implements OnInit {
 
   docs: CollapsibleMenuItem[] = [];
   docsCopy: CollapsibleMenuItem[] = [];
-  docsRepoRoot: string = '';
+  documentationRepoSettings: DocumentationRepoSettings;
   docsBranch = null;
-  docsResource: string = '';
-  docStagingBranch: string = '';
   
   favoriteDetectors: CollapsibleMenuItem[] = [];
   favoriteDetectorsCopy: CollapsibleMenuItem[] = [];
@@ -52,7 +52,7 @@ export class SideNavComponent implements OnInit {
   getDetectorsRouteNotFound: boolean = false;
   isGraduation: boolean = false;
   isProd: boolean = false;
-  constructor(private _router: Router, private _activatedRoute: ActivatedRoute, private _adalService: AdalService, private _diagnosticApiService: ApplensDiagnosticService, public resourceService: ResourceService, private _telemetryService: TelemetryService, private _userSettingService: UserSettingService, private breadcrumbService: BreadcrumbService,  private _diagnosticApi: DiagnosticApiService) {
+  constructor(private _router: Router, private _activatedRoute: ActivatedRoute, private _adalService: AdalService, private _diagnosticApiService: ApplensDiagnosticService, public resourceService: ResourceService, private _telemetryService: TelemetryService, private _userSettingService: UserSettingService, private breadcrumbService: BreadcrumbService,  private _diagnosticApi: DiagnosticApiService, private _documentationService: ApplensDocumentationService) {
     this.contentHeight = (window.innerHeight - 139) + 'px';
     if (environment.adal.enabled) {
       let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
@@ -175,7 +175,10 @@ export class SideNavComponent implements OnInit {
     }];
 
   ngOnInit() {
-    this.initializeDetectors();
+    this._documentationService.getDocsRepoSettings().subscribe(settings => {
+      this.documentationRepoSettings = settings;
+      this.initializeDetectors();
+    });
     this.getCurrentRoutePath();
 
     this._router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(event => {
@@ -218,11 +221,11 @@ export class SideNavComponent implements OnInit {
   }
 
   getDocCategories(){
-    const categoriesObservable = this._diagnosticApiService.getDevOpsTree(`${this.docsRepoRoot}`, this.docsBranch, this.docsResource);
+    const categoriesObservable = this._diagnosticApiService.getDevOpsTree(`${this.documentationRepoSettings.root}`, this.docsBranch, this.documentationRepoSettings.resourceId);
     return categoriesObservable;
   }
   getDocFiles(category: string){
-    const fileObservalbe = this._diagnosticApiService.getDevOpsTree(`${this.docsRepoRoot}/${category}`, this.docsBranch, this.docsResource);
+    const fileObservalbe = this._diagnosticApiService.getDevOpsTree(`${this.documentationRepoSettings.root}/${category}`, this.docsBranch, this.documentationRepoSettings.resourceId);
     return fileObservalbe;
   }
 
@@ -287,23 +290,12 @@ export class SideNavComponent implements OnInit {
         }
       });
 
-    let repoRootObservable = this._diagnosticApi.getAppSetting("SystemInvokers:DocumentationRoot");
-    let stagingBranchObservable = this._diagnosticApi.getAppSetting("SystemInvokers:DocumentationStagingBranch");
-    let resourceObservable = this._diagnosticApi.getAppSetting("SystemInvokers:ResourceIDString");
-    let isStagingObservable = this._diagnosticApi.isStaging();
-
-    forkJoin([repoRootObservable, stagingBranchObservable, resourceObservable, isStagingObservable]).subscribe(repoSettings => {
-      this.docsRepoRoot = repoSettings[0];
-      this.docStagingBranch = repoSettings[1];
-      this.docsResource = repoSettings[2];
-      let isStaging = repoSettings[3];
-
-      if (isStaging) { this.docsBranch = this.docStagingBranch; }
+    if (this.documentationRepoSettings.isStaging) { this.docsBranch = this.documentationRepoSettings.stagingBranch; }
       this.getDocCategories().subscribe(content => {
         let categories = [];
         content.folders.forEach(element => {
           let cn = element.split('/').at(-1);
-          if (cn != this.docsRepoRoot && cn.at(0) != "_")
+          if (cn != this.documentationRepoSettings.root && cn.at(0) != "_")
             categories.push(cn)
         });
         let fileNamesObservables = [];
@@ -343,7 +335,6 @@ export class SideNavComponent implements OnInit {
           this.docsCopy = this.deepCopyArray(this.docs);
         });
       });
-    });
   }
 
   private createDetectorMenuItem(element: DetectorMetaData, categories: CollapsibleMenuItem[], isAnalysis: boolean = false, isFavoriteDetector: boolean = false) {
