@@ -650,7 +650,6 @@
             "searchSuffix": "Azure Load Testing",
             "displayName": "Azure Load Testing"
         },
-        ,
         {
             "service": "ResourceService",
             "resourceType": "Microsoft.Security/aip",
