@@ -649,6 +649,18 @@
             "staticSelfHelpContent": "microsoft.LoadTestService",
             "searchSuffix": "Azure Load Testing",
             "displayName": "Azure Load Testing"
+        },
+        {
+            "service": "ResourceService",
+            "resourceType": "Microsoft.Security/aip",
+            "templateFileName": "AIP",
+            "imgSrc": "assets/img/Azure-Aip-Logo.svg",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "",
+            "pesId": "14997",
+            "staticSelfHelpContent": "",
+            "searchSuffix": "AZURE INFORMATION PROTECTION",
+            "displayName": "Azure Information Protection"
         }
     ]
 }
