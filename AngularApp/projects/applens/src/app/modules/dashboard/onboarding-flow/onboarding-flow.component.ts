@@ -9,7 +9,7 @@ import {
   forkJoin
   , Observable, of
 } from 'rxjs';
-import { finalize, flatMap, last, map, mergeMap, switchMap } from 'rxjs/operators'
+import { catchError, finalize, flatMap, last, map, mergeMap, retryWhen, switchMap, retry, delay, tap } from 'rxjs/operators'
 import { ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, Injectable, Input, OnChanges, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { Package } from '../../../shared/models/package';
 import { GithubApiService } from '../../../shared/services/github-api.service';
@@ -34,6 +34,7 @@ import { ApplensGlobal } from '../../../applens-global';
 import { IDeactivateComponent } from '../develop-navigation-guard.service';
 import { HttpParams } from '@angular/common/http';
 import { ThemeService } from 'projects/app-service-diagnostics/src/app/theme/theme.service';
+//import { retry } from 'rxjs-compat/operator/retry';
 
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
@@ -218,6 +219,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   gistCommitVersion : string = ""; 
   updatedDetectors : object= {};
   detectorsToUpdate: Set<any> = new Set();  
+  detectorsToCheck: Map<string, any> = new Map(); 
   selectedDetectorsList: any[] = []; 
   //delete below line 
   selectedDetectors: any[] = []; 
@@ -814,7 +816,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       status = `<span class="warning-color"><i class="fa fa-times-circle fa-lg"></i> Out of Date</span>`;
      }
      
-      return [name, status, commitId];
+      return [name, status, commitId, ""];
     });
 
 
@@ -834,7 +836,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     const columns: DataTableResponseColumn[] = [
       { columnName: "Name" },
       { columnName: "Status" },
-      { columnName: "Commit Id" }
+      { columnName: "Commit Id" },
+      { columnName: "Miscellaneous" }
     ];
 
     const dataTableObject: DataTableResponseObject = {
@@ -859,7 +862,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     const columns: DataTableResponseColumn[] = [
       { columnName: "Name" },
       { columnName: "Status" },
-      { columnName: "Commit Id" }
+      { columnName: "Commit Id" },
+      { columnName: "Miscellaneous" }
     ];
 
     let rows : any[][] = []; 
@@ -880,7 +884,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
             `<span class="warning-color"><i class="fa fa-times-circle fa-lg"></i> Out of Date</span>`;
         }
 
-        return [name, status, commitId];
+        return [name, status, commitId, ""];
 
       
     });
@@ -1117,10 +1121,12 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
                 } 
                 //else do not update, remove from "detectorsToUpdate", add error into the 
                 else {
+                  //debugger; 
                   this.detectorCompilationList[detector.Name] = false; 
                   this.updatedDetectors[detector.Name] == false; 
                   this.detectorsToUpdate.delete(detector.Name); 
-                  this.errorDetectorsList.set(detector.Name, "ERROR"); 
+                  this.errorDetectorsList.set(detector.Name, this.queryResponse.compilationOutput.compilationTraces);
+                   
                   if(this.detectorsToUpdate.size == 0){
                     this.displayUpdateDetectorResults(); 
                   }
@@ -1141,6 +1147,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
                 //   this.displayUpdateDetectorResults(); 
                 // }
                 }, err => {
+                  //debugger; 
                   this.detectorCompilationList[detector.Name] = false; 
                   this.updatedDetectors[detector.Name] = false; 
                   this.detectorsToUpdate.delete(detector.Name); 
@@ -1194,26 +1201,16 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
      
     //push to dev branch or feature branch 
     //
-    const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${idForSave} Author : ${this.userName}`, commitType, this.resourceId);
+    const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${idForSave} Author : ${this.userName}`, 
+    commitType, this.resourceId).pipe( 
+      retry(3),
+       delay(1000)
+      );
     
-    DetectorObservable.pipe( finalize( () => {
-
-      // if(Object.keys(this.updatedDetectors).length == Object.keys(this.selectedDetectors).length){
-      //   //debugger; 
-      //   console.log(Object.keys(this.updatedDetectors).length); 
-      //   // console.log(Object.keys(this.updatedDetectors)); 
-      //   // console.log(this.updatedDetectors);
-      //   console.log(this.selectedDetectors); 
-      //   this.displayUpdateDetectorResults(); 
-      // }
-
-      this.detectorsToUpdate.delete(detectorid); 
-      if(this.detectorsToUpdate.size == 0){
-        this.displayUpdateDetectorResults(); 
-      }
-      
-
-    })).subscribe(_ => {
+    DetectorObservable.finally( () => {
+      this.displayUpdateDetectorResults(); 
+    }
+    ).subscribe(_ => {
       //debugger; 
       this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${idForSave}/${idForSave}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${idForSave.toLowerCase()}/${idForSave.toLowerCase()}.csx&version=GB${this.Branch}`;
       console.log(`PR LINK: ${this.PRLink}`); 
@@ -1221,7 +1218,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       this.updatedDetectors[detectorid] = true; 
     }, err => {
       if (err.error.includes('has already been updated by another client')){
-        this.saveIdFailure = true;
+        //this.saveIdFailure = true;
         console.log("err ============== ", err); 
       }
       this.updatedDetectors[detectorid] = false; 
@@ -1255,6 +1252,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       
      const name = key;
      const commitId = this.detectorReferencesList["detectorReferences"][key];
+     let misc = ""; 
      let status = (this.gistCommitVersion == commitId) ? "Up to Date" : "Out of Date"; 
 
      if( this.gistCommitVersion == commitId){
@@ -1265,10 +1263,12 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
      }
      if(this.errorDetectorsList.has(name)){
       status = `<span class="critical-color"><i class="fa fa-times-circle fa-lg"></i> ERROR </span>`;
+      console.log(this.errorDetectorsList.get(name)); 
+      misc = this.errorDetectorsList.get(name).toString(); 
      }
      
      
-      return [name, status, commitId];
+      return [name, status, commitId, misc];
     });
 
 
