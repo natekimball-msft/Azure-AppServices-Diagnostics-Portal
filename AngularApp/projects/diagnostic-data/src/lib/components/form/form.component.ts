@@ -12,7 +12,6 @@ import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagn
 import { DirectionalHint } from 'office-ui-fabric-react/lib/Tooltip';
 import { IDropdownOption, IDropdown } from 'office-ui-fabric-react';
 import { UriUtilities } from '../../utilities/uri-utilities';
-import { Console } from 'console';
 
 @Component({
   selector: 'custom-form',
