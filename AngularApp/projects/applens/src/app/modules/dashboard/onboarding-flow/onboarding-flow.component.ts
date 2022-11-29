@@ -218,8 +218,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   detectorCompilationList : object= {};
   gistCommitVersion : string = ""; 
   updatedDetectors : object= {};
-  detectorsToUpdate: Set<any> = new Set();  
-  detectorsToCheck: Map<string, any> = new Map(); 
+  detectorsToCheck: Set<any> = new Set();  
+  detectorsToUpdate: Map<string, any> = new Map(); 
   selectedDetectorsList: any[] = []; 
   //delete below line 
   selectedDetectors: any[] = []; 
@@ -874,17 +874,24 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       //debugger; 
         const name = key; 
         const commitId = this.detectorReferencesList["detectorReferences"][key];
-        let status = ""; 
-        if(this.detectorsToUpdate.has(key)){
+        let status = "";
+        let misc = "";  
+        if(this.detectorsToCheck.has(key)){
           status = `<span class="info-color"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i> Updating</span>`;
         }
+        else if(this.errorDetectorsList.has(name)){
+          status = `<span class="critical-color"><i class="fa fa-times-circle fa-lg"></i> ERROR </span>`;
+          console.log(this.errorDetectorsList.get(name)); 
+          misc = this.errorDetectorsList.get(name).toString(); 
+         }
         else{
           status = this.detectorReferencesList["detectorReferences"][key] == this.gistCommitVersion ? 
             `<span class="success-color"><i class="fa fa-check-circle fa-lg"></i> Up to Date</span>`:
             `<span class="warning-color"><i class="fa fa-times-circle fa-lg"></i> Out of Date</span>`;
         }
+        
 
-        return [name, status, commitId, ""];
+        return [name, status, commitId, misc];
 
       
     });
@@ -1001,30 +1008,19 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     //this.selectedDetectorsList = detectorReferences; 
     detectorReferences.forEach( key => {
        
-      this.detectorsToUpdate.add(key.Name); 
+      this.detectorsToCheck.add(key.Name); 
     })
 
     
     console.log("inside update detector references method");
-    console.log(this.detectorsToUpdate);  
+    console.log(this.detectorsToCheck);  
     //this.detectorTableDoneLoading = false; 
 
     this.detectorReferencesTable = this.generateProgressDetectorReferenceTable(); 
 
     detectorReferences.forEach( detector =>{
-      if( this.detectorReferencesList["detectorReferences"][detector.Name] != this.gistCommitVersion){
-        //debugger; 
-        this.checkCompilation(detector, detectorReferences.length); 
-      }
-      else{
-        this.detectorsToUpdate.delete(detector.Name); 
-      }
-      
+      this.checkCompilation(detector, detectorReferences.length); 
     }); 
-
-    if(this.detectorsToUpdate.size == 0){
-      this.displayUpdateDetectorResults(); 
-    }
     
 
   }
@@ -1033,7 +1029,17 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   private checkCompilation(detector : any, num: number) {
 
 
-    //debugger; 
+    if( this.detectorReferencesList["detectorReferences"][detector.Name] == this.gistCommitVersion){
+      //debugger; 
+      this.detectorsToCheck.delete(detector.Name); 
+      if(this.detectorsToCheck.size == 0){
+        this.updateDetectorPackageJsonAll(); 
+      }
+      return; 
+    }
+
+    else{
+      //debugger; 
     //console.log(num == this.selectedDetectors.length); 
     let tempCode; 
     let tempReference; 
@@ -1112,23 +1118,30 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
                     this.queryResponse = response.body;
             //if compilation succeeds, update 
                 if (this.queryResponse.compilationOutput.compilationSucceeded === true) {
-                  this.detectorCompilationList[detector.Name] = true; 
+                  //this.detectorCompilationList[detector.Name] = true; 
                   
                   
-                  this.updateDetectorPackageJson(res[1], detector.Name);
+                  //this.updateDetectorPackageJson(res[1], detector.Name);
                   //console.log(`${detector.Name} ========== Build: 1 succeeded, 0 failed ==========`); 
+
+                  
+                  this.detectorsToCheck.delete(detector.Name);
+                  this.detectorsToUpdate.set(detector.Name, res[1]);
+                  if(this.detectorsToCheck.size == 0){
+                    this.updateDetectorPackageJsonAll(); 
+                  }
                 
                 } 
-                //else do not update, remove from "detectorsToUpdate", add error into the 
+                //else do not update, remove from "detectorsToCheck", add error into the 
                 else {
                   //debugger; 
                   this.detectorCompilationList[detector.Name] = false; 
                   this.updatedDetectors[detector.Name] == false; 
-                  this.detectorsToUpdate.delete(detector.Name); 
+                  this.detectorsToCheck.delete(detector.Name); 
                   this.errorDetectorsList.set(detector.Name, this.queryResponse.compilationOutput.compilationTraces);
                    
-                  if(this.detectorsToUpdate.size == 0){
-                    this.displayUpdateDetectorResults(); 
+                  if(this.detectorsToCheck.size == 0){
+                    this.updateDetectorPackageJsonAll(); 
                   }
                 //console.log(`${detector.Name}========== Build: 0 succeeded, 1 failed ==========`); 
                 }
@@ -1150,11 +1163,11 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
                   //debugger; 
                   this.detectorCompilationList[detector.Name] = false; 
                   this.updatedDetectors[detector.Name] = false; 
-                  this.detectorsToUpdate.delete(detector.Name); 
+                  this.detectorsToCheck.delete(detector.Name); 
                   this.errorDetectorsList.set(detector.Name, err); 
                   console.log("error 1 : ", err); 
-                  if(this.detectorsToUpdate.size == 0){
-                    this.displayUpdateDetectorResults(); 
+                  if(this.detectorsToCheck.size == 0){
+                    this.updateDetectorPackageJsonAll(); 
                   }
                 });
             }); 
@@ -1162,7 +1175,71 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
             }); 
         }); 
     
+
+    }
     
+    
+}
+
+
+
+updateDetectorPackageJsonAll(){
+
+  const commitType =  "edit";
+  const commitMessageStart = "Editing";
+  let gradPublishFiles: string[] = [];
+  let gradPublishFileTitles: string[] = []; 
+
+
+  if(this.detectorsToUpdate.size == 0){
+    this.displayUpdateDetectorResults();
+    return; 
+  }
+
+  this.detectorsToUpdate.forEach( (value, key) =>{
+
+    let packageJson = JSON.parse(value); 
+    packageJson["dependencies"][this.id] = this.gistCommitVersion;  
+    gradPublishFiles.push( JSON.stringify(packageJson));
+    gradPublishFileTitles.push( `/${key.toLowerCase()}/package.json`);
+
+  }); 
+
+
+
+  const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.id} Detector References Author : ${this.userName}`, 
+  commitType, this.resourceId).pipe( 
+    retry(3),
+     delay(1000)
+    );
+  
+  DetectorObservable.finally( () => {
+    this.displayUpdateDetectorResults(); 
+  }
+  ).subscribe(_ => {
+    //debugger; 
+    this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.id}/${this.id}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&version=GB${this.Branch}`;
+    console.log(`PR LINK: ${this.PRLink}`); 
+    // this.detectorReferencesList["detectorReferences"][detectorid] = this.gistCommitVersion; 
+    // this.updatedDetectors[detectorid] = true; 
+
+    this.detectorsToUpdate.forEach( (value, key) =>{
+      this.detectorReferencesList["detectorReferences"][key] = this.gistCommitVersion; 
+    }); 
+
+  }, err => {
+    if (err.error.includes('has already been updated by another client')){
+      //this.saveIdFailure = true;
+      console.log("err ============== ", err); 
+    }
+    // this.updatedDetectors[detectorid] = false; 
+    // this.errorDetectorsList.set(detectorid, err); 
+    console.log(err);
+  }
+  
+
+  );
+
 }
 
 //pass boolean to update or not to update 
@@ -1276,8 +1353,11 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     //this.detectorReferencesTableUpdated = this.generateDetectorReferenceTable(columns, rows); 
 
     this.detectorCompilationList = {}; 
-    this.detectorsToUpdate.clear(); 
+    this.detectorsToCheck.clear(); 
     this.updatedDetectors = {}; 
+    this.detectorsToUpdate.clear(); 
+    //this.errorDete
+
 
 
   }
