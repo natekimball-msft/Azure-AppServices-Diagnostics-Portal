@@ -227,6 +227,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   deleteDetectorReferencesTitle : string = "Detector References";
   displayFinalTable: boolean = false; 
   errorDetectorsList : Map<string, any> = new Map(); 
+  updateDetectorSuccess : boolean = false; 
   
   columnOptions: TableColumnOption[] = [
     {
@@ -805,8 +806,15 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     let rows: any[][] = [];
     const resourceId = this.diagnosticApiService.resourceId;
     rows = detectorKeys.map(key => {
+    
+      let path = `${this.resourceId}/detectors/${key}`;
+      // if (this.isCurrentUser) {
+      path = path + "/edit";
+      //}
       
+
      const name = key;
+     //const name = `<a href="${path}">${key}</a>`
      const commitId = this.detectorReferencesList["detectorReferences"][key];
      let status = (this.gistCommitVersion == commitId) ? "Up to Date" : "Out of Date"; 
      if( this.gistCommitVersion == commitId){
@@ -873,16 +881,25 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     rows = detectorKeys.map(key =>{
       //debugger; 
         const name = key; 
+
+        let path = `${this.resourceId}/detectors/${key}`;
+        // if (this.isCurrentUser) {
+        path = path + "/edit";
+        // }
+        //const name = `<a href="${path}">${key}</a>`
+        let miscKey = ""; 
+
         const commitId = this.detectorReferencesList["detectorReferences"][key];
         let status = "";
         let misc = "";  
         if(this.detectorsToCheck.has(key)){
           status = `<span class="info-color"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i> Updating</span>`;
         }
-        else if(this.errorDetectorsList.has(name)){
+        else if(this.errorDetectorsList.has(key)){
           status = `<span class="critical-color"><i class="fa fa-times-circle fa-lg"></i> ERROR </span>`;
-          console.log(this.errorDetectorsList.get(name)); 
-          misc = this.errorDetectorsList.get(name).toString(); 
+          console.log(this.errorDetectorsList.get(key)); 
+          miscKey = this.errorDetectorsList.get(key).toString(); 
+          misc = `<a href="${path}">${miscKey}</a>`
          }
         else{
           status = this.detectorReferencesList["detectorReferences"][key] == this.gistCommitVersion ? 
@@ -907,98 +924,6 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
   }
   
-  /*generateDetectorReferenceTable(detectors: any[]) {
-
-    
-    var detectorKeys = Object.keys(detectors); 
-    
-    const columns: DataTableResponseColumn[] = [
-      { columnName: "Name" },
-      { columnName: "Commit Id" },
-      { columnName: "Up to Date" },
-      { columnName: "Status of Update" },
-    ];
-    let rows: any[][] = [];
-    const resourceId = this.diagnosticApiService.resourceId;
-    rows = detectorKeys.map(key => {
-      
-     const name = key;
-     const commitId = detectors[key];
-     const upToDate = (this.gistCommitVersion == commitId) ? "Yes" : "No"; 
-      return [name, commitId, upToDate];
-    });
-    const dataTableObject: DataTableResponseObject = {
-      columns: columns,
-      rows: rows
-    }
-    console.log("finished generateDetectorReferenceTable method"); 
-    console.log(dataTableObject); 
-    return dataTableObject;
-    
-
-  }
-
-  generateProgressDetectorReferenceTable(detectors: any[]){
-
-    var detectorKeys = Object.keys(this.detectorReferencesList["detectorReferences"]); 
-
-    const columns: DataTableResponseColumn[] = [
-      { columnName: "Name" },
-      { columnName: "Status" },
-      { columnName: "Commit Id" },
-    ];
-    let rows: any[][] = [];
-    const resourceId = this.diagnosticApiService.resourceId;
-    rows = detectorKeys.map(key => {
-      
-     const name = key;
-     const commitId = detectors[key];
-     const upToDate = (this.gistCommitVersion == commitId) ? "Yes" : "No"; 
-     const status = "lsdjfklsjdf"; 
-      return [name, status, commitId];
-    });
-    const dataTableObject: DataTableResponseObject = {
-      columns: columns,
-      rows: rows
-    }
-    console.log("finished generateUpdateDetectorReferenceTable method"); 
-    console.log(dataTableObject); 
-    return dataTableObject;
-
-
-  }
-
-  generateUpdatedDetectorReferenceTable(detectors: any[]){
-    
-    
-    var detectorKeys = Object.keys(this.detectorReferencesList["detectorReferences"]); 
-    
-    const columns: DataTableResponseColumn[] = [
-      { columnName: "Name" },
-      { columnName: "Commit Id" },
-      { columnName: "Up to Date" },
-      {columnName: "Status"}
-    ];
-    let rows: any[][] = [];
-    const resourceId = this.diagnosticApiService.resourceId;
-    rows = detectorKeys.map(key => {
-      
-     const name = key;
-     const commitId = detectors[key];
-     const upToDate = (this.gistCommitVersion == commitId) ? "Yes" : "No"; 
-     const status = "lsdjfklsjdf"; 
-      return [name, commitId, upToDate];
-    });
-    const dataTableObject: DataTableResponseObject = {
-      columns: columns,
-      rows: rows
-    }
-    console.log("finished generateUpdateDetectorReferenceTable method"); 
-    console.log(dataTableObject); 
-    return dataTableObject;
-  }
-  */
-  
   
   updateDetectorReferences(detectorReferences : any[]) {
     // this._fabDataTable.returnSelectedItems(); 
@@ -1007,10 +932,9 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     
     //this.selectedDetectorsList = detectorReferences; 
     detectorReferences.forEach( key => {
-       
+      //key = key.replace(/<(.|\n)*?>/g, ''); 
       this.detectorsToCheck.add(key.Name); 
     })
-
     
     console.log("inside update detector references method");
     console.log(this.detectorsToCheck);  
@@ -1205,27 +1129,47 @@ updateDetectorPackageJsonAll(){
 
   }); 
 
-
-
-  const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(this.Branch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.id} Detector References Author : ${this.userName}`, 
-  commitType, this.resourceId).pipe( 
-    retry(3),
-     delay(1000)
-    );
-  
-  DetectorObservable.finally( () => {
-    this.displayUpdateDetectorResults(); 
+  // debugger; 
+  // var requestBranch = this.Branch; 
+  var requestBranch = `dev/${this.userName.split("@")[0]}/gist/${this.id.toLowerCase()}`; 
+  if(this.useAutoMergeText){
+    requestBranch = this.Branch; 
   }
-  ).subscribe(_ => {
+    
+  
+
+  const DetectorObservable = this.diagnosticApiService.pushDetectorChanges(requestBranch, gradPublishFiles, gradPublishFileTitles, `${commitMessageStart} ${this.id} Detector References Author : ${this.userName}`, 
+  commitType, this.resourceId); 
+  const makePullRequestObservable = this.diagnosticApiService.makePullRequest(requestBranch, this.defaultBranch, `Changing ${this.id} detector references`, this.resourceId, this.owners, "temp description");
+
+  
+  DetectorObservable.subscribe(_ => {
     //debugger; 
-    this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.id}/${this.id}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&version=GB${this.Branch}`;
-    console.log(`PR LINK: ${this.PRLink}`); 
+
+    makePullRequestObservable.finally( () => {
+      this.displayUpdateDetectorResults(); 
+    }).subscribe( _ => {
+      //debugger; 
+      this.PRLink = `${_["webUrl"]}/pullrequest/${_["prId"]}`;
+      console.log(`PR LINK: ${this.PRLink}`);
+      this.updateDetectorSuccess = true; 
+      //console.log(${_["prId"]}); 
+
+      this.detectorsToUpdate.forEach( (value, key) =>{
+        this.detectorReferencesList["detectorReferences"][key] = this.gistCommitVersion; 
+      }); 
+
+    }, err =>{
+      console.log(err); 
+    })
+    
+
+    // this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${this.id}/${this.id}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx&version=GB${this.Branch}`;
+    // console.log(`PR LINK: ${this.PRLink}`); 
     // this.detectorReferencesList["detectorReferences"][detectorid] = this.gistCommitVersion; 
     // this.updatedDetectors[detectorid] = true; 
 
-    this.detectorsToUpdate.forEach( (value, key) =>{
-      this.detectorReferencesList["detectorReferences"][key] = this.gistCommitVersion; 
-    }); 
+    
 
   }, err => {
     if (err.error.includes('has already been updated by another client')){
@@ -1326,22 +1270,33 @@ updateDetectorPackageJsonAll(){
     let rows: any[][] = [];
     
     rows = detectorKeys.map(key => {
-      
+
+      let path = `${this.resourceId}/detectors/${key}`;
+      // if (this.isCurrentUser) {
+      path = path + "/edit";
+      // }
+      // const name =
+      //   `<markdown>
+      //     <a href="${path}">${key}</a>
+      //   </markdown>`;
+     //const name = `<a href="${path}">${key}</a>`
+     let miscKey = ""; 
      const name = key;
      const commitId = this.detectorReferencesList["detectorReferences"][key];
      let misc = ""; 
      let status = (this.gistCommitVersion == commitId) ? "Up to Date" : "Out of Date"; 
 
      if( this.gistCommitVersion == commitId){
-      status = `<span class="success-color"><i class="fa fa-check-circle fa-lg"></i> Up to Date</span>`;
+      status = `<markdown><span class="success-color"><i class="fa fa-check-circle fa-lg"></i> Up to Date</span></markdown>`;
      }
      else{
-      status = `<span class="warning-color"><i class="fa fa-times-circle fa-lg"></i> Out of Date</span>`;
+      status = `<markdown><span class="warning-color"><i class="fa fa-times-circle fa-lg"></i> Out of Date</span></markdown>`;
      }
-     if(this.errorDetectorsList.has(name)){
-      status = `<span class="critical-color"><i class="fa fa-times-circle fa-lg"></i> ERROR </span>`;
-      console.log(this.errorDetectorsList.get(name)); 
-      misc = this.errorDetectorsList.get(name).toString(); 
+     if(this.errorDetectorsList.has(key)){
+      status = `<markdown><span class="critical-color"><i class="fa fa-times-circle fa-lg"></i> ERROR</span></markdown>`;
+      console.log(this.errorDetectorsList.get(key)); 
+      miscKey = this.errorDetectorsList.get(key).toString(); 
+      misc = `<a href="${path}">${miscKey}</a>`
      }
      
      
@@ -1356,6 +1311,7 @@ updateDetectorPackageJsonAll(){
     this.detectorsToCheck.clear(); 
     this.updatedDetectors = {}; 
     this.detectorsToUpdate.clear(); 
+    this.updateDetectorSuccess = false; 
     //this.errorDete
 
 
@@ -1368,6 +1324,12 @@ updateDetectorPackageJsonAll(){
     console.log("will delete these detectors"); 
     this.detectorReferencesDialogHidden = true; 
     this.columnOptions = []; 
+    this.detectorCompilationList = {}; 
+    this.detectorsToCheck.clear(); 
+    this.updatedDetectors = {}; 
+    this.detectorsToUpdate.clear(); 
+    this.errorDetectorsList.clear(); 
+    this.updateDetectorSuccess = false; 
     
   }
   
