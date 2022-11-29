@@ -147,6 +147,7 @@ import { FabDetailsListModule } from '@angular-react/fabric/lib/components/detai
 import { FabTextFieldModule } from '@angular-react/fabric/lib/components/text-field';
 import { ClientScriptViewComponent } from './components/client-script-view/client-script-view.component';
 import { GenericFeatureService } from './services/generic-feature-service';
+import { GanttChartTaskbarColorsComponent } from './components/gantt-chart-taskbar-colors/gantt-chart-taskbar-colors.component';
 
 @NgModule({
     imports: [
@@ -243,7 +244,8 @@ import { GenericFeatureService } from './services/generic-feature-service';
         DetectorTimePickerComponent,
         FabricFeedbackComponent,
         FormStepComponent,
-        ClientScriptViewComponent
+        ClientScriptViewComponent,
+        GanttChartTaskbarColorsComponent
     ],
     exports: [
         FormsModule, TimeSeriesGraphComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent, ClientScriptViewComponent,
@@ -283,7 +285,8 @@ import { GenericFeatureService } from './services/generic-feature-service';
         FabDataTableComponent,
         DetectorTimePickerComponent,
         FabCardComponent,
-        FormStepComponent
+        FormStepComponent,
+        GanttChartTaskbarColorsComponent
     ]
 })
 export class DiagnosticDataModule {
