@@ -1298,6 +1298,9 @@ updateDetectorPackageJsonAll(){
       miscKey = this.errorDetectorsList.get(key).toString(); 
       misc = `<a href="${path}">${miscKey}</a>`
      }
+     else if( this.detectorsToUpdate.has(key) && this.updateDetectorSuccess){
+      misc = `<a href="${this.PRLink}">PR LINK</a>`
+     }
      
      
       return [name, status, commitId, misc];
