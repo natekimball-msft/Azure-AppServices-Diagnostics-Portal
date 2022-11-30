@@ -1,14 +1,16 @@
 <ng-template #highchartGraphView>
-  <div
-    *ngFor="let view of graphOptions.innerMarkdownData"
-    style="margin: 1rem 0"
-  >
-    <markdown-text
-      *ngIf="view.position === InnerMarkdownPosition.AboveChart"
-      [markdownData]="view.markdownData"
-      [isMarkdownView]="true"
-    ></markdown-text>
-  </div>
+  <ng-container *ngIf="graphOptions?.innerMarkdownData?.length > 0">
+    <div
+      *ngFor="let view of graphOptions.innerMarkdownData"
+      style="margin: 1rem 0"
+    >
+      <markdown-text
+        *ngIf="view.position === InnerMarkdownPosition.AboveChart"
+        [markdownData]="view.markdownData"
+        [isMarkdownView]="true"
+      ></markdown-text>
+    </div>
+  </ng-container>
   <highcharts-graph
     [HighchartData]="selectedHighChartSeries"
     [chartDescription]="renderingProperties.description"
@@ -20,16 +22,18 @@
     (XAxisSelection)="onXAxisSelection($event)"
   >
   </highcharts-graph>
-  <div
-    *ngFor="let view of graphOptions.innerMarkdownData"
-    style="margin: 1rem 0"
-  >
-    <markdown-text
-      *ngIf="view.position === InnerMarkdownPosition.BelowChart"
-      [markdownData]="view.markdownData"
-      [isMarkdownView]="true"
-    ></markdown-text>
-  </div>
+  <ng-container *ngIf="graphOptions?.innerMarkdownData?.length > 0">
+    <div
+      *ngFor="let view of graphOptions.innerMarkdownData"
+      style="margin: 1rem 0"
+    >
+      <markdown-text
+        *ngIf="view.position === InnerMarkdownPosition.BelowChart"
+        [markdownData]="view.markdownData"
+        [isMarkdownView]="true"
+      ></markdown-text>
+    </div>
+  </ng-container>
   <div *ngIf="!selectedSeries">Loading Data...</div>
   <gantt-chart-taskbar-colors
     *ngIf="graphOptions?.taskBar?.useCustomColor && !!formattedGanttChartData.length"
