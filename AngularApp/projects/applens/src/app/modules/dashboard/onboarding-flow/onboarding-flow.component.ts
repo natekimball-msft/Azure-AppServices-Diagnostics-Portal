@@ -1326,7 +1326,7 @@ updateDetectorPackageJsonAll(){
   dismissDetectorRefDialog() {
     console.log("will delete these detectors"); 
     this.detectorReferencesDialogHidden = true; 
-    this.columnOptions = []; 
+    //this.columnOptions = []; 
     this.detectorCompilationList = {}; 
     this.detectorsToCheck.clear(); 
     this.updatedDetectors = {}; 

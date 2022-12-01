@@ -183,7 +183,7 @@
        <strong>Current Gist Commit Version:</strong> {{gistCommitVersion}} </p>
 
       <div class="detectorreferences-list" *ngIf = "detectorReferencesTable"> 
-        <fab-data-table [table]="detectorReferencesTable" [columnOptions]="columnOptions" [allowColumnSearch]="true" [tableHeight]="'100%'" 
+        <fab-data-table [table]="detectorReferencesTable" [columnOptions]="" [allowColumnSearch]="true" [tableHeight]="'100%'" 
         [descriptionColumnName] = "'Multiple'" [buttonText] = "'Update All'" (selectedItems) = updateDetectorReferences($event)>
         </fab-data-table>
         </div>
