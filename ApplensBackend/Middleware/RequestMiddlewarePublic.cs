@@ -10,10 +10,12 @@ namespace AppLensV3.Middleware
     public class RequestMiddlewarePublic
     {
         private readonly RequestDelegate _next;
+        private readonly string websiteHostName;
 
         public RequestMiddlewarePublic(RequestDelegate next)
         {
             _next = next;
+            websiteHostName = Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME");
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -30,7 +32,7 @@ namespace AppLensV3.Middleware
                 "https://azuresupportcentertest.azurewebsites.net/", //Test
                 "https://eu.azuresupportcenter.azure.com", //EU
             };
-            string allowedOriginsStr = string.Join(" ", allowedOrigins);
+            string allowedOriginsStr = websiteHostName != null && websiteHostName.EndsWith("azurewebsites.net") ? string.Join(" ", allowedOrigins) : string.Empty;
             httpContext.Response.Headers.Add("Content-Security-Policy", $"default-src: https:; frame-ancestors 'self' {allowedOriginsStr}");
         }
     }

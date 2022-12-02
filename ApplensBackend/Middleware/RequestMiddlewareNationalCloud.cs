@@ -10,10 +10,12 @@ namespace AppLensV3.Middleware
     public class RequestMiddlewareNationalCloud
     {
         private readonly RequestDelegate _next;
+        private readonly string websiteHostName;
 
         public RequestMiddlewareNationalCloud(RequestDelegate next)
         {
             _next = next;
+            websiteHostName = Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME");
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -24,14 +26,33 @@ namespace AppLensV3.Middleware
 
         private void AddCrossOriginRestrictionHeaders(HttpContext httpContext)
         {
-            List<string> allowedOrigins = new List<string>() {
-                "https://azuresupportcenter.usgovcloudapi.net/", //Fairfax
-                "https://azuresupportcenter.chinacloudapi.cn/", //Mooncake
-                "https://azuresupportcenter.microsoft.scloud/", //USSec
-                "https://ex.azuresupportcenter.eaglex.ic.gov/", //USNat
-            };
-            string allowedOriginsStr = string.Join(" ", allowedOrigins);
-            httpContext.Response.Headers.Add("Content-Security-Policy", $"default-src: https:; frame-ancestors 'self' {allowedOriginsStr}");
+            string allowedOrigin = string.Empty;
+            if (websiteHostName != null)
+            {
+                switch (websiteHostName)
+                {
+                    //Fairfax
+                    case "https://applens.azurewebsites.us":
+                        allowedOrigin = "https://azuresupportcenter.usgovcloudapi.net/";
+                        break;
+                    //Mooncake
+                    case "https://applens.chinacloudsites.cn":
+                        allowedOrigin = "https://azuresupportcenter.chinacloudapi.cn/";
+                        break;
+                    //USNat
+                    case "https://applens-usnatwest.appservice.eaglex.ic.gov":
+                        allowedOrigin = "https://ex.azuresupportcenter.eaglex.ic.gov/";
+                        break;
+                    //USSec
+                    case "https://applens.appservice.microsoft.scloud":
+                        allowedOrigin = "https://azuresupportcenter.microsoft.scloud/";
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            httpContext.Response.Headers.Add("Content-Security-Policy", $"default-src: https:; frame-ancestors 'self' {allowedOrigin}");
         }
     }
 
