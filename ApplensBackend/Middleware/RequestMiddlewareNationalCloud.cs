@@ -11,22 +11,13 @@ namespace AppLensV3.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly string websiteHostName;
+        private readonly string allowedOrigin;
 
         public RequestMiddlewareNationalCloud(RequestDelegate next)
         {
             _next = next;
             websiteHostName = Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME");
-        }
-
-        public async Task Invoke(HttpContext httpContext)
-        {
-            AddCrossOriginRestrictionHeaders(httpContext);
-            await _next(httpContext);
-        }
-
-        private void AddCrossOriginRestrictionHeaders(HttpContext httpContext)
-        {
-            string allowedOrigin = string.Empty;
+            allowedOrigin = string.Empty;
             if (websiteHostName != null)
             {
                 switch (websiteHostName)
@@ -51,7 +42,16 @@ namespace AppLensV3.Middleware
                         break;
                 }
             }
+        }
 
+        public async Task Invoke(HttpContext httpContext)
+        {
+            AddCrossOriginRestrictionHeaders(httpContext);
+            await _next(httpContext);
+        }
+
+        private void AddCrossOriginRestrictionHeaders(HttpContext httpContext)
+        {
             httpContext.Response.Headers.Add("Content-Security-Policy", $"default-src: https:; frame-ancestors 'self' {allowedOrigin}");
         }
     }

@@ -10,10 +10,19 @@ namespace AppLensV3.Middleware
     public class RequestMiddlewarePublic
     {
         private readonly RequestDelegate _next;
+        private readonly string allowedOrigins;
 
         public RequestMiddlewarePublic(RequestDelegate next)
         {
             _next = next;
+            List<string> allowedOriginsList = new List<string>()
+            {
+                "https://azuresupportcenter.msftcloudes.com/", // Prod
+                "https://azuresupportcenterppe.msftcloudes.com/", // PPE
+                "https://azuresupportcentertest.azurewebsites.net/", // Test
+                "https://eu.azuresupportcenter.azure.com", // EU
+            };
+            allowedOrigins = string.Join(" ", allowedOriginsList);
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -24,15 +33,7 @@ namespace AppLensV3.Middleware
 
         private void AddCrossOriginRestrictionHeaders(HttpContext httpContext)
         {
-            List<string> allowedOrigins = new List<string>()
-            {
-                "https://azuresupportcenter.msftcloudes.com/", // Prod
-                "https://azuresupportcenterppe.msftcloudes.com/", // PPE
-                "https://azuresupportcentertest.azurewebsites.net/", // Test
-                "https://eu.azuresupportcenter.azure.com", // EU
-            };
-            string allowedOriginsStr = string.Join(" ", allowedOrigins);
-            httpContext.Response.Headers.Add("Content-Security-Policy", $"default-src: https:; frame-ancestors 'self' {allowedOriginsStr}");
+            httpContext.Response.Headers.Add("Content-Security-Policy", $"default-src: https:; frame-ancestors 'self' {allowedOrigins}");
         }
     }
 
