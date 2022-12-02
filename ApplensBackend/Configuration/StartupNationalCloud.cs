@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using AppLensV3.Helpers;
+using AppLensV3.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
@@ -88,7 +89,7 @@ namespace AppLensV3
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
-
+            app.UseMiddleware<RequestMiddlewareNationalCloud>();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

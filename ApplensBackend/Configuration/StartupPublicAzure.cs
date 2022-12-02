@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using AppLensV3.Helpers;
+using AppLensV3.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -34,7 +35,7 @@ namespace AppLensV3
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseMiddleware<RequestMiddlewarePublic>();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
