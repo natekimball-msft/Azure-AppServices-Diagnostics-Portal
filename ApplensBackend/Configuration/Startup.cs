@@ -171,6 +171,7 @@ namespace AppLensV3
 
             app.Use(async (context, next) =>
             {
+                context.Response.Headers.Add("Content-Security-Policy", "default-src: https:; frame-ancestors 'self' https://azuresupportcenter.msftcloudes.com/");
                 await next();
                 if (context.Response.StatusCode == 404 &&
                     !Path.HasExtension(context.Request.Path.Value) &&
