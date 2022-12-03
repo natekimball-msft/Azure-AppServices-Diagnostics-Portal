@@ -24,7 +24,7 @@ namespace AppLensV3.Middleware
 
         private void AddCrossOriginRestrictionHeaders(HttpContext httpContext)
         {
-            httpContext.Response.Headers.Add("Content-Security-Policy", $"default-src: https:; frame-ancestors 'self'{allowedOrigins}");
+            httpContext.Response.Headers.Add("Content-Security-Policy", $"default-src: https:; frame-ancestors 'self' {allowedOrigins}");
         }
     }
 
