@@ -89,7 +89,7 @@ namespace AppLensV3
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
-            app.UseMiddleware<RequestMiddlewareNationalCloud>();
+            app.UseMiddleware<RequestMiddleware>();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

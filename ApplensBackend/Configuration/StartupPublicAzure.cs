@@ -35,7 +35,7 @@ namespace AppLensV3
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseMiddleware<RequestMiddlewarePublic>();
+            app.UseMiddleware<RequestMiddleware>();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
