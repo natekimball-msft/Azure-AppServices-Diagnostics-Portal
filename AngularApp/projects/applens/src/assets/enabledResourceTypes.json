@@ -676,7 +676,7 @@
         },
         {
             "service": "ResourceService",
-            "resourceType": "microsoft.costmanagement/billing",
+            "resourceType": "microsoft.cost/billing",
             "templateFileName": "Billing",
             "imgSrc": "assets/img/Azure-Cost-Logo.svg",
             "versionPrefix": "",
