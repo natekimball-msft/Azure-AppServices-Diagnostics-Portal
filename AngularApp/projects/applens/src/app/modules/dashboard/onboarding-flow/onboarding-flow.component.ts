@@ -1168,6 +1168,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     if (this.runButtonDisabled) {
       return;
     }
+    this.queryResponse = undefined;
     this.buildOutput = [];
     this.buildOutput.push("------ Build started ------");
     this.detailedCompilationTraces = [];
