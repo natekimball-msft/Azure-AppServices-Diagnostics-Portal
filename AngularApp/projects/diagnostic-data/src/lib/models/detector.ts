@@ -178,6 +178,7 @@ export interface TimeSeriesRendering extends Rendering {
     seriesColumns: string[];
     metricType: MetricType;
     eventStatusColumnName: string;
+    endTimestampColumnName: string;
 }
 
 export interface TimeSeriesPerInstanceRendering extends Rendering {
