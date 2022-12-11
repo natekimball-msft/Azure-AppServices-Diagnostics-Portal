@@ -35,7 +35,8 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
     yAxisCategories: any = [];
     formattedGanttChartData: any[] = [];
     mappedGanttChartData: { [key: string]: any[] } = {};
-    timestampColumnName: string;
+    startTimestampColumnName: string;
+    endTimestampColumnName: string;
 
     renderingProperties: TimeSeriesRendering;
     dataTable: DataTableResponseObject;
@@ -76,15 +77,14 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
     }
 
     private _processDiagnosticDataForGanttChart(diagnosticData: DiagnosticData) {
-        const { timeGrain } = this.graphOptions || {};
         const { columns, rows } = diagnosticData?.table || {};
-        const { eventStatusColumnName, seriesColumns } =
+        const { eventStatusColumnName, seriesColumns, endTimestampColumnName } =
         this.renderingProperties || {};
 
         if (
         !seriesColumns?.length ||
         eventStatusColumnName == null ||
-        timeGrain == null
+        endTimestampColumnName == null
         )
         return;
 
@@ -92,20 +92,22 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
         this._getCounterValueColumns()[0] || {};
 
         const timestampColumnIndex = this._getTimeStampColumnIndex();
-        this.timestampColumnName = columns[timestampColumnIndex].columnName;
+        this.startTimestampColumnName = columns[timestampColumnIndex].columnName;
+        this.endTimestampColumnName = endTimestampColumnName;
 
         this.formattedGanttChartData = this._getFormattedChartData(rows, columns);
         this.formattedGanttChartData.forEach((data) => {
         const key = data[yAxisColumnName];
-        const currentTime: string = data[this.timestampColumnName];
+        const currentStartTime: string = data[this.startTimestampColumnName];
+        const currentEndTime : string = data[this.endTimestampColumnName];
 
         const chartRowData = this.mappedGanttChartData[key];
         if (chartRowData != null) {
             const lastElementInChartRowDataArray =
             chartRowData[chartRowData.length - 1];
-            const endTime: string = lastElementInChartRowDataArray.EndTime;
+            const endTime: string = lastElementInChartRowDataArray[this.endTimestampColumnName];
             const diffInMinutes = this._getDifferenceInMinutes(
-            currentTime,
+            currentStartTime,
             endTime
             );
 
@@ -116,27 +118,18 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
             ) {
                 chartRowData.push({
                     ...data,
-                    [this.timestampColumnName]: momentNs.utc(currentTime).toISOString(),
-                    EndTime: momentNs
-                      .utc(currentTime)
-                      .add(timeGrain, 'm')
-                      .toISOString(),
+                    [this.startTimestampColumnName]: momentNs.utc(currentStartTime).toISOString(),
+                    [this.endTimestampColumnName]: momentNs.utc(currentEndTime).toISOString(),
                   });
                 } else {
-                  lastElementInChartRowDataArray.EndTime = momentNs
-                    .utc(currentTime)
-                    .add(timeGrain, 'm')
-                    .toISOString();
+                  lastElementInChartRowDataArray[this.endTimestampColumnName] = momentNs.utc(currentEndTime).toISOString();
                 }
               } else {
                 this.mappedGanttChartData[key] = [
                   {
                     ...data,
-                    [this.timestampColumnName]: momentNs.utc(currentTime).toISOString(),
-                    EndTime: momentNs
-                      .utc(currentTime)
-                      .add(timeGrain, 'm')
-                      .toISOString(),
+                    [this.startTimestampColumnName]: momentNs.utc(currentStartTime).toISOString(),
+                    [this.endTimestampColumnName]: momentNs.utc(currentEndTime).toISOString(),
                   },
                 ];
               }
@@ -283,8 +276,8 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
         value.forEach((data: any) => {
             xAxisData.push({
             id: data[customTooltipColumnName] || key,
-            x2: Date.parse(data.EndTime),
-            x: Date.parse(data[this.timestampColumnName]),
+            x2: Date.parse(data[this.endTimestampColumnName]),
+            x: Date.parse(data[this.startTimestampColumnName]),
             y: yIndex,
             ...(!!useCustomColor && {
                 color: data[customColorColumnName],
@@ -324,8 +317,8 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
         })
         .sort((a, b) => {
             return (
-            new Date(a[this.timestampColumnName]).getTime() -
-            new Date(b[this.timestampColumnName]).getTime()
+            new Date(a[this.startTimestampColumnName]).getTime() -
+            new Date(b[this.startTimestampColumnName]).getTime()
             );
         });
     }
