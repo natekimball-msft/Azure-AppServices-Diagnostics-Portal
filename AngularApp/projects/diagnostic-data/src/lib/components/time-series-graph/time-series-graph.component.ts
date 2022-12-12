@@ -78,61 +78,72 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
 
     private _processDiagnosticDataForGanttChart(diagnosticData: DiagnosticData) {
         const { columns, rows } = diagnosticData?.table || {};
-        const { eventStatusColumnName, seriesColumns, endTimestampColumnName } =
+        const { eventStatusColumnName, seriesColumns, startTimestampColumnName, endTimestampColumnName } =
         this.renderingProperties || {};
 
         if (
         !seriesColumns?.length ||
-        eventStatusColumnName == null ||
-        endTimestampColumnName == null
+        endTimestampColumnName == null ||
+        startTimestampColumnName  == null
         )
         return;
 
         const { columnName: yAxisColumnName } =
         this._getCounterValueColumns()[0] || {};
 
-        const timestampColumnIndex = this._getTimeStampColumnIndex();
-        this.startTimestampColumnName = columns[timestampColumnIndex].columnName;
+        this.startTimestampColumnName = startTimestampColumnName;
         this.endTimestampColumnName = endTimestampColumnName;
 
         this.formattedGanttChartData = this._getFormattedChartData(rows, columns);
         this.formattedGanttChartData.forEach((data) => {
-        const key = data[yAxisColumnName];
-        const currentStartTime: string = data[this.startTimestampColumnName];
-        const currentEndTime : string = data[this.endTimestampColumnName];
+            const key = data[yAxisColumnName];
+            const currentStartTime: string = data[this.startTimestampColumnName];
+            const currentEndTime : string = data[this.endTimestampColumnName];
 
-        const chartRowData = this.mappedGanttChartData[key];
-        if (chartRowData != null) {
+            const chartRowData = this.mappedGanttChartData[key];
+            if (chartRowData != null) {
             const lastElementInChartRowDataArray =
-            chartRowData[chartRowData.length - 1];
-            const endTime: string = lastElementInChartRowDataArray[this.endTimestampColumnName];
+                chartRowData[chartRowData.length - 1];
+            const endTime: string =
+                lastElementInChartRowDataArray[this.endTimestampColumnName];
             const diffInMinutes = this._getDifferenceInMinutes(
-            currentStartTime,
-            endTime
+                currentStartTime,
+                endTime
             );
-
+    
             if (
-            diffInMinutes !== 0 ||
-            data[eventStatusColumnName] !==
-                lastElementInChartRowDataArray[eventStatusColumnName]
+                diffInMinutes !== 0 ||
+                (!!eventStatusColumnName &&
+                data[eventStatusColumnName] !==
+                    lastElementInChartRowDataArray[eventStatusColumnName])
             ) {
                 chartRowData.push({
-                    ...data,
-                    [this.startTimestampColumnName]: momentNs.utc(currentStartTime).toISOString(),
-                    [this.endTimestampColumnName]: momentNs.utc(currentEndTime).toISOString(),
-                  });
-                } else {
-                  lastElementInChartRowDataArray[this.endTimestampColumnName] = momentNs.utc(currentEndTime).toISOString();
-                }
-              } else {
-                this.mappedGanttChartData[key] = [
-                  {
-                    ...data,
-                    [this.startTimestampColumnName]: momentNs.utc(currentStartTime).toISOString(),
-                    [this.endTimestampColumnName]: momentNs.utc(currentEndTime).toISOString(),
-                  },
-                ];
-              }
+                ...data,
+                [this.startTimestampColumnName]: momentNs
+                    .utc(currentStartTime)
+                    .toISOString(),
+                [this.endTimestampColumnName]: momentNs
+                    .utc(currentEndTime)
+                    .toISOString(),
+                });
+            } else {
+                lastElementInChartRowDataArray[this.endTimestampColumnName] = momentNs
+                .utc(currentEndTime)
+                .toISOString();
+            }
+            } else {
+            this.mappedGanttChartData[key] = [
+                {
+                ...data,
+                [this.startTimestampColumnName]: momentNs
+                    .utc(currentStartTime)
+                    .toISOString(),
+                [this.endTimestampColumnName]: momentNs
+                    .utc(currentEndTime)
+                    .toISOString(),
+                },
+            ];
+            }
         });
     }
 
