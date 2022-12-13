@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.IO;
 using AppLensV3.Helpers;
 using AppLensV3.Middleware;
@@ -15,6 +16,15 @@ namespace AppLensV3
         public void AddCloudSpecificServices(IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
         {
             services.AddBearerAuthFlow(configuration, environment);
+        }
+
+        public void AddConfigurations(ConfigurationBuilder builder, IWebHostEnvironment env, string cloudDomain)
+        {
+            builder.SetBasePath(env.ContentRootPath)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    .AddJsonFile($"appsettings.PublicAzure.json", optional: false, reloadOnChange: true)
+                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                    .AddEnvironmentVariables();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
