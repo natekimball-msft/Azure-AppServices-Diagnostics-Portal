@@ -67,6 +67,18 @@
             "searchSuffix": "AZURE CONTAINER APP",
             "displayName": "Container App"
         },
+         {
+            "service": "ResourceService",
+            "resourceType": "Microsoft.App/managedEnvironments",
+            "templateFileName": "ContainerAppEnvironments",
+            "imgSrc": "assets/img/Azure-ContainerAppEnvironment-Logo.svg",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "containerapp",
+            "pesId": "17677",
+            "staticSelfHelpContent": "microsoft.app",
+            "searchSuffix": "AZURE CONTAINER APP ENVIRONMENT",
+            "displayName": "Container App Environment"
+        },
         {
             "service": "ResourceService",
             "resourceType": "Microsoft.ContainerService/managedClusters",
