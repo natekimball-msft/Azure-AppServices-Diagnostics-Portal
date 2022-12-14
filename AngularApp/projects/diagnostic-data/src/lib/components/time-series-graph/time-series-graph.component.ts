@@ -331,7 +331,11 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
             new Date(a[this.startTimestampColumnName]).getTime() -
             new Date(b[this.startTimestampColumnName]).getTime()
             );
-        });
+        })
+        .filter(
+            (value, index, arr) =>
+              arr.findIndex((v2) => JSON.stringify(v2) === JSON.stringify(value)) === index
+        );
     }
 
     private _getDifferenceInMinutes(currentTime: string, endTime: string) {
