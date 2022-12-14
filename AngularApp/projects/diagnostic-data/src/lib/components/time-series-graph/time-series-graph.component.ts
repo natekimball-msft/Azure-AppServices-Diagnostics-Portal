@@ -343,7 +343,7 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
       }
     
     private _getTimeStamp(datetimeString: string) {
-        return new Date(datetimeString.split('.')[0]).getTime();
+        return momentNs.utc(datetimeString).milliseconds(0).toDate().getTime();
     }
 
     private _getGreatestCommonFactor(timestamp: momentNs.Moment): momentNs.Duration {
