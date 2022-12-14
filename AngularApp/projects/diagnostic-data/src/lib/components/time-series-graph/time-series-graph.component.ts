@@ -331,7 +331,11 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
             new Date(a[this.startTimestampColumnName]).getTime() -
             new Date(b[this.startTimestampColumnName]).getTime()
             );
-        });
+        })
+        .filter(
+            (value, index, arr) =>
+              arr.findIndex((v2) => JSON.stringify(v2) === JSON.stringify(value)) === index
+        );
     }
 
     private _getDifferenceInMinutes(currentTime: string, endTime: string) {
@@ -343,7 +347,7 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
       }
     
     private _getTimeStamp(datetimeString: string) {
-        return new Date(datetimeString.split('.')[0]).getTime();
+        return momentNs.utc(datetimeString).milliseconds(0).toDate().getTime();
     }
 
     private _getGreatestCommonFactor(timestamp: momentNs.Moment): momentNs.Duration {
