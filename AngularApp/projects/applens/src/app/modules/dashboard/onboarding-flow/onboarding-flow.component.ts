@@ -32,6 +32,8 @@ import { ApplensCommandBarService } from '../services/applens-command-bar.servic
 import { DevopsConfig } from '../../../shared/models/devopsConfig';
 import { ApplensGlobal } from '../../../applens-global';
 import { IDeactivateComponent } from '../develop-navigation-guard.service';
+import { DocumentationFilesList } from '../side-nav/documentationFilesList';
+import { DocumentMode } from '../applens-docs/applens-docs.component';
 import { HttpParams } from '@angular/common/http';
 import { ThemeService } from 'projects/app-service-diagnostics/src/app/theme/theme.service';
 
@@ -116,6 +118,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   DevelopMode = DevelopMode;
   HealthStatus = HealthStatus;
   PanelType = PanelType;
+  DocumentMode = DocumentMode;
 
   isShieldEmbedded: boolean = false;
   hideModal: boolean = true;
@@ -257,6 +260,16 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     root: {
     }
   }
+  examplesDropdownStyle: IDropdownProps['styles'] = {
+    root: {
+      width: "150px"
+    }
+  }
+  documentsList: DocumentationFilesList = new DocumentationFilesList();
+  examplesDropdownOptions: IDropdownProps['options'];
+  exampleCat: string = "";
+  exampleDoc: string = "";
+  showExample: boolean = false;
 
   runIcon: any = { iconName: 'Play' };
 
@@ -765,6 +778,19 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         });
       }
     });
+  }
+
+  loadExamples(){
+    this.examplesDropdownOptions = this.documentsList.getDocumentListOptions();
+  }
+
+  changeExampleDoc(event){
+    this.showExample = false;
+    let selectedDoc = event.option.key.split(":");
+
+    this.exampleCat = selectedDoc[0];
+    this.exampleDoc = selectedDoc[1];
+    this.showExample = true;
   }
 
   createLanguageClient(connection: MessageConnection): MonacoLanguageClient {
