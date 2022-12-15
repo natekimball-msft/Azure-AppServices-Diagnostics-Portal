@@ -1499,12 +1499,12 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     else targetBranch = this.gistMode ? `dev/${this.userName.split("@")[0]}/gist/${tempId.toLowerCase()}` : `dev/${this.userName.split("@")[0]}/detector/${tempId.toLowerCase()}`;
 
     if (this.Branch === this.defaultBranch && this.targetInShowBranches(targetBranch)) {
-      this.Branch = targetBranch;
-      this.displayBranch = `${targetBranch}`;
+      this.Branch = targetBranch.replace(/\s/g, "");
+      this.displayBranch = `${targetBranch.replace(/\s/g, "")}`;
     }
     else if (!(this.showBranches.length > 1) || this.Branch === this.defaultBranch) {
-      this.displayBranch = `${targetBranch} (not published)`;
-      this.Branch = targetBranch;
+      this.displayBranch = `${targetBranch.replace(/\s/g, "")} (not published)`;
+      this.Branch = targetBranch.replace(/\s/g, "");
     }
   }
 
