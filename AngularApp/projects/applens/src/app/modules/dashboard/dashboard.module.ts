@@ -87,6 +87,7 @@ import { FabCalendarModule } from '@angular-react/fabric/lib/components/calendar
 import { FabDropdownModule } from '@angular-react/fabric/lib/components/dropdown';
 import { FabBreadcrumbModule } from '@angular-react/fabric/lib/components/breadcrumb';
 import { FabMessageBarModule } from '@angular-react/fabric/lib/components/message-bar';
+import { FabLinkModule } from '@angular-react/fabric/lib/components/link';
 import { CreateWorkflowComponent } from './workflow/create-workflow/create-workflow.component';
 import { NgFlowchartModule } from 'projects/ng-flowchart/dist';
 import { GenericClientScriptService } from 'projects/diagnostic-data/src/lib/services/generic-client-script.service';
@@ -140,6 +141,7 @@ import * as moment from 'moment';
 import { ApplensOpenAIChatComponent } from './applens-openai-chat/applens-openai-chat.component';
 import { CommunicationToolkitComponent } from './communication-toolkit/communication-toolkit.component';
 import { DetectorCopilotService } from 'projects/applens/src/app/modules/dashboard/services/detector-copilot.service';
+import { CreateExperiencePicker } from './create-experience-picker/create-experience-picker.component';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
@@ -233,6 +235,13 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
             {
                 path: 'pesId/:pesId/supportTopics/:supportTopicId',
                 component: SelfHelpContentComponent,
+            },
+            {
+                path: 'createPicker',
+                component: CreateExperiencePicker,
+                data: {
+                    creationFor: 'detector'
+                }
             },
             {
                 path: 'create',
@@ -552,6 +561,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         FabDropdownModule,
         FabBreadcrumbModule,
         FabMessageBarModule,
+        FabLinkModule,
         NgFlowchartModule,
         FormsModule,
         ReactiveFormsModule,
@@ -620,6 +630,9 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         KustoQueryDialogComponent, DetectorNodeComponent, KustoNodeComponent, MarkdownNodeComponent, NodeActionsComponent, ConfigureVariablesComponent, CommonNodePropertiesComponent,
         NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent,
         WorkflowUserAccessComponent, ForeachNodeComponent, DevopsDeploymentsComponent, InputNodeComponent, NetworkTraceAnalysisComponent,
-        ApplensOpenAIChatComponent, KustoGPTComponent, CommunicationToolkitComponent]
+        ApplensOpenAIChatComponent, KustoGPTComponent, CommunicationToolkitComponent
+        NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent,
+        OpenAIChatComponent, WorkflowUserAccessComponent, ForeachNodeComponent, DevopsDeploymentsComponent, InputNodeComponent, 
+        CreateExperiencePicker]
 })
 export class DashboardModule { }
