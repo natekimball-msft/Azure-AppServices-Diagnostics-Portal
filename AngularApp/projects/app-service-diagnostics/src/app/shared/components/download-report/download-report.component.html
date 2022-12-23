@@ -1,0 +1,12 @@
+<div >
+    <p>{{downloadReportText}}</p>
+    <p *ngIf="isDownloaded else loading"></p>
+</div>
+
+<ng-template #loading>
+    <div class="home-spinner">
+      <fab-spinner label={{downloadReportText}} [ariaLabel]="'Downloading Report'"></fab-spinner>
+    </div>
+  </ng-template>
+
+
