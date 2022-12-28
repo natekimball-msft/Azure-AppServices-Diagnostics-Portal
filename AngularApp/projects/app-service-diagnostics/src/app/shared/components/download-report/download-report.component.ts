@@ -1,10 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DetectorControlService, DetectorMetaData, DetectorResponse, DiagnosticService, ResiliencyScoreReportHelper, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
 import { DemoSubscriptions } from '../../../betaSubscriptions';
 import { WebSitesService } from '../../../resources/web-sites/services/web-sites.service';
 import { ResourceService } from '../../../shared-v2/services/resource.service';
+import { AuthService } from '../../../startup/services/auth.service';
 import { AppType } from '../../models/portal';
 import { Sku } from '../../models/server-farm';
 import { OperatingSystem } from '../../models/site';
@@ -16,12 +17,14 @@ import { OperatingSystem } from '../../models/site';
 })
 export class DownloadReportComponent implements OnInit {
 
-  time: string;  
+  time: string;
   detector: DetectorMetaData;
   detectorName: string;
   resourceName: string;
   fullReportPath: string;
   subscriptionId: string;
+  resourceGroup: string;
+  resourceType: string;
   isDownloaded: boolean = false;
   downloadReportText: string = "Downloading Report...";
   downloadReportFileName: string;
@@ -31,12 +34,17 @@ export class DownloadReportComponent implements OnInit {
   resourceSku: Sku = Sku.All;
   vfsFonts: any;
   
-  constructor(private _resourceService: ResourceService, private _route: ActivatedRoute, private telemetryService: TelemetryService, private http: HttpClient, private _diagnosticService: DiagnosticService, private _detectorControlService: DetectorControlService) { }
+
+  constructor(private _resourceService: ResourceService, private _route: ActivatedRoute, private telemetryService: TelemetryService,
+    private http: HttpClient, private _diagnosticService: DiagnosticService, private _detectorControlService: DetectorControlService,
+    private _router: Router, private _authService: AuthService) { }
 
   ngOnInit(): void {
     let _isSubIdInPercentageToRelease: boolean = false;
     let _isBetaSubscription: boolean = false;
     this.subscriptionId = this._route.parent.parent.snapshot.params['subscriptionid'];
+    this.resourceGroup = this._route.parent.parent.snapshot.params['resourcegroup'];
+    this.resourceType = this._route.parent.parent.snapshot.data.data.type;
     this.resourceName = this._route.parent.parent.snapshot.params['resourcename'];
     this.detectorName = this._route.snapshot.params['detectorName'];
 
@@ -46,12 +54,12 @@ export class DownloadReportComponent implements OnInit {
     _isSubIdInPercentageToRelease = this._percentageOfSubscriptions(this.subscriptionId, 0);
 
     // Releasing to only Beta Subscriptions for Web App (Linux) in standard or higher and all Web App (Windows) in standard or higher
-    if (this._checkIsWebAppProdSku(OperatingSystem.linux) && (_isSubIdInPercentageToRelease || _isBetaSubscription) || this._checkIsWebAppProdSku(OperatingSystem.windows)){
-      const rSBDEventProperties = {        
+    if (this._checkIsWebAppProdSku(OperatingSystem.linux) && (_isSubIdInPercentageToRelease || _isBetaSubscription) || this._checkIsWebAppProdSku(OperatingSystem.windows)) {
+      const rSBDEventProperties = {
         'Subscription': this.subscriptionId,
         'Platform': this.resourcePlatform != undefined ? this.resourcePlatform.toString() : "",
-        'AppType': this.resourceAppType != undefined ? this.resourceAppType.toString(): "",
-        'resourceSku': this.resourceSku != undefined ? this.resourceSku.toString(): "",
+        'AppType': this.resourceAppType != undefined ? this.resourceAppType.toString() : "",
+        'resourceSku': this.resourceSku != undefined ? this.resourceSku.toString() : "",
         'DetectorName': this.detectorName,
       };
       this.telemetryService.logEvent(TelemetryEventNames.DownloadReportDirectLinkUsed, rSBDEventProperties);
@@ -61,13 +69,12 @@ export class DownloadReportComponent implements OnInit {
       // Using this as an alternative to using the vfs_fonts.js build with PDFMake's build-vfs.js
       // as this file caused problems when being compiled in a library project like diagnostic-data
       //
-      this.http.get<any>('assets/vfs_fonts.json').subscribe((data: any) => {this.vfsFonts=data}); 
+      this.http.get<any>('assets/vfs_fonts.json').subscribe((data: any) => { this.vfsFonts = data });
       this.generateReportPDF();
     }
-    else{
-      // if not Production SKU, and not in beta subscription and not in percentage to release, then display a message saying resource is not supported
+    else {
+      this.downloadReportText = "Resource not supported for Download Report";
     }
-
   }
 
   private _checkIsWebAppProdSku(platform: OperatingSystem): boolean {
@@ -83,12 +90,12 @@ export class DownloadReportComponent implements OnInit {
   private _percentageOfSubscriptions(subscriptionId: string, percentageToRelease: number): boolean {
     let firstDigit = "0x" + subscriptionId.substring(0, 1);
     // roughly split of percentageToRelease of subscriptions to use new feature.
-     return ((16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease);
+    return ((16 - parseInt(firstDigit, 16)) / 16 <= percentageToRelease);
   }
 
-  private generateReportPDF() {    
+  private generateReportPDF() {
     // Taking starting time
-    let sT = new Date();    
+    let sT = new Date();
     const loggingError = new Error();
     // Getting the detector response
     this._diagnosticService.getDetector(this.detectorName, this._detectorControlService.startTimeString, this._detectorControlService.endTimeString)
@@ -96,11 +103,11 @@ export class DownloadReportComponent implements OnInit {
         //If the page hasn't been refreshed this will use a cached request, so changing File Name to use the same name + "(cached)" to let them know they are seeing a cached version.
         let eT = new Date();
         let detectorTimeTaken = eT.getTime() - sT.getTime();
-        
-        
+
+
         if (this.downloadReportFileName == undefined) {
           this.generatedOn = ResiliencyScoreReportHelper.generatedOn();
-          this.downloadReportFileName = `${this.detectorName}-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":", "-")}`;          
+          this.downloadReportFileName = `${this.detectorName}-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":", "-")}`;
           ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}`, this.generatedOn, this.vfsFonts);
         }
         else {
@@ -123,7 +130,7 @@ export class DownloadReportComponent implements OnInit {
             'TotalTimeTaken': totalTimeTaken.toString()
           };
         }
-        else{
+        else {
           eventProperties = {
             'Subscription': this.subscriptionId,
             'DetectorName': this.detectorName,
@@ -134,11 +141,29 @@ export class DownloadReportComponent implements OnInit {
         }
         this.telemetryService.logEvent(TelemetryEventNames.ResiliencyScoreReportDownloaded, eventProperties);
         this.downloadReportText = "Report downloaded";
-        this.isDownloaded = true;        
-  }, error => {
-  loggingError.message = 'Error calling ResiliencyScore detector';
-  loggingError.stack = error;
-  this.telemetryService.logException(loggingError);
-});
-}
+        this.isDownloaded = true;
+        // Redirecting to AvailabilityandPerformance category
+        
+        this._router.navigate([`../../`], {
+                relativeTo: this._route,                
+                queryParamsHandling: 'merge',
+                replaceUrl: true
+              });             
+      }, error => {
+        loggingError.message = 'Error calling ResiliencyScore detector';
+        loggingError.stack = error;
+        this.telemetryService.logException(loggingError);
+      });
+  }
+
+  private _updateRouteBasedOnAdditionalParameters(route: string, additionalParameters: any): string {
+    if (additionalParameters.featurePath) {
+      let featurePath: string = additionalParameters.featurePath;
+      featurePath = featurePath.startsWith('/') ? featurePath.replace('/', '') : featurePath;
+
+      return `${route}/${featurePath}`;
+    }
+
+    return null;
+  }
 }
