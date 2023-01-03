@@ -144,6 +144,7 @@ import { FabSearchBoxModule } from '@angular-react/fabric/lib/components/search-
 import { FabCalendarModule } from '@angular-react/fabric/lib/components/calendar';
 import { FabDetailsListModule } from '@angular-react/fabric/lib/components/details-list';
 import { FabTextFieldModule } from '@angular-react/fabric/lib/components/text-field';
+import { DownloadReportComponent } from './components/download-report/download-report.component';
 
 @NgModule({
     imports: [
@@ -237,7 +238,8 @@ import { FabTextFieldModule } from '@angular-react/fabric/lib/components/text-fi
         FabDataTableComponent,
         SolutionsPanelComponent,
         DetectorTimePickerComponent,
-        FabricFeedbackComponent
+        FabricFeedbackComponent,
+        DownloadReportComponent
     ],
     exports: [
         FormsModule, TimeSeriesGraphComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent,
