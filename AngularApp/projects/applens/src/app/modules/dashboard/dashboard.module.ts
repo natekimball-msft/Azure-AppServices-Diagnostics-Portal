@@ -88,6 +88,8 @@ import { FabDropdownModule } from '@angular-react/fabric/lib/components/dropdown
 import { FabBreadcrumbModule } from '@angular-react/fabric/lib/components/breadcrumb';
 import { FabMessageBarModule } from '@angular-react/fabric/lib/components/message-bar';
 import { FabLinkModule } from '@angular-react/fabric/lib/components/link';
+import { FabTooltipModule } from '@angular-react/fabric/lib/components/tooltip';
+import { FabPeoplePickerModule, FabTagPickerModule, FabBasePickerModule } from '@angular-react/fabric/lib/components/pickers';
 import { CreateWorkflowComponent } from './workflow/create-workflow/create-workflow.component';
 import { NgFlowchartModule } from 'projects/ng-flowchart/dist';
 import { GenericClientScriptService } from 'projects/diagnostic-data/src/lib/services/generic-client-script.service';
@@ -142,6 +144,7 @@ import { ApplensOpenAIChatComponent } from './applens-openai-chat/applens-openai
 import { CommunicationToolkitComponent } from './communication-toolkit/communication-toolkit.component';
 import { DetectorCopilotService } from 'projects/applens/src/app/modules/dashboard/services/detector-copilot.service';
 import { CreateExperiencePicker } from './create-experience-picker/create-experience-picker.component';
+import { DetectorDesigner } from './detector-designer/detector-designer.component';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
@@ -242,6 +245,10 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
                 data: {
                     creationFor: 'detector'
                 }
+            },
+            {
+                path: 'designDetector',
+                component: DetectorDesigner,
             },
             {
                 path: 'create',
@@ -508,7 +515,6 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
             {
                 path: 'deployments',
                 component: DevopsDeploymentsComponent
-            },
             {
                 path: 'networkTraceAnalysis',
                 component: NetworkTraceAnalysisComponent
@@ -562,6 +568,8 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         FabBreadcrumbModule,
         FabMessageBarModule,
         FabLinkModule,
+        FabTooltipModule,
+        FabPeoplePickerModule, FabTagPickerModule, FabBasePickerModule,
         NgFlowchartModule,
         FormsModule,
         ReactiveFormsModule,
@@ -633,6 +641,6 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         ApplensOpenAIChatComponent, KustoGPTComponent, CommunicationToolkitComponent
         NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent,
         OpenAIChatComponent, WorkflowUserAccessComponent, ForeachNodeComponent, DevopsDeploymentsComponent, InputNodeComponent, 
-        CreateExperiencePicker]
+        CreateExperiencePicker, DetectorDesigner]
 })
 export class DashboardModule { }
