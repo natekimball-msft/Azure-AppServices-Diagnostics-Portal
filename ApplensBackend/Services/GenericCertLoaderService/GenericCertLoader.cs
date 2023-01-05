@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using AppLensV3.Helpers;
 using Microsoft.Extensions.Logging;
 
 namespace AppLensV3
@@ -66,6 +67,11 @@ namespace AppLensV3
                 {
                     return requestedCert;
                 }
+                else
+                {
+                    _logger.LogWarning($"Could not find cert {subjectName} in cert collection");
+                    _logger.LogInformation($"Available certs in cert collection {string.Join(",", _certCollection.Keys)}");
+                }
 
                 RetryLoadRequestedCertBySubjectName(subjectName);
 
@@ -119,15 +125,23 @@ namespace AppLensV3
 
         private void ProcessCertCollection(X509Certificate2Collection certCollection, bool isRetry = false)
         {
-            if (certCollection != null)
+            if (certCollection == null)
             {
-                foreach (X509Certificate2 currCert in certCollection)
+                throw new ArgumentNullException(nameof(certCollection));
+            }
+
+            if (!certCollection.Any())
+            {
+                _logger.LogWarning($"Cert collection is empty");
+            }
+
+            foreach (X509Certificate2 currCert in certCollection)
+            {
+                var subjectCommonName = currCert.GetSubjectCommonName();
+                if (!_certCollection.ContainsKey(subjectCommonName))
                 {
-                    if (!_certCollection.ContainsKey(currCert.Subject))
-                    {
-                        _certCollection.TryAdd(currCert.Subject, currCert);
-                        _logger.LogInformation($"Successfully loaded cert SubjectName:{currCert.Subject} CertType:{(currCert.HasPrivateKey ? "PFX" : "CER")} isRetry:{isRetry}");
-                    }
+                    _certCollection.TryAdd(currCert.GetSubjectCommonName(), currCert);
+                    _logger.LogInformation($"Successfully loaded cert SubjectName:{subjectCommonName} CertType:{(currCert.HasPrivateKey ? "PFX" : "CER")} isRetry:{isRetry}");
                 }
             }
         }
@@ -136,6 +150,7 @@ namespace AppLensV3
         {
             if (!string.IsNullOrWhiteSpace(subjectName))
             {
+                _logger.LogInformation($"Retry looking for cert {subjectName}. Attempting to search the cert store.");
                 using (X509Store certStore = new X509Store(StoreName.My, StoreLocation.CurrentUser))
                 {
                     certStore.Open(OpenFlags.ReadOnly);
