@@ -1,5 +1,5 @@
 import {
-  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource, ResiliencyScoreReportHelper
+  DetectorControlService, DiagnosticService, DetectorMetaData, DetectorResponse, TelemetryService, TelemetryEventNames, TelemetrySource, generateReportHelper
 } from 'diagnostic-data';
 import { Component, AfterViewInit, Input } from '@angular/core';
 import { Globals } from '../../../globals';
@@ -182,13 +182,13 @@ export class DetectorCommandBarComponent implements AfterViewInit {
         
         
         if (this.gRPDFFileName == undefined) {
-          this.generatedOn = ResiliencyScoreReportHelper.generatedOn();
+          this.generatedOn = generateReportHelper.generatedOn();
           this.gRPDFFileName = `ResiliencyReport-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":", "-")}`;          
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}`, this.generatedOn, this.vfsFonts);
+          generateReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}`, this.generatedOn, this.vfsFonts);
         }
         else {
           this.gRPDFFileName = `${this.gRPDFFileName}`;
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}_(cached)`, this.generatedOn, this.vfsFonts);
+          generateReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.gRPDFFileName}_(cached)`, this.generatedOn, this.vfsFonts);
         }
         // Time after downloading report
         eT = new Date();

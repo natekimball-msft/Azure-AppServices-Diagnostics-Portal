@@ -1,7 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DetectorControlService, DetectorMetaData, DetectorResponse, DiagnosticService, ResiliencyScoreReportHelper, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
+import { DetectorControlService, DetectorMetaData, DetectorResponse, DiagnosticService, generateReportHelper, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
+import { DiagnosticData } from 'dist/diagnostic-data/lib/models/detector';
+import { tap } from 'rxjs/internal/operators/tap';
 import { DemoSubscriptions } from '../../../betaSubscriptions';
 import { WebSitesService } from '../../../resources/web-sites/services/web-sites.service';
 import { ResourceService } from '../../../shared-v2/services/resource.service';
@@ -33,7 +35,8 @@ export class DownloadReportComponent implements OnInit {
   resourceAppType: AppType = AppType.WebApp;
   resourceSku: Sku = Sku.All;
   vfsFonts: any;
-  
+  docDefinition: object;
+
 
   constructor(private _resourceService: ResourceService, private _route: ActivatedRoute, private telemetryService: TelemetryService,
     private http: HttpClient, private _diagnosticService: DiagnosticService, private _detectorControlService: DetectorControlService,
@@ -69,12 +72,20 @@ export class DownloadReportComponent implements OnInit {
       // Using this as an alternative to using the vfs_fonts.js build with PDFMake's build-vfs.js
       // as this file caused problems when being compiled in a library project like diagnostic-data
       //
+
       this.http.get<any>('assets/vfs_fonts.json').subscribe((data: any) => { this.vfsFonts = data });
+
       this.generateReportPDF();
     }
     else {
       this.downloadReportText = "Resource not supported for Download Report";
     }
+  }
+  logError(filename: string, error: any) {
+    console.log('File read failure');
+  }
+  log(filename: string, data: any) {
+    console.log('File read successfully');
   }
 
   private _checkIsWebAppProdSku(platform: OperatingSystem): boolean {
@@ -103,16 +114,25 @@ export class DownloadReportComponent implements OnInit {
         //If the page hasn't been refreshed this will use a cached request, so changing File Name to use the same name + "(cached)" to let them know they are seeing a cached version.
         let eT = new Date();
         let detectorTimeTaken = eT.getTime() - sT.getTime();
-
-
+        let dataSet: DiagnosticData[] = httpResponse.dataset;
         if (this.downloadReportFileName == undefined) {
-          this.generatedOn = ResiliencyScoreReportHelper.generatedOn();
+          this.generatedOn = generateReportHelper.generatedOn();
           this.downloadReportFileName = `${this.detectorName}-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":", "-")}`;
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}`, this.generatedOn, this.vfsFonts);
+          if (this.detectorName === "ResiliencyScore") {
+            generateReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}`, this.generatedOn, this.vfsFonts);
+          }
+          else {
+            generateReportHelper.generateDetectorReport(dataSet, `${this.downloadReportFileName}`, this.generatedOn, this.vfsFonts);
+          }
         }
         else {
-          this.downloadReportFileName = `${this.downloadReportFileName}`;
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}_(cached)`, this.generatedOn, this.vfsFonts);
+          if (this.detectorName === "ResiliencyScore") {
+            this.downloadReportFileName = `${this.downloadReportFileName}`;
+            generateReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}_(cached)`, this.generatedOn, this.vfsFonts);
+          }
+          else {
+            generateReportHelper.generateDetectorReport(dataSet, `${this.downloadReportFileName}_(cached)`, this.generatedOn, this.vfsFonts);
+          }
         }
         // Time after downloading report
         eT = new Date();
@@ -143,12 +163,12 @@ export class DownloadReportComponent implements OnInit {
         this.downloadReportText = "Report downloaded";
         this.isDownloaded = true;
         // Redirecting to AvailabilityandPerformance category
-        
+
         this._router.navigate([`../../`], {
-                relativeTo: this._route,                
-                queryParamsHandling: 'merge',
-                replaceUrl: true
-              });             
+          relativeTo: this._route,
+          queryParamsHandling: 'merge',
+          replaceUrl: true
+        });
       }, error => {
         loggingError.message = 'Error calling ResiliencyScore detector';
         loggingError.stack = error;

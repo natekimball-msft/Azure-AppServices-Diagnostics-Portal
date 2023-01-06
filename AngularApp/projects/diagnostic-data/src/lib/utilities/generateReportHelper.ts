@@ -1,9 +1,10 @@
 import * as pdfMake from "pdfmake/build/pdfmake";
 import { Observable } from 'rxjs';
 import { ResiliencyReportData, ResiliencyResource, ResiliencyFeature } from "../models/resiliencyReportData";
-import { DataTableResponseObject } from '../models/detector';
+import { DataTableResponseObject, DiagnosticData } from '../models/detector';
+import { Rendering } from "dist/diagnostic-data/lib/models/detector";
 
-export class ResiliencyScoreReportHelper {
+export class generateReportHelper {
 
     // Creates the ResiliencyResource object from a DataTableResponseObject and calls PDFMake to generate the PDF using the provided file name
     static generateResiliencyReport(table: DataTableResponseObject, fileName: string, generatedOn: string, vfsfonts: any) {
@@ -26,8 +27,34 @@ export class ResiliencyScoreReportHelper {
             i++;
         }
         let resiliencyReportData = new ResiliencyReportData(customerName, resiliencyResourceList);
-        this.generatePDF(resiliencyReportData, _fileName, _generatedOn, vfsfonts);
+        this.generateResiliencyPDF(resiliencyReportData, _fileName, _generatedOn, vfsfonts);
     }
+
+    static generateDetectorReport(dataSet: DiagnosticData[], fileName: string, generatedOn: string, vfsfonts: any) {
+        let _fileName: string = fileName;
+        let _generatedOn: string = generatedOn;
+        let customerName: string;
+        let _dataSet: DiagnosticData[] = dataSet;
+        let docDefinitionRenderings: string = "";
+        this.processDetectorData(_dataSet);
+        this.generateDetectorPDF(docDefinitionRenderings , _fileName, _generatedOn, vfsfonts);
+
+    }
+
+static processDetectorData(dataSet: DiagnosticData[]) {
+    const insightResponses = dataSet.filter(set => (<Rendering>set.renderingProperties).type === 7);
+    insightResponses.forEach(diagnosticData => {
+      const insights = this.parseInsights(diagnosticData, detectorResponse.metadata.id);
+      insights.forEach(insight => {
+        this.detectorSummaryViewModels.push(insight);
+      });
+    });
+}
+
+static parseInsights(diagnosticData: DiagnosticData):
+{
+
+}
 
     //
     // Calculates the background color for the Score
@@ -194,7 +221,7 @@ export class ResiliencyScoreReportHelper {
         for (let i: number = 0; i < resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList.length; i++) {
             rows = `${rows}[{ text: '${resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[i].Name}', style: 'rspfTableheader', }, `;
             for (let j: number = 0; j < resiliencyReportData.ResiliencyResourceList.length; j++) {
-                rows = `${rows}{ margin: [50, 2], image: ${ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[j].ResiliencyFeaturesList[i].ImplementationGrade)}, fit: [20, 20] }`;
+                rows = `${rows}{ margin: [50, 2], image: ${generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[j].ResiliencyFeaturesList[i].ImplementationGrade)}, fit: [20, 20] }`;
                 if (j + 1 < resiliencyReportData.ResiliencyResourceList.length) {
                     rows = `${rows},`
                 }
@@ -213,7 +240,7 @@ export class ResiliencyScoreReportHelper {
         return d.toISOString();
     }
 
-    static generatePDF(resiliencyReportData: ResiliencyReportData, fileName: string, generatedOn: string, vfsfonts: any) {
+    static generateResiliencyPDF(resiliencyReportData: ResiliencyReportData, fileName: string, generatedOn: string, vfsfonts: any) {
         let vfsFonts = vfsfonts;
         var docDefinition = {
             footer: function (currentPage, pageCount, pageSize) {
@@ -403,8 +430,8 @@ export class ResiliencyScoreReportHelper {
                             lineColor: 'white',
                             x1: 246,
                             y1: 110,
-                            x2: ResiliencyScoreReportHelper.NeedleX2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
-                            y2: ResiliencyScoreReportHelper.NeedleY2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
+                            x2: generateReportHelper.NeedleX2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
+                            y2: generateReportHelper.NeedleY2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
                             lineWidth: 10,
                             lineCap: 'round'
                         },
@@ -414,8 +441,8 @@ export class ResiliencyScoreReportHelper {
                             lineColor: 'black',
                             x1: 246,
                             y1: 110,
-                            x2: ResiliencyScoreReportHelper.NeedleX2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
-                            y2: ResiliencyScoreReportHelper.NeedleY2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
+                            x2: generateReportHelper.NeedleX2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
+                            y2: generateReportHelper.NeedleY2(resiliencyReportData.ResiliencyResourceList[0].OverallScore),
                             lineWidth: 6,
                             lineCap: 'round'
                         },
@@ -494,7 +521,7 @@ export class ResiliencyScoreReportHelper {
                     columns: [
                         {
                             alignment: 'center',
-                            text: [{ text: ResiliencyScoreReportHelper.ScoreAdjective(resiliencyReportData.ResiliencyResourceList[0].OverallScore), color: 'black', fontSize: 15, margin: [5, 2, 5, 2], width: 160 }]
+                            text: [{ text: generateReportHelper.ScoreAdjective(resiliencyReportData.ResiliencyResourceList[0].OverallScore), color: 'black', fontSize: 15, margin: [5, 2, 5, 2], width: 160 }]
                         }
                     ]
                 },
@@ -544,51 +571,51 @@ export class ResiliencyScoreReportHelper {
                                     ],
                                     [
                                         { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].Name, style: 'rspfTableheader', linkToDestination: 'useMultipleInstances', decoration: 'underline' },
-                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusUseMultipleInstances' },
+                                        { margin: [50, 2], image: generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusUseMultipleInstances' },
                                     ],
                                     [
                                         { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].Name, style: 'rspfTableheader', linkToDestination: 'healthCheck', decoration: 'underline' },
-                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusHealthCheck' }
+                                        { margin: [50, 2], image: generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusHealthCheck' }
                                     ],
                                     [
                                         { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].Name, style: 'rspfTableheader', linkToDestination: 'autoHeal', decoration: 'underline' },
-                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusAutoHeal' }
+                                        { margin: [50, 2], image: generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusAutoHeal' }
                                     ],
                                     [
                                         { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].Name, style: 'rspfTableheader', linkToDestination: 'deployMultipleRegions', decoration: 'underline' },
-                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusDeployMultipleRegions' }
+                                        { margin: [50, 2], image: generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusDeployMultipleRegions' }
                                     ],
                                     [
                                         { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].Name, style: 'rspfTableheader', linkToDestination: 'regionalPairing', decoration: 'underline' },
-                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].ImplementationGrade), fit: [20, 20], linkToDestination: ' statusRegionalPairing' }
+                                        { margin: [50, 2], image: generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].ImplementationGrade), fit: [20, 20], linkToDestination: ' statusRegionalPairing' }
                                     ],
                                     // [
                                     //     { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].Name, style: 'rspfTableheader' },
-                                    //     { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].ImplementationGrade), fit: [20, 20] }
+                                    //     { margin: [50, 2], image: generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].ImplementationGrade), fit: [20, 20] }
                                     // ],
                                     [
                                         { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].Name, style: 'rspfTableheader', linkToDestination: 'appDensity', decoration: 'underline' },
-                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusAppDensity' }
+                                        { margin: [50, 2], image: generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusAppDensity' }
                                     ],
                                     // [
                                     //     { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].Name, style: 'rspfTableheader' },
-                                    //     { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].ImplementationGrade), fit: [20, 20] }
+                                    //     { margin: [50, 2], image: generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].ImplementationGrade), fit: [20, 20] }
                                     // ],
                                     [
                                         { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].Name, style: 'rspfTableheader', linkToDestination: 'alwaysOn', decoration: 'underline' },
-                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusAlwaysOn' }
+                                        { margin: [50, 2], image: generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusAlwaysOn' }
                                     ],
                                     [
                                         { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].Name, style: 'rspfTableheader', linkToDestination: 'appServiceAdvisor', decoration: 'underline' },
-                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusAppServiceAdvisor' }
+                                        { margin: [50, 2], image: generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusAppServiceAdvisor' }
                                     ],
                                     [
                                         { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].Name, style: 'rspfTableheader', linkToDestination: '1aRRAffinity', decoration: 'underline' },
-                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].ImplementationGrade), fit: [20, 20], linkToDestination: '1statusARRAffinity' }
+                                        { margin: [50, 2], image: generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].ImplementationGrade), fit: [20, 20], linkToDestination: '1statusARRAffinity' }
                                     ],
                                     [
                                         { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].Name, style: 'rspfTableheader', linkToDestination: 'productionSKU', decoration: 'underline' },
-                                        { margin: [50, 2], image: ResiliencyScoreReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusProductionSKU' }
+                                        { margin: [50, 2], image: generateReportHelper.ImplementedImage(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].ImplementationGrade), fit: [20, 20], linkToDestination: 'statusProductionSKU' }
                                     ]
                                 ],
                                 layout: {
@@ -622,7 +649,7 @@ export class ResiliencyScoreReportHelper {
                         },
                         {
                             margin: [0, 4, 0, 0],
-                            image: ResiliencyScoreReportHelper.ImplementedImage(2),
+                            image: generateReportHelper.ImplementedImage(2),
                             fit: [15, 15],
                             width: 20
                         },
@@ -635,7 +662,7 @@ export class ResiliencyScoreReportHelper {
                         },
                         {
                             margin: [11, 4, 0, 0],
-                            image: ResiliencyScoreReportHelper.ImplementedImage(1),
+                            image: generateReportHelper.ImplementedImage(1),
                             fit: [15, 15],
                             width: 30
                         },
@@ -647,7 +674,7 @@ export class ResiliencyScoreReportHelper {
                         },
                         {
                             margin: [11, 4, 5, 0],
-                            image: ResiliencyScoreReportHelper.ImplementedImage(0),
+                            image: generateReportHelper.ImplementedImage(0),
                             fit: [15, 15],
                             width: 30
                         },
@@ -698,7 +725,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade) },
+                                { text: generateReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: generateReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[0].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]]
                     },
@@ -812,7 +839,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].ImplementationGrade) },
+                                { text: generateReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: generateReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[1].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -923,7 +950,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].ImplementationGrade) },
+                                { text: generateReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: generateReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[2].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1032,7 +1059,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade) },
+                                { text: generateReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: generateReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[3].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1113,7 +1140,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].ImplementationGrade) },
+                                { text: generateReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: generateReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[4].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1192,7 +1219,7 @@ export class ResiliencyScoreReportHelper {
                 //             ],
                 //             [
                 //                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                //                 { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].ImplementationGrade) },
+                //                 { text: generateReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: generateReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].ImplementationGrade) },
                 //                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[5].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                 //             ]
                 //         ]
@@ -1335,7 +1362,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].ImplementationGrade) },
+                                { text: generateReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: generateReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[6].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1432,7 +1459,7 @@ export class ResiliencyScoreReportHelper {
                 //             ],
                 //             [
                 //                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                //                 { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].ImplementationGrade) },
+                //                 { text: generateReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].ImplementationGrade), style: 'detectTableevenrow', bold:true, color: generateReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].ImplementationGrade) },
                 //                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[7].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                 //             ]
                 //         ]
@@ -1547,7 +1574,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].ImplementationGrade) },
+                                { text: generateReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: generateReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[8].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1686,7 +1713,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].ImplementationGrade) },
+                                { text: generateReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: generateReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[9].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1792,7 +1819,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].ImplementationGrade) },
+                                { text: generateReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: generateReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[10].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -1891,7 +1918,7 @@ export class ResiliencyScoreReportHelper {
                             ],
                             [
                                 { text: resiliencyReportData.ResiliencyResourceList[0].Name, style: 'detectTableevenrow', bold: true },
-                                { text: ResiliencyScoreReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: ResiliencyScoreReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].ImplementationGrade) },
+                                { text: generateReportHelper.ScoreGrade(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].ImplementationGrade), style: 'detectTableevenrow', bold: true, color: generateReportHelper.GradeColor(resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].ImplementationGrade) },
                                 { text: resiliencyReportData.ResiliencyResourceList[0].ResiliencyFeaturesList[11].GradeComments, style: 'detectTableevenrow', alignment: 'justify' }
                             ]
                         ]
@@ -2057,5 +2084,53 @@ export class ResiliencyScoreReportHelper {
             }
         };
         pdfMake.createPdf(docDefinition, null, vfsfonts.fonts, vfsfonts.vfs).download(`ResiliencyReport-${fileName.replace(":", "-").replace(".", "_")}.pdf`);
+    }
+
+    static generateDetectorPDF(docDefinitionRenderings: string, fileName: string, generatedOn: string, vfsfonts: any) {
+        let vfsFonts = vfsfonts;
+        var docDefinition = {
+            footer: function (currentPage, pageCount, pageSize) {
+                return [
+                    {
+                        columns: [
+                            {
+                                width: 60,
+                                text: '',
+                            },
+                            {
+                                width: 15,
+                                height: 15,
+                                image: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCABOAE4DASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9Ul+6KKF+6KWgBKKWvzQ/aG/bq+IOi/HTW7HwjrMdn4Y0W7NitmttE4ujGdsrM7KW5cMAVIwAPfPoYPA1cdJxp9FfU4cXjKeDgpTV77JH6XUV8e2Px68W6lY215beIJJLe4jWaJxDF8ysAQfu+hFSN8cPGn/Qdk/78xf/ABNe7/q3iv54/j/kfDf69ZenZ0p/dH/5I+vqK8W+AvxU1PxdqGoaTrd2t1cLGJ7eRkVGKg4dflAB6qR36/h7VXz2LwtTBVnRqbrsfaZbmFHNMNHE0L2ffdW7iUjU6kauM9MF+6KWkX7opaAOI+NvxBj+Ffwn8U+KWZVk06xke3DdGnYbIl/GRkH41+IVw0lzNJLK5kkkYs7sckk8kmv0c/4KafET+z/B/hvwTbS4m1O4OoXar18mL5UB9mdifrFX50tFX6Xw7hfZ4V1WtZv8Fp/mfnufYnnxKpraC/F6/wCR9Rfs++KDrXw9gtJH3XGmSNatk8lPvIfpg7f+AV6Q03vXzF+z54hOjeMpdPdsQalCVAzgeYmWX9N4/Gvo5p/evpqe1ux+T5nh1TxUmtpa/fv+NzsPhv4s/wCER8c6RqbPsgjnCTH/AKZt8r/kCT+FfcdfnM01fcPwW8Vf8Jh8N9HvGffcwx/ZZ89d8fy5PuRhv+BV8XxNhtKeIXo/zX6n6FwRi+V1cHJ/3l+T/Q7ikalpGr4I/WAX7opaRfuiuG+OHxAX4X/CfxP4l3qs9nZt9m3EDM7/ACRD/vtlrSnTlVmqcd27EVJqnBzlstT8wv2xPiF/wsv4/wDiW8hl82w06QaVac5GyHKsR7GQyN/wKvEmj9q0pt80jSSMzuxLMzHJJPUk1EbdjyFJ/Cv2+hRjQpRpR2ikj8brVpVqkqst27nqn7JPwpPxZ+OGjaZJvSxs0kv7qRDgqiL8v5yNGPoTXtWqWk+k6ldWNyuy4tZXhlX0ZSQR+Yr0D/gm74Ls9A8J+JPF9/LBBdalcLYW3nOqsIYhudhnszsB/wBsqf8AtNaLBpPxKnvrSWOW11SJbnMThgJB8rjjvlQ3/Aq8OjjubM6mG6WVvVb/AJ/gVm2W/wDCZSxf2k3f0e35fieXtLX0P+yF4u8vUtZ8OSv8syC9gUn+JcK4+pBT/vk181tNXR/DHxkfBPj/AETWGfZBb3Cic/8ATJvlk/8AHWP6V6GY4b63halJb209Vqj57J8V9Rx1Kv0T19Hoz9EKRqFYMAQcg8gihq/GD+hgX7or4w/4KQfEA2vh3w14Lt5MSX0raldqOvlx5SMH2LM5/wC2dfZ6/dFfk/8AtW+Pf+FjfHTxLfRyeZZWc39m2vp5cPyEj2Z97f8AAq+o4dwv1jGqb2gr/PZf5/I+cz7Eexwjgt5afLr/AF5nizRVs6TqQ2pby8EcI3r7VQaOvZ/2P/h3/wALB+PXh+KaLzLHSmOq3ORkYiIKA+xkMY+hNfp9essNSlWltFXPzilQeKqRpLdux57Wz4J1D7BrhhJxHcps6/xDkf1H419cftR/shmY3njDwHZDfgy3+h26/e7mSBR37mMf8B9K+K2ke3kjnjOJI2Dr9Qc1x4fG0cwoKtRe266ryDFYCrg6ssNWWklo+j7M9caaoWmqpDeLdW8cyHKSKGH0IzQ0ld58r7Np2Z+h37PvjL/hNvhRol28gku7WP7DcfNuO+P5QWPqy7G/4FXojV8jfsTeNPJ1nXfDE0h8u5iW+t1JGA6ELIB6kqyH6Rmvrlq/HM2w31XGVILZu69Hr/wD95ybFfW8DTm90rP1Wn47gv3RXxRr3/BN8XesXk+meNxbWEsrPDBcacZJI1JJClxKNxHrgZ9K+1VkG0UvmCsMHmGJwLk8PK199E/zOzFYHD41JV43ttq1+R8M/wDDte9/6H63/wDBU3/x2vd/2af2YbT9n2LV7h9X/tzVdS2RtcC38lIolJIRV3N1JyTnsPTn2/zBR5grpxGcY3FU3SqzvF+SX5Iww+VYPC1FVpQs15t/mx1fN3xs/Yr0P4n+IG1zRNSXwvf3BLXsa2vnQ3DH/loF3LsY98cHrgHJP0f5go8wVw4bFVsHP2lCVmdmIwtHFw5K0bo+R7P9g+5sbSK3j8ZRFY12gnTzn/0ZUh/YXu/+hxh/8F5/+OV9aeYKPMFer/b2YLT2n4L/ACPGfD2Wt3dP8Zf5ngfwd/ZVT4Y+NIPEV3r/APak1rG628MVt5ShnUoWYlmz8rHj39q99ak8wUjSCvKxWKrYyftK8rvb+rHr4XB0MFT9lQjZb/1c/9k='
+                            },
+                            {
+                                text: '\n  Powered by Azure App Service',
+                                alignment: 'left',
+                                fontSize: 6,
+                                width: 200
+                            },
+                            {
+                                text: `\n${currentPage.toString()} of ${pageCount}`,
+                                alignment: 'center',
+                                fontSize: 6,
+                                width: pageSize.width - 535
+                            },
+                            {
+                                text: `\nReport generated on: ${generatedOn}`,
+                                alignment: 'right',
+                                fontSize: 6,
+                                width: 200
+                            },
+                            {
+                                width: 60,
+                                text: '',
+                            },
+                        ]
+                    },
+                ]
+            },
+            pageSize: 'LETTER',
+            pageOrientation: 'portrait',
+            pageMargins: 60,
+        };
     }
 }

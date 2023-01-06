@@ -9,7 +9,7 @@ import { ResourceService } from '../../../shared/services/resource.service';
 import { StartupService } from '../../../shared/services/startup.service';
 import { AppLensCloudRegionUtility, AppLensCloudRegion } from '../../../shared/utilities/applens-cloud-region-utility';
 import { DirectionalHint } from 'office-ui-fabric-react';
-import { DetectorResponse, TelemetryEventNames, TelemetryService, ResiliencyScoreReportHelper } from 'diagnostic-data';
+import { DetectorResponse, TelemetryEventNames, TelemetryService, generateReportHelper } from 'diagnostic-data';
 import { SeverityLevel } from '@microsoft/applicationinsights-web';
 import { HttpClient } from '@angular/common/http';
 import { DetectorControlService } from 'diagnostic-data';
@@ -374,13 +374,13 @@ export class DashboardContainerComponent implements OnInit {
         let eT = new Date();
         let detectorTimeTaken = eT.getTime() - sT.getTime();
         if (this.downloadReportFileName == undefined) {
-          this.generatedOn = ResiliencyScoreReportHelper.generatedOn();
+          this.generatedOn = generateReportHelper.generatedOn();
           this.downloadReportFileName = `ResiliencyReport-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":", "-")}`;
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}`, this.generatedOn, this.vfsFonts);
+          generateReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}`, this.generatedOn, this.vfsFonts);
         }
         else {
           this.downloadReportFileName = `${this.downloadReportFileName}`;
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}_(cached)`, this.generatedOn, this.vfsFonts);
+          generateReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}_(cached)`, this.generatedOn, this.vfsFonts);
         }
         // Time after downloading report
         eT = new Date();

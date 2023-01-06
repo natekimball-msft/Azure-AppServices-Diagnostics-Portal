@@ -1,4 +1,4 @@
-import { DetectorMetaData, DetectorResponse, DetectorType, ResiliencyScoreReportHelper, HealthStatus, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
+import { DetectorMetaData, DetectorResponse, DetectorType, generateReportHelper, HealthStatus, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { ApplensDiagnosticService } from '../../services/applens-diagnostic.service';
@@ -388,13 +388,13 @@ updateDownloadReportId() {
         let eT = new Date();
         let detectorTimeTaken = eT.getTime() - sT.getTime();
         if (this.downloadReportFileName == undefined) {
-          this.generatedOn = ResiliencyScoreReportHelper.generatedOn();
+          this.generatedOn = generateReportHelper.generatedOn();
           this.downloadReportFileName = `ResiliencyReport-${JSON.parse(httpResponse.dataset[0].table.rows[0][0]).CustomerName}-${this.generatedOn.replace(":", "-")}`;
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}`, this.generatedOn, this.vfsFonts);
+          generateReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}`, this.generatedOn, this.vfsFonts);
         }
         else {
           this.downloadReportFileName = `${this.downloadReportFileName}`;
-          ResiliencyScoreReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}_(cached)`, this.generatedOn, this.vfsFonts);
+          generateReportHelper.generateResiliencyReport(httpResponse.dataset[0].table, `${this.downloadReportFileName}_(cached)`, this.generatedOn, this.vfsFonts);
         }
         // Time after downloading report
         eT = new Date();
