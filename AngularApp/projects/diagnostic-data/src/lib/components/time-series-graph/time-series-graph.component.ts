@@ -306,7 +306,7 @@ export class TimeSeriesGraphComponent extends DataRenderBaseComponent implements
             dataLabels: {
             enabled: true,
             },
-            yAxisLabelsLength: yIndex,
+            dataLength: yIndex,
             accessibility: {},
             events: () => {},
         },
