@@ -3,6 +3,7 @@ import { DataProviderMetadata, DetectorResponse } from 'diagnostic-data';
 import { ActivatedRoute, Params } from '@angular/router';
 import { ApplensDiagnosticService } from '../../services/applens-diagnostic.service';
 import { DetectorControlService } from 'diagnostic-data';
+import { QueryResponseService } from '../../services/query-response.service';
 
 @Component({
   selector: 'tab-data-sources',
@@ -11,11 +12,18 @@ import { DetectorControlService } from 'diagnostic-data';
 })
 export class TabDataSourcesComponent {
 
-  constructor(private _route: ActivatedRoute, private _diagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService) {
+  constructor(private _route: ActivatedRoute, private _diagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService, private _queryResponseService: QueryResponseService) {
   }
 
+  //detectorResponse: DetectorResponse;
   @Input() onboardingMode: boolean = false;
   @Input() detectorResponse: DetectorResponse;
+  // @Input() set detectorResponse(res){
+  //   this.detectorResponse = res;
+  // }
+  // get detectorResponse(){
+  //   return this.detectorResponse;
+  // }
 
   detector: string;
   error: any;
@@ -43,6 +51,11 @@ export class TabDataSourcesComponent {
       this.loadingDetector = false;
     }
   }
+
+  // ngOnChanges(){
+  //   this.dataProviderMetadata = this.getDataProviderMetadata(this.detectorResponse);
+  //   this.loadingDetector = false;
+  // }
 
   getDetectorResponse() {
     this.detectorResponse = null;

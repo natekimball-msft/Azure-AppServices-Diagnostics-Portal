@@ -38,6 +38,7 @@ import { CreateWorkflowComponent } from '../workflow/create-workflow/create-work
 import { workflowNodeResult, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { WorkflowRunDialogComponent } from '../workflow/workflow-run-dialog/workflow-run-dialog.component';
+import { QueryResponseService } from '../services/query-response.service';
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
 using Diagnostics.DataProviders;
@@ -373,7 +374,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
     public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute,
     private _applensCommandBarService: ApplensCommandBarService, private _router: Router, private _themeService: GenericThemeService, private _applensGlobal: ApplensGlobal,
-    private matDialog: MatDialog) {
+    private matDialog: MatDialog, private _queryResponseService: QueryResponseService) {
     this.lightOptions = {
       theme: 'vs',
       language: 'csharp',
@@ -560,6 +561,9 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   }
 
   startUp() {
+    this._queryResponseService.getQueryResponse().subscribe(qr => {
+      this.queryResponse = qr;
+    });
     this.detectorGraduation = true;
     let isSystemInvoker: boolean = this.mode === DevelopMode.EditMonitoring || this.mode === DevelopMode.EditAnalytics;
     this.branchInput = this._activatedRoute.snapshot.queryParams['branchInput'];
@@ -1325,7 +1329,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     if (this.runButtonDisabled) {
       return;
     }
-    this.queryResponse = undefined;
+    //this.queryResponse = undefined;
+    this._queryResponseService.clearQueryResponse();
     this.buildOutput = [];
     this.buildOutput.push("------ Build started ------");
     this.detailedCompilationTraces = [];
@@ -1376,7 +1381,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         getFullResponse: true
       }, this.getDetectorId())
         .subscribe((response: any) => {
-          this.queryResponse = response.body;
+          this._queryResponseService.addQueryResponse(response.body)
+          //this.queryResponse = response.body;
           if (this.queryResponse.invocationOutput && this.queryResponse.invocationOutput.metadata && this.queryResponse.invocationOutput.metadata.id && !isSystemInvoker) {
             this.id = this.queryResponse.invocationOutput.metadata.id;
             let dataset = this.queryResponse.invocationOutput.dataset;
@@ -2327,5 +2333,11 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     let file = $event.target.files[0];
     const text = await file.text();
     this.createWorkflow.uploadFlowData(text);
+  }
+
+  public static addFormQueryParams(formResponse: DetectorResponse){
+    formResponse.dataProvidersMetadata.forEach(dataProvider => {
+      
+    })
   }
 }
