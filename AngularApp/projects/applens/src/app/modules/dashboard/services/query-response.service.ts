@@ -21,8 +21,6 @@ export class QueryResponseService {
   }
 
   public appendDataSources(qr: QueryResponse<DetectorResponse>, key: string){
-    //append datasources
-    this.qrObservable.next(undefined);
     let newKey = this.generateDatasourceKey();
     this.dataSourcesDictionary.push({key: newKey, value: qr.invocationOutput.dataProvidersMetadata});
     if (!!key && key != '') this.removeDataSources(key);
@@ -54,7 +52,6 @@ export class QueryResponseService {
   }
 
   private removeDataSources(key: string){
-    // remover key
     let valueToRemove = this.dataSourcesDictionary.find(x => x.key == key);
     valueToRemove.value.forEach((v, index) => {
       v.propertyBag.forEach(q => {

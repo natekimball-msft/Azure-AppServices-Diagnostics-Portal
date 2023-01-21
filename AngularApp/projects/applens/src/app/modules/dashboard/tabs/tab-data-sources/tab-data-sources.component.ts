@@ -37,6 +37,13 @@ export class TabDataSourcesComponent {
 
   ngOnInit() {
 
+    this._queryResponseService.getQueryResponse().subscribe(x => {
+      this.detectorResponse = x.invocationOutput;
+      this.dataProviderMetadata = this.getDataProviderMetadata(this.detectorResponse);
+    },err => {
+      console.error(err);
+    })
+
     if (!this.onboardingMode) {
       this._route.params.subscribe((params: Params) => {
         this.getDetectorResponse();
