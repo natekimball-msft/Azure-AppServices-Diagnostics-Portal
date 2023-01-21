@@ -1329,7 +1329,6 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     if (this.runButtonDisabled) {
       return;
     }
-    //this.queryResponse = undefined;
     this._queryResponseService.clearQueryResponse();
     this.buildOutput = [];
     this.buildOutput.push("------ Build started ------");
@@ -1382,7 +1381,6 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       }, this.getDetectorId())
         .subscribe((response: any) => {
           this._queryResponseService.addQueryResponse(response.body)
-          //this.queryResponse = response.body;
           if (this.queryResponse.invocationOutput && this.queryResponse.invocationOutput.metadata && this.queryResponse.invocationOutput.metadata.id && !isSystemInvoker) {
             this.id = this.queryResponse.invocationOutput.metadata.id;
             let dataset = this.queryResponse.invocationOutput.dataset;
@@ -2333,11 +2331,5 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     let file = $event.target.files[0];
     const text = await file.text();
     this.createWorkflow.uploadFlowData(text);
-  }
-
-  public static addFormQueryParams(formResponse: DetectorResponse){
-    formResponse.dataProvidersMetadata.forEach(dataProvider => {
-      
-    })
   }
 }

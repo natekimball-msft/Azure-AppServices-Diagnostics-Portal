@@ -15,15 +15,8 @@ export class TabDataSourcesComponent {
   constructor(private _route: ActivatedRoute, private _diagnosticApiService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService, private _queryResponseService: QueryResponseService) {
   }
 
-  //detectorResponse: DetectorResponse;
   @Input() onboardingMode: boolean = false;
   @Input() detectorResponse: DetectorResponse;
-  // @Input() set detectorResponse(res){
-  //   this.detectorResponse = res;
-  // }
-  // get detectorResponse(){
-  //   return this.detectorResponse;
-  // }
 
   detector: string;
   error: any;
@@ -40,9 +33,7 @@ export class TabDataSourcesComponent {
     this._queryResponseService.getQueryResponse().subscribe(x => {
       this.detectorResponse = x.invocationOutput;
       this.dataProviderMetadata = this.getDataProviderMetadata(this.detectorResponse);
-    },err => {
-      console.error(err);
-    })
+    });
 
     if (!this.onboardingMode) {
       this._route.params.subscribe((params: Params) => {
@@ -58,11 +49,6 @@ export class TabDataSourcesComponent {
       this.loadingDetector = false;
     }
   }
-
-  // ngOnChanges(){
-  //   this.dataProviderMetadata = this.getDataProviderMetadata(this.detectorResponse);
-  //   this.loadingDetector = false;
-  // }
 
   getDetectorResponse() {
     this.detectorResponse = null;
