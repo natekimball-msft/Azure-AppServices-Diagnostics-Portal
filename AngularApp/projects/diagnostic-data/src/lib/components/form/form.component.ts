@@ -12,7 +12,7 @@ import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagn
 import { DirectionalHint } from 'office-ui-fabric-react/lib/Tooltip';
 import { IDropdownOption, IDropdown } from 'office-ui-fabric-react';
 import { UriUtilities } from '../../utilities/uri-utilities';
-import { QueryResponseService } from 'projects/applens/src/app/modules/dashboard/services/query-response.service';
+import { QueryResponseService } from '../../../../../applens/src/app/modules/dashboard/services/query-response.service';
 
 @Component({
   selector: 'custom-form',

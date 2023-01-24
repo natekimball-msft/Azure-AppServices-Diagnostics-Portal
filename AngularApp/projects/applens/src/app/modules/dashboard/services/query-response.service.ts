@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { DataProviderMetadata } from 'dist/diagnostic-data/diagnostic-data/src/public_api';
 import { QueryResponse } from 'projects/diagnostic-data/src/lib/models/compiler-response';
-import { DetectorResponse } from 'projects/diagnostic-data/src/lib/models/detector';
+import { DataProviderMetadata, DetectorResponse } from 'projects/diagnostic-data/src/lib/models/detector';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
