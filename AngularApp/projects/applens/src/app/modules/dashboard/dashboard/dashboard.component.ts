@@ -195,6 +195,7 @@ export class DashboardComponent implements OnDestroy {
     let resourceProviderFull = `${resourceInfo.provider}/${resourceInfo.resourceTypeName}`.toLowerCase();
     let mainPageResourceType = this.defaultResourceTypes.find(x => x.resourceType && x.resourceType.toLowerCase() === resourceProviderFull);
     let queryParams = {
+      ...(this.accessError.includes("User is not allowed to access this resource without a case number") ? { caseNumberNeeded: "true" } : {}),
       caseNumber: this._diagnosticApiService.CustomerCaseNumber,
       errorMessage: this.accessError,
       resourceType: mainPageResourceType? mainPageResourceType.resourceType: "armresourceid",
