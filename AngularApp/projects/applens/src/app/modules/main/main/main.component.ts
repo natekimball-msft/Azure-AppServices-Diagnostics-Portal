@@ -105,7 +105,7 @@ export class MainComponent implements OnInit {
       this.resourceTypes = this.resourceTypes.filter(resourceType => !resourceType.caseId);
     }
 
-    if (this._activatedRoute.snapshot.queryParams['caseNumber'] && this._activatedRoute.snapshot.queryParams['caseNumber'] !== "undefined") {
+    if (this._activatedRoute.snapshot.queryParams['caseNumber'] && this._activatedRoute.snapshot.queryParams['caseNumber'] !== "null" && this._activatedRoute.snapshot.queryParams['caseNumber'] !== "undefined") {
       this.caseNumber = this._activatedRoute.snapshot.queryParams['caseNumber'];
     }
     if (this._activatedRoute.snapshot.queryParams['resourceName']) {
