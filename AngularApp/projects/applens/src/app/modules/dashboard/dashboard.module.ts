@@ -138,6 +138,7 @@ import { WorkflowUserAccessComponent } from './workflow/workflow-user-access/wor
 import { InputNodeComponent } from './workflow/input-node/input-node.component';
 import { CreateExperiencePicker } from './create-experience-picker/create-experience-picker.component';
 import { DetectorDesigner } from './detector-designer/detector-designer.component';
+import { DetectorSettingsPanel } from './detector-settings-panel/detector-settings-panel.component';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
@@ -615,6 +616,6 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         IfElseConditionStepComponent, ConditionIftrueStepComponent, ConditionIffalseStepComponent, SwitchStepComponent, SwitchCaseStepComponent, SwitchCaseDefaultStepComponent,
         KustoQueryDialogComponent, DetectorNodeComponent, KustoNodeComponent, MarkdownNodeComponent, NodeActionsComponent, ConfigureVariablesComponent, CommonNodePropertiesComponent,
         NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent, WorkflowUserAccessComponent, ForeachNodeComponent, DevopsDeploymentsComponent, InputNodeComponent, 
-        CreateExperiencePicker, DetectorDesigner]
+        CreateExperiencePicker, DetectorDesigner, DetectorSettingsPanel]
 })
 export class DashboardModule { }
