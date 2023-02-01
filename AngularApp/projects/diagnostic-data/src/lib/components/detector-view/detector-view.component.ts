@@ -250,8 +250,6 @@ export class DetectorViewComponent implements OnInit {
       }
       else {
         this.detectorDataLocalCopy = this.mergeDetectorListResponse(data);
-        this._detectorMetadataService.setAuthor(this.detectorDataLocalCopy.metadata.author);
-        this._detectorMetadataService.setDescription(this.detectorDataLocalCopy.metadata.description);
       }
 
 
