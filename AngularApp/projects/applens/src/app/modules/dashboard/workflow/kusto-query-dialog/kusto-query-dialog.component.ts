@@ -17,7 +17,7 @@ import { WorkflowService } from '../services/workflow.service';
 export class KustoQueryDialogComponent implements OnInit {
 
   // More editor options at https://github.com/Microsoft/vscode/issues/30795#issuecomment-410998882
-  editorOptions = { theme: 'vs-dark', language: 'text/plain', minimap: { enabled: false } };
+  editorOptions = { theme: 'vs-dark', language: 'csharp', minimap: { enabled: false } };
   code: string = '';
   kustoQueryColumns: DataTableResponseColumn[] = [];
   dataSource: any[] = [];
@@ -35,7 +35,7 @@ export class KustoQueryDialogComponent implements OnInit {
     private _diagnosticService: ApplensDiagnosticService, private _detectorControlService: DetectorControlService,
     private _workflowService: WorkflowService) {
     this.inputKustoQueryDialogParams = data;
-    this.code = data.queryText;
+    this.code = '$@"' + data.queryText + '"';
     if (data.queryLabel) {
       this.kustoQueryLabel = data.queryLabel;
     }
@@ -63,8 +63,13 @@ export class KustoQueryDialogComponent implements OnInit {
       return;
     }
 
+    if (!this.code.startsWith('$@"') || !this.code.endsWith('"')){
+      this._workflowService.showMessageBox("Error", "Invalid query text. The query text should start with $@ and end with a double quote");
+      return;
+    }
+
     let dialogResult: kustoQueryDialogParams = {
-      queryText: this.encodeString(this.code),
+      queryText: this.encodeString(this.getQueryText()),
       variables: this.variablesInMemoryCopy,
       queryLabel: this.kustoQueryLabel,
       kustoQueryColumns: this.kustoQueryColumns,
@@ -76,10 +81,16 @@ export class KustoQueryDialogComponent implements OnInit {
   }
 
   executeQuery() {
+
+    if (!this.code.startsWith('$@"') || !this.code.endsWith('"')){
+      this._workflowService.showMessageBox("Error", "Invalid query text. The query text should start with $@ and end with a double quote");
+      return;
+    }
+
     let dynamicExpression: dynamicExpressionBody = {
       WorkflowId: 'Workflow1',
       OperationName: this.kustoQueryLabel,
-      Text: this.code,
+      Text: this.getQueryText(),
       Variables: this.inputKustoQueryDialogParams.completionOptions,
       IsKustoQuery: true
     };
@@ -158,6 +169,13 @@ export class KustoQueryDialogComponent implements OnInit {
 
   getKustoSampleUsage(variable: stepVariable): string {
     return this._workflowService.getKustoSampleUsage(variable);
+  }
+
+  getQueryText(): string {
+    let code = this.code.substring(3);
+    code = code.substring(0, code.length - 1);
+    console.log(code);
+    return code;
   }
 
 }
