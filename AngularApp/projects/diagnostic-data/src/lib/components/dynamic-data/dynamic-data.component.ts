@@ -47,6 +47,7 @@ import { CheckStepComponent } from '../step-views/check-step-view/check-step.com
 import { ButtonStepComponent } from '../step-views/button-step-view/button-step.component';
 import { ClientScriptViewComponent } from '../client-script-view/client-script-view.component';
 import { WorkflowResultComponent } from '../workflow-result/workflow-result.component';
+import { ArchitectureDiagramComponent } from '../architecture-diagram/architecture-diagram.component';
 
 @Component({
   selector: 'dynamic-data',
@@ -142,6 +143,7 @@ export class DynamicDataComponent implements OnInit {
   }
 
   private _findInputComponent(type: RenderingType): any {
+    debugger; 
     switch (type) {
       case RenderingType.TimeSeries:
         return TimeSeriesGraphComponent;
@@ -204,6 +206,8 @@ export class DynamicDataComponent implements OnInit {
         return ClientScriptViewComponent;
       case RenderingType.WorkflowResult:
         return WorkflowResultComponent;
+      case RenderingType.ArchitectureDiagramResult:
+        return ArchitectureDiagramComponent;   
       default:
         return null;
     }

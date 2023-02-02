@@ -152,6 +152,7 @@ import { WorkflowResultComponent } from './components/workflow-result/workflow-r
 import { WorkflowViewComponent } from './components/workflow-view/workflow-view.component';
 import { WorkflowNodeComponent } from './components/workflow-node/workflow-node.component';
 import { NgFlowchartModule } from 'projects/ng-flowchart/dist';
+import { ArchitectureDiagramComponent } from './components/architecture-diagram/architecture-diagram.component';
 
 @NgModule({
     imports: [
@@ -253,7 +254,8 @@ import { NgFlowchartModule } from 'projects/ng-flowchart/dist';
         GanttChartTaskbarColorsComponent,
         WorkflowResultComponent,
         WorkflowViewComponent,
-        WorkflowNodeComponent
+        WorkflowNodeComponent,
+        ArchitectureDiagramComponent
     ],
     exports: [
         FormsModule, TimeSeriesGraphComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent, ClientScriptViewComponent,
