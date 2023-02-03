@@ -1,3 +1,4 @@
-<div class="architecture-diagram-node-step" #canvasContent>
-    <span>{{ data.name }}</span>
+<div [attr.name]="data.name" #canvasContent>
+  <span>step</span>
+  <button class="btn" (click)="onAddRoute()">Add Route</button>
   </div>
