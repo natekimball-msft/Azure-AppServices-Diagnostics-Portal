@@ -1,0 +1,37 @@
+<!-- <div class="palette">
+    <div *ngFor="let item of architecture" [ngFlowchartStep]="{
+      template: stepContent,  
+      type: item.type, 
+      data: item.data  
+    }">
+        <span>{{item.name}}</span>
+    </div>
+</div>
+
+<ng-template #stepContent let-data>
+  <div class="step"
+    (click)="onDelete(data.id)"
+  >
+    <span>{{ data.data.name }}</span>
+  </div>
+</ng-template> -->
+<p>architecture diagram component works!</p>
+<div class="architecture-class" ngFlowchartCanvas>
+</div>
+<div class="palette">
+    <div *ngFor="let item of architecture" [ngFlowchartStep]="{
+      template: stepContent,  
+      type: item.type, 
+      data: item.data  
+    }">
+        <span>{{item.name}}</span>
+    </div>
+</div>
+
+<ng-template #stepContent let-data>
+  <div class="step"
+    (click)="onDelete(data.id)"
+  >
+    <span>{{ data.data.name }}</span>
+  </div>
+</ng-template>
