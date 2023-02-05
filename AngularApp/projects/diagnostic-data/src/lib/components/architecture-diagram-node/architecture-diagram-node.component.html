@@ -1,4 +1,13 @@
 <div [attr.name]="data.name" #canvasContent>
-  <span>step</span>
-  <button class="btn" (click)="onAddRoute()">Add Route</button>
+  <div class="panel-heading panel-title-switch">
+    <div class="step-container" >
+      <div class="step-heading">
+          {{data.name}}
+      </div>
+      <div class="step-content">
+          {{data.inputs[0].name}}
+          {{data.icon}}
+      </div>
+  </div>
+  </div>
   </div>

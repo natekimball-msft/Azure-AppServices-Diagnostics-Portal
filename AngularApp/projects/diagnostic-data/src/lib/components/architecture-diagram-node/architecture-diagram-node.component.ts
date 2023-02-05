@@ -10,29 +10,34 @@ export class ArchitectureDiagramNodeComponent extends NgFlowchartStepComponent {
 
   routes = [];
 
-  canDrop(dropEvent: NgFlowchart.DropTarget): boolean {
-    return true;
+
+  ngOnInit(): void{
+    console.log(this.data); 
   }
+
+  // canDrop(dropEvent: NgFlowchart.DropTarget): boolean {
+  //   return true;
+  // }
 
   
 
-  onAddRoute() {
-    let route = {
-      name: 'New Route',
-      condition: '',
-      sequence: null
-    }
-    let index = this.routes.push(route);
-    route.sequence = index;
+  // onAddRoute() {
+  //   let route = {
+  //     name: 'New Route',
+  //     condition: '',
+  //     sequence: null
+  //   }
+  //   let index = this.routes.push(route);
+  //   route.sequence = index;
 
-    this.addChild({
-      template: ArchitectureDiagramNodeComponent, //another custom step
-      type: 'do-action',
-      data: route
-    }, {
-      sibling: true
-    });
-  }
+  //   this.addChild({
+  //     template: ArchitectureDiagramNodeComponent, //another custom step
+  //     type: 'do-action',
+  //     data: route
+  //   }, {
+  //     sibling: true
+  //   });
+  // }
   
   
 

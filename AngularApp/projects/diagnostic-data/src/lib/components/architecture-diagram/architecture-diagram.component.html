@@ -15,15 +15,20 @@
     <span>{{ data.data.name }}</span>
   </div>
 </ng-template> -->
-<p>architecture diagram component works!</p>
+<!-- <p>architecture diagram component works!</p>
 <div class="architecture-class" ngFlowchartCanvas>
 </div>
 <div class="palette">
-    <div *ngFor = "let item of jsonArchitectureArr" [ngFlowchartStep]="{
-        template: ArchitectureDiagramNodeComponent,
-        type: item.type,
-        name: item.name
-      }">
-          <!-- <span>{{item}}</span> -->
-      </div>
-</div>
+  <div *ngIf = "showCanvas">
+    <div [ngFlowchartStep]="{
+      template: ArchitectureDiagramNodeComponent,
+      type: architecture.type,
+      name: architecture.name
+    }">
+        <span>{{architecture}}</span>
+    </div>
+  </div>
+   
+</div> -->
+<div class="architecture-class" ngFlowchartCanvas [ngFlowchartOptions]="options">
+<div class="palette">

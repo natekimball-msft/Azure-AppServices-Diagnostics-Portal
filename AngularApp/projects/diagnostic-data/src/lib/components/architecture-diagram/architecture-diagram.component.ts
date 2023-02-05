@@ -1,7 +1,18 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ConsoleService } from '@ng-select/ng-select/lib/console.service';
+import { ConditionIffalseStepComponent } from 'projects/applens/src/app/modules/dashboard/workflow/condition-iffalse-step/condition-iffalse-step.component';
+import { ConditionIftrueStepComponent } from 'projects/applens/src/app/modules/dashboard/workflow/condition-iftrue-step/condition-iftrue-step.component';
+import { DetectorNodeComponent } from 'projects/applens/src/app/modules/dashboard/workflow/detector-node/detector-node.component';
+import { IfElseConditionStepComponent } from 'projects/applens/src/app/modules/dashboard/workflow/ifelse-condition-step/ifelse-condition-step.component';
+import { KustoNodeComponent } from 'projects/applens/src/app/modules/dashboard/workflow/kusto-node/kusto-node.component';
 import { MarkdownNodeComponent } from 'projects/applens/src/app/modules/dashboard/workflow/markdown-node/markdown-node.component';
+import { SwitchCaseDefaultStepComponent } from 'projects/applens/src/app/modules/dashboard/workflow/switch-case-default-step/switch-case-default-step.component';
+import { SwitchCaseStepComponent } from 'projects/applens/src/app/modules/dashboard/workflow/switch-case-step/switch-case-step.component';
+import { SwitchStepComponent } from 'projects/applens/src/app/modules/dashboard/workflow/switch-step/switch-step.component';
+import { WorkflowRootNodeComponent } from 'projects/applens/src/app/modules/dashboard/workflow/workflow-root-node/workflow-root-node.component';
 import { NgFlowchart, NgFlowchartCanvasDirective, NgFlowchartStepComponent, NgFlowchartStepRegistry } from 'projects/ng-flowchart/dist';
+import { FlowFlags } from 'typescript';
 import { DataTableResponseObject, DiagnosticData, Rendering } from '../../models/detector';
 import { DiagnosticService } from '../../services/diagnostic.service';
 import { FeatureNavigationService } from '../../services/feature-navigation.service';
@@ -27,8 +38,34 @@ canvas: NgFlowchartCanvasDirective;
   architectureObj : any; 
   jsonArchitectureArr : any = []; 
   disabled = false;
+  jsonArchitecture: any; 
 
+  options: NgFlowchart.Options = {
+    stepGap: 40,
+    isSequential: false,
+    rootPosition: 'TOP_CENTER',
+    zoom: {
+      mode: 'DISABLED'
+    }
 
+  };
+
+  /*items = [
+    {
+      name: 'Logger',
+      type: 'log',
+      data: {
+        name: 'Log',
+        icon: { name: 'log-icon', color: 'blue' },
+        config: {
+          message: null,
+          severity: null
+        }
+      }
+    }
+  ]
+  */
+ items = []; 
 
 
   constructor(private _diagnosticService: DiagnosticService,  private stepRegistry: NgFlowchartStepRegistry, private _router: Router,
@@ -42,12 +79,12 @@ canvas: NgFlowchartCanvasDirective;
     
   ngAfterViewInit() {
     //created from standared ng-template refs
-    debugger; 
     // this.stepRegistry.registerStep('markdown', ArchitectureDiagramNodeComponent);
     this.stepRegistry.registerStep('sample-step', ArchitectureDiagramNodeComponent);
     this.stepRegistry.registerStep('do-action', ArchitectureDiagramNodeComponent);
 
     this.stepRegistry.registerStep('notification', ArchitectureDiagramNodeComponent);
+    //this.stepRegistry.registerStep('undefined', ArchitectureDiagramNodeComponent);
 
     
     //created from custom component
@@ -68,10 +105,12 @@ canvas: NgFlowchartCanvasDirective;
    // parses the incoming data to render a form
    private parseData(data: DataTableResponseObject) {
 
+    debugger; 
+
     if(this.canvas == undefined){
+      console.log("canvas undefined")
       return; 
     }
-    debugger; 
     let numRows = data.rows.length; 
      
     //numRows should always be one 
@@ -88,31 +127,51 @@ canvas: NgFlowchartCanvasDirective;
 
       }
     }
-    let jsonArchitecture = JSON.parse(this.architecture); 
-    console.log(jsonArchitecture); 
-    this.architectureObj = jsonArchitecture; 
-    console.log(typeof(this.architectureObj)); 
+    this.jsonArchitecture = JSON.parse(this.architecture); 
+    //console.log(this.jsonArchitecture); 
+    this.architectureObj = this.jsonArchitecture; 
+    //console.log(typeof(this.architectureObj)); 
 
     let flow = this.canvas.getFlow();
-    console.log(this.architecture); 
+
+    
+    //console.log(this.architecture); 
     debugger; 
-    console.log(Object.keys(jsonArchitecture)); 
+    //console.log(Object.keys(this.jsonArchitecture)); 
 
-    console.log(jsonArchitecture["root"]); 
+    //console.log(this.jsonArchitecture["root"]); 
 
 
-    this.jsonArchitectureArr.push(jsonArchitecture["root"]);
+    /*this.jsonArchitectureArr.push(this.jsonArchitecture["root"]);
 
-    for(let i = 0; i < jsonArchitecture["root"]["children"].length; i++){
-      console.log(jsonArchitecture["root"]["children"][i]); 
-      this.jsonArchitectureArr.push(jsonArchitecture["root"]["children"][i]);
+    for(let i = 0; i < this.jsonArchitecture["root"]["children"].length; i++){
+      console.log(this.jsonArchitecture["root"]["children"][i]); 
+      this.jsonArchitectureArr.push(this.jsonArchitecture["root"]["children"][i]);
 
     }
+    */
+
+    console.log(this.canvas.getFlow().getRoot());
+    console.log(this.canvas.getFlow().toJSON());
+
+
+    debugger; 
 
     flow.upload(this.architecture);
-    debugger; 
-    let currentflow = flow.toJSON(); 
     
+    debugger; 
+
+    //flow.render(); 
+    
+   
+    // let currentflow = flow.toJSON(); 
+
+
+    
+  }
+
+  showRender(){
+    this.canvas.getFlow().render(); 
   }
 
 
