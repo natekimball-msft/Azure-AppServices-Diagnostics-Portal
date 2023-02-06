@@ -1,0 +1,12 @@
+{
+    "partnerConfig": [
+        {
+            "resourceType": "Microsoft.Web/sites",
+            "imgSrc": "assets/img/Azure-WebApps-Logo.png",
+            "pesId": "14748",
+            "productName": "AZURE WEB APP",
+            "productAlias: "saziz@microsoft.com",
+            "productIcM:""
+        }
+      ]
+}
