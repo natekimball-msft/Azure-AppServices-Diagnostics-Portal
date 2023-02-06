@@ -5,8 +5,9 @@
             "imgSrc": "assets/img/Azure-WebApps-Logo.png",
             "pesId": "14748",
             "productName": "AZURE WEB APP",
-            "productAlias: "saziz@microsoft.com",
-            "productIcM:""
+            "productAlias": "saziz@microsoft.com",
+            "productIcM":"",
+            "failureThreshold":"10"
         }
       ]
 }
