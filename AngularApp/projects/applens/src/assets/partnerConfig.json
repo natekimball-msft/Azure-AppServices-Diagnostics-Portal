@@ -7,7 +7,8 @@
             "productName": "AZURE WEB APP",
             "productAlias": "saziz@microsoft.com",
             "productIcM":"",
-            "failureThreshold":"10"
+            "failureThreshold":"10",
+            "ignoreErrorCodes":""
         }
       ]
 }
