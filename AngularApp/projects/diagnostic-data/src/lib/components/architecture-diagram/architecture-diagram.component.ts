@@ -30,10 +30,6 @@ export class ArchitectureDiagramComponent extends DataRenderBaseComponent implem
 @ViewChild(NgFlowchartCanvasDirective)
 canvas: NgFlowchartCanvasDirective;
 
-
-
-
-
   architecture : string = ""; 
   architectureObj : any; 
   jsonArchitectureArr : any = []; 
@@ -84,6 +80,8 @@ canvas: NgFlowchartCanvasDirective;
     this.stepRegistry.registerStep('do-action', ArchitectureDiagramNodeComponent);
 
     this.stepRegistry.registerStep('notification', ArchitectureDiagramNodeComponent);
+    this.stepRegistry.registerStep('default', ArchitectureDiagramNodeComponent);
+
     //this.stepRegistry.registerStep('undefined', ArchitectureDiagramNodeComponent);
 
     
@@ -164,7 +162,7 @@ canvas: NgFlowchartCanvasDirective;
     //flow.render(); 
     
    
-    // let currentflow = flow.toJSON(); 
+    console.log( flow.toJSON() ); 
 
 
     

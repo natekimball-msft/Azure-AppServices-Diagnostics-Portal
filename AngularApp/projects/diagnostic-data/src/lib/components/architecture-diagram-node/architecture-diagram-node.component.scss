@@ -11,11 +11,11 @@
   /** The arrow paths and arrow head */
   .ngflowchart-arrow {
     & #arrowhead {
-      fill: darkgrey;
+      fill: black;
     }
   
     & #arrowpath {
-      stroke: darkgrey;
+      stroke: black;
     }
   }
 
@@ -24,6 +24,47 @@
   border: 1px solid #000000;
   overflow: hidden;
 }
-
-
+// C:\Users\hmangipudi\Desktop\Azure-AppServices-Diagnostics-Portal\AngularApp\projects\applens\src\assets\img\Azure-WebApps-Logo.png
   
+.example-card{
+  width:200px;
+  height:100px;
+}
+
+.mat-card-image{
+  width: 75px;
+  height:75px;
+}
+
+.header-image {
+  background-image:url('https://material.angular.io/assets/img/examples/shiba1.jpg');
+  background-size: cover;
+}
+
+.title-style{
+  white-space: nowrap;
+  margin-left: 50px;
+  margin-right: 0px;
+
+}
+
+
+.subtitle-style{
+  margin-top: 0px;
+  margin-left: 51px;
+  margin-right: 0px;
+  position: center; 
+
+}
+
+
+.content-style{
+  position:relative; 
+  bottom:0px; 
+  left:0px; 
+  margin-left:50px; 
+  margin-right:0px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+
+}

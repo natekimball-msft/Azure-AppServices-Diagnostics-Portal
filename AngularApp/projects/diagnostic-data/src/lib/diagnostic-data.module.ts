@@ -153,6 +153,9 @@ import { WorkflowViewComponent } from './components/workflow-view/workflow-view.
 import { WorkflowNodeComponent } from './components/workflow-node/workflow-node.component';
 import { NgFlowchartModule } from 'projects/ng-flowchart/dist';
 import { ArchitectureDiagramComponent } from './components/architecture-diagram/architecture-diagram.component';
+import { ArchitectureDiagramNodeComponent } from './components/architecture-diagram-node/architecture-diagram-node.component';
+import { MatCardModule } from '@angular/material/card';
+import { DocumentCard } from 'office-ui-fabric-react';
 
 @NgModule({
     imports: [
@@ -188,7 +191,9 @@ import { ArchitectureDiagramComponent } from './components/architecture-diagram/
         RouterModule,
         FabDatePickerModule,
         FabCalendarModule,
-        NgFlowchartModule
+        NgFlowchartModule,
+        MatCardModule    ,
+        
     ],
     providers: [
         ClipboardService
@@ -255,7 +260,8 @@ import { ArchitectureDiagramComponent } from './components/architecture-diagram/
         WorkflowResultComponent,
         WorkflowViewComponent,
         WorkflowNodeComponent,
-        ArchitectureDiagramComponent
+        ArchitectureDiagramComponent,
+        ArchitectureDiagramNodeComponent
     ],
     exports: [
         FormsModule, TimeSeriesGraphComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent, ClientScriptViewComponent,

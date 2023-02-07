@@ -1,5 +1,5 @@
 <div [attr.name]="data.name" #canvasContent>
-  <div class="panel-heading panel-title-switch">
+  <!-- <div class="panel-heading panel-title-switch">
     <div class="step-container" >
       <div class="step-heading">
           {{data.name}}
@@ -8,6 +8,46 @@
           {{data.inputs[0].name}}
           {{data.icon}}
       </div>
+
+      
+
   </div>
-  </div>
+  </div> -->
+ 
+  <mat-card class="example-card">
+    <mat-card-header>
+      <!-- <div mat-card-avatar class="header-image"></div> -->
+      <mat-card-title class = "title-style" >{{data.name}}</mat-card-title>
+      <mat-card-subtitle class = "subtitle-style">{{data.name}}</mat-card-subtitle>
+      </mat-card-header>
+      <img mat-card-image [src]="resourceTypeList[0].imgSrc">    
+    <mat-card-content class = "content-style">
+      <p>
+       {{data.inputs[0].name}}
+      </p>
+    </mat-card-content>
+  </mat-card> 
+  <!-- <DocumentCard
+        aria-label="Document Card with icon. View and share files. Created by Aaron Reid a few minutes ago"
+        type={DocumentCardType.compact}
+       
+      >
+         <DocumentCardDetails>
+          <DocumentCardTitle title="View and share files" shouldTruncate ></DocumentCardTitle>
+          <DocumentCardActivity activity="Created a few minutes ago"  ></DocumentCardActivity>
+        </DocumentCardDetails> 
+      </DocumentCard> -->
+<!-- 
+      <div class="ms-Persona ms-Persona--xs">
+        <div class="ms-Persona-imageArea">
+          <img class="ms-Persona-image" src="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/images/persona.person.png">
+        </div>
+        <div class="ms-Persona-presence">
+          <i class="ms-Persona-presenceIcon ms-Icon ms-Icon--SkypeCheck"></i>
+        </div>
+        <div class="ms-Persona-details">
+          <div class="ms-Persona-primaryText">Alton Lafferty</div>
+        </div>
+      </div> -->
+
   </div>

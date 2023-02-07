@@ -10,9 +10,9 @@
   }
   
   /** The arrow paths and arrow head */
-  .ngflowchart-arrow {
+  ::ng-deep .ngflowchart-arrow {
     & #arrowhead {
-      fill: darkgrey;
+      fill: black;
     }
   
     & #arrowpath {
