@@ -107,6 +107,15 @@ namespace AppLensV3
 
             services.AddSingletonWhenEnabled<IAppSvcUxDiagnosticDataService, AppSvcUxDiagnosticDataService, NullableAppSvcUxDiagnosticDataService>(Configuration, "LocationPlacementIdService");
 
+            if (Configuration.GetValue("OpenAIService:Enabled", false))
+            {
+                services.AddSingleton<IOpenAIService, OpenAIService>();
+            }
+            else
+            {
+                services.AddSingleton<IOpenAIService, OpenAIServiceDisabled>();
+            }
+
             services.AddMemoryCache();
             services.AddMvc().AddNewtonsoftJson();
 
