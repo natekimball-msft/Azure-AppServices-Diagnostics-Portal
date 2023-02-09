@@ -14,19 +14,21 @@
   </div>
   </div> -->
  
-  <mat-card class="example-card">
-    <mat-card-header>
-      <!-- <div mat-card-avatar class="header-image"></div> -->
+ <mat-card class="example-card">
+    <mat-card-header> 
       <mat-card-title class = "title-style" >{{data.name}}</mat-card-title>
       <mat-card-subtitle class = "subtitle-style">{{data.name}}</mat-card-subtitle>
-      </mat-card-header>
       <img mat-card-image [src]="resourceTypeList[0].imgSrc">    
+      </mat-card-header>
     <mat-card-content class = "content-style">
-      <p>
        {{data.inputs[0].name}}
-      </p>
     </mat-card-content>
   </mat-card> 
+<!-- 
+  <fab-card class = "example-card" background = "pink">helo</fab-card> -->
+
+
+  
   <!-- <DocumentCard
         aria-label="Document Card with icon. View and share files. Created by Aaron Reid a few minutes ago"
         type={DocumentCardType.compact}

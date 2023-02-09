@@ -12,12 +12,14 @@
   /** The arrow paths and arrow head */
   ::ng-deep .ngflowchart-arrow {
     & #arrowhead {
-      fill: black;
+      fill: gray;
     }
   
     & #arrowpath {
-      stroke: darkgrey;
+      stroke: gray;
+      stroke: width 1px;
     }
+
   }
   ::ng-deep .ngflowchart-canvas-content {
     height: 500px;

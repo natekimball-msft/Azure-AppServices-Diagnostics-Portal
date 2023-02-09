@@ -155,7 +155,9 @@ import { NgFlowchartModule } from 'projects/ng-flowchart/dist';
 import { ArchitectureDiagramComponent } from './components/architecture-diagram/architecture-diagram.component';
 import { ArchitectureDiagramNodeComponent } from './components/architecture-diagram-node/architecture-diagram-node.component';
 import { MatCardModule } from '@angular/material/card';
-import { DocumentCard } from 'office-ui-fabric-react';
+import { FabPersonaModule } from '@angular-react/fabric/lib/components/persona';
+// import { FabHoverCardModule} from '@angular-react/fabric/lib/components/hover-card'
+import { FabHoverCardModule } from '@angular-react/fabric/lib/components/hover-card';
 
 @NgModule({
     imports: [
@@ -193,6 +195,8 @@ import { DocumentCard } from 'office-ui-fabric-react';
         FabCalendarModule,
         NgFlowchartModule,
         MatCardModule    ,
+        FabPersonaModule,
+        FabHoverCardModule
         
     ],
     providers: [
