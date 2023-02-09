@@ -392,6 +392,20 @@ export class DiagnosticApiService {
     return this._cacheService.get(path, request, invalidateCache);
   }
 
+  public post<T, S>(path: string, body?: S): Observable<T> {
+    const url = `${this.diagnosticApi}${path}`;
+    let bodyString: string = '';
+    if (body) {
+        bodyString = JSON.stringify(body);
+    }
+
+    const request = this._httpClient.post(url, bodyString, {
+      headers: this._getHeaders()
+    });
+
+    return this._cacheService.get(path, request, true);
+  }
+
   public hasApplensAccess(): Observable<any> {
     let url = `${this.diagnosticApi}api/ping`;
     let request = this._httpClient.get<HttpResponse<Object>>(url, {

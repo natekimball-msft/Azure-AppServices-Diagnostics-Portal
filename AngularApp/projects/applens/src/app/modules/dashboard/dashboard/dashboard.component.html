@@ -30,6 +30,42 @@
   <fab-spinner [size]="loaderSize" [label]="'Loading...'"></fab-spinner>
 </div>
 <side-nav *ngIf="!stillLoading && showDashboardContent"></side-nav>
+<div *ngIf="!stillLoading && showGPTComponent" class="dashboard-container content-under-header" [ngStyle]="getContainerStyle()">
+  <div class="dashboard-content">
+    <div class="chatgpt-header">
+      <h1 class="chatgpt-header-text">ChatGPT</h1>
+    </div>
+    <div class="chatgpt-box-row-container">
+        <div class="chatgpt-box-row">
+            <div class="chatgpt-box" >How to configure autoscale for Azure App Service?</div>
+            <div class="chatgpt-box" >Explain this error: Bad Config Metadata</div>
+            <div class="chatgpt-box" >Summarize this exception message: Microsoft.Azure.Storage....</div>
+        </div>
+        <div class="chatgpt-box-row">
+          <div class="chatgpt-box" >How to configure Virtual Network on Azure Kubernetes cluster?</div>
+          <div class="chatgpt-box" >What are the Azure App Service resiliency features?</div>
+          <div class="chatgpt-box" >How to integrate KeyVault in Azure Function App?</div>
+        </div>
+    </div>
+    <div class="chatgpt-box-row-container">
+      <div class="chatgpt-textarea-container">
+        <textarea tabindex="0" class="chatgpt-textarea" rows="1" placeholder="Ask a question"></textarea>
+        <button
+            class="chatgpt-textarea-button"><svg
+                stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                stroke-linejoin="round" class="h-4 w-4 mr-1" height="1em" width="1em"
+                xmlns="http://www.w3.org/2000/svg">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+      </div>
+    </div>
+    <div [class.content-with-side-nav]="showL2SideNav" style="padding: 0px 20px;">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
 <!-- <l1-side-nav></l1-side-nav> -->
 <!-- <header class="main-header">
   <nav class="navbar navbar-fixed-top" role="navigation">
@@ -65,7 +101,7 @@
     </div>
   </nav>
 </header> -->
-<div *ngIf="!stillLoading && showDashboardContent" class="dashboard-container content-under-header" [ngStyle]="getContainerStyle()">
+<div *ngIf="!stillLoading && showDashboardContent && !showGPTComponent" class="dashboard-container content-under-header" [ngStyle]="getContainerStyle()">
   <div class="dashboard-content">
     <applens-preview-banner></applens-preview-banner>
     <comm-alert></comm-alert>

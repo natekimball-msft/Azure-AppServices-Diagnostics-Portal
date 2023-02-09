@@ -94,6 +94,19 @@ export class SideNavComponent implements OnInit {
       isSelected: null,
       icon: null
     }];
+  
+  chatgpt: CollapsibleMenuItem[] = [
+    {
+      label: 'ChatGPT',
+      id: "",
+      onClick: () => {
+        this.navigateTo("");
+      },
+      expanded: false,
+      subItems: null,
+      isSelected: null,
+      icon: null
+    }];
 
   createNew: CollapsibleMenuItem[] = [
     {
@@ -212,6 +225,10 @@ export class SideNavComponent implements OnInit {
 
   navigateToOverview() {
     this.navigateTo("overview");
+  }
+
+  navigateToChatGPT(){
+    this.navigateTo("chatgpt");
   }
 
   navigateToDetectorList() {

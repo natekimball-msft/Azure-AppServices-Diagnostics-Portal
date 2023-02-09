@@ -1,18 +1,18 @@
-import {map, catchError } from 'rxjs/operators';
+import {map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Observable, of  } from 'rxjs';
-import { BackendCtrlService } from '../../shared/services/backend-ctrl.service';
 import {TextCompletionModel, OpenAIAPIResponse} from "diagnostic-data";
+import { DiagnosticApiService } from './diagnostic-api.service';
 
 @Injectable()
-export class OpenAIService {
+export class ApplensOpenAIService {
 
   content: any[] = [];
 
   private completionApiPath: string = "api/openai/runTextCompletion";
   public isEnabled: boolean = false;
   
-  constructor(private _backendApi: BackendCtrlService) { 
+  constructor(private _backendApi: DiagnosticApiService) { 
     this._backendApi.get<boolean>(`api/openai/enabled`).subscribe((value: boolean) => {
       this.isEnabled = value;
     },

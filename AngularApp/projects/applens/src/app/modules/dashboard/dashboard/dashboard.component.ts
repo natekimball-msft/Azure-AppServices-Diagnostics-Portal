@@ -106,6 +106,7 @@ export class DashboardComponent implements OnDestroy {
   stillLoading: boolean = false;
   loaderSize = SpinnerSize.large;
   showDashboardContent: boolean = true;
+  showGPTComponent: boolean = false;
   alertDialogStyles = { main: { maxWidth: "70vw!important", minWidth: "40vw!important" } };
   alertDialogProps = {isBlocking: true}
   dialogType: DialogType = DialogType.normal;
@@ -122,6 +123,11 @@ export class DashboardComponent implements OnDestroy {
       if (detector) {
         this._router.navigate([`./detectors/${detector}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge' });
       }
+    });
+
+    this._router.events.subscribe((val) => {
+      // see also
+      this.checkGPTRoute();
     });
 
     // Add time params to route if not already present
@@ -271,11 +277,18 @@ export class DashboardComponent implements OnDestroy {
     }
   }
 
+  checkGPTRoute(){
+    if (this._router.url.includes("chatgpt")) {
+      this.showGPTComponent = true;
+    }
+  }
+
   ngOnInit() {
     if (this._diagnosticApiService.CustomerCaseNumber && this._diagnosticApiService.CustomerCaseNumber.length>0) {
       setInterval(() => {this.addCaseNumberToLinks(this._diagnosticApiService.CustomerCaseNumber)}, 500);
     }
     this.examineUserAccess();
+    this.checkGPTRoute();
     this.stillLoading = true;
     this._diagnosticService.getDetectors().subscribe(detectors => {
       this.stillLoading = false;
