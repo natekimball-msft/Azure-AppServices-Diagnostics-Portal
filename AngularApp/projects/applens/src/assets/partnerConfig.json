@@ -6,7 +6,11 @@
             "pesId": "14748",
             "productName": "AZURE WEB APP",
             "productAlias": "saziz@microsoft.com",
-            "productIcM":"",
+            "productIcM": 
+            { 
+                "owningService":"App Service (Web Apps)",
+                "owningTeam":"Internal Only Diag"
+            },
             "failureThreshold":"10",
             "ignoreErrorCodes":""
         }
