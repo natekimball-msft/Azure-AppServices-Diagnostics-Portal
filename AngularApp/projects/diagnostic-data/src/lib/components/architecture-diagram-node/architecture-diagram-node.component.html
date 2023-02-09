@@ -13,17 +13,23 @@
 
   </div>
   </div> -->
- 
- <mat-card class="example-card">
-    <mat-card-header> 
-      <mat-card-title class = "title-style" >{{data.name}}</mat-card-title>
-      <mat-card-subtitle class = "subtitle-style">{{data.name}}</mat-card-subtitle>
-      <img mat-card-image [src]="resourceTypeList[0].imgSrc">    
-      </mat-card-header>
-    <mat-card-content class = "content-style">
-       {{data.inputs[0].name}}
-    </mat-card-content>
+  <div  [ngClass]="{
+    'example-card-critical-outline': data.status == 'critical',
+    'example-card-success-outline':  data.status == 'success',
+    'example-card-warning-outline':  data.status == 'warning',
+    'example-card-default-outline':  data.status == ''
+  }">
+    <mat-card class="example-card">
+        <mat-card-header> 
+          <mat-card-title class = "title-style" >{{data.title}}</mat-card-title>
+          <mat-card-subtitle class = "subtitle-style">{{data.subtitle}}</mat-card-subtitle>
+          <img mat-card-image [src]="resourceTypeList[0].imgSrc">    
+          </mat-card-header>
+        <mat-card-content class = "content-style">
+          {{data.content}}
+        </mat-card-content>
   </mat-card> 
+</div>
 <!-- 
   <fab-card class = "example-card" background = "pink">helo</fab-card> -->
 

@@ -29,11 +29,30 @@
 .example-card{
   width:250px;
   height:150px;
-  border-style: solid;
-  border-width:thin;
+  
  
 }
 
+.example-card-default-outline{
+  outline: auto; 
+}
+
+
+.example-card-critical-outline{
+  outline: auto; 
+  outline-color: #ff0000;
+}
+
+.example-card-success-outline{
+  outline: auto; 
+  outline-color: #3da907;
+}
+
+
+.example-card-warning-outline{
+  outline: auto; 
+  outline-color: #ff9104;
+}
 
 
 .mat-card-image{
@@ -62,6 +81,7 @@
 
 .mat-card-header .mat-card-title{
   margin-bottom: 2px;
+  text-align: center;
 }
 
 .mat-card-title {
@@ -78,6 +98,7 @@
 
 .mat-card-header .mat-card-subtitle{
   margin-bottom: 2px;
+
 }
 
 
