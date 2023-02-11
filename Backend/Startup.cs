@@ -67,6 +67,23 @@ namespace Backend
             services.AddSingleton<IEncryptionService, EncryptionService>();
             services.AddSingleton<IAppInsightsService, AppInsightsService>();
             services.AddSingleton<IHealthCheckService, HealthCheckService>();
+            if (Configuration.GetValue("OpenAIService:Enabled", false))
+            {
+                services.AddSingleton<IOpenAIService, OpenAIService>();
+                if (Configuration.GetValue("OpenAIService:RedisEnabled", false))
+                {
+                    services.AddSingleton(async x => await RedisConnection.InitializeAsync(true, connectionString: Configuration["OpenAIService:RedisConnectionString"].ToString()));
+                    services.AddSingleton<IOpenAIRedisService, OpenAIRedisService>();
+                }
+                else
+                {
+                    services.AddSingleton<IOpenAIRedisService, OpenAIRedisServiceDisabled>();
+                }
+            }
+            else
+            {
+                services.AddSingleton<IOpenAIService, OpenAIServiceDisabled>();
+            }
 
             // https://stackoverflow.com/questions/52036998/how-do-i-get-a-reference-to-an-ihostedservice-via-dependency-injection-in-asp-ne
             services.AddSingleton<CertificateService>();

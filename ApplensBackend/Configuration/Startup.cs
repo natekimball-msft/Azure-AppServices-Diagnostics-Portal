@@ -110,6 +110,15 @@ namespace AppLensV3
             if (Configuration.GetValue("OpenAIService:Enabled", false))
             {
                 services.AddSingleton<IOpenAIService, OpenAIService>();
+                if (Configuration.GetValue("OpenAIService:RedisEnabled", false))
+                {
+                    services.AddSingleton(async x => await RedisConnection.InitializeAsync(true, connectionString: Configuration["OpenAIService:RedisConnectionString"].ToString()));
+                    services.AddSingleton<IOpenAIRedisService, OpenAIRedisService>();
+                }
+                else
+                {
+                    services.AddSingleton<IOpenAIRedisService, OpenAIRedisServiceDisabled>();
+                }
             }
             else
             {

@@ -1,5 +1,4 @@
-﻿using AppLensV3.Authorization;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -9,7 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AppLensV3.Services
+namespace Backend.Services
 {
     public class CompletionModel
     {
@@ -26,7 +25,7 @@ namespace AppLensV3.Services
     {
         public bool IsEnabled() { return false; }
         public async Task<HttpResponseMessage> RunTextCompletion(CompletionModel requestBody, bool cacheEnabledOnRequest) { return null; }
-        public void Dispose() {}
+        public void Dispose() { }
     }
 
     public class OpenAIService : IOpenAIService

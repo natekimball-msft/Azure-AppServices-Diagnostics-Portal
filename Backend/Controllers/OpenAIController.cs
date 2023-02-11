@@ -1,4 +1,4 @@
-﻿using AppLensV3.Services;
+﻿using Backend.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -6,9 +6,8 @@ using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using AppLensV3.Helpers;
 
-namespace AppLensV3.Controllers
+namespace Backend.Controllers
 {
     [Route("api/openai")]
     [Produces("application/json")]
@@ -16,6 +15,7 @@ namespace AppLensV3.Controllers
     {
         private IOpenAIService _openAIService;
         private ILogger<OpenAIController> _logger;
+        private const string OpenAICacheHeader = "x-ms-openai-cache";
         public OpenAIController(IOpenAIService openAIService, ILogger<OpenAIController> logger)
         {
             _logger = logger;
@@ -44,7 +44,7 @@ namespace AppLensV3.Controllers
             try
             {
                 // Check if client has requested cache to be disabled
-                bool cachingEnabled = bool.TryParse(GetHeaderOrDefault(Request.Headers, HeaderConstants.OpenAICacheHeader, true.ToString()), out var cacheHeader)? cacheHeader: true;
+                bool cachingEnabled = bool.TryParse(GetHeaderOrDefault(Request.Headers, OpenAICacheHeader, true.ToString()), out var cacheHeader) ? cacheHeader : true;
                 var response = await _openAIService.RunTextCompletion(completionModel, cachingEnabled);
                 if (response.IsSuccessStatusCode)
                 {
@@ -53,13 +53,14 @@ namespace AppLensV3.Controllers
                 }
                 else
                 {
-                    if (response.StatusCode == HttpStatusCode.BadRequest) {
+                    if (response.StatusCode == HttpStatusCode.BadRequest)
+                    {
                         return BadRequest("Malformed request");
                     }
                     return new StatusCodeResult(500);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 //Log exception
                 _logger.LogError(ex.ToString());
