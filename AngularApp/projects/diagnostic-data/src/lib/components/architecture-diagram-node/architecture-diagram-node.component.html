@@ -13,7 +13,7 @@
 
   </div>
   </div> -->
-  <div  [ngClass]="{
+  <!-- <div  [ngClass]="{
     'example-card-critical-outline': data.status == 'critical',
     'example-card-success-outline':  data.status == 'success',
     'example-card-warning-outline':  data.status == 'warning',
@@ -29,6 +29,19 @@
           {{data.content}}
         </mat-card-content>
   </mat-card> 
+</div> -->
+<div class="example-card" [ngClass]="{
+  'example-card-critical-outline': data.status == 'critical',
+  'example-card-success-outline':  data.status == 'success',
+  'example-card-warning-outline':  data.status == 'warning',
+  'example-card-default-outline':  data.status == ''
+}">
+      <img class="card-image" [src]="resourceTypeList[0].imgSrc"/>
+      <div class="card-content">
+        <h3 [title]="data.title" class="card-content-title">{{data.title}}</h3>
+        <p [title]="data.subtitle" class="card-content-subtitle">{{data.subtitle}}</p>
+        <p [title]="data.content" class="card-content-description">{{data.content}}</p>
+      </div>
 </div>
 <!-- 
   <fab-card class = "example-card" background = "pink">helo</fab-card> -->
