@@ -32,7 +32,8 @@
 <side-nav *ngIf="!stillLoading && showDashboardContent"></side-nav>
 <div *ngIf="!stillLoading && showGPTComponent" class="dashboard-container content-under-header" [ngStyle]="getContainerStyle()">
   <div class="dashboard-content">
-    <div class="chatgpt-header">
+    <!--
+      <div class="chatgpt-header">
       <h1 class="chatgpt-header-text">ChatGPT</h1>
     </div>
     <div class="chatgpt-box-row-container">
@@ -61,6 +62,8 @@
           </button>
       </div>
     </div>
+    -->
+    <openai-chat></openai-chat>
     <div [class.content-with-side-nav]="showL2SideNav" style="padding: 0px 20px;">
       <router-outlet></router-outlet>
     </div>

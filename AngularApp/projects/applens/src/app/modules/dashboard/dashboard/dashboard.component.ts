@@ -27,6 +27,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Title } from '@angular/platform-browser';
 import { UserAccessStatus } from "../../../shared/models/alerts";
 import { defaultResourceTypes } from '../../../shared/utilities/main-page-menu-options';
+/*import { ChatMessage, MessageStatus, MessageSource, MessageRenderingType} from "diagnostic-data";
+import { ApplensOpenAIService } from '../../../shared/services/applens-openai.service';
+import { TextModels, OpenAIAPIResponse, CreateTextCompletionModel } from 'diagnostic-data';
+import { v4 as uuid } from 'uuid';*/
 
 @Component({
   selector: 'dashboard',
@@ -116,7 +120,8 @@ export class DashboardComponent implements OnDestroy {
   constructor(public resourceService: ResourceService, private startupService: StartupService,  private _detectorControlService: DetectorControlService,
     private _router: Router, private _activatedRoute: ActivatedRoute, private _navigator: FeatureNavigationService,
     private _diagnosticService: ApplensDiagnosticService, private _adalService: AdalService, public _searchService: SearchService, private _diagnosticApiService: DiagnosticApiService, private _observerService: ObserverService, public _applensGlobal: ApplensGlobal, private _startupService: StartupService, private _resourceService: ResourceService, private _breadcrumbService: BreadcrumbService, private _userSettingsService: UserSettingService, private _themeService: GenericThemeService,
-    private _alertService: AlertService, private _telemetryService: TelemetryService, private _titleService: Title) {
+    private _alertService: AlertService, private _telemetryService: TelemetryService, private _titleService: Title){
+//    private _openAIService: ApplensOpenAIService) {
     this.contentHeight = (window.innerHeight - 50) + 'px';
 
     this.navigateSub = this._navigator.OnDetectorNavigate.subscribe((detector: string) => {
@@ -230,6 +235,99 @@ export class DashboardComponent implements OnDestroy {
       }
     });
   }
+
+
+
+  /**ChatGPT section *//*
+  fetchOpenAIResult(searchQuery: string, messageObj: ChatMessage, retry: boolean = true) {
+    this.chatInputBoxDisabled = true;
+    try {
+      let openAIQueryModel = CreateTextCompletionModel(searchQuery);
+      messageObj.status = MessageStatus.Waiting;
+      this._openAIService.generateTextCompletion(openAIQueryModel, true).subscribe((res: OpenAIAPIResponse) => {
+          var result = res?.choices[0].text;
+          messageObj.message = messageObj.message + result;
+          messageObj.displayedMessage = messageObj.message.replace(/\n/g, "<br />");
+          //Check finishing criteria
+          if (res.usage.completion_tokens == openAIQueryModel.max_tokens) {
+            messageObj.status = MessageStatus.InProgress;
+            this.fetchOpenAIResult(this.prepareChatContext(), messageObj);
+          }
+          else {
+            messageObj.status = MessageStatus.Finished;
+            messageObj.timestamp = new Date().getTime();
+            this.chatgptSearchText = "";
+            this.chatInputBoxDisabled = false;
+            document.getElementById(`chatGPTInputBox`).focus();
+          }
+      },
+      (err) => {
+          if (retry) {
+              this.fetchOpenAIResult(searchQuery, messageObj, retry=false);
+          }
+          this.handleFailure(messageObj);
+      });
+    }
+    catch (error) {
+      this.handleFailure(messageObj);
+    }
+  }
+
+  handleFailure(messageObj) {
+    messageObj.message = (messageObj.message && messageObj.message.length>0? messageObj.message + "\n": messageObj.message) + "An error occurred. Please try again.";
+    messageObj.displayedMessage = messageObj.message.replace(/\n/g, "<br />");
+    messageObj.status = MessageStatus.Finished;
+    messageObj.timestamp = new Date().getTime();
+    this.chatgptSearchText = "";
+    this.chatInputBoxDisabled = false;
+    document.getElementById("chatGPTInputBox").focus();
+  }
+
+  chatgptSearchText: string = "";
+  messages: ChatMessage[] = [];
+  chatInputBoxDisabled: boolean = false;
+  chatQuerySamples: string[] = [
+    "How to configure autoscale for Azure App Service?",
+    "Explain this error: Bad Config Metadata",
+    "Summarize this exception message: Microsoft.Azure.Storage....",
+    "How to configure Virtual Network on Azure Kubernetes cluster?",
+    "What are the Azure App Service resiliency features?",
+    "How to integrate KeyVault in Azure Function App?"
+  ];
+
+  prepareChatContext(){
+    return this.messages.slice(-6).map(x => `${x.messageSource}: ${x.message}`).join('\n');
+  }
+
+  onchatSampleClick(idx: number){
+    this.chatgptSearchText = this.chatQuerySamples[idx];
+    this.triggerChat();
+  }
+
+  triggerChat(){
+    this.messages.push({
+      id: uuid(),
+      message: this.chatgptSearchText,
+      displayedMessage: this.chatgptSearchText,
+      messageSource: MessageSource.User,
+      timestamp: new Date().getTime(),
+      status: MessageStatus.Finished,
+      renderingType: MessageRenderingType.Text
+    });
+    this.chatInputBoxDisabled = true;
+    let chatMessage = {
+      id: uuid(),
+      message: "",
+      displayedMessage: "",
+      messageSource: MessageSource.System,
+      timestamp: new Date().getTime(),
+      status: MessageStatus.Created,
+      renderingType: MessageRenderingType.Text
+    };
+    this.messages.push(chatMessage);
+    this.fetchOpenAIResult(this.prepareChatContext(), chatMessage);
+  }
+  /** */
 
   navigateToUnauthorized(){
     this._router.navigate(['unauthorized'], {queryParams: {isDurianEnabled: true}});

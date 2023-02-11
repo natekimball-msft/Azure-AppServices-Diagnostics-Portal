@@ -1,0 +1,46 @@
+<div class="chatgpt-bot-container">
+    <div class="chatgpt-box-row-container chatgpt-header-container" *ngIf="!messages || messages.length==0">
+        <h1 class="chatgpt-header-text">ChatGPT</h1>
+    </div>
+    <div class="chatgpt-box-row-container chatgpt-samples-container" *ngIf="!messages || messages.length==0">
+        <div class="chatgpt-box-row">
+            <ng-container *ngFor="let querySample of chatQuerySamples; let i = index">
+              <div class="chatgpt-box" *ngIf="i<=2" (click)="onchatSampleClick(i)" [innerHTML]="chatQuerySamples[i]"></div>
+            </ng-container>
+        </div>
+        <div class="chatgpt-box-row">
+          <ng-container *ngFor="let querySample of chatQuerySamples; let i = index">
+            <div class="chatgpt-box" *ngIf="i>=3" (click)="onchatSampleClick(i)" [innerHTML]="chatQuerySamples[i]"></div>
+          </ng-container>
+        </div>
+    </div>
+    <div class="chatgpt-box-row-container chatgpt-chat-messages-container" *ngIf="messages && messages.length>0">
+      <div class="chatgpt-message-box chatgpt-message-box-{{message.messageSource}}" *ngFor="let message of messages">
+        <ng-container *ngIf="message.status==1 || message.status==2">
+          <div class="chatgpt-message chatgpt-message-{{message.renderingType}}">
+            ......
+          </div>
+        </ng-container>
+        <ng-container *ngIf="message.status==3">
+          <div class="chatgpt-message chatgpt-message-{{message.renderingType}}" [ngClass]="{'typewriter': message.messageSource=='system'}">
+            <div [innerHTML]="message.displayedMessage">
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <div class="chatgpt-box-row-container chatgpt-textarea-container">
+      <div class="chatgpt-textarea-wrapper">
+        <textarea [(ngModel)]="chatgptSearchText" tabindex="0" class="form-control chatgpt-textarea" rows="1" placeholder="Ask a question" (keyup.enter)="triggerChat()" id="chatGPTInputBox" [disabled]="chatInputBoxDisabled"></textarea>
+        <button (click)="triggerChat()"
+            class="chatgpt-textarea-button"><svg
+                stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                stroke-linejoin="round" class="h-4 w-4 mr-1" height="1em" width="1em"
+                xmlns="http://www.w3.org/2000/svg">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+      </div>
+    </div>
+</div>

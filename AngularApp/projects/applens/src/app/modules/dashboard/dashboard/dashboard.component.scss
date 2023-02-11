@@ -236,9 +236,21 @@ body{
     color: #848080;
   }
 
-  .chatgpt-header{
-    margin-top: 20vh;
+  /*.chatgpt-bot-container{
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+
+  .chatgpt-header-container{
+    position: absolute;
+    top: 0;
+    left: 0;
     text-align: center;
+    width: 100%!important;
+    margin: 20vh auto!important;
   }
 
   .chatgpt-header-text{
@@ -256,6 +268,11 @@ body{
   .chatgpt-box-row-container{
     width: 55%;
     margin: auto;
+  }
+
+  .chatgpt-samples-container{
+    position: absolute;
+    top: 28vh;
   }
 
   .chatgpt-box-row{
@@ -282,9 +299,21 @@ body{
     cursor: pointer;
   }
 
+  .chatgpt-textarea-container{
+    position: absolute;
+    bottom: 30px;
+  }
+
+  .chatgpt-textarea-wrapper{
+    position: absolute;
+    bottom: 30px;
+    width: 900px;
+    height: 50px;
+  }
+
   .chatgpt-textarea{
     max-height: 200px;
-    height: 40px;
+    height: 100%;
     overflow-y: hidden;
     width: 100%;
     font-size: 18px;
@@ -299,6 +328,55 @@ body{
     padding: 0.25rem;
     border-radius: 0.375rem;
     color: #8e8ea0;
-    height: 40px;
+    height: 100%;
     width: 30px;
   }
+
+  .chatgpt-chat-messages-container{
+    position: absolute;
+    top: 3vh;
+    width: 100%;
+    overflow-y: scroll;
+    height: 70vh;
+    border: 1px solid #f6f6f6;
+    border-bottom: 0px;
+    padding: 7px;
+  }
+
+  .chatgpt-message-box {
+    padding: 8px;
+    position: relative;
+    margin: auto;
+    margin-top: 10px;
+    min-height: 30px;
+  }
+  
+  .chatgpt-message-box-user {
+    border: 1px solid rgba(247,247,248);
+  }
+
+  .chatgpt-message-box-system {
+    background-color: rgba(247,247,248);
+  }
+
+
+  .chatgpt-message {
+    width: 73%;
+    margin: auto;
+  }
+
+  .typewriter {
+    
+  }
+  
+  .chatgpt-message-text{
+
+  }
+
+  .chatgpt-message-markdown{
+    
+  }
+
+  .chatgpt-message-code{
+    
+  }*/

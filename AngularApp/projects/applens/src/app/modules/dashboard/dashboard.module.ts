@@ -489,7 +489,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
 @NgModule({
     imports: [
         CommonModule,
-        FormsModule,
+        //FormsModule,
         DashboardModuleRoutes,
         DiagnosticDataModule,
         SharedModule,
