@@ -14,10 +14,10 @@ export interface CodeCompletionModel {
 
 export enum TextModels {
     Default = "text-davinci-003",
-    Davinci = "text-davinci-002",
+    /*Davinci = "text-davinci-002",
     Ada = "text-ada-001",
     Curie = "text-curie-001",
-    Babbage = "text-babbage-001"
+    Babbage = "text-babbage-001"*/
 }
 
 export enum CodeModels {
@@ -29,8 +29,8 @@ export enum CodeModels {
 export enum ResponseTokensSize {
     Small = 50,
     Medium = 100,
-    Large = 200,
-    XLarge = 500
+    Large = 500,
+    XLarge = 1000
 }
 
 /*
@@ -53,7 +53,7 @@ export enum QueryTemperature {
 export function CreateTextCompletionModel(text: string, model: TextModels = TextModels.Default, responseSize: ResponseTokensSize = ResponseTokensSize.Medium, queryTemperature: QueryTemperature = QueryTemperature.Low): TextCompletionModel {
     return {
         model: TextModels.Default,
-        prompt: `${text} in ${responseSize} words`,
+        prompt: `${text}`,
         temperature: queryTemperature,
         max_tokens: responseSize
     };

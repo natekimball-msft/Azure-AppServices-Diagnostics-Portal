@@ -5,7 +5,7 @@ import { Observable} from 'rxjs';
 @Injectable()
 export class GenericOpenAIService {
 
-  public generateTextCompletion(queryModel: TextCompletionModel): Observable<OpenAIAPIResponse> {
+  public generateTextCompletion(queryModel: TextCompletionModel, caching: boolean = true): Observable<OpenAIAPIResponse> {
     return null;
   }
 }

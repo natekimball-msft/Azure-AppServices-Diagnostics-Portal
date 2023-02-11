@@ -1,8 +1,9 @@
 import {map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Observable, of  } from 'rxjs';
-import {TextCompletionModel, OpenAIAPIResponse} from "diagnostic-data";
+import { TextCompletionModel, OpenAIAPIResponse } from "diagnostic-data";
 import { DiagnosticApiService } from './diagnostic-api.service';
+import { HttpHeaders } from "@angular/common/http";
 
 @Injectable()
 export class ApplensOpenAIService {
@@ -22,8 +23,8 @@ export class ApplensOpenAIService {
     });
   }
 
-  public generateTextCompletion(queryModel: TextCompletionModel): Observable<OpenAIAPIResponse> {
-    return this._backendApi.post(this.completionApiPath, {payload: queryModel}).pipe(map((response: OpenAIAPIResponse) => {
+  public generateTextCompletion(queryModel: TextCompletionModel, caching: boolean = true): Observable<OpenAIAPIResponse> {
+    return this._backendApi.post(this.completionApiPath, {payload: queryModel}, new HttpHeaders({"x-ms-openai-cache": caching.toString()})).pipe(map((response: OpenAIAPIResponse) => {
       return response;
     }));
   }

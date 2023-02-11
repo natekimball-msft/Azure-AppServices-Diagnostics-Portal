@@ -392,15 +392,24 @@ export class DiagnosticApiService {
     return this._cacheService.get(path, request, invalidateCache);
   }
 
-  public post<T, S>(path: string, body?: S): Observable<T> {
+  public post<T, S>(path: string, body?: S, additionalHeaders: HttpHeaders = null): Observable<T> {
     const url = `${this.diagnosticApi}${path}`;
     let bodyString: string = '';
     if (body) {
         bodyString = JSON.stringify(body);
     }
 
+    var requestHeaders = this._getHeaders();
+    if (additionalHeaders) {
+      additionalHeaders.keys().forEach(key => {
+        if (!requestHeaders.has(key)) {
+          requestHeaders = requestHeaders.set(key, additionalHeaders.get(key));
+        }
+      });
+    }
+
     const request = this._httpClient.post(url, bodyString, {
-      headers: this._getHeaders()
+      headers: requestHeaders,
     });
 
     return this._cacheService.get(path, request, true);
