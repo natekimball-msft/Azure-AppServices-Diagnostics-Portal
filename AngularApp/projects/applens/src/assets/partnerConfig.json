@@ -13,6 +13,20 @@
             },
             "failureThreshold":"10",
             "ignoreErrorCodes":""
+        },
+        {
+            "resourceType": "Microsoft.Web/test",
+            "imgSrc": "assets/img/Azure-WebApps-Logo.png",
+            "pesId": "14748",
+            "productName": "AZURE WEB APP",
+            "productAlias": "saziz@microsoft.com",
+            "productIcM": 
+            { 
+                "owningService":"App Service (Web Apps)",
+                "owningTeam":"Internal Only Diag"
+            },
+            "failureThreshold":"10",
+            "ignoreErrorCodes":""
         }
       ]
 }
