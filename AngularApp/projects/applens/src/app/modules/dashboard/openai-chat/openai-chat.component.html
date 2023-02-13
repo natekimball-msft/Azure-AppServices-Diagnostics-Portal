@@ -16,17 +16,31 @@
     </div>
     <div class="chatgpt-box-row-container chatgpt-chat-messages-container" *ngIf="messages && messages.length>0">
       <div class="chatgpt-message-box chatgpt-message-box-{{message.messageSource}}" *ngFor="let message of messages">
-        <ng-container *ngIf="message.status==1 || message.status==2">
-          <div class="chatgpt-message chatgpt-message-{{message.renderingType}}">
-            ......
-          </div>
-        </ng-container>
-        <ng-container *ngIf="message.status==3">
-          <div class="chatgpt-message chatgpt-message-{{message.renderingType}}" [ngClass]="{'typewriter': message.messageSource=='system'}">
-            <div [innerHTML]="message.displayedMessage">
+        <div class="chatgpt-message-content">
+          <ng-container *ngIf="message.messageSource=='system'">
+            <div class="chatgpt-message-icon">
+              <img src="/assets/img/openailogo.svg" class="avatar">
             </div>
-          </div>
-        </ng-container>
+          </ng-container>
+          <ng-container *ngIf="message.messageSource=='user'">
+            <div class="chatgpt-message-icon">
+              <img *ngIf="userPhotoSource !== '';else userInitial" [src]="userPhotoSource" alt="User Profile Photo" class="avatar">
+            </div>
+          </ng-container>
+          <ng-container *ngIf="message.status==1">
+            <div class="chatgpt-message chatgpt-message-{{message.renderingType}}">
+              <p class="blinking-cursor">...</p>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="message.status==2 || message.status==3">
+            <div class="chatgpt-message chatgpt-message-{{message.renderingType}}">
+              <div style="white-space:pre">
+                <p [ngClass]="{'blinking-cursor': message.status==2}" [innerText]="message.message">
+                </p>
+              </div>
+            </div>
+          </ng-container>
+        </div>
       </div>
     </div>
     <div class="chatgpt-box-row-container chatgpt-textarea-container">
@@ -44,3 +58,7 @@
       </div>
     </div>
 </div>
+
+<ng-template #userInitial>
+  <div class="avatar user-initial">{{userNameInitial}}</div>
+</ng-template>

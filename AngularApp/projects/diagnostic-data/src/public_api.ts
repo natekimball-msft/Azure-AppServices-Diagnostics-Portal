@@ -146,7 +146,6 @@ export * from './lib/components/workflow-view/workflow-view.component'
 export * from './lib/modules/fab-coachmark/coachmark.component'
 export * from './lib/modules/fab-teachingbubble/teachingbubble.component'
 export * from './lib/components/gantt-chart-taskbar-colors/gantt-chart-taskbar-colors.component'
-export * from './lib/components/openai-chat/openai-chat.component'
 
 export * from './lib/modules/fab-coachmark/coachmark.module'
 export * from './lib/modules/fab-teachingbubble/teachingbubble.module'

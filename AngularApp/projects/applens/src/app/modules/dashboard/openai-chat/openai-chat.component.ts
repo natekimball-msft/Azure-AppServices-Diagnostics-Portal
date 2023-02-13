@@ -1,18 +1,15 @@
 import { Component, Inject, Input, OnInit, Output, EventEmitter, OnDestroy } from '@angular/core';
-import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagnostic-data-config';
-import { TelemetryService } from '../../services/telemetry/telemetry.service';
 import { map, catchError, delay, retryWhen, take } from 'rxjs/operators';
-import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
-import { DataRenderBaseComponent } from '../data-render-base/data-render-base.component';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { of, Observable, forkJoin } from 'rxjs';
 import { ISubscription } from "rxjs/Subscription";
-import { GenericResourceService } from '../../services/generic-resource-service';
-import { ChatMessage, MessageStatus, MessageSource, MessageRenderingType} from "../../models/chatbot-models";
-import { TextModels, OpenAIAPIResponse, CreateTextCompletionModel } from '../../models/openai-data-models';
+import { ChatMessage, MessageStatus, MessageSource, MessageRenderingType} from "diagnostic-data";
+import { TextModels, OpenAIAPIResponse, CreateTextCompletionModel } from 'diagnostic-data';
 import { v4 as uuid } from 'uuid';
-import { GenericOpenAIService } from '../../services/generic-openai.service';
+import { ApplensOpenAIService } from '../../../shared/services/applens-openai.service';
 import {FormControl} from "@angular/forms";
+import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
+import { AdalService } from 'adal-angular4';
 
 @Component({
     selector: 'openai-chat',
@@ -23,26 +20,47 @@ import {FormControl} from "@angular/forms";
 export class OpenAIChatComponent implements OnInit {
 
     someFormControl: FormControl = new FormControl();
+
+  scrollToBottom() {
+    var allChatMessages = document.getElementsByClassName("chatgpt-message-box");
+    if (allChatMessages.length > 0) {
+      allChatMessages[allChatMessages.length - 1].scrollIntoView();
+    }
+  }
+
+  specialTrim(str: string) {
+    if (str && str.startsWith("\n")) {
+      return str.replace(/^\s+|\s+$/g, '');
+    }
+    return str;
+  }
+
   /**ChatGPT section */
-  fetchOpenAIResult(searchQuery: string, messageObj: ChatMessage, retry: boolean = true) {
+  fetchOpenAIResult(searchQuery: string, messageObj: ChatMessage, retry: boolean = true, trimnewline: boolean = true) {
     this.chatInputBoxDisabled = true;
     try {
       let openAIQueryModel = CreateTextCompletionModel(searchQuery);
-      messageObj.status = MessageStatus.Waiting;
+      messageObj.status = messageObj.status == MessageStatus.Created ? MessageStatus.Waiting: messageObj.status;
       this._openAIService.generateTextCompletion(openAIQueryModel, true).subscribe((res: OpenAIAPIResponse) => {
           var result = res?.choices[0].text;
-          messageObj.message = messageObj.message + result;
-          messageObj.displayedMessage = messageObj.message.replace(/\n/g, "<br />");
+          //Trim any newline character at the beginning of the result
+          messageObj.message = messageObj.message + (trimnewline? result.trim(): result.trimEnd());
+          messageObj.displayedMessage = messageObj.message.replace(/\n/g, "<br>");
           //Check finishing criteria
           if (res.usage.completion_tokens == openAIQueryModel.max_tokens) {
+            //Will need some additional criteria here to check if the response is complete
             messageObj.status = MessageStatus.InProgress;
-            this.fetchOpenAIResult(this.prepareChatContext(), messageObj);
+            
+            //Do not trim newline for the next query
+            this.fetchOpenAIResult(this.prepareChatContext(), messageObj, retry, trimnewline=false);
+            this.scrollToBottom();
           }
           else {
             messageObj.status = MessageStatus.Finished;
             messageObj.timestamp = new Date().getTime();
             this.chatgptSearchText = "";
             this.chatInputBoxDisabled = false;
+            this.scrollToBottom();
             document.getElementById(`chatGPTInputBox`).focus();
           }
       },
@@ -65,6 +83,7 @@ export class OpenAIChatComponent implements OnInit {
     messageObj.timestamp = new Date().getTime();
     this.chatgptSearchText = "";
     this.chatInputBoxDisabled = false;
+    this.scrollToBottom();
     document.getElementById("chatGPTInputBox").focus();
   }
 
@@ -110,18 +129,30 @@ export class OpenAIChatComponent implements OnInit {
       renderingType: MessageRenderingType.Text
     };
     this.messages.push(chatMessage);
+    this.scrollToBottom();
     this.fetchOpenAIResult(this.prepareChatContext(), chatMessage);
   }
   /** */
     
-    constructor(@Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, public telemetryService: TelemetryService,
-        private _activatedRoute: ActivatedRoute, private _router: Router,
-        private _resourceService: GenericResourceService,
-        private _openAIService: GenericOpenAIService ) {
-        super(telemetryService);
+    constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
+        private _openAIService: ApplensOpenAIService, private _diagnosticApiService: DiagnosticApiService, private _adalService: AdalService ) {
     }
+
+    userPhotoSource: any = "";
+    userNameInitial: string = "";
     
     ngOnInit() {
+      const alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
+      const userId = alias.replace('@microsoft.com', '');
+      this._diagnosticApiService.getUserPhoto(userId).subscribe(image => {
+        this.userPhotoSource = image;
+      });
+
+      if (this._adalService.userInfo.profile) {
+        const familyName: string = this._adalService.userInfo.profile.family_name;
+        const givenName: string = this._adalService.userInfo.profile.given_name;
+        this.userNameInitial = `${givenName.charAt(0).toLocaleUpperCase()}${familyName.charAt(0).toLocaleUpperCase()}`;
+      }
     }
 
 }  

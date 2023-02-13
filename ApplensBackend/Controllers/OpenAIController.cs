@@ -7,11 +7,14 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using AppLensV3.Helpers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Xml;
 
 namespace AppLensV3.Controllers
 {
     [Route("api/openai")]
     [Produces("application/json")]
+    [Authorize(Policy = "ApplensAccess")]
     public class OpenAIController : Controller
     {
         private IOpenAIService _openAIService;

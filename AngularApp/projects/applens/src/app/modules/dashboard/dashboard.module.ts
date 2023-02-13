@@ -127,6 +127,7 @@ import { WorkflowRunDialogComponent } from './workflow/workflow-run-dialog/workf
 import { WorkflowRootNodeComponent } from './workflow/workflow-root-node/workflow-root-node.component';
 import { ApplensOpenAIService } from '../../shared/services/applens-openai.service';
 import { GenericOpenAIService } from '../../../../../diagnostic-data/src/public_api';
+import { OpenAIChatComponent } from './openai-chat/openai-chat.component';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
@@ -489,7 +490,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
 @NgModule({
     imports: [
         CommonModule,
-        //FormsModule,
+        FormsModule,
         DashboardModuleRoutes,
         DiagnosticDataModule,
         SharedModule,
@@ -584,6 +585,6 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         L2SideNavComponent, UserActivePullrequestsComponent, FavoriteDetectorsComponent, ApplensDocsComponent, ApplensDocSectionComponent, CreateWorkflowComponent,
         IfElseConditionStepComponent, ConditionIftrueStepComponent, ConditionIffalseStepComponent, SwitchStepComponent, SwitchCaseStepComponent, SwitchCaseDefaultStepComponent,
         KustoQueryDialogComponent, DetectorNodeComponent, KustoNodeComponent, MarkdownNodeComponent, NodeActionsComponent, ConfigureVariablesComponent, CommonNodePropertiesComponent,
-        NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent]
+        NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent]
 })
 export class DashboardModule { }

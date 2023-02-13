@@ -50,7 +50,7 @@ export enum QueryTemperature {
     Hot = 0.8
 }
 
-export function CreateTextCompletionModel(text: string, model: TextModels = TextModels.Default, responseSize: ResponseTokensSize = ResponseTokensSize.Medium, queryTemperature: QueryTemperature = QueryTemperature.Low): TextCompletionModel {
+export function CreateTextCompletionModel(text: string, model: TextModels = TextModels.Default, responseSize: ResponseTokensSize = ResponseTokensSize.Small, queryTemperature: QueryTemperature = QueryTemperature.Low): TextCompletionModel {
     return {
         model: TextModels.Default,
         prompt: `${text}`,
