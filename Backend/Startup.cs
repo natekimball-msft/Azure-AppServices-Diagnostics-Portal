@@ -59,7 +59,7 @@ namespace Backend
                         Location = ResponseCacheLocation.None,
                         NoStore = true
                     });
-            });
+            }).AddNewtonsoftJson();
 
             services.AddSingleton<IKustoQueryService, KustoQueryService>();
             services.AddSingleton<IKustoTokenRefreshService, KustoTokenRefreshService>();
