@@ -110,6 +110,15 @@ namespace AppLensV3
             services.AddMemoryCache();
             services.AddMvc().AddNewtonsoftJson();
 
+            if (!string.IsNullOrWhiteSpace(Configuration.GetValue("ContentSearch:Ocp-Apim-Subscription-Key", string.Empty)))
+            {
+                services.AddSingleton<IBingSearchService, BingSearchService>();
+            }
+            else
+            {
+                services.AddSingleton<IBingSearchService, BingSearchServiceDisabled>();
+            }
+
             if (Configuration.GetValue("Graph:Enabled", false))
             {
                 GraphTokenService.Instance.Initialize(Configuration);
