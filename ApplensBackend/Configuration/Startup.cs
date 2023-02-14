@@ -128,6 +128,8 @@ namespace AppLensV3
                 services.AddSingleton<IOpenAIService, OpenAIServiceDisabled>();
             }
 
+            services.AddSingleton<ITPromptClientService, TPromptClientService>();
+
             services.AddMemoryCache();
             services.AddMvc().AddNewtonsoftJson();
 
