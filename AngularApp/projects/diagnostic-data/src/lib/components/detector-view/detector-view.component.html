@@ -52,7 +52,6 @@
 
 <div *ngIf="timePickerErrorStr !==''" class="error-time-picker-message">{{timePickerErrorStr}}</div>
 
-
 <div *ngIf="detectorDataLocalCopy">
   <div *ngFor="let data of detectorDataLocalCopy.dataset  | renderfilter:isAnalysisView"
     [ngClass]="{'dynamic-data-container': !isRiskAlertDetector}">
