@@ -29,6 +29,7 @@ export * from './lib/services/generic-user-setting.service';
 export * from './lib/services/generic-portal.service';
 export * from './lib/services/generic-feature-service';
 export * from './lib/services/generic-openai.service';
+export * from './lib/services/chat-gpt-context-service';
 export * from './lib/config/diagnostic-data-config';
 export * from './lib/diagnostic-data.module';
 

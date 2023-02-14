@@ -128,6 +128,7 @@ import { WorkflowRootNodeComponent } from './workflow/workflow-root-node/workflo
 import { ApplensOpenAIService } from '../../shared/services/applens-openai.service';
 import { GenericOpenAIService } from '../../../../../diagnostic-data/src/public_api';
 import { OpenAIChatComponent } from './openai-chat/openai-chat.component';
+import {ChatGPTContextService} from 'diagnostic-data';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
@@ -555,6 +556,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         InitResolver,
         ApplensGlobals,
         ApplensOpenAIService,
+        ChatGPTContextService,
         BreadcrumbService,
         ClientScriptService,
         WorkflowService,

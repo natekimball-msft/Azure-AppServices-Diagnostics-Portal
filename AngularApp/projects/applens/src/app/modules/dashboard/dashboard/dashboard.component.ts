@@ -379,6 +379,9 @@ export class DashboardComponent implements OnDestroy {
     if (this._router.url.includes("chatgpt")) {
       this.showGPTComponent = true;
     }
+    else {
+      this.showGPTComponent = false;
+    }
   }
 
   ngOnInit() {

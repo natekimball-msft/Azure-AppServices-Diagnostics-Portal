@@ -1,21 +1,21 @@
 <div class="chatgpt-bot-container">
-    <div class="chatgpt-box-row-container chatgpt-header-container" *ngIf="!messages || messages.length==0">
-        <h1 class="chatgpt-header-text">ChatGPT</h1>
+    <div class="chatgpt-box-row-container chatgpt-header-container" *ngIf="!_chatContextService.messages || _chatContextService.messages.length==0">
+        <h1 class="chatgpt-header-text">AppLens + ChatGPT</h1>
     </div>
-    <div class="chatgpt-box-row-container chatgpt-samples-container" *ngIf="!messages || messages.length==0">
+    <div class="chatgpt-box-row-container chatgpt-samples-container" *ngIf="!_chatContextService.messages || _chatContextService.messages.length==0">
         <div class="chatgpt-box-row">
             <ng-container *ngFor="let querySample of chatQuerySamples; let i = index">
-              <div class="chatgpt-box" *ngIf="i<=2" (click)="onchatSampleClick(i)" [innerHTML]="chatQuerySamples[i]"></div>
+              <div class="chatgpt-box" *ngIf="i<=2" (click)="onchatSampleClick(i)" [innerHTML]="chatQuerySamples[i].key"></div>
             </ng-container>
         </div>
         <div class="chatgpt-box-row">
           <ng-container *ngFor="let querySample of chatQuerySamples; let i = index">
-            <div class="chatgpt-box" *ngIf="i>=3" (click)="onchatSampleClick(i)" [innerHTML]="chatQuerySamples[i]"></div>
+            <div class="chatgpt-box" *ngIf="i>=3" (click)="onchatSampleClick(i)" [innerHTML]="chatQuerySamples[i].key"></div>
           </ng-container>
         </div>
     </div>
-    <div class="chatgpt-box-row-container chatgpt-chat-messages-container" *ngIf="messages && messages.length>0">
-      <div class="chatgpt-message-box chatgpt-message-box-{{message.messageSource}}" *ngFor="let message of messages">
+    <div class="chatgpt-box-row-container chatgpt-chat-messages-container" *ngIf="_chatContextService.messages && _chatContextService.messages.length>0">
+      <div class="chatgpt-message-box chatgpt-message-box-{{message.messageSource}}" *ngFor="let message of _chatContextService.messages">
         <div class="chatgpt-message-content">
           <ng-container *ngIf="message.messageSource=='system'">
             <div class="chatgpt-message-icon">
@@ -24,7 +24,7 @@
           </ng-container>
           <ng-container *ngIf="message.messageSource=='user'">
             <div class="chatgpt-message-icon">
-              <img *ngIf="userPhotoSource !== '';else userInitial" [src]="userPhotoSource" alt="User Profile Photo" class="avatar">
+              <img *ngIf="_chatContextService.userPhotoSource !== '';else userInitial" [src]="_chatContextService.userPhotoSource" alt="User Profile Photo" class="avatar">
             </div>
           </ng-container>
           <ng-container *ngIf="message.status==1">
@@ -34,7 +34,7 @@
           </ng-container>
           <ng-container *ngIf="message.status==2 || message.status==3">
             <div class="chatgpt-message chatgpt-message-{{message.renderingType}}">
-              <div style="white-space:pre">
+              <div style="white-space:pre-wrap">
                 <p [ngClass]="{'blinking-cursor': message.status==2}" [innerText]="message.message">
                 </p>
               </div>
@@ -45,7 +45,7 @@
     </div>
     <div class="chatgpt-box-row-container chatgpt-textarea-container">
       <div class="chatgpt-textarea-wrapper">
-        <textarea [(ngModel)]="chatgptSearchText" tabindex="0" class="form-control chatgpt-textarea" rows="1" placeholder="Ask a question" (keyup.enter)="triggerChat()" id="chatGPTInputBox" [disabled]="chatInputBoxDisabled"></textarea>
+        <textarea [(ngModel)]="chatgptSearchText" tabindex="0" class="chatgpt-textarea" rows="1" placeholder="Ask a question" (keyup.enter)="triggerChat()" id="chatGPTInputBox" [disabled]="_chatContextService.chatInputBoxDisabled"></textarea>
         <button (click)="triggerChat()"
             class="chatgpt-textarea-button"><svg
                 stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
@@ -60,5 +60,5 @@
 </div>
 
 <ng-template #userInitial>
-  <div class="avatar user-initial">{{userNameInitial}}</div>
+  <div class="avatar user-initial">{{_chatContextService.userNameInitial}}</div>
 </ng-template>
