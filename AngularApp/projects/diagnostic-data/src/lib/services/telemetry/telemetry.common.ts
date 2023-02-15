@@ -113,6 +113,13 @@ export const TelemetryEventNames = {
     ICMTeamTemplateLoaded: 'ICMTeamTemplateLoaded',
     ICMTeamTemplateUpdate: 'ICMTeamTemplateUpdate',
     HomePageLogUser: 'HomePageLogUser',
+    ChatGPTLoaded: 'ChatGPTLoaded',
+    ChatGPTUserSettingLoaded: 'ChatGPTUserSettingLoaded',
+    ChatGPTSampleClicked: 'ChatGPTSampleClicked',
+    ChatGPTCheckMessageCount: 'ChatGPTCheckMessageCount',
+    ChatGPTRequestError: 'ChatGPTRequestError',
+    ChatGPTUserQuotaExceeded: 'ChatGPTUserQuotaExceeded',
+    ChatGPTTooManyRequestsError: 'ChatGPTTooManyRequestsError'
 };
 
 export const TelemetrySource = {

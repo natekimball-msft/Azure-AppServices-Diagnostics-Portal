@@ -14,6 +14,7 @@ import { UserSettingService } from '../services/user-setting.service';
 import { ResourceProviderMessages, UserChatGPTSetting } from '../../../shared/models/user-setting';
 import { ResourceService } from '../../../shared/services/resource.service';
 import {openAIChatQueries} from '../../../shared/models/openai-chat-samples';
+import { TelemetryService, TelemetryEventNames } from 'diagnostic-data';
 
 @Component({
     selector: 'openai-chat',
@@ -29,9 +30,11 @@ export class OpenAIChatComponent implements OnInit {
     private _adalService: AdalService,
     public _chatContextService: ChatGPTContextService,
     private _userSettingService: UserSettingService,
-    private _resourceService: ResourceService) {
+    private _resourceService: ResourceService,
+    private _telemetryService: TelemetryService) {
   }
 
+  userAlias: string = '';
   userChatGPTSetting: UserChatGPTSetting;
   showMessageQuotaError: boolean = false;
   showMessageQuotaWarning: boolean = false;
@@ -47,10 +50,14 @@ export class OpenAIChatComponent implements OnInit {
     this.currentResourceProvider = `${this._resourceService.ArmResource.provider}/${this._resourceService.ArmResource.resourceTypeName}`.toLowerCase();
     this._openAIService.CheckEnabled().subscribe(enabled => {
       this.isEnabled = this._openAIService.isEnabled;
+      if (this.isEnabled) {
+        this._telemetryService.logEvent(TelemetryEventNames.ChatGPTLoaded, { "resourceProvider": this.currentResourceProvider, ts: new Date().getTime().toString()});
+      }
     });
-    this.isEnabled = this._openAIService.isEnabled;    
+    this.isEnabled = this._openAIService.isEnabled;
     const alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
     const userId = alias.replace('@microsoft.com', '');
+    this.userAlias = userId;
     this._diagnosticApiService.getUserPhoto(userId).subscribe(image => {
       this._chatContextService.userPhotoSource = image;
     });
@@ -71,6 +78,7 @@ export class OpenAIChatComponent implements OnInit {
                                   messages.forEach((m: ChatMessage) => {m.messageDisplayDate = this.displayMessageDate(new Date(m.timestamp));});
         this._chatContextService.messages = this.userChatGPTSetting.allMessages.find(rm => rm.resourceProvider==this.currentResourceProvider)?.messages??[];
       }
+      this._telemetryService.logEvent(TelemetryEventNames.ChatGPTUserSettingLoaded, { userId: this.userAlias, ts: new Date().getTime().toString()});
       
       this.checkMessageCount();
     });
@@ -87,22 +95,29 @@ export class OpenAIChatComponent implements OnInit {
   }
 
   checkMessageCount(){
-    if (this.userChatGPTSetting && this.userChatGPTSetting.allMessages && this.userChatGPTSetting.allMessages.length > 0) {
-      this.userChatGPTSetting.messageDailyCount = this.userChatGPTSetting.allMessages.
-                                                      map((rm: ResourceProviderMessages) => rm.messages.filter((m: ChatMessage) => m.messageSource == MessageSource.User && this.checkSameDay(m.timestamp)).length).
-                                                      reduce((partialSum, a) => partialSum + a, 0);
-      if (this.userChatGPTSetting.messageDailyCount >= this.dailyMessageQuota) {
-        this._chatContextService.chatInputBoxDisabled = true;
-        this.showMessageQuotaError = true;
-        this.showMessageQuotaWarning = false;
-        return false;
+    try {
+      if (this.userChatGPTSetting && this.userChatGPTSetting.allMessages && this.userChatGPTSetting.allMessages.length > 0) {
+        this.userChatGPTSetting.messageDailyCount = this.userChatGPTSetting.allMessages.
+                                                        map((rm: ResourceProviderMessages) => rm.messages.filter((m: ChatMessage) => m.messageSource == MessageSource.User && this.checkSameDay(m.timestamp)).length).
+                                                        reduce((partialSum, a) => partialSum + a, 0);
+        if (this.userChatGPTSetting.messageDailyCount > this.dailyMessageQuota) {
+          this._telemetryService.logEvent(TelemetryEventNames.ChatGPTUserQuotaExceeded, { userId: this.userAlias, messageCount: this.userChatGPTSetting.messageDailyCount.toString(), quotaLimit: this.dailyMessageQuota.toString(), ts: new Date().getTime().toString()});
+          this._chatContextService.chatInputBoxDisabled = true;
+          this.showMessageQuotaError = true;
+          this.showMessageQuotaWarning = false;
+          return false;
+        }
+        else if (this.userChatGPTSetting.messageDailyCount >= this.dailyMessageQuota - this.messageQuotaWarningThreshold) {
+          this.showMessageQuotaWarning = true;
+          this.showMessageQuotaError = false;
+        }
       }
-      else if (this.userChatGPTSetting.messageDailyCount >= this.dailyMessageQuota - this.messageQuotaWarningThreshold) {
-        this.showMessageQuotaWarning = true;
-        this.showMessageQuotaError = false;
-      }
+      return true;
     }
-    return true;
+    catch (e) {
+      this._telemetryService.logException(e, TelemetryEventNames.ChatGPTCheckMessageCount, { userId: this.userAlias, messageCount: this.userChatGPTSetting.toString(), quotaLimit: this.dailyMessageQuota.toString(), ts: new Date().getTime().toString()});
+      return true;
+    }
   }
 
   saveUserSetting() {
@@ -189,11 +204,12 @@ export class OpenAIChatComponent implements OnInit {
   }
 
   handleFailure(err, messageObj) {
-    console.log(err);
     if (err.status && err.status == 429) {
+      this._telemetryService.logEvent(TelemetryEventNames.ChatGPTTooManyRequestsError, { ...err, ts: new Date().getTime().toString()});
       this.displayChatGPTRequestError("Ah! Too many people asking me questions! Please try again in sometime.");
     }
     else {
+      this._telemetryService.logEvent(TelemetryEventNames.ChatGPTRequestError, { ...err, ts: new Date().getTime().toString()});
       this.displayChatGPTRequestError("Me and AppLens are on a talking freeze it seems. Lets try again later.");
     }
     messageObj.status = MessageStatus.Finished;
@@ -214,35 +230,36 @@ export class OpenAIChatComponent implements OnInit {
   }
 
   onchatSampleClick(idx: number){
+    this._telemetryService.logEvent(TelemetryEventNames.ChatGPTSampleClicked, { userId: this.userAlias, idx: idx.toString(), clickedSample: this.chatQuerySamples[idx].key, ts: new Date().getTime().toString() });
     this.chatgptSearchText = this.chatQuerySamples[idx].value;
     this.triggerChat();
   }
 
   triggerChat(){
-    //TODO: Validate message count here
-    //TODO: Validate message length here
-    this._chatContextService.messages.push({
-      id: uuid(),
-      message: this.chatgptSearchText,
-      messageSource: MessageSource.User,
-      timestamp: new Date().getTime(),
-      messageDisplayDate: this.displayMessageDate(new Date()),
-      status: MessageStatus.Finished,
-      renderingType: MessageRenderingType.Text
-    });
-    this._chatContextService.chatInputBoxDisabled = true;
-    let chatMessage = {
-      id: uuid(),
-      message: "",
-      messageSource: MessageSource.System,
-      timestamp: new Date().getTime(),
-      messageDisplayDate: this.displayMessageDate(new Date()),
-      status: MessageStatus.Created,
-      renderingType: MessageRenderingType.Text
-    };
-    this._chatContextService.messages.push(chatMessage);
-    this.scrollToBottom();
-    this.fetchOpenAIResult(this.prepareChatContext(), chatMessage);
+    if (this.checkMessageCount()) {
+      this._chatContextService.messages.push({
+        id: uuid(),
+        message: this.chatgptSearchText,
+        messageSource: MessageSource.User,
+        timestamp: new Date().getTime(),
+        messageDisplayDate: this.displayMessageDate(new Date()),
+        status: MessageStatus.Finished,
+        renderingType: MessageRenderingType.Text
+      });
+      this._chatContextService.chatInputBoxDisabled = true;
+      let chatMessage = {
+        id: uuid(),
+        message: "",
+        messageSource: MessageSource.System,
+        timestamp: new Date().getTime(),
+        messageDisplayDate: this.displayMessageDate(new Date()),
+        status: MessageStatus.Created,
+        renderingType: MessageRenderingType.Text
+      };
+      this._chatContextService.messages.push(chatMessage);
+      this.scrollToBottom();
+      this.fetchOpenAIResult(this.prepareChatContext(), chatMessage);
+    }
   }
   /** */
 }  
