@@ -42,16 +42,24 @@ export class ApplensHeaderComponent implements OnInit {
   themeChanged: boolean = false;
   viewModeChanged: boolean = false;
   selectedKey: string = "smarter";
+  showGPTComponent: boolean = false;
   choiceGroupOptions: IChoiceGroupOption[] = [
     { key: 'smarter', text: 'Smart Grouping', onClick: () => { this.smartViewChecked = true; this.selectedKey = "smarter"; } },
     { key: 'waterfall', text: 'Waterfall', onClick: () => { this.smartViewChecked = false; this.selectedKey = "waterfall"; } }
   ];
 
-  constructor(private _adalService: AdalService, private _diagnosticApiService: DiagnosticApiService, private _activatedRoute: ActivatedRoute, private _userSettingService: UserSettingService, private _router: Router, private _themeService: ApplensThemeService, private _detectorControlService: DetectorControlService, @Optional() public _searchService?: SearchService, @Optional() private _applensGlobal?: ApplensGlobal) { }
+  constructor(private _adalService: AdalService, private _diagnosticApiService: DiagnosticApiService, private _activatedRoute: ActivatedRoute, private _userSettingService: UserSettingService, private _router: Router, private _themeService: ApplensThemeService, private _detectorControlService: DetectorControlService, @Optional() public _searchService?: SearchService, @Optional() private _applensGlobal?: ApplensGlobal) {
+    this._router.events.subscribe((val) => {
+      // see also
+      this.checkGPTRoute();
+    });
+  }
 
   ngOnInit() {
     const alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
     const userId = alias.replace('@microsoft.com', '');
+
+    this.checkGPTRoute();
 
     if (this._adalService.userInfo.profile) {
       const familyName: string = this._adalService.userInfo.profile.family_name;
@@ -82,6 +90,15 @@ export class ApplensHeaderComponent implements OnInit {
     this._diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
       this.envTag = `(${env})`;
     });
+  }
+
+  checkGPTRoute(){
+    if (this._router.url.includes("chatgpt")) {
+      this.showGPTComponent = true;
+    }
+    else {
+      this.showGPTComponent = false;
+    }
   }
 
   navigateToLandingPage() {

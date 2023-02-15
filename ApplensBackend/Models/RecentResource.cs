@@ -30,6 +30,9 @@ namespace AppLensV3.Models
         [JsonProperty(PropertyName = "defaultServiceType")]
         public string DefaultServiceType { get; set; }
 
+        [JsonProperty(PropertyName = "userChatGPTSetting")]
+        public string UserChatGPTSetting { get; set; }
+
         /// <summary>
         /// Key is detectorId, value is detector property
         /// </summary>

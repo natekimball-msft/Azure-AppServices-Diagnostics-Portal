@@ -15,7 +15,7 @@
       </div>
     </div>
 
-    <div *ngIf="_searchService">
+    <div *ngIf="_searchService && !showGPTComponent">
       <input class="header-search" type="text" aria-label="Describe your problem and Search" autocomplete="off" [(ngModel)]="searchValue" (keyup.enter)="triggerSearch()" placeholder="Describe your problem and hit enter">
     </div>
 

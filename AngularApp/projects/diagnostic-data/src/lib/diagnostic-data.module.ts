@@ -152,6 +152,8 @@ import { WorkflowResultComponent } from './components/workflow-result/workflow-r
 import { WorkflowViewComponent } from './components/workflow-view/workflow-view.component';
 import { WorkflowNodeComponent } from './components/workflow-node/workflow-node.component';
 import { NgFlowchartModule } from 'projects/ng-flowchart/dist';
+import { ChatGPTContextService } from './services/chat-gpt-context-service';
+import { GenericOpenAIService } from '../public_api';
 
 @NgModule({
     imports: [
@@ -323,7 +325,9 @@ export class DiagnosticDataModule {
                 AppInsightsQueryService,
                 ParseResourceService,
                 HighChartsHoverService,
-                GenericFeatureService
+                GenericFeatureService,
+                GenericOpenAIService,
+                ChatGPTContextService
             ]
         };
     }
