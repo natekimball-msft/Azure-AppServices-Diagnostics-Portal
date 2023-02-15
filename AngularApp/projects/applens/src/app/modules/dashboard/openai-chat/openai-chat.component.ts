@@ -40,8 +40,10 @@ export class OpenAIChatComponent implements OnInit {
   showMessageQuotaWarning: boolean = false;
   showDataDisclaimer: boolean = true;
   dailyMessageQuota: number = 10;
-  messageQuotaWarningThreshold: number = 3;
+  messageQuotaWarningThreshold: number = 5;
   isEnabled: boolean = false;
+  isEnabledChecked: boolean = false;
+  displayLoader: boolean = false;
   currentResourceProvider: string;
   chatGPTRequestError: string = '';
   showChatGPTRequestError: boolean = false;
@@ -50,11 +52,11 @@ export class OpenAIChatComponent implements OnInit {
     this.currentResourceProvider = `${this._resourceService.ArmResource.provider}/${this._resourceService.ArmResource.resourceTypeName}`.toLowerCase();
     this._openAIService.CheckEnabled().subscribe(enabled => {
       this.isEnabled = this._openAIService.isEnabled;
+      this.isEnabledChecked = true;
       if (this.isEnabled) {
         this._telemetryService.logEvent(TelemetryEventNames.ChatGPTLoaded, { "resourceProvider": this.currentResourceProvider, ts: new Date().getTime().toString()});
       }
     });
-    this.isEnabled = this._openAIService.isEnabled;
     const alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
     const userId = alias.replace('@microsoft.com', '');
     this.userAlias = userId;

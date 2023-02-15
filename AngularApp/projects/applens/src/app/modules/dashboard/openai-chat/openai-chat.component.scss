@@ -108,15 +108,15 @@
 
   .chatgpt-textarea-container{
     position: absolute;
-    bottom: 30px;
+    bottom: 5px;
   }
 
   .chatgpt-textarea-wrapper{
     display: flex;
     position: absolute;
-    bottom: 30px;
+    bottom: 37px;
     width: 49vw;
-    height: 50px;
+    height: 40px;
   }
 
   .chatgpt-message-quota-warning{
@@ -134,6 +134,8 @@
   .chatgpt-data-disclaimer{
     font-weight: 400;
     color: gray;
+    position: absolute;
+    bottom: 0px;
   }
 
   .chatgpt-textarea{

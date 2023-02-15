@@ -1,4 +1,4 @@
-<div *ngIf="isEnabled" class="chatgpt-bot-container">
+<div *ngIf="isEnabledChecked && isEnabled" class="chatgpt-bot-container">
     <div class="chatgpt-box-row-container chatgpt-header-container" *ngIf="!_chatContextService.messages || _chatContextService.messages.length==0">
         <h1 class="chatgpt-header-text">AppLens <img src="/assets/img/handshakelogo.png" class="chatgpt-handshake-logo"/> ChatGPT</h1>
     </div>
@@ -73,9 +73,15 @@
     </div>
 </div>
 
-<div *ngIf="!isEnabled">
+<div *ngIf="isEnabledChecked && !isEnabled">
   <div class="chatgpt-bot-container">
     ChatGPT is currently disabled in AppLens. Please check back later.
+  </div>
+</div>
+
+<div *ngIf="!isEnabledChecked">
+  <div class="chatgpt-bot-container">
+    Checking ...
   </div>
 </div>
 
