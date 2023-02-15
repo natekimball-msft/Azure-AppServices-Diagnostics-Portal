@@ -11,7 +11,8 @@ import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.se
 import { AdalService } from 'adal-angular4';
 import {ChatGPTContextService} from "diagnostic-data";
 import { UserSettingService } from '../services/user-setting.service';
-import { UserChatGPTSetting } from '../../../shared/models/user-setting';
+import { ResourceProviderMessages, UserChatGPTSetting } from '../../../shared/models/user-setting';
+import { ResourceService } from '../../../shared/services/resource.service';
 
 @Component({
     selector: 'openai-chat',
@@ -26,7 +27,8 @@ export class OpenAIChatComponent implements OnInit {
     private _diagnosticApiService: DiagnosticApiService,
     private _adalService: AdalService,
     public _chatContextService: ChatGPTContextService,
-    private _userSettingService: UserSettingService) {
+    private _userSettingService: UserSettingService,
+    private _resourceService: ResourceService) {
   }
 
   userChatGPTSetting: UserChatGPTSetting;
@@ -36,9 +38,14 @@ export class OpenAIChatComponent implements OnInit {
   dailyMessageQuota: number = 10;
   messageQuotaWarningThreshold: number = 3;
   isEnabled: boolean = false;
+  currentResourceProvider: string;
     
   ngOnInit() {
-    this.isEnabled = this._openAIService.isEnabled;
+    this.currentResourceProvider = `${this._resourceService.ArmResource.provider}/${this._resourceService.ArmResource.resourceTypeName}`.toLowerCase();
+    this._openAIService.CheckEnabled().subscribe(enabled => {
+      this.isEnabled = this._openAIService.isEnabled;
+    });
+    this.isEnabled = this._openAIService.isEnabled;    
     const alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
     const userId = alias.replace('@microsoft.com', '');
     this._diagnosticApiService.getUserPhoto(userId).subscribe(image => {
@@ -53,12 +60,13 @@ export class OpenAIChatComponent implements OnInit {
 
     this._userSettingService.getUserSetting(false).subscribe((settings) => {
       this.userChatGPTSetting = settings.userChatGPTSetting && settings.userChatGPTSetting.length>0? JSON.parse(settings.userChatGPTSetting): {
-        messages: [],
+        allMessages: [],
         messageDailyCount: 0
       };
-      if (this.userChatGPTSetting && this.userChatGPTSetting.messages && this.userChatGPTSetting.messages.length > 0) {
-        this.userChatGPTSetting.messages.forEach((m: ChatMessage) => {m.messageDisplayDate = this.displayMessageDate(new Date(m.timestamp));});
-        this._chatContextService.messages = this.userChatGPTSetting.messages;
+      if (this.userChatGPTSetting && this.userChatGPTSetting.allMessages && this.userChatGPTSetting.allMessages.length > 0) {
+        this.userChatGPTSetting.allMessages.find(rm => rm.resourceProvider==this.currentResourceProvider)?.
+                                  messages.forEach((m: ChatMessage) => {m.messageDisplayDate = this.displayMessageDate(new Date(m.timestamp));});
+        this._chatContextService.messages = this.userChatGPTSetting.allMessages.find(rm => rm.resourceProvider==this.currentResourceProvider)?.messages??[];
       }
       
       this.checkMessageCount();
@@ -76,8 +84,10 @@ export class OpenAIChatComponent implements OnInit {
   }
 
   checkMessageCount(){
-    if (this.userChatGPTSetting && this.userChatGPTSetting.messages && this.userChatGPTSetting.messages.length > 0) {
-      this.userChatGPTSetting.messageDailyCount = this.userChatGPTSetting.messages.filter((m: ChatMessage) => m.messageSource == MessageSource.User && this.checkSameDay(m.timestamp)).length;
+    if (this.userChatGPTSetting && this.userChatGPTSetting.allMessages && this.userChatGPTSetting.allMessages.length > 0) {
+      this.userChatGPTSetting.messageDailyCount = this.userChatGPTSetting.allMessages.
+                                                      map((rm: ResourceProviderMessages) => rm.messages.filter((m: ChatMessage) => m.messageSource == MessageSource.User && this.checkSameDay(m.timestamp)).length).
+                                                      reduce((partialSum, a) => partialSum + a, 0);
       if (this.userChatGPTSetting.messageDailyCount >= this.dailyMessageQuota) {
         this._chatContextService.chatInputBoxDisabled = true;
         this.showMessageQuotaError = true;
@@ -93,8 +103,16 @@ export class OpenAIChatComponent implements OnInit {
   }
 
   saveUserSetting() {
-    this.userChatGPTSetting.messages = this._chatContextService.messages;
-    this.userChatGPTSetting.messageDailyCount = this._chatContextService.messages.filter((m: ChatMessage) => m.messageSource == MessageSource.User && this.checkSameDay(m.timestamp)).length;
+    let idx = this.userChatGPTSetting.allMessages.findIndex(t => t.resourceProvider == this.currentResourceProvider);
+    if (idx >= 0) {
+      this.userChatGPTSetting.allMessages[idx].messages = this._chatContextService.messages;
+    }
+    else {
+      this.userChatGPTSetting.allMessages.push({resourceProvider: this.currentResourceProvider, messages: this._chatContextService.messages});
+    }
+    this.userChatGPTSetting.messageDailyCount = this.userChatGPTSetting.allMessages.
+                                                    map((rm: ResourceProviderMessages) => rm.messages.filter((m: ChatMessage) => m.messageSource == MessageSource.User && this.checkSameDay(m.timestamp)).length).
+                                                    reduce((partialSum, a) => partialSum + a, 0);
     this._userSettingService.updateUserChatGPTSetting(this.userChatGPTSetting).subscribe((settings) => {
       this.userChatGPTSetting = JSON.parse(settings.userChatGPTSetting);
     });

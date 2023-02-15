@@ -34,6 +34,11 @@ export interface FavoriteDetectors {
 }
 
 export interface UserChatGPTSetting {
-    messages: ChatMessage[];
+    allMessages: ResourceProviderMessages[];
     messageDailyCount: number;
+}
+
+export interface ResourceProviderMessages {
+    resourceProvider: string;
+    messages: ChatMessage[];
 }
