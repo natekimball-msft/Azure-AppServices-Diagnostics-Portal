@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { OpenAIChatComponent } from './openai-chat.component';
 
-describe('WebSearchComponent', () => {
+describe('OpenAIChatComponent', () => {
   let component: OpenAIChatComponent;
   let fixture: ComponentFixture<OpenAIChatComponent>;
 

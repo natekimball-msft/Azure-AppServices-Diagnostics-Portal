@@ -25,7 +25,7 @@
     </fab-dialog-footer>
   </fab-dialog>
 </div>
-<applens-header *ngIf="!stillLoading && (showDashboardContent)"></applens-header>
+<applens-header *ngIf="!stillLoading && showDashboardContent"></applens-header>
 <div class="main-row" style="margin: 0px auto; width: 100%;margin-top: 50px;" *ngIf="stillLoading">
   <fab-spinner [size]="loaderSize" [label]="'Loading...'"></fab-spinner>
 </div>
