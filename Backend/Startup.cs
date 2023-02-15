@@ -59,7 +59,7 @@ namespace Backend
                         Location = ResponseCacheLocation.None,
                         NoStore = true
                     });
-            });
+            }).AddNewtonsoftJson();
 
             services.AddSingleton<IKustoQueryService, KustoQueryService>();
             services.AddSingleton<IKustoTokenRefreshService, KustoTokenRefreshService>();
@@ -67,6 +67,15 @@ namespace Backend
             services.AddSingleton<IEncryptionService, EncryptionService>();
             services.AddSingleton<IAppInsightsService, AppInsightsService>();
             services.AddSingleton<IHealthCheckService, HealthCheckService>();
+            if (!string.IsNullOrWhiteSpace(Configuration.GetValue("ContentSearch:Ocp-Apim-Subscription-Key", string.Empty)))
+            {
+                services.AddSingleton<IBingSearchService, BingSearchService>();
+            }
+            else
+            {
+                services.AddSingleton<IBingSearchService, BingSearchServiceDisabled>();
+            }
+
             if (Configuration.GetValue("OpenAIService:Enabled", false))
             {
                 services.AddSingleton<IOpenAIService, OpenAIService>();

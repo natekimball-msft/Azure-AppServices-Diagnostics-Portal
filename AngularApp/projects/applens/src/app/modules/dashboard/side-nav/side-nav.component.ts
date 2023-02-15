@@ -388,6 +388,7 @@ export class SideNavComponent implements OnInit {
           });
           fileNames.push(folderList);
           fileNames[filesIndex].forEach(d => {
+            this.documentList.addDocument(`${categories[filesIndex]}:${d}`);
             let docItem: CollapsibleMenuItem = {
               label: d,
               id: "",
