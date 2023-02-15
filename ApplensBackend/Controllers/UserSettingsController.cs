@@ -79,6 +79,18 @@ namespace AppLensV3.Controllers
             return Ok(userSetting);
         }
 
+        [HttpPost("{userId}/userChatGPTSetting")]
+        public async Task<IActionResult> PathchUserChatGPTSettings(string userId, [FromBody] JToken body)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return BadRequest("userId cannot be empty");
+            }
+
+            var userSetting = await _cosmosDBHandler.PatchUserChatGPTSetting(userId, body);
+            return Ok(userSetting);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> CreateOrUpdateResources([FromBody] JToken body)

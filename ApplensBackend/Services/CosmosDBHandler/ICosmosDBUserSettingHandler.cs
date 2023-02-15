@@ -20,5 +20,7 @@ namespace AppLensV3.Services
         Task<UserSetting> PatchUserPanelSetting(string id, string theme, string viewMode, string expandAnalysisCheckCard);
 
         Task<UserSetting> PatchLandingInfo(string id, List<RecentResource> resources, string defaultServiceType);
+
+        Task<UserSetting> PatchUserChatGPTSetting(string id, object value);
     }
 }

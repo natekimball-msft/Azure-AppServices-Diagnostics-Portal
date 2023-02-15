@@ -10,6 +10,8 @@ import { ApplensOpenAIService } from '../../../shared/services/applens-openai.se
 import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
 import { AdalService } from 'adal-angular4';
 import {ChatGPTContextService} from "diagnostic-data";
+import { UserSettingService } from '../services/user-setting.service';
+import { UserChatGPTSetting } from '../../../shared/models/user-setting';
 
 @Component({
     selector: 'openai-chat',
@@ -19,18 +21,90 @@ import {ChatGPTContextService} from "diagnostic-data";
 
 export class OpenAIChatComponent implements OnInit {
 
+  constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
+    private _openAIService: ApplensOpenAIService,
+    private _diagnosticApiService: DiagnosticApiService,
+    private _adalService: AdalService,
+    public _chatContextService: ChatGPTContextService,
+    private _userSettingService: UserSettingService) {
+  }
+
+  userChatGPTSetting: UserChatGPTSetting;
+  showMessageQuotaError: boolean = false;
+  showMessageQuotaWarning: boolean = false;
+  showDataDisclaimer: boolean = true;
+  dailyMessageQuota: number = 10;
+  messageQuotaWarningThreshold: number = 3;
+  isEnabled: boolean = false;
+    
+  ngOnInit() {
+    this.isEnabled = this._openAIService.isEnabled;
+    const alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
+    const userId = alias.replace('@microsoft.com', '');
+    this._diagnosticApiService.getUserPhoto(userId).subscribe(image => {
+      this._chatContextService.userPhotoSource = image;
+    });
+
+    if (this._adalService.userInfo.profile) {
+      const familyName: string = this._adalService.userInfo.profile.family_name;
+      const givenName: string = this._adalService.userInfo.profile.given_name;
+      this._chatContextService.userNameInitial = `${givenName.charAt(0).toLocaleUpperCase()}${familyName.charAt(0).toLocaleUpperCase()}`;
+    }
+
+    this._userSettingService.getUserSetting(false).subscribe((settings) => {
+      this.userChatGPTSetting = settings.userChatGPTSetting && settings.userChatGPTSetting.length>0? JSON.parse(settings.userChatGPTSetting): {
+        messages: [],
+        messageDailyCount: 0
+      };
+      if (this.userChatGPTSetting && this.userChatGPTSetting.messages && this.userChatGPTSetting.messages.length > 0) {
+        this.userChatGPTSetting.messages.forEach((m: ChatMessage) => {m.messageDisplayDate = this.displayMessageDate(new Date(m.timestamp));});
+        this._chatContextService.messages = this.userChatGPTSetting.messages;
+      }
+      
+      this.checkMessageCount();
+    });
+  }
+
+  checkSameDay(dayts){
+    var today = new Date().setHours(0, 0, 0, 0);
+    var thatDay = new Date(dayts).setHours(0, 0, 0, 0);
+    return today === thatDay;
+  }
+
+  displayMessageDate(timestamp){
+    return timestamp.getHours() + ":" + timestamp.getMinutes() + "   " + (timestamp.getMonth()+1) + "/" + timestamp.getDate() + "/" + timestamp.getFullYear();
+  }
+
+  checkMessageCount(){
+    if (this.userChatGPTSetting && this.userChatGPTSetting.messages && this.userChatGPTSetting.messages.length > 0) {
+      this.userChatGPTSetting.messageDailyCount = this.userChatGPTSetting.messages.filter((m: ChatMessage) => m.messageSource == MessageSource.User && this.checkSameDay(m.timestamp)).length;
+      if (this.userChatGPTSetting.messageDailyCount >= this.dailyMessageQuota) {
+        this._chatContextService.chatInputBoxDisabled = true;
+        this.showMessageQuotaError = true;
+        this.showMessageQuotaWarning = false;
+        return false;
+      }
+      else if (this.userChatGPTSetting.messageDailyCount >= this.dailyMessageQuota - this.messageQuotaWarningThreshold) {
+        this.showMessageQuotaWarning = true;
+        this.showMessageQuotaError = false;
+      }
+    }
+    return true;
+  }
+
+  saveUserSetting() {
+    this.userChatGPTSetting.messages = this._chatContextService.messages;
+    this.userChatGPTSetting.messageDailyCount = this._chatContextService.messages.filter((m: ChatMessage) => m.messageSource == MessageSource.User && this.checkSameDay(m.timestamp)).length;
+    this._userSettingService.updateUserChatGPTSetting(this.userChatGPTSetting).subscribe((settings) => {
+      this.userChatGPTSetting = JSON.parse(settings.userChatGPTSetting);
+    });
+  }
+
   scrollToBottom() {
     var allChatMessages = document.getElementsByClassName("chatgpt-message-box");
     if (allChatMessages.length > 0) {
       allChatMessages[allChatMessages.length - 1].scrollIntoView();
     }
-  }
-
-  specialTrim(str: string) {
-    if (str && str.startsWith("\n")) {
-      return str.replace(/^\s+|\s+$/g, '');
-    }
-    return str;
   }
 
   /**ChatGPT section */
@@ -44,6 +118,7 @@ export class OpenAIChatComponent implements OnInit {
           //Trim any newline character at the beginning of the result
           messageObj.message = messageObj.message + (trimnewline? result.trim(): result.trimEnd());
           messageObj.displayedMessage = messageObj.message.replace(/\n/g, "<br>");
+          
           //Check finishing criteria
           if (res.usage.completion_tokens == openAIQueryModel.max_tokens) {
             //Will need some additional criteria here to check if the response is complete
@@ -56,10 +131,15 @@ export class OpenAIChatComponent implements OnInit {
           else {
             messageObj.status = MessageStatus.Finished;
             messageObj.timestamp = new Date().getTime();
+            messageObj.messageDisplayDate = this.displayMessageDate(new Date());
+
+            this.saveUserSetting();
             this.chatgptSearchText = "";
             this._chatContextService.chatInputBoxDisabled = false;
             this.scrollToBottom();
-            document.getElementById(`chatGPTInputBox`).focus();
+            setTimeout(() => {
+              document.getElementById(`chatGPTInputBox`).focus();
+            }, 200);
           }
       },
       (err) => {
@@ -79,6 +159,7 @@ export class OpenAIChatComponent implements OnInit {
     messageObj.displayedMessage = messageObj.message.replace(/\n/g, "<br />");
     messageObj.status = MessageStatus.Finished;
     messageObj.timestamp = new Date().getTime();
+    messageObj.messageDisplayDate = this.displayMessageDate(new Date());
     this.chatgptSearchText = "";
     this._chatContextService.chatInputBoxDisabled = false;
     this.scrollToBottom();
@@ -86,8 +167,6 @@ export class OpenAIChatComponent implements OnInit {
   }
 
   chatgptSearchText: string = "";
-  //messages: ChatMessage[] = [];
-  //chatInputBoxDisabled: boolean = false;
   chatQuerySamples: any[] = [
     {key: "How to configure autoscale for Azure App Service?", value: "How to configure autoscale for Azure App Service?"},
     {key: "What is the meaning of 500.19 error?", value: "What is the meaning of 500.19 error?"},
@@ -123,7 +202,8 @@ export class OpenAIChatComponent implements OnInit {
   ];
 
   prepareChatContext(){
-    return this._chatContextService.messages.slice(-6).map(x => `${x.messageSource}: ${x.message}`).join('\n');
+    //Take last 10 messages to build context
+    return this._chatContextService.messages.slice(-10).map(x => `${x.messageSource}: ${x.message}`).join('\n');
   }
 
   onchatSampleClick(idx: number){
@@ -132,12 +212,15 @@ export class OpenAIChatComponent implements OnInit {
   }
 
   triggerChat(){
+    //TODO: Validate message count here
+    //TODO: Validate message length here
     this._chatContextService.messages.push({
       id: uuid(),
       message: this.chatgptSearchText,
       displayedMessage: this.chatgptSearchText,
       messageSource: MessageSource.User,
       timestamp: new Date().getTime(),
+      messageDisplayDate: this.displayMessageDate(new Date()),
       status: MessageStatus.Finished,
       renderingType: MessageRenderingType.Text
     });
@@ -148,6 +231,7 @@ export class OpenAIChatComponent implements OnInit {
       displayedMessage: "",
       messageSource: MessageSource.System,
       timestamp: new Date().getTime(),
+      messageDisplayDate: this.displayMessageDate(new Date()),
       status: MessageStatus.Created,
       renderingType: MessageRenderingType.Text
     };
@@ -156,29 +240,4 @@ export class OpenAIChatComponent implements OnInit {
     this.fetchOpenAIResult(this.prepareChatContext(), chatMessage);
   }
   /** */
-    
-  constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
-    private _openAIService: ApplensOpenAIService,
-    private _diagnosticApiService: DiagnosticApiService,
-    private _adalService: AdalService,
-    public _chatContextService: ChatGPTContextService ) {
-  }
-
-    //userPhotoSource: any = "";
-    //userNameInitial: string = "";
-    
-    ngOnInit() {
-      const alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
-      const userId = alias.replace('@microsoft.com', '');
-      this._diagnosticApiService.getUserPhoto(userId).subscribe(image => {
-        this._chatContextService.userPhotoSource = image;
-      });
-
-      if (this._adalService.userInfo.profile) {
-        const familyName: string = this._adalService.userInfo.profile.family_name;
-        const givenName: string = this._adalService.userInfo.profile.given_name;
-        this._chatContextService.userNameInitial = `${givenName.charAt(0).toLocaleUpperCase()}${familyName.charAt(0).toLocaleUpperCase()}`;
-      }
-    }
-
 }  

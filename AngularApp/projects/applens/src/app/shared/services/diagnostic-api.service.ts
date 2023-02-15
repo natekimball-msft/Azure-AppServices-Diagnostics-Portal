@@ -522,6 +522,13 @@ export class DiagnosticApiService {
     });
   }
 
+  updateUserChatGPTSetting(chatGPTSetting: any, userId: string): Observable<UserSetting> {
+    const url: string = `${this.diagnosticApi}api/usersetting/${userId}/userChatGPTSetting`;
+    return this._httpClient.post<UserSetting>(url, chatGPTSetting, {
+      headers: this._getHeaders()
+    });
+  }
+
   updateUserLandingInfo(landingInfo: LandingInfo, userId: string): Observable<UserSetting> {
     const url: string = `${this.diagnosticApi}api/usersetting/${userId}/landingInfo`;
     return this._httpClient.post<UserSetting>(url, landingInfo, {

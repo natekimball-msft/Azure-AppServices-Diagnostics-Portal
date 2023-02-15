@@ -4,6 +4,7 @@ export interface ChatMessage{
     displayedMessage: string;
     messageSource: MessageSource;
     timestamp: number;
+    messageDisplayDate: string;
     renderingType: MessageRenderingType;
     status: MessageStatus;
 }

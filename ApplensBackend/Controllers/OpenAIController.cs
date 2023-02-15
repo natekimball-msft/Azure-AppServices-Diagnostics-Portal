@@ -56,15 +56,23 @@ namespace AppLensV3.Controllers
                 }
                 else
                 {
-                    if (response.StatusCode == HttpStatusCode.BadRequest) {
-                        return BadRequest("Malformed request");
+                    _logger.LogError($"OpenAICallError: {response.StatusCode} {await response.Content.ReadAsStringAsync()}");
+                    switch (response.StatusCode)
+                    {
+                        case HttpStatusCode.Unauthorized:
+                        case HttpStatusCode.Forbidden:
+                        case HttpStatusCode.NotFound:
+                        case HttpStatusCode.InternalServerError:
+                            return new StatusCodeResult(500);
+                        case HttpStatusCode.BadRequest:
+                            return BadRequest("Malformed request");
+                        default:
+                            return new StatusCodeResult((int)response.StatusCode);
                     }
-                    return new StatusCodeResult(500);
                 }
             }
             catch(Exception ex)
             {
-                //Log exception
                 _logger.LogError(ex.ToString());
                 return StatusCode(500, "An error occurred while processing the text completion request.");
             }

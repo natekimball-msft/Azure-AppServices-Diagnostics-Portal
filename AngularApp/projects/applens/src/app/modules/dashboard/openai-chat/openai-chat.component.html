@@ -1,6 +1,6 @@
-<div class="chatgpt-bot-container">
+<div *ngIf="isEnabled" class="chatgpt-bot-container">
     <div class="chatgpt-box-row-container chatgpt-header-container" *ngIf="!_chatContextService.messages || _chatContextService.messages.length==0">
-        <h1 class="chatgpt-header-text">AppLens + ChatGPT</h1>
+        <h1 class="chatgpt-header-text">AppLens <img src="/assets/img/handshakelogo.png" class="chatgpt-handshake-logo"/> ChatGPT</h1>
     </div>
     <div class="chatgpt-box-row-container chatgpt-samples-container" *ngIf="!_chatContextService.messages || _chatContextService.messages.length==0">
         <div class="chatgpt-box-row">
@@ -29,11 +29,13 @@
           </ng-container>
           <ng-container *ngIf="message.status==1">
             <div class="chatgpt-message chatgpt-message-{{message.renderingType}}">
+              <div class="chat-message-timestamp">{{message.messageDisplayDate}}</div>
               <p class="blinking-cursor">...</p>
             </div>
           </ng-container>
           <ng-container *ngIf="message.status==2 || message.status==3">
             <div class="chatgpt-message chatgpt-message-{{message.renderingType}}">
+              <div class="chat-message-timestamp">{{message.messageDisplayDate}}</div>
               <div style="white-space:pre-wrap">
                 <p [ngClass]="{'blinking-cursor': message.status==2}" [innerText]="message.message">
                 </p>
@@ -44,6 +46,15 @@
       </div>
     </div>
     <div class="chatgpt-box-row-container chatgpt-textarea-container">
+      <div class="chatgpt-message-quota-error" *ngIf="showMessageQuotaError">
+        You have exhausted your daily quota of {{dailyMessageQuota}} messages. We are working on increasing the quota capacity.
+      </div>
+      <div class="chatgpt-message-quota-warning" *ngIf="showMessageQuotaWarning">
+        You have used {{userChatGPTSetting.messageDailyCount}} out of the daily quota limit of {{dailyMessageQuota}} messages.
+      </div>
+      <div class="chatgpt-data-disclaimer" *ngIf="showDataDisclaimer">
+        Please do not send any sensitive data in your queries. These messages are logged and regularly audited for compliance.
+      </div>
       <div class="chatgpt-textarea-wrapper">
         <textarea [(ngModel)]="chatgptSearchText" tabindex="0" class="chatgpt-textarea" rows="1" placeholder="Ask a question" (keyup.enter)="triggerChat()" id="chatGPTInputBox" [disabled]="_chatContextService.chatInputBoxDisabled"></textarea>
         <button (click)="triggerChat()"
@@ -57,6 +68,12 @@
           </button>
       </div>
     </div>
+</div>
+
+<div *ngIf="!isEnabled">
+  <div class="chatgpt-bot-container">
+    ChatGPT is currently disabled in AppLens. Please check back later.
+  </div>
 </div>
 
 <ng-template #userInitial>

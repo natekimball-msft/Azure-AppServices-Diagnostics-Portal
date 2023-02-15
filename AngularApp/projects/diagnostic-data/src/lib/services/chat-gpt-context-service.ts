@@ -13,5 +13,5 @@ export class ChatGPTContextService {
   public messages: ChatMessage[] = [];
   public chatInputBoxDisabled: boolean = false;
   public userPhotoSource: any = "";
-  public userNameInitial: string = "";  
+  public userNameInitial: string = "";
 }

@@ -68,5 +68,10 @@ namespace AppLensV3.Services
         {
             return Task.FromResult(nullableUserSetting);
         }
+
+        public Task<UserSetting> PatchUserChatGPTSetting(string id, object value)
+        {
+            return Task.FromResult(nullableUserSetting);
+        }
     }
 }
