@@ -192,7 +192,10 @@ export class SideNavComponent implements OnInit {
     }];
 
   ngOnInit() {
-    this.showChatGPT = this._openAIService.isEnabled;
+    this._openAIService.CheckEnabled().subscribe(enabled => {
+      this.showChatGPT = this._openAIService.isEnabled;
+    });
+    this.showChatGPT = this._openAIService.isEnabled;    
     this._documentationService.getDocsRepoSettings().subscribe(settings => {
       this.documentationRepoSettings = settings;
       this.initializeDetectors();
