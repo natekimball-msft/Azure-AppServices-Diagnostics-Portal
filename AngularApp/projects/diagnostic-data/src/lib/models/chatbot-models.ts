@@ -1,7 +1,7 @@
 export interface ChatMessage{
     id: string;
     message: string;
-    displayedMessage: string;
+    //displayedMessage: string;
     messageSource: MessageSource;
     timestamp: number;
     messageDisplayDate: string;

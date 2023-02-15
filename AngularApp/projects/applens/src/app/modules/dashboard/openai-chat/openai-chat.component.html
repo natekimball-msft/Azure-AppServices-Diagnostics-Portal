@@ -15,6 +15,9 @@
         </div>
     </div>
     <div class="chatgpt-box-row-container chatgpt-chat-messages-container" *ngIf="_chatContextService.messages && _chatContextService.messages.length>0">
+      <div class="chatgpt-request-error-container" *ngIf="showChatGPTRequestError" [ngClass]="{'fade-in': showChatGPTRequestError, 'fade-out': !showChatGPTRequestError}">
+        {{chatGPTRequestError}}
+      </div>
       <div class="chatgpt-message-box chatgpt-message-box-{{message.messageSource}}" *ngFor="let message of _chatContextService.messages">
         <div class="chatgpt-message-content">
           <ng-container *ngIf="message.messageSource=='system'">

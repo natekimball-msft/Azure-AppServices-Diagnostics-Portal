@@ -39,6 +39,8 @@ export class OpenAIChatComponent implements OnInit {
   messageQuotaWarningThreshold: number = 3;
   isEnabled: boolean = false;
   currentResourceProvider: string;
+  chatGPTRequestError: string = '';
+  showChatGPTRequestError: boolean = false;
     
   ngOnInit() {
     this.currentResourceProvider = `${this._resourceService.ArmResource.provider}/${this._resourceService.ArmResource.resourceTypeName}`.toLowerCase();
@@ -125,8 +127,22 @@ export class OpenAIChatComponent implements OnInit {
     }
   }
 
+  resetChatGPTRequestError(){
+    this.showChatGPTRequestError = false;
+    this.chatGPTRequestError = '';
+  }
+
+  displayChatGPTRequestError(errorMessage){
+    this.showChatGPTRequestError = true;
+    this.chatGPTRequestError = errorMessage;
+    setTimeout(() => {
+      this.resetChatGPTRequestError();
+    }, 5000);
+  }
+
   /**ChatGPT section */
   fetchOpenAIResult(searchQuery: string, messageObj: ChatMessage, retry: boolean = true, trimnewline: boolean = true) {
+    this.resetChatGPTRequestError();
     this._chatContextService.chatInputBoxDisabled = true;
     try {
       let openAIQueryModel = CreateTextCompletionModel(searchQuery);
@@ -135,7 +151,6 @@ export class OpenAIChatComponent implements OnInit {
           var result = res?.choices[0].text;
           //Trim any newline character at the beginning of the result
           messageObj.message = messageObj.message + (trimnewline? result.trim(): result.trimEnd());
-          messageObj.displayedMessage = messageObj.message.replace(/\n/g, "<br>");
           
           //Check finishing criteria
           if (res.usage.completion_tokens == openAIQueryModel.max_tokens) {
@@ -164,17 +179,22 @@ export class OpenAIChatComponent implements OnInit {
           if (retry) {
               this.fetchOpenAIResult(searchQuery, messageObj, retry=false);
           }
-          this.handleFailure(messageObj);
+          this.handleFailure(err, messageObj);
       });
     }
     catch (error) {
-      this.handleFailure(messageObj);
+      this.handleFailure(error, messageObj);
     }
   }
 
-  handleFailure(messageObj) {
-    messageObj.message = (messageObj.message && messageObj.message.length>0? messageObj.message + "\n": messageObj.message) + "An error occurred. Please try again.";
-    messageObj.displayedMessage = messageObj.message.replace(/\n/g, "<br />");
+  handleFailure(err, messageObj) {
+    console.log(err);
+    if (err.status && err.status == 429) {
+      this.displayChatGPTRequestError("Ah! Too many people asking me questions! Please try again in sometime.");
+    }
+    else {
+      this.displayChatGPTRequestError("Me and AppLens are on a talking freeze it seems. Lets try again later.");
+    }
     messageObj.status = MessageStatus.Finished;
     messageObj.timestamp = new Date().getTime();
     messageObj.messageDisplayDate = this.displayMessageDate(new Date());
@@ -235,7 +255,6 @@ export class OpenAIChatComponent implements OnInit {
     this._chatContextService.messages.push({
       id: uuid(),
       message: this.chatgptSearchText,
-      displayedMessage: this.chatgptSearchText,
       messageSource: MessageSource.User,
       timestamp: new Date().getTime(),
       messageDisplayDate: this.displayMessageDate(new Date()),
@@ -246,7 +265,6 @@ export class OpenAIChatComponent implements OnInit {
     let chatMessage = {
       id: uuid(),
       message: "",
-      displayedMessage: "",
       messageSource: MessageSource.System,
       timestamp: new Date().getTime(),
       messageDisplayDate: this.displayMessageDate(new Date()),

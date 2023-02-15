@@ -11,6 +11,41 @@
     height: 50px;
   }
 
+  .chatgpt-request-error-container {
+    text-align: center;
+    color: red;
+    margin: auto;
+    width: 50%;
+    border: 1px solid #cec6c6;
+    background-color: #fff;
+    box-shadow: 0 2px 4px 0px rgb(0 0 0 / 20%);
+    border-radius: 8px;
+    padding: 14px;
+  }
+
+  .fade-in {
+    opacity: 0; /* make the element invisible */
+    animation-name: fadeIn; /* set the animation name */
+    animation-duration: 0.5s; /* set the animation duration */
+    animation-fill-mode: forwards; /* keep the final state of the animation */
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; } /* start with opacity 0 */
+    to { opacity: 1; } /* end with opacity 1 */
+  }
+
+  .fade-out {
+    animation-name: fadeOut; /* set the animation name */
+    animation-duration: 0.5s; /* set the animation duration */
+    animation-fill-mode: forwards; /* keep the final state of the animation */
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; } /* start with opacity 1 */
+    to { opacity: 0; } /* end with opacity 0 */
+  }
+
   .chatgpt-header-container{
     position: absolute;
     top: 0;
