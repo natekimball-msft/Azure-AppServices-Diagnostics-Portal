@@ -44,12 +44,19 @@ export class OpenAIChatComponent implements OnInit {
   isEnabled: boolean = false;
   isEnabledChecked: boolean = false;
   displayLoader: boolean = false;
+  originalResourceProvider: string;
   currentResourceProvider: string;
   chatGPTRequestError: string = '';
   showChatGPTRequestError: boolean = false;
     
   ngOnInit() {
-    this.currentResourceProvider = `${this._resourceService.ArmResource.provider}/${this._resourceService.ArmResource.resourceTypeName}`.toLowerCase();
+    this.originalResourceProvider = `${this._resourceService.ArmResource.provider}/${this._resourceService.ArmResource.resourceTypeName}`.toLowerCase();
+    if (this.originalResourceProvider === 'microsoft.web/sites') {
+      this.currentResourceProvider = `${this.originalResourceProvider}${this._resourceService.displayName}`;
+    }
+    else {
+      this.currentResourceProvider = this.originalResourceProvider;
+    }
     this._openAIService.CheckEnabled().subscribe(enabled => {
       this.isEnabled = this._openAIService.isEnabled;
       this.isEnabledChecked = true;

@@ -13,17 +13,20 @@ export class ApplensOpenAIService {
 
   private completionApiPath: string = "api/openai/runTextCompletion";
   public isEnabled: boolean = false;
+  private resourceProvider: string;
+  private productName: string;
 
   public CheckEnabled(): Observable<boolean> {
     return this._backendApi.get<boolean>(`api/openai/enabled`).pipe(map((value: boolean) => { this.isEnabled = value; return value;}), catchError((err) => of(false)));
   }
   
-  constructor(private _backendApi: DiagnosticApiService, private _resourceService: ResourceService) { 
+  constructor(private _backendApi: DiagnosticApiService, private _resourceService: ResourceService) {
+    this.resourceProvider = `${this._resourceService.ArmResource.provider}/${this._resourceService.ArmResource.resourceTypeName}`.toLowerCase();
+    this.productName = this._resourceService.searchSuffix + ((this.resourceProvider === 'microsoft.web/sites')? ` ${this._resourceService.displayName}`: '');
   }
 
   public generateTextCompletion(queryModel: TextCompletionModel, caching: boolean = true): Observable<OpenAIAPIResponse> {
-    var productName = this._resourceService.searchSuffix;
-    queryModel.prompt = `Please answer questions about ${productName}\n${queryModel.prompt}:`;
+    queryModel.prompt = `Please answer questions about ${this.productName}\n${queryModel.prompt}:`;
     return this._backendApi.post(this.completionApiPath, {payload: queryModel}, new HttpHeaders({"x-ms-openai-cache": caching.toString()})).pipe(map((response: OpenAIAPIResponse) => {
       return response;
     }));

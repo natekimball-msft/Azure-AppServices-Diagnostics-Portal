@@ -9,9 +9,9 @@
           <i class="fa fa-info fa-fw menu-icon menu-icon-create" aria-hidden="true"></i>
           <collapsible-menu-item *ngFor="let item of overview" [menuItem]="item"></collapsible-menu-item>
         </section-divider>
-        <section-divider *ngIf="showChatGPT" [label]="'ChatGPT(Experimental)'" [selected]="isSectionHeaderSelected('chatgpt', false)" [initiallyExpanded]="false"
+        <section-divider *ngIf="showChatGPT" [label]="'ChatGPT (Experimental)'" [selected]="isSectionHeaderSelected('chatgpt', false)" [initiallyExpanded]="false"
           [collapsible]="false" (click)="navigateToChatGPT()" (keyup.enter)="navigateToChatGPT()">
-          <i class="menu-icon menu-icon-create" aria-hidden="true"><img src="/assets/img/openailogo.svg" style="width:1em;"/></i>
+          <i class="menu-icon menu-icon-create" aria-hidden="true" style="padding-right: 4px;"><img src="/assets/img/openailogo.svg" style="width:1em;"/></i>
           <collapsible-menu-item *ngFor="let item of chatgpt" [menuItem]="item"></collapsible-menu-item>
         </section-divider>
         <section-divider [label]="'Pinned Detectors'"
