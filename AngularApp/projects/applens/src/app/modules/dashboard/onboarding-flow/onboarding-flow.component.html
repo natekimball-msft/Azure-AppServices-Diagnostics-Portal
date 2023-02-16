@@ -322,8 +322,9 @@
         rel="noopener noreferrer" [href]="PRLink">here</a>.</div>
     <div *ngIf="saveFailed && saveIdFailure" style="margin-left: 4px;">This detector ID is already in use. Please try a
       new one</div>
-      <div *ngIf="(saveFailed || publishFailed) && badBranchNameFailure" style="margin-left: 4px;">The following characters are not allowed in 
-        detector ID: '<', '>'. Please edit the detector ID to remove these characters </div>
+      <!-- <div *ngIf="(saveFailed || publishFailed) && badBranchNameFailure" style="margin-left: 4px;">The following characters are not allowed in 
+        detector ID: '<', '>'. Please edit the detector ID to remove these characters </div> -->
+        <div *ngIf="(saveFailed || publishFailed) && badBranchNameFailure" style="margin-left: 4px;">{{charWarningMessage}} Please edit the detector ID to remove these characters</div>
   </fab-panel>
 
 

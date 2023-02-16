@@ -223,6 +223,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   useAutoMergeText: boolean = false;
   detectorReferencesDialogHidden : boolean = true; 
   gistCommitVersion : string = ""; 
+  charWarningMessage : string = '';
 
   runButtonStyle: any = {
     root: { cursor: "default" }
@@ -1771,7 +1772,11 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         this._applensCommandBarService.refreshPage();
       }
     }, err => {
-      if (err.error.includes("Branch name cannot contain the following characters:")) this.badBranchNameFailure = true;
+      if (err.error.includes("Branch name cannot contain the following characters:")){
+        this.charWarningMessage = err.error;
+        this.badBranchNameFailure = true;
+      }
+      this.charWarningMessage = err.error;
       this.publishFailed = true;
       this.postPublish();
     });
@@ -1896,7 +1901,10 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         this._applensCommandBarService.refreshPage();
       }, err => {
         if (err.error.includes('Detector with this ID already exists. Please use a new ID')) this.saveIdFailure = true;
-        if (err.error.includes("Branch name cannot contain the following characters:")) this.badBranchNameFailure = true;
+        if (err.error.includes("Branch name cannot contain the following characters:")){
+          this.charWarningMessage = err.error;
+          this.badBranchNameFailure = true;
+        }
         this.saveFailed = true;
         this.postSave();
       });
@@ -1911,7 +1919,10 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
             this.isSaved = true;
             this._applensCommandBarService.refreshPage();
           }, err => {
-            if (err.error.includes("Branch name cannot contain the following characters:")) this.badBranchNameFailure = true;
+            if (err.error.includes("Branch name cannot contain the following characters:")){
+              this.charWarningMessage = err.error;
+              this.badBranchNameFailure = true;
+            }
             this.saveFailed = true;
             this.postSave();
           });
