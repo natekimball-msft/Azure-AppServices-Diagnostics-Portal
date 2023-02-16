@@ -3,6 +3,7 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { IButtonProps, IDialogContentProps } from 'office-ui-fabric-react';
 import { DiagnosticApiService } from 'projects/applens/src/app/shared/services/diagnostic-api.service';
 import { ResourceService } from 'projects/applens/src/app/shared/services/resource.service';
+import { DetectorMetadataService } from 'projects/diagnostic-data/src/lib/services/detector-metadata.service';
 import { combineLatest } from 'rxjs';
 import { distinct } from 'rxjs-compat/operator/distinct';
 import { mergeMap } from 'rxjs-compat/operator/mergeMap';
@@ -20,8 +21,10 @@ export class TabCommonComponent implements OnInit {
   graduationEnabled: boolean = false;
   TabKey = TabKey;
   isWorkflow: boolean = false;
+  detectorAuthor: string = '';
+  detectorDescription: string = '';
 
-  constructor(private _router: Router, private _activatedRoute: ActivatedRoute, private _diagnosticApiService: DiagnosticApiService, private resourceService: ResourceService,) {
+  constructor(private _router: Router, private _activatedRoute: ActivatedRoute, private _diagnosticApiService: DiagnosticApiService, private resourceService: ResourceService, private _detectorMetadataService: DetectorMetadataService) {
     this._activatedRoute.firstChild.data.subscribe(data => {
       const key: string = data["tabKey"];
       this.selectedTabKey = key;
@@ -31,7 +34,13 @@ export class TabCommonComponent implements OnInit {
       if (data["isWorkflow"] && data["isWorkflow"] === true) {
         this.isWorkflow = true;
       }
-    })
+    });
+    _detectorMetadataService.getAuthor().subscribe(auth => {
+      this.detectorAuthor = auth;
+    });
+    _detectorMetadataService.getDescription().subscribe(desc => {
+      this.detectorDescription = desc;
+    });
   }
 
   ngOnInit() {
