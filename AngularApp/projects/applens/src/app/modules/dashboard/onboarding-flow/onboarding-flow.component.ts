@@ -206,6 +206,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   deleteSuccess: boolean = false;
   deleteFailed: boolean = false;
   saveIdFailure: boolean = false;
+  badBranchNameFailure: boolean = false;
   saveButtonText: string = "Save";
   detectorName: string = "";
   submittedPanelTimer: any = null;
@@ -220,8 +221,9 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   PPERedirectTimer: number = 10;
   DevopsConfig: DevopsConfig;
   useAutoMergeText: boolean = false;
-  detectorReferencesDialogHidden: boolean = true;
-  gistCommitVersion: string = "";
+  detectorReferencesDialogHidden : boolean = true; 
+  gistCommitVersion : string = ""; 
+  charWarningMessage : string = '';
 
   runButtonStyle: any = {
     root: { cursor: "default" }
@@ -1656,6 +1658,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this.saveSuccess = false;
     this.saveFailed = false;
     this.saveIdFailure = false;
+    this.badBranchNameFailure = false;
     this.deleteSuccess = false;
     this.deleteFailed = false;
   }
@@ -1804,6 +1807,11 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         this._applensCommandBarService.refreshPage();
       }
     }, err => {
+      if (err.error.includes("Branch name cannot contain the following characters:")){
+        this.charWarningMessage = err.error;
+        this.badBranchNameFailure = true;
+      }
+      this.charWarningMessage = err.error;
       this.publishFailed = true;
       this.postPublish();
     });
@@ -1928,6 +1936,10 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         this._applensCommandBarService.refreshPage();
       }, err => {
         if (err.error.includes('Detector with this ID already exists. Please use a new ID')) this.saveIdFailure = true;
+        if (err.error.includes("Branch name cannot contain the following characters:")){
+          this.charWarningMessage = err.error;
+          this.badBranchNameFailure = true;
+        }
         this.saveFailed = true;
         this.postSave();
       });
@@ -1942,6 +1954,10 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
             this.isSaved = true;
             this._applensCommandBarService.refreshPage();
           }, err => {
+            if (err.error.includes("Branch name cannot contain the following characters:")){
+              this.charWarningMessage = err.error;
+              this.badBranchNameFailure = true;
+            }
             this.saveFailed = true;
             this.postSave();
           });
