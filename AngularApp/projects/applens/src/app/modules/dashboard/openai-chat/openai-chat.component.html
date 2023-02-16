@@ -56,7 +56,7 @@
         You have used {{userChatGPTSetting.messageDailyCount}} out of the daily quota limit of {{dailyMessageQuota}} messages.
       </div>
       <div class="chatgpt-data-disclaimer" *ngIf="showDataDisclaimer">
-        Please do not send any sensitive data in your queries. Please verify the response before sending to customers.
+        * Please do not send any sensitive data in your queries. Please verify the response before sending to customers.
       </div>
       <div class="chatgpt-textarea-wrapper">
         <textarea [(ngModel)]="chatgptSearchText" tabindex="0" class="chatgpt-textarea" rows="1" placeholder="Ask a question" (keyup.enter)="triggerChat()" id="chatGPTInputBox" [disabled]="_chatContextService.chatInputBoxDisabled"></textarea>
