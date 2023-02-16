@@ -28,6 +28,8 @@ export * from './lib/services/generic-breadcrumb.service';
 export * from './lib/services/generic-user-setting.service';
 export * from './lib/services/generic-portal.service';
 export * from './lib/services/generic-feature-service';
+export * from './lib/services/generic-openai.service';
+export * from './lib/services/chat-gpt-context-service';
 export * from './lib/config/diagnostic-data-config';
 export * from './lib/diagnostic-data.module';
 
@@ -51,6 +53,8 @@ export * from './lib/models/resiliencyReportData';
 export * from './lib/models/data-table';
 export * from './lib/models/theme';
 export * from './lib/models/workflow';
+export * from './lib/models/openai-data-models';
+export * from './lib/models/chatbot-models';
 
 export * from './lib/components/detector-list-analysis/detector-list-analysis.component'
 

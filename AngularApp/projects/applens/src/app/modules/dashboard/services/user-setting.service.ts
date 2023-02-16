@@ -95,6 +95,13 @@ export class UserSettingService {
         return res;
     }
 
+    updateUserChatGPTSetting(chatGPTSetting: any): Observable<UserSetting> {
+        return this._diagnosticApiService.updateUserChatGPTSetting(chatGPTSetting, this._userId).pipe(map(userSetting => {
+            this._userSetting = userSetting;
+            return userSetting;
+        }))
+    }
+
     updateUserPanelSetting(panelSetting: UserPanelSetting): Observable<UserSetting> {
         return this._diagnosticApiService.updateUserPanelSetting(panelSetting, this._userId).pipe(map(userSetting => {
             this._userSetting = userSetting;

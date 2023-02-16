@@ -107,8 +107,35 @@ namespace AppLensV3
 
             services.AddSingletonWhenEnabled<IAppSvcUxDiagnosticDataService, AppSvcUxDiagnosticDataService, NullableAppSvcUxDiagnosticDataService>(Configuration, "LocationPlacementIdService");
 
+            if (Configuration.GetValue("OpenAIService:Enabled", false))
+            {
+                services.AddSingleton<IOpenAIService, OpenAIService>();
+                if (Configuration.GetValue("OpenAIService:RedisEnabled", false))
+                {
+                    services.AddSingleton(async x => await RedisConnection.InitializeAsync(true, connectionString: Configuration["OpenAIService:RedisConnectionString"].ToString()));
+                    services.AddSingleton<IOpenAIRedisService, OpenAIRedisService>();
+                }
+                else
+                {
+                    services.AddSingleton<IOpenAIRedisService, OpenAIRedisServiceDisabled>();
+                }
+            }
+            else
+            {
+                services.AddSingleton<IOpenAIService, OpenAIServiceDisabled>();
+            }
+
             services.AddMemoryCache();
             services.AddMvc().AddNewtonsoftJson();
+
+            if (!string.IsNullOrWhiteSpace(Configuration.GetValue("ContentSearch:Ocp-Apim-Subscription-Key", string.Empty)))
+            {
+                services.AddSingleton<IBingSearchService, BingSearchService>();
+            }
+            else
+            {
+                services.AddSingleton<IBingSearchService, BingSearchServiceDisabled>();
+            }
 
             if (Configuration.GetValue("Graph:Enabled", false))
             {

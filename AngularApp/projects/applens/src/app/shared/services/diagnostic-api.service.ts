@@ -392,6 +392,29 @@ export class DiagnosticApiService {
     return this._cacheService.get(path, request, invalidateCache);
   }
 
+  public post<T, S>(path: string, body?: S, additionalHeaders: HttpHeaders = null): Observable<T> {
+    const url = `${this.diagnosticApi}${path}`;
+    let bodyString: string = '';
+    if (body) {
+        bodyString = JSON.stringify(body);
+    }
+
+    var requestHeaders = this._getHeaders();
+    if (additionalHeaders) {
+      additionalHeaders.keys().forEach(key => {
+        if (!requestHeaders.has(key)) {
+          requestHeaders = requestHeaders.set(key, additionalHeaders.get(key));
+        }
+      });
+    }
+
+    const request = this._httpClient.post(url, bodyString, {
+      headers: requestHeaders,
+    });
+
+    return this._cacheService.get(path, request, true);
+  }
+
   public hasApplensAccess(): Observable<any> {
     let url = `${this.diagnosticApi}api/ping`;
     let request = this._httpClient.get<HttpResponse<Object>>(url, {
@@ -495,6 +518,13 @@ export class DiagnosticApiService {
   updateUserPanelSetting(panelSetting: UserPanelSetting, userId: string): Observable<UserSetting> {
     const url: string = `${this.diagnosticApi}api/usersetting/${userId}/userPanelSetting`;
     return this._httpClient.post<UserSetting>(url, panelSetting, {
+      headers: this._getHeaders()
+    });
+  }
+
+  updateUserChatGPTSetting(chatGPTSetting: any, userId: string): Observable<UserSetting> {
+    const url: string = `${this.diagnosticApi}api/usersetting/${userId}/userChatGPTSetting`;
+    return this._httpClient.post<UserSetting>(url, chatGPTSetting, {
       headers: this._getHeaders()
     });
   }

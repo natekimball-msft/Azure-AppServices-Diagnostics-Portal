@@ -30,7 +30,8 @@
             "staticSelfHelpContent": "microsoft.ase",
             "searchSuffix": "AZURE APP SERVICE ENVIRONMENT",
             "emergingIssuesICMLookupEnabled": false,
-            "displayName": "App Service Environment"
+            "displayName": "App Service Environment",
+            "workflowsEnabled": true
         },
         {
             "service": "ResourceService",
@@ -91,6 +92,18 @@
             "staticSelfHelpContent": "microsoft.containerservice",
             "searchSuffix": "AZURE KUBERNETES CLUSTER",
             "displayName": "Kubernetes Service (AKS)"
+        },
+        {
+            "service": "ResourceService",
+            "resourceType": "Microsoft.ContainerService/fleets",
+            "templateFileName": "KubernetesFleetManager",
+            "imgSrc": "assets/img/Azure-Kubernetes-FleetManager-Logo.png",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "Azure Kubernetes Fleet Manager",
+            "pesId":"17929",
+            "staticSelfHelpContent": "microsoft.containerservice",
+            "searchSuffix": "AZURE KUBERNETES FLEET MANAGER",
+            "displayName": "Kubernetes Fleet Manager"
         },
         {
             "service": "ResourceService",

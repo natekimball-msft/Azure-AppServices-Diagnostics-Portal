@@ -1,6 +1,7 @@
 ﻿using AppLensV3.Models;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -84,6 +85,16 @@ namespace AppLensV3.Services
                 PatchOperation.Add("/theme",theme),
                 PatchOperation.Add("/viewMode",viewMode),
                 PatchOperation.Add("/expandAnalysisCheckCard",expandAnalysisCheckCard)
+            };
+            return await Container.PatchItemAsync<UserSetting>(id, new PartitionKey(UserSettingConstant.PartitionKey), patchOperations);
+        }
+
+        public async Task<UserSetting> PatchUserChatGPTSetting(string id, object value)
+        {
+            string jsonValue = JsonConvert.SerializeObject(value);
+            var patchOperations = new[]
+            {
+                PatchOperation.Add("/userChatGPTSetting", jsonValue)
             };
             return await Container.PatchItemAsync<UserSetting>(id, new PartitionKey(UserSettingConstant.PartitionKey), patchOperations);
         }

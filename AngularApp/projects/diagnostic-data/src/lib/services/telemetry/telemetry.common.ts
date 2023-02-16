@@ -99,10 +99,13 @@ export const TelemetryEventNames = {
     ResiliencyScoreReportButtonDisplayed: 'ResiliencyScoreReportButtonDisplayed',
     ResiliencyScoreReportButtonClicked: 'ResiliencyScoreReportButtonClicked', 
     ResiliencyScoreReportDownloaded: 'ResiliencyScoreReportDownloaded',
+    ResiliencyScoreReportResourceNotSupported: 'ResiliencyScoreReportResourceNotSupported',
     ResiliencyScoreReportInPrivateAccess: 'ResiliencyScoreReportInPrivateAccess',
     ResourceOutOfScopeUserResponse: 'ResourceOutOfScopeUserResponse',    
     DownloadReportButtonDisplayed: 'DownloadReportButtonDisplayed',
-    DownloadReportButtonClicked: 'DownloadReportButtonClicked',    
+    DownloadReportButtonClicked: 'DownloadReportButtonClicked',
+    DownloadReportDirectLinkUsed: 'DownloadReportDirectLinkUsed',
+    DownloadReportDirectLinkDownloaded: 'DownloadReportDirectLinkDownloaded',
     FavoriteDetectorAdded: 'FavoriteDetectorAdded',
     FavoriteDetectorClicked: 'FavoriteDetectorClicked',
     FavoriteDetectorRemoved: 'FavoriteDetectorRemoved',
@@ -110,6 +113,13 @@ export const TelemetryEventNames = {
     ICMTeamTemplateLoaded: 'ICMTeamTemplateLoaded',
     ICMTeamTemplateUpdate: 'ICMTeamTemplateUpdate',
     HomePageLogUser: 'HomePageLogUser',
+    ChatGPTLoaded: 'ChatGPTLoaded',
+    ChatGPTUserSettingLoaded: 'ChatGPTUserSettingLoaded',
+    ChatGPTSampleClicked: 'ChatGPTSampleClicked',
+    ChatGPTCheckMessageCount: 'ChatGPTCheckMessageCount',
+    ChatGPTRequestError: 'ChatGPTRequestError',
+    ChatGPTUserQuotaExceeded: 'ChatGPTUserQuotaExceeded',
+    ChatGPTTooManyRequestsError: 'ChatGPTTooManyRequestsError'
 };
 
 export const TelemetrySource = {
