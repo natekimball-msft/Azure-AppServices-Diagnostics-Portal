@@ -70,8 +70,7 @@ export class BackendCtrlService {
   private _getHeaders(startupInfo: StartupInfo, additionalHeaders: HttpHeaders): HttpHeaders {
     let headers = new HttpHeaders({
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${startupInfo.token}`
+      'Accept': 'application/json'
     });
 
     if (additionalHeaders) {
