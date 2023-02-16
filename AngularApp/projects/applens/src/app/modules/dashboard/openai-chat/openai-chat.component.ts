@@ -39,8 +39,8 @@ export class OpenAIChatComponent implements OnInit {
   showMessageQuotaError: boolean = false;
   showMessageQuotaWarning: boolean = false;
   showDataDisclaimer: boolean = true;
-  dailyMessageQuota: number = 10;
-  messageQuotaWarningThreshold: number = 5;
+  dailyMessageQuota: number = 20;
+  messageQuotaWarningThreshold: number = 10;
   isEnabled: boolean = false;
   isEnabledChecked: boolean = false;
   displayLoader: boolean = false;
