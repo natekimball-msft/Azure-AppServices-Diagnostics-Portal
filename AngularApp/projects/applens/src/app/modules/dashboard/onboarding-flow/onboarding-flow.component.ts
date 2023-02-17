@@ -1,6 +1,6 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, TableColumnOption, TableFilterSelectionOption, DataTableResponseObject, DataTableResponseColumn, FabDataTableComponent
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, TableColumnOption, TableFilterSelectionOption, DataTableResponseObject, DataTableResponseColumn, FabDataTableComponent, QueryResponseService
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
@@ -38,7 +38,6 @@ import { CreateWorkflowComponent } from '../workflow/create-workflow/create-work
 import { workflowNodeResult, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { WorkflowRunDialogComponent } from '../workflow/workflow-run-dialog/workflow-run-dialog.component';
-import { QueryResponseService } from '../services/query-response.service';
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
 using Diagnostics.DataProviders;
