@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { QueryResponse } from 'diagnostic-data';
-import { DataProviderMetadata, DetectorResponse } from 'projects/diagnostic-data/src/lib/models/detector';
+import { DataProviderMetadata, DetectorResponse } from '../models/detector';
 import { BehaviorSubject } from 'rxjs';
+import { QueryResponse } from '../models/compiler-response';
 
 @Injectable({
   providedIn: 'root'

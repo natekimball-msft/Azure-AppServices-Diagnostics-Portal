@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { QueryResponseService } from 'diagnostic-data';
+import { QueryResponseService } from './query-response.service';
 
 
 describe('QueryResponseService', () => {
