@@ -1,9 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { DataProviderMetadata, DetectorResponse } from 'diagnostic-data';
+import { DataProviderMetadata, DetectorResponse, QueryResponseService } from 'diagnostic-data';
 import { ActivatedRoute, Params } from '@angular/router';
 import { ApplensDiagnosticService } from '../../services/applens-diagnostic.service';
 import { DetectorControlService } from 'diagnostic-data';
-import { QueryResponseService } from '../../services/query-response.service';
 
 @Component({
   selector: 'tab-data-sources',
