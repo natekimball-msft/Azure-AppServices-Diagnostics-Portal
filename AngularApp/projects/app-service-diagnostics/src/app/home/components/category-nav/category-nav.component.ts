@@ -262,7 +262,8 @@ export class CategoryNavComponent implements OnInit {
                                 return this.currentDetectorId === feature.id;
                             }
                             let icon = this.getIconImagePath(feature.id);
-                            let menuItem = new CollapsibleMenuItem(feature.name, onClick, isSelected, icon);
+                            let desc = this.detectorDataLocalCopy.find(x => {return x.name === feature.name}).description
+                            let menuItem = new CollapsibleMenuItem(feature.name, onClick, isSelected, icon, desc);
                             this.detectorList.push(menuItem);
                         });
                     }
