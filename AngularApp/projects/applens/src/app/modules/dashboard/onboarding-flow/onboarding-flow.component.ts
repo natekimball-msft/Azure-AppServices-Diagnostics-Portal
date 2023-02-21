@@ -1,6 +1,6 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, TableColumnOption, TableFilterSelectionOption, DataTableResponseObject, DataTableResponseColumn, FabDataTableComponent
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, TableColumnOption, TableFilterSelectionOption, DataTableResponseObject, DataTableResponseColumn, FabDataTableComponent, QueryResponseService
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
@@ -373,7 +373,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
     public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute,
     private _applensCommandBarService: ApplensCommandBarService, private _router: Router, private _themeService: GenericThemeService, private _applensGlobal: ApplensGlobal,
-    private matDialog: MatDialog) {
+    private matDialog: MatDialog, private _queryResponseService: QueryResponseService) {
     this.lightOptions = {
       theme: 'vs',
       language: 'csharp',
@@ -560,6 +560,9 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   }
 
   startUp() {
+    this._queryResponseService.getQueryResponse().subscribe(qr => {
+      this.queryResponse = qr;
+    });
     this.detectorGraduation = true;
     let isSystemInvoker: boolean = this.mode === DevelopMode.EditMonitoring || this.mode === DevelopMode.EditAnalytics;
     this.branchInput = this._activatedRoute.snapshot.queryParams['branchInput'];
@@ -1325,7 +1328,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     if (this.runButtonDisabled) {
       return;
     }
-    this.queryResponse = undefined;
+    this._queryResponseService.clearQueryResponse();
     this.buildOutput = [];
     this.buildOutput.push("------ Build started ------");
     this.detailedCompilationTraces = [];
@@ -1376,7 +1379,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         getFullResponse: true
       }, this.getDetectorId())
         .subscribe((response: any) => {
-          this.queryResponse = response.body;
+          this._queryResponseService.addQueryResponse(response.body)
           if (this.queryResponse.invocationOutput && this.queryResponse.invocationOutput.metadata && this.queryResponse.invocationOutput.metadata.id && !isSystemInvoker) {
             this.id = this.queryResponse.invocationOutput.metadata.id;
             let dataset = this.queryResponse.invocationOutput.dataset;
