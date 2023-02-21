@@ -39,17 +39,27 @@ export class UserSettingService {
     constructor(private _diagnosticApiService: DiagnosticApiService, private _adalService: AdalService) {
     }
 
-    getUserSetting(invalidateCache = false): Observable<UserSetting> {
+    getUserSetting(invalidateCache = false, chatGPT = false): Observable<UserSetting> {
         if (!!this._userSetting && !invalidateCache) {
             return this._userSettingSubject;
         }
 
-        return this._diagnosticApiService.getUserSetting(this._userId, invalidateCache).pipe(
-            map(userSetting => {
-                this._userSetting = userSetting;
-                return userSetting;
-            })
-        );
+        if (!chatGPT) {
+            return this._diagnosticApiService.getUserSetting(this._userId, invalidateCache).pipe(
+                map(userSetting => {
+                    this._userSetting = userSetting;
+                    return userSetting;
+                })
+            );
+        }
+        else {
+            return this._diagnosticApiService.getUserSettingChatGPT(this._userId, invalidateCache).pipe(
+                map(userSetting => {
+                    this._userSetting = userSetting;
+                    return userSetting;
+                })
+            );
+        }
     }
 
     getExpandAnalysisCheckCard() {

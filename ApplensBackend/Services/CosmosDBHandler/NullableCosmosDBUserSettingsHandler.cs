@@ -34,7 +34,7 @@ namespace AppLensV3.Services
             return Task.FromResult(new List<UserSetting>() { nullableUserSetting });
         }
 
-        public Task<UserSetting> GetUserSetting(string id, bool needCreate = true)
+        public Task<UserSetting> GetUserSetting(string id, bool needCreate = true, bool chatGPT = false)
         {
             return Task.FromResult(nullableUserSetting);
         }

@@ -14,7 +14,7 @@
           </ng-container>
         </div>
     </div>
-    <div class="chatgpt-box-row-container chatgpt-chat-messages-container" *ngIf="_chatContextService.messages && _chatContextService.messages.length>0">
+    <div id="chatgpt-all-messages-container-id" class="chatgpt-box-row-container chatgpt-chat-messages-container" *ngIf="_chatContextService.messages && _chatContextService.messages.length>0">
       <div class="chatgpt-request-error-container" *ngIf="showChatGPTRequestError" [ngClass]="{'fade-in': showChatGPTRequestError, 'fade-out': !showChatGPTRequestError}">
         {{chatGPTRequestError}}
       </div>
@@ -43,6 +43,12 @@
                 <p [ngClass]="{'blinking-cursor': message.status==2}" [innerText]="message.message">
                 </p>
               </div>
+              <ng-container *ngIf="message.messageSource=='system'">
+                <div class="chatgpt-feedback-icons">
+                  <i class="fa fa-thumbs-up chatgpt-feedback-icon" [ngClass]="{'chatgpt-feedback-icon-selected': message.userFeedback=='like'}" (click)="logUserFeedback(message.id, 'like')"></i>
+                  <i class="fa fa-thumbs-down chatgpt-feedback-icon" [ngClass]="{'chatgpt-feedback-icon-selected': message.userFeedback=='dislike'}" (click)="logUserFeedback(message.id, 'dislike')"></i>
+                </div>
+              </ng-container>
             </div>
           </ng-container>
         </div>

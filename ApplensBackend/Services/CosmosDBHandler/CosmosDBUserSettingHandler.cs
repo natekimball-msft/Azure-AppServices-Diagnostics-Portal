@@ -101,7 +101,7 @@ namespace AppLensV3.Services
 
 
 
-        public async Task<UserSetting> GetUserSetting(string id, bool needCreate = true)
+        public async Task<UserSetting> GetUserSetting(string id, bool needCreate = true, bool chatGPT = false)
         {
             UserSetting userSetting = null;
             userSetting = await GetItemAsync(id, UserSettingConstant.PartitionKey);
@@ -118,6 +118,9 @@ namespace AppLensV3.Services
                     newUserSetting = new UserSetting(id);
                 }
                 userSetting = await CreateItemAsync(newUserSetting);
+            }
+            if (!chatGPT) {
+                userSetting.UserChatGPTSetting = "";
             }
             return userSetting;
         }
