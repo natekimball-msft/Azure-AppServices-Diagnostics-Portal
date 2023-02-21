@@ -522,6 +522,10 @@ export class DiagnosticApiService {
     });
   }
 
+  public getUserSettingChatGPT(userId: string, invalidateCache: boolean): Observable<UserSetting> {
+    return this.get<UserSetting>(`api/usersetting/${userId}/userChatGPTSetting`, invalidateCache);
+  }
+
   updateUserChatGPTSetting(chatGPTSetting: any, userId: string): Observable<UserSetting> {
     const url: string = `${this.diagnosticApi}api/usersetting/${userId}/userChatGPTSetting`;
     return this._httpClient.post<UserSetting>(url, chatGPTSetting, {

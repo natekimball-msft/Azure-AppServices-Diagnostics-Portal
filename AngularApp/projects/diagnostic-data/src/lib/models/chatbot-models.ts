@@ -1,11 +1,11 @@
 export interface ChatMessage{
     id: string;
     message: string;
-    //displayedMessage: string;
     messageSource: MessageSource;
     timestamp: number;
     messageDisplayDate: string;
     renderingType: MessageRenderingType;
+    userFeedback: UserFeedbackType;
     status: MessageStatus;
 }
 
@@ -20,6 +20,12 @@ export enum MessageStatus{
     Waiting = 1,
     InProgress = 2,
     Finished = 3,
+}
+
+export enum UserFeedbackType {
+    Like = "like",
+    Dislike = "dislike",
+    None = "none"
 }
 
 export enum MessageSource {

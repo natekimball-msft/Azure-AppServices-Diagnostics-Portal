@@ -38,6 +38,7 @@ import { CreateWorkflowComponent } from '../workflow/create-workflow/create-work
 import { workflowNodeResult, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { WorkflowRunDialogComponent } from '../workflow/workflow-run-dialog/workflow-run-dialog.component';
+import { UserSettingService } from '../services/user-setting.service';
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
 using Diagnostics.DataProviders;
@@ -373,7 +374,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
     public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute,
     private _applensCommandBarService: ApplensCommandBarService, private _router: Router, private _themeService: GenericThemeService, private _applensGlobal: ApplensGlobal,
-    private matDialog: MatDialog, private _queryResponseService: QueryResponseService) {
+    private matDialog: MatDialog, private _queryResponseService: QueryResponseService, private _userSettingService: UserSettingService) {
     this.lightOptions = {
       theme: 'vs',
       language: 'csharp',
@@ -829,31 +830,42 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this._monacoEditor = editor;
     let getEnabled = this._diagnosticApi.get('api/appsettings/CodeCompletion:Enabled');
     let getServerUrl = this._diagnosticApi.get('api/appsettings/CodeCompletion:LangServerUrl');
-    forkJoin([getEnabled, getServerUrl]).subscribe(resList => {
-      this.codeCompletionEnabled = resList[0] == true || resList[0].toString().toLowerCase() == "true";
-      this.languageServerUrl = resList[1];
-      if (this.codeCompletionEnabled && this.languageServerUrl && this.languageServerUrl.length > 0) {
-        if (this.code.indexOf(codePrefix) < 0) {
-          this.code = this.addCodePrefix(this.code);
-          this.lastSavedVersion = this.code
-        }
-        let fileName = uuid();
-        let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse(`file:///workspace/${fileName}.cs`));
-        editor.setModel(editorModel);
-        MonacoServices.install(editor, { rootUri: "file:///workspace" });
-        const webSocket = this.createWebSocket(this.languageServerUrl);
+    try {
+      forkJoin([getEnabled, getServerUrl]).subscribe(resList => {
+        this._userSettingService.getUserSetting().subscribe(res => {
+          let userCodeCompletionEnabled = res && res.codeCompletion == "off"? false: true;
+          this.codeCompletionEnabled = (resList[0] == true || resList[0].toString().toLowerCase() == "true") && userCodeCompletionEnabled;
+          this.languageServerUrl = resList[1];
+          if (this.codeCompletionEnabled && this.languageServerUrl && this.languageServerUrl.length > 0) {
+            if (this.code.indexOf(codePrefix) < 0) {
+              this.code = this.addCodePrefix(this.code);
+              this.lastSavedVersion = this.code
+            }
+            let fileName = uuid();
+            let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse(`file:///workspace/${fileName}.cs`));
+            editor.setModel(editorModel);
+            MonacoServices.install(editor, { rootUri: "file:///workspace" });
+            const webSocket = this.createWebSocket(this.languageServerUrl);
 
-        listen({
-          webSocket,
-          onConnection: connection => {
-            // create and start the language client
-            const languageClient = this.createLanguageClient(connection);
-            const disposable = languageClient.start();
-            connection.onClose(() => disposable.dispose());
+            listen({
+              webSocket,
+              onConnection: connection => {
+                // create and start the language client
+                const languageClient = this.createLanguageClient(connection);
+                const disposable = languageClient.start();
+                connection.onClose(() => disposable.dispose());
+              }
+            });
           }
         });
-      }
-    });
+      },
+      (err) => {
+        this.codeCompletionEnabled = false;
+      });
+    }
+    catch (err) {
+      this.codeCompletionEnabled = false;
+    }
   }
 
   loadExamples() {
