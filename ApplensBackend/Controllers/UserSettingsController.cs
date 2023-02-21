@@ -74,8 +74,9 @@ namespace AppLensV3.Controllers
             var theme = body?["theme"]?.ToString();
             var viewMode = body?["viewMode"]?.ToString();
             var expandAnalysisCheckCard = body?["expandAnalysisCheckCard"]?.ToString();
+            var codeCompletion = body?["codeCompletion"]?.ToString() ?? "on";
 
-            var userSetting = await _cosmosDBHandler.PatchUserPanelSetting(userId, theme, viewMode, expandAnalysisCheckCard);
+            var userSetting = await _cosmosDBHandler.PatchUserPanelSetting(userId, theme, viewMode, expandAnalysisCheckCard, codeCompletion);
             return Ok(userSetting);
         }
 

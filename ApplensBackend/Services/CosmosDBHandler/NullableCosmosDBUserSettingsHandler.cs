@@ -44,7 +44,7 @@ namespace AppLensV3.Services
             return Task.FromResult(nullableUserSetting);
         }
 
-        public Task<UserSetting> PatchUserPanelSetting(string id, string theme, string viewMode, string expandAnalysisCheckCard)
+        public Task<UserSetting> PatchUserPanelSetting(string id, string theme, string viewMode, string expandAnalysisCheckCard, string codeCompletion)
         {
             return Task.FromResult(nullableUserSetting);
         }

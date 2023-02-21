@@ -35,6 +35,7 @@ export class ApplensHeaderComponent implements OnInit {
   };
   expandCheckCard: boolean = false;
   darkThemeChecked: boolean = false;
+  codeCompletionChecked: boolean = false;
   smartViewChecked: boolean = false;
   //Only If user changed setting, then send request to backend
   userSettingChanged: boolean = false;
@@ -83,6 +84,7 @@ export class ApplensHeaderComponent implements OnInit {
     this._userSettingService.getUserSetting().subscribe(userSettings => {
       this.expandCheckCard = userSettings ? userSettings.expandAnalysisCheckCard : false;
       this.darkThemeChecked = userSettings && userSettings.theme.toLowerCase() == "dark" ? true : false;
+      this.codeCompletionChecked = userSettings && userSettings.codeCompletion && userSettings.codeCompletion.toLowerCase() == "off" ? false : true;
       this.smartViewChecked = userSettings && userSettings.viewMode.toLowerCase() == "smarter" ? true : false;
       this.selectedKey = userSettings && userSettings.viewMode.toLowerCase() == "smarter" ? "smarter" : "waterfall";
     });
@@ -117,6 +119,10 @@ export class ApplensHeaderComponent implements OnInit {
     this.darkThemeChecked = event.checked;
   }
 
+  toggleCodeCompletion(event: { checked: boolean }) {
+    this.codeCompletionChecked = event.checked;
+  }
+
   toggleViewMode(event: { checked: boolean }) {
     this.viewModeChanged = !this.viewModeChanged;
     this.userSettingChanged = this.expandAnalysisChanged || this.themeChanged || this.viewModeChanged;
@@ -127,14 +133,15 @@ export class ApplensHeaderComponent implements OnInit {
   private updateUserSettingsFromPanel() {
     const themeStr = this.darkThemeChecked ? "dark" : "light";
     const updatedSettings: UserPanelSetting = {
+      codeCompletion: this.codeCompletionChecked ? "on": "off",
       expandAnalysisCheckCard: this.expandCheckCard,
       theme: themeStr,
       viewMode: this.smartViewChecked ? "smarter" : "waterfall"
     };
     this._themeService.setActiveTheme(themeStr);
     this._userSettingService.isWaterfallViewSub.next(!this.smartViewChecked);
-    this._userSettingService.updateUserPanelSetting(updatedSettings).subscribe();
-    window.location.reload();
+    this._userSettingService.updateUserPanelSetting(updatedSettings).subscribe(res => {}, err => {});
+    setTimeout(() => {window.location.reload();}, 1000);
   }
 
   openCallout() {

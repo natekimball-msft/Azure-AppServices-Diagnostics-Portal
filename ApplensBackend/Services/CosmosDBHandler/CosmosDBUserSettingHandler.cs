@@ -78,13 +78,14 @@ namespace AppLensV3.Services
             return PathItemAsync(id, UserSettingConstant.PartitionKey, property, value);
         }
 
-        public async Task<UserSetting> PatchUserPanelSetting(string id, string theme, string viewMode, string expandAnalysisCheckCard)
+        public async Task<UserSetting> PatchUserPanelSetting(string id, string theme, string viewMode, string expandAnalysisCheckCard, string codeCompletion)
         {
             var patchOperations = new[]
             {
                 PatchOperation.Add("/theme",theme),
                 PatchOperation.Add("/viewMode",viewMode),
-                PatchOperation.Add("/expandAnalysisCheckCard",expandAnalysisCheckCard)
+                PatchOperation.Add("/expandAnalysisCheckCard",expandAnalysisCheckCard),
+                PatchOperation.Add("/codeCompletion", codeCompletion)
             };
             return await Container.PatchItemAsync<UserSetting>(id, new PartitionKey(UserSettingConstant.PartitionKey), patchOperations);
         }

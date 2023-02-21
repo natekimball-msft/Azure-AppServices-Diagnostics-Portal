@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
+using System.Collections.Specialized;
 
 namespace AppLensV3.Services
 {
@@ -17,7 +18,7 @@ namespace AppLensV3.Services
 
         Task<UserSetting> AddFavoriteDetector(string id, string detectorId, FavoriteDetectorProp prop);
 
-        Task<UserSetting> PatchUserPanelSetting(string id, string theme, string viewMode, string expandAnalysisCheckCard);
+        Task<UserSetting> PatchUserPanelSetting(string id, string theme, string viewMode, string expandAnalysisCheckCard, string codeCompletion);
 
         Task<UserSetting> PatchLandingInfo(string id, List<RecentResource> resources, string defaultServiceType);
 
