@@ -347,6 +347,13 @@ export class ApplensDiagnosticService {
   }
 
   getDevopsCommitStatus(commitid: string, resourceUri:string):Observable<CommitStatus[]> {
-    return this._diagnosticApi.getDevopsCommitStatus(commitid, resourceUri);
+    return this._diagnosticApi.getDevopsCommitStatus(commitid, resourceUri).pipe(map((res:CommitStatus[]) =>   
+    {
+      let currStatus= res;
+      currStatus.forEach(status => {
+        status.commitId = commitid;
+      });
+      return currStatus;
+    }));
   }
 }

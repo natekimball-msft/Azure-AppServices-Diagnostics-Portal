@@ -3,7 +3,7 @@ import { DevopsConfig } from '../../../shared/models/devopsConfig';
 import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
 import { CommitStatus, DevOpsState } from '../../../shared/models/devopsCommitStatus';
 import { forkJoin, Observable } from 'rxjs';
-import { DataTableResponseColumn, DataTableResponseObject, TableColumnOption, TableFilterSelectionOption } from 'diagnostic-data';
+import { DataTableResponseColumn, DataTableResponseObject, ResourceDescriptor, TableColumnOption, TableFilterSelectionOption } from 'diagnostic-data';
 import { MessageBarType } from 'office-ui-fabric-react';
 import { Router } from '@angular/router';
 
@@ -34,6 +34,11 @@ export class DevopsDeploymentsComponent implements OnInit {
     this.loadingTable = true;
     let resourceId = this._diagnosticsService.resourceId;
     // fetch all commits on the path.
+    let provider = ResourceDescriptor.parseResourceUri(resourceId).provider;
+    let type = ResourceDescriptor.parseResourceUri(resourceId).type;
+    this._diagnosticsService.getDevopsConfig(`${provider}/${type}`).subscribe(config => {
+        this.currentDevopsConfig = config;
+    });
     this._diagnosticsService.getDevopsChangeList("/", resourceId).subscribe((data: any[]) => {
       let recentCommits = data.slice(0, 10);
       let commitObservable = [];
@@ -63,16 +68,23 @@ export class DevopsDeploymentsComponent implements OnInit {
   }
   private generateTable(pendingOrFailed: CommitStatus[]) {
     const columns: DataTableResponseColumn[] = [
+      { columnName: "Commit"},
       { columnName: "Release URL" },
       { columnName: "State" }
   ];
     let rows: any[][] = [];
     rows = pendingOrFailed.map(status => {
+      let gitCommitWithLink = '';
+      let displayCommitSha = status.commitId.substring(0,8);
+      gitCommitWithLink = 
+      `<markdown>
+      <a href="https://dev.azure.com/${this.currentDevopsConfig.organization}/${this.currentDevopsConfig.project}/_git/${this.currentDevopsConfig.repository}/commit/${status.commitId}">${displayCommitSha}</a>
+      </markdown>`;
       const name =
       `<markdown>
           <a href="${status.targetUrl}">${status.description}</a>
       </markdown>`;
-      return [name, DevOpsState[status.state]];
+      return [gitCommitWithLink, name, DevOpsState[status.state]];
     });
     const dataTableObject: DataTableResponseObject = {
       columns: columns,

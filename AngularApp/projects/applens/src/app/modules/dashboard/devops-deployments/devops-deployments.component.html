@@ -1,8 +1,8 @@
 
 <ng-container *ngIf="showDevopsStatusMessage">
   <fab-message-bar [messageBarType]="notificationStatusType" dismissButtonAriaLabel="Close">
-  <a (click)="goToPendingDeployments()">
-    One or more detector code deployments are pending or failed. Detector changes will not be reflected until they are complete. Click here for more.
+    One or more detector code deployments are pending or failed. Detector changes will not be reflected until they are complete.
+    <a (click)="goToPendingDeployments()"> Click here for more.
   </a> 
   </fab-message-bar>
 </ng-container>
