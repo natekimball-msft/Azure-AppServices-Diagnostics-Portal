@@ -15,6 +15,7 @@ import { FavoriteDetectorProp, FavoriteDetectors, LandingInfo, RecentResource, U
 import { List } from 'office-ui-fabric-react';
 import { dynamicExpressionBody } from '../../modules/dashboard/workflow/models/kusto';
 import { workflowNodeResult, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
+import { CommitStatus } from '../models/devopsCommitStatus';
 
 
 @Injectable()
@@ -676,5 +677,10 @@ export class DiagnosticApiService {
     return this.get(path).pipe(map((res: boolean) => {
       return res;
     }));
+  }
+
+  public getDevopsCommitStatus(commitid: string, resourceUri:string):Observable<CommitStatus[]> {
+    let path = `devops/getCommitStatus?commitid=${commitid}&resourceUri=${resourceUri}`;
+    return this.invoke(path, HttpMethod.GET, null, false);
   }
 }

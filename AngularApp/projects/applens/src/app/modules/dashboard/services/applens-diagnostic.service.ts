@@ -9,6 +9,7 @@ import { filter } from 'rxjs-compat/operator/filter';
 import { map } from 'rxjs/operators';
 import { dynamicExpressionBody } from '../workflow/models/kusto';
 import { workflowNodeResult, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
+import { CommitStatus } from '../../../shared/models/devopsCommitStatus';
 
 
 @Injectable()
@@ -343,5 +344,9 @@ export class ApplensDiagnosticService {
 
   isUserAllowedForWorkflow(userAlias:string){
     return this._diagnosticApi.isUserAllowedForWorkflow(userAlias);
+  }
+
+  getDevopsCommitStatus(commitid: string, resourceUri:string):Observable<CommitStatus[]> {
+    return this._diagnosticApi.getDevopsCommitStatus(commitid, resourceUri);
   }
 }

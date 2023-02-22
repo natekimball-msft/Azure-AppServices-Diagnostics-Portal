@@ -1,0 +1,18 @@
+
+<ng-container *ngIf="showDevopsStatusMessage">
+  <fab-message-bar [messageBarType]="notificationStatusType" dismissButtonAriaLabel="Close">
+  <a (click)="goToPendingDeployments()">
+    One or more detector code deployments are pending or failed. Detector changes will not be reflected until they are complete. Click here for more.
+  </a> 
+  </fab-message-bar>
+</ng-container>
+
+<ng-container *ngIf="!showDevopsStatusMessage">
+
+  <loader-view *ngIf="loadingTable" message = "Loading deployment statuses..."></loader-view>
+
+  <div *ngIf="table" class="detector-list">
+      <fab-data-table [table]="table" [allowColumnSearch]="true" [columnOptions]="columnOptions" [tableHeight]="'100%'" ></fab-data-table>
+    </div>
+
+</ng-container>

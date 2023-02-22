@@ -129,6 +129,7 @@ import { ApplensOpenAIService } from '../../shared/services/applens-openai.servi
 import { GenericOpenAIService } from '../../../../../diagnostic-data/src/public_api';
 import { OpenAIChatComponent } from './openai-chat/openai-chat.component';
 import {ChatGPTContextService} from 'diagnostic-data';
+import { DevopsDeploymentsComponent } from './devops-deployments/devops-deployments.component';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
@@ -482,6 +483,10 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
             {
                 path: 'users/:userId/activepullrequests',
                 component: UserActivePullrequestsComponent
+            },
+            {
+                path: 'deployments',
+                component: DevopsDeploymentsComponent
             }
         ]
     },
@@ -587,6 +592,6 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         L2SideNavComponent, UserActivePullrequestsComponent, FavoriteDetectorsComponent, ApplensDocsComponent, ApplensDocSectionComponent, CreateWorkflowComponent,
         IfElseConditionStepComponent, ConditionIftrueStepComponent, ConditionIffalseStepComponent, SwitchStepComponent, SwitchCaseStepComponent, SwitchCaseDefaultStepComponent,
         KustoQueryDialogComponent, DetectorNodeComponent, KustoNodeComponent, MarkdownNodeComponent, NodeActionsComponent, ConfigureVariablesComponent, CommonNodePropertiesComponent,
-        NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent]
+        NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent, DevopsDeploymentsComponent]
 })
 export class DashboardModule { }

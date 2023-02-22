@@ -154,6 +154,32 @@ export class SideNavComponent implements OnInit {
         return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `createGist`.toLowerCase();
       },
       icon: null
+    },
+    {
+      label: 'Your Active Pull Requests',
+      id: "",
+      onClick: () => {
+        this.navigateToActivePRs();
+      },
+      expanded: false,
+      subItems: null,
+      isSelected: () => {
+        return this.currentRoutePath && (this.currentRoutePath.join('/').toLowerCase().indexOf(`activepullrequests`) > 0);
+      },
+      icon: null
+    },
+    {
+      label: 'View Pending Deployments',
+      id: "",
+      onClick: () => {
+        this.navigateTo("deployments");
+      },
+      expanded: false,
+      subItems: null,
+      isSelected: () => {
+        return this.currentRoutePath && (this.currentRoutePath.join('/').toLowerCase().indexOf('deployments') > 0 );
+      },
+      icon: null
     }
   ];
 
@@ -174,22 +200,6 @@ export class SideNavComponent implements OnInit {
   ];
 
 
-  activePullRequest: CollapsibleMenuItem[] = [
-    {
-      id: "",
-      label: 'Your Active Pull Request',
-      onClick: () => {
-        let alias = Object.keys(this._adalService.userInfo.profile).length > 0 ? this._adalService.userInfo.profile.upn : '';
-        const userId: string = alias.replace('@microsoft.com', '');
-        if (userId.length > 0) {
-          this.navigateTo(`users/${userId}/activepullrequests`);
-        }
-      },
-      expanded: false,
-      subItems: null,
-      isSelected: null,
-      icon: null
-    }];
 
   ngOnInit() {
     this._openAIService.CheckEnabled().subscribe(enabled => {
@@ -204,7 +214,7 @@ export class SideNavComponent implements OnInit {
     this._router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(event => {
       this.getCurrentRoutePath();
     });
-    this.initializeActivePullRequestTab();
+    this.initializeDetectors();
     this.initializeFavoriteDetectors();
 
     this._diagnosticApiService.isUserAllowedForWorkflow(this.userId).subscribe(resp => {
@@ -496,14 +506,6 @@ export class SideNavComponent implements OnInit {
     });
   }
 
-  private initializeActivePullRequestTab() {
-    this._diagnosticApiService.getDevopsConfig(`${this.resourceService.ArmResource.provider}/${this.resourceService.ArmResource.resourceTypeName}`).subscribe(config => {
-      this.isGraduation = config.graduationEnabled;
-    })
-    this._diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
-      this.isProd = env === "Prod";
-    });
-  }
   doesMatchCurrentRoute(expectedRoute: string) {
     return this.currentRoutePath && this.currentRoutePath.join('/') === expectedRoute;
   }
