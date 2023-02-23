@@ -36,39 +36,23 @@
   'example-card-warning-outline':  data.status == 'warning',
   'example-card-default-outline':  data.status == ''
 }">
-      <img class="card-image" [src]="resourceTypeList[0].imgSrc"/>
+
+      <div *ngIf = "data.icon == 'webapp'" >
+        <img class="card-image" [src]="resourceTypeList[0].imgSrc"/>
+      </div>
+      <div *ngIf = "data.icon == 'traffic'" >
+        <img class="card-image" [src]="resourceTypeList[8].imgSrc"/>
+      </div>
+      <div *ngIf = "data.icon == 'endpoint'" >
+        <i class="fa fa-cloud fa-5x card-image" aria-hidden="true"></i>
+      </div>
+
+      
       <div class="card-content">
         <h3 [title]="data.title" class="card-content-title">{{data.title}}</h3>
         <p [title]="data.subtitle" class="card-content-subtitle">{{data.subtitle}}</p>
         <p [title]="data.content" class="card-content-description">{{data.content}}</p>
       </div>
 </div>
-<!-- 
-  <fab-card class = "example-card" background = "pink">helo</fab-card> -->
-
-
-  
-  <!-- <DocumentCard
-        aria-label="Document Card with icon. View and share files. Created by Aaron Reid a few minutes ago"
-        type={DocumentCardType.compact}
-       
-      >
-         <DocumentCardDetails>
-          <DocumentCardTitle title="View and share files" shouldTruncate ></DocumentCardTitle>
-          <DocumentCardActivity activity="Created a few minutes ago"  ></DocumentCardActivity>
-        </DocumentCardDetails> 
-      </DocumentCard> -->
-<!-- 
-      <div class="ms-Persona ms-Persona--xs">
-        <div class="ms-Persona-imageArea">
-          <img class="ms-Persona-image" src="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/images/persona.person.png">
-        </div>
-        <div class="ms-Persona-presence">
-          <i class="ms-Persona-presenceIcon ms-Icon ms-Icon--SkypeCheck"></i>
-        </div>
-        <div class="ms-Persona-details">
-          <div class="ms-Persona-primaryText">Alton Lafferty</div>
-        </div>
-      </div> -->
 
   </div>

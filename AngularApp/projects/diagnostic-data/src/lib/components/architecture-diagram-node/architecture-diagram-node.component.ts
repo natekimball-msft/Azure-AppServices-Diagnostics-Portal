@@ -22,14 +22,17 @@ export class ArchitectureDiagramNodeComponent extends NgFlowchartStepComponent {
   routes = [];
 
   resourceTypeList = [
-    { name: "App", imgSrc: "assets/img/Azure-WebApps-Logo.png" },
+    { name: "webapp", imgSrc: "assets/img/Azure-WebApps-Logo.png" },
     { name: "Linux App", imgSrc: "assets/img/Azure-Tux-Logo.png" },
     { name: "Function App", imgSrc: "assets/img/Azure-Functions-Logo.png" },
     { name: "Logic App", imgSrc: "assets/img/Azure-LogicAppsPreview-Logo.svg" },
     { name: "App Service Environment", imgSrc: "assets/img/ASE-Logo.jpg" },
     { name: "Virtual Machine", imgSrc: "assets/img/Icon-compute-21-Virtual-Machine.svg" },
     { name: "Container App", imgSrc: "assets/img/Azure-ContainerApp-Logo.png" },
-    { name: "Internal Stamp", imgSrc: "assets/img/Cloud-Service-Logo.svg" }];
+    { name: "Internal Stamp", imgSrc: "assets/img/Cloud-Service-Logo.svg" },
+    { name: "traffic", imgSrc: "assets/img/SupportTopicImages/traffic.png" },
+    { name: "endpoint", imgSrc: "assets/img/Cloud-Service-Logo.svg" }
+  ];
 
 
   ngOnInit(): void{

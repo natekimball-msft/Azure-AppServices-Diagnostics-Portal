@@ -27,8 +27,8 @@
 // C:\Users\hmangipudi\Desktop\Azure-AppServices-Diagnostics-Portal\AngularApp\projects\applens\src\assets\img\Azure-WebApps-Logo.png
   
 .example-card{
-  width:300px;
-  height:175px;
+  width:400px;
+  height:150px;
   display: flex;
   align-items: center;
 }
@@ -53,7 +53,6 @@
 
 
 .card-image{
-  background-image:url('https://material.angular.io/assets/img/examples/shiba1.jpg');
   width: 80px;
   height: 80px;
   margin: 0px 10px;
@@ -63,12 +62,13 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  height: 100%;
-  width: 200px;
+  height: 95%;
+  width: 300px;
 }
 
 .card-content-title {
-  flex-basis: 25px;
+  font-size:20px; 
+  flex-basis: 28px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -82,6 +82,8 @@
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  flex-shrink: 1.5;
+  margin: 0px 0px 0px 0px;
   width: 95%;
 }
 
@@ -90,4 +92,6 @@
   text-overflow: ellipsis;
   overflow: hidden;
   width: 95%;
+  flex-grow: 1.5;
+  margin-top: 10px;
 }

@@ -120,7 +120,8 @@ canvas: NgFlowchartCanvasDirective;
       if(data.rows[i]){
         
         let tempString = data.rows[i][0]; 
-        this.architecture =  tempString.replace("'\n'", ""); 
+        //this.architecture =  tempString.replace("'\n'", ""); 
+        this.architecture = tempString; 
         
 
       }
