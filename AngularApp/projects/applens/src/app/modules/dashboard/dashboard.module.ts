@@ -144,8 +144,13 @@ import { ApplensOpenAIChatComponent } from './applens-openai-chat/applens-openai
 import { CommunicationToolkitComponent } from './communication-toolkit/communication-toolkit.component';
 import { DetectorCopilotService } from 'projects/applens/src/app/modules/dashboard/services/detector-copilot.service';
 import { CreateExperiencePicker } from './create-experience-picker/create-experience-picker.component';
-import { DetectorDesigner } from './detector-designer/detector-designer.component';
-
+import { DetectorDesignerComponent } from './detector-designer/detector-designer.component';
+import { DetectorSettingsPanelComponent } from './detector-settings-panel/detector-settings-panel.component';
+import { NodeComposerComponent } from './node-composer/node-composer.component';
+import { DynamicNodeSettings } from './dynamic-node-settings/dynamic-node-settings.component';
+import { RenderingSettingsBaseComponent } from './rendering-settings-components/rendering-settings-base/rendering-settings-base.component';
+import { TableRenderingSettingsComponent } from './rendering-settings-components/table-rendering-settings/table-rendering-settings.component';
+import { InsightRenderingSettingsComponent } from './rendering-settings-components/insight-rendering-settings/insight-rendering-settings.component';
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
     constructor(private _resourceService: ResourceService, private _detectorControlService: DetectorControlService, private _userSettingService: UserSettingService, private _router: Router) { }
@@ -248,7 +253,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
             },
             {
                 path: 'designDetector',
-                component: DetectorDesigner,
+                component: DetectorDesignerComponent,
             },
             {
                 path: 'create',
@@ -641,6 +646,6 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         ApplensOpenAIChatComponent, KustoGPTComponent, CommunicationToolkitComponent
         NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent,
         OpenAIChatComponent, WorkflowUserAccessComponent, ForeachNodeComponent, DevopsDeploymentsComponent, InputNodeComponent, 
-        CreateExperiencePicker, DetectorDesigner]
+        CreateExperiencePicker,  DetectorDesignerComponent, DetectorSettingsPanelComponent, NodeComposerComponent, DynamicNodeSettings, RenderingSettingsBaseComponent, TableRenderingSettingsComponent, InsightRenderingSettingsComponent]
 })
 export class DashboardModule { }
