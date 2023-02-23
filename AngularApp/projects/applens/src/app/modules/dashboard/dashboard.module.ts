@@ -137,9 +137,13 @@ import { ForeachNodeComponent } from './workflow/foreach-node/foreach-node.compo
 import { WorkflowUserAccessComponent } from './workflow/workflow-user-access/workflow-user-access.component';
 import { InputNodeComponent } from './workflow/input-node/input-node.component';
 import { CreateExperiencePicker } from './create-experience-picker/create-experience-picker.component';
-import { DetectorDesigner } from './detector-designer/detector-designer.component';
-import { DetectorSettingsPanel } from './detector-settings-panel/detector-settings-panel.component';
-import { NodeComposer } from './node-composer/node-composer.component';
+import { DetectorDesignerComponent } from './detector-designer/detector-designer.component';
+import { DetectorSettingsPanelComponent } from './detector-settings-panel/detector-settings-panel.component';
+import { NodeComposerComponent } from './node-composer/node-composer.component';
+import { DynamicNodeSettings } from './dynamic-node-settings/dynamic-node-settings.component';
+import { RenderingSettingsBaseComponent } from './rendering-settings-components/rendering-settings-base/rendering-settings-base.component';
+import { TableRenderingSettingsComponent } from './rendering-settings-components/table-rendering-settings/table-rendering-settings.component';
+import { InsightRenderingSettingsComponent } from './rendering-settings-components/insight-rendering-settings/insight-rendering-settings.component';
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
     constructor(private _resourceService: ResourceService, private _detectorControlService: DetectorControlService, private _userSettingService: UserSettingService) { }
@@ -240,7 +244,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
             },
             {
                 path: 'designDetector',
-                component: DetectorDesigner,
+                component: DetectorDesignerComponent,
             },
             {
                 path: 'create',
@@ -616,6 +620,6 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         IfElseConditionStepComponent, ConditionIftrueStepComponent, ConditionIffalseStepComponent, SwitchStepComponent, SwitchCaseStepComponent, SwitchCaseDefaultStepComponent,
         KustoQueryDialogComponent, DetectorNodeComponent, KustoNodeComponent, MarkdownNodeComponent, NodeActionsComponent, ConfigureVariablesComponent, CommonNodePropertiesComponent,
         NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent, WorkflowUserAccessComponent, ForeachNodeComponent, DevopsDeploymentsComponent, InputNodeComponent, 
-        CreateExperiencePicker, DetectorDesigner, DetectorSettingsPanel, NodeComposer]
+        CreateExperiencePicker, DetectorDesignerComponent, DetectorSettingsPanelComponent, NodeComposerComponent, DynamicNodeSettings, RenderingSettingsBaseComponent, TableRenderingSettingsComponent, InsightRenderingSettingsComponent]
 })
 export class DashboardModule { }
