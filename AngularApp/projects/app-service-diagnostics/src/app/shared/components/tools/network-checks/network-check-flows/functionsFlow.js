@@ -17,10 +17,10 @@ export var functionsFlow = {
     async func(siteInfo, diagProvider, flowMgr) {
 
         var isKuduAccessiblePromise = null;
-        if (siteInfo.kind.includes("linux") ||siteInfo.kind.includes("container")) {
+        if (siteInfo.kind.includes("container")) {
             isKuduAccessiblePromise = false;
         } else {
-            isKuduAccessiblePromise = checkKuduAvailabilityAsync(diagProvider, flowMgr);
+            isKuduAccessiblePromise = true //checkKuduAvailabilityAsync(diagProvider, flowMgr);
         }
         var dnsServers = null;
         var vnetConfigChecker = new VnetIntegrationConfigChecker(siteInfo, diagProvider);
