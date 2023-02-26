@@ -31,8 +31,8 @@ export class ArchitectureDiagramNodeComponent extends NgFlowchartStepComponent {
     { name: "Container App", imgSrc: "assets/img/Azure-ContainerApp-Logo.png" },
     { name: "Internal Stamp", imgSrc: "assets/img/Cloud-Service-Logo.svg" },
     { name: "traffic", imgSrc: "assets/img/SupportTopicImages/traffic.png" },
-    { name: "endpoint", imgSrc: "assets/img/Cloud-Service-Logo.svg" },
-    { name: "frontdoor", imgSrc: "assets/img/AzureFront-Doors.svg" }
+    { name: "cloudservice", imgSrc: "assets/img/Cloud-Service-Logo.svg" },
+    { name: "frontdoor", imgSrc: "assets/img/AzureFront-Doors.svg" },
 
   ];
 

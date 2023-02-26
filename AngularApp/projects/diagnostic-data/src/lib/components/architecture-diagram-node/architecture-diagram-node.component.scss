@@ -27,7 +27,7 @@
 // C:\Users\hmangipudi\Desktop\Azure-AppServices-Diagnostics-Portal\AngularApp\projects\applens\src\assets\img\Azure-WebApps-Logo.png
   
 .example-card{
-  width:400px;
+  width:280px;
   height:150px;
   display: flex;
   align-items: center;
@@ -53,9 +53,16 @@
 
 
 .card-image{
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   margin: 0px 10px;
+}
+
+.fa-border-icon{
+  color: #4B98E9;
+  stroke: white;
+  stroke-width: 30px;
+  margin:10px 10px 10px 10px; 
 }
 
 .card-content {
@@ -63,17 +70,17 @@
   flex-direction: column;
   justify-content: flex-start;
   height: 95%;
-  width: 300px;
+  width: 200px;
 }
 
 .card-content-title {
-  font-size:20px; 
+  font-size:16px; 
   flex-basis: 28px;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
+  // text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  // white-space: nowrap;
   width: 95%;
-  margin: 10px 0px 0px;
+  margin: 10px 0px -5px 0px;
 }
 
 .card-content-subtitle {

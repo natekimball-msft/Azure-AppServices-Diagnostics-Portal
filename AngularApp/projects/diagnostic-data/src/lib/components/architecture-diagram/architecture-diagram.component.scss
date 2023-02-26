@@ -22,5 +22,6 @@
 
   }
   ::ng-deep .ngflowchart-canvas-content {
-    height: 500px;
+    height: inherit; 
+    width: 2000px; 
   }

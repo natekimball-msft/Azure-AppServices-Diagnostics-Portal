@@ -43,17 +43,25 @@
       <div *ngIf = "data.icon == 'traffic'" >
         <img class="card-image" [src]="resourceTypeList[8].imgSrc"/>
       </div>
-      <div *ngIf = "data.icon == 'endpoint'" >
-        <i class="fa fa-cloud fa-5x card-image" aria-hidden="true"></i>
+      <div *ngIf = "data.icon == 'cloud'" >
+        <i class="fa fa-cloud fa-3x fa-border-icon" aria-hidden="true"></i>
       </div>
       <div *ngIf = "data.icon == 'frontdoor'" >
         <img class="card-image" [src]="resourceTypeList[10].imgSrc">
+      </div>
+      <div *ngIf = "data.icon == 'cloudservice'" >
+        <img class="card-image" [src]="resourceTypeList[9].imgSrc">
       </div>
 
       
       <div class="card-content">
         <h3 [title]="data.title" class="card-content-title">{{data.title}}</h3>
-        <p [title]="data.subtitle" class="card-content-subtitle">{{data.subtitle}}</p>
+        <div *ngIf = "data.subtitlelink !== undefined">
+          <p [title]="data.subtitle" class="card-content-subtitle"><a target="_blank" [href]="data.subtitlelink">{{data.subtitle}}</a></p>
+        </div>
+        <div *ngIf = "data.subtitlelink === undefined">
+          <p [title]="data.subtitle" class="card-content-subtitle">{{data.subtitle}}</p>
+        </div>
         <p [title]="data.content" class="card-content-description">{{data.content}}</p>
       </div>
 </div>
