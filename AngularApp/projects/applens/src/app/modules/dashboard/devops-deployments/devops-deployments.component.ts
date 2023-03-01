@@ -6,7 +6,10 @@ import { forkJoin, Observable } from 'rxjs';
 import { DataTableResponseColumn, DataTableResponseObject, ResourceDescriptor, TableColumnOption, TableFilterSelectionOption } from 'diagnostic-data';
 import { MessageBarType } from 'office-ui-fabric-react';
 import { Router } from '@angular/router';
+import { AdalService } from 'adal-angular4';
+import * as momentNs from 'moment';
 
+const moment = momentNs;
 @Component({
   selector: 'devops-deployments',
   templateUrl: './devops-deployments.component.html',
@@ -14,84 +17,148 @@ import { Router } from '@angular/router';
 })
 export class DevopsDeploymentsComponent implements OnInit {
   currentDevopsConfig: DevopsConfig;
-  DevopsStatus:CommitStatus[] = [];
+  response:any[] = [];
+  pullRequests: [];
   bannerMessage:string = '';
+  userId: string = "";
+  resourceId: string = "";
   table: DataTableResponseObject = null;
   loadingTable: boolean = false;
   columnOptions: TableColumnOption[] = [
     {
         name: "State",
         selectionOption: TableFilterSelectionOption.Multiple
+    },
+    {
+      name: "Type",
+      selectionOption: TableFilterSelectionOption.Multiple
     }
   ];
 
   notificationStatusType: MessageBarType = MessageBarType.warning;
   @Input() showDevopsStatusMessage: boolean = false;
-  constructor(private _diagnosticsService:ApplensDiagnosticService, private _router:Router) { }
+  constructor(private _diagnosticsService:ApplensDiagnosticService, private _router:Router, private _adalService: AdalService) { }
 
   ngOnInit(): void {
    
     this.loadingTable = true;
-    let resourceId = this._diagnosticsService.resourceId;
+    this.resourceId = this._diagnosticsService.resourceId;
+    let alias = Object.keys(this._adalService.userInfo.profile).length > 0 ? this._adalService.userInfo.profile.upn : '';
+    this.userId = alias.replace('@microsoft.com', '');
     // fetch all commits on the path.
-    let provider = ResourceDescriptor.parseResourceUri(resourceId).provider;
-    let type = ResourceDescriptor.parseResourceUri(resourceId).type;
+    let provider = ResourceDescriptor.parseResourceUri(this.resourceId).provider;
+    let type = ResourceDescriptor.parseResourceUri(this.resourceId).type;
     this._diagnosticsService.getDevopsConfig(`${provider}/${type}`).subscribe(config => {
         this.currentDevopsConfig = config;
     });
-    this._diagnosticsService.getDevopsChangeList("/", resourceId).subscribe((data: any[]) => {
+    this._diagnosticsService.getDevopsChangeList("/", this.resourceId).subscribe((data: any[]) => {
       let recentCommits = data.slice(0, 10);
       let commitObservable = [];
+      let activePRObservable = this._diagnosticsService.getDevopsPullRequest(`${provider}/${type}`);
+      commitObservable.push(activePRObservable);
       recentCommits.forEach(version => {
-        commitObservable.push(this._diagnosticsService.getDevopsCommitStatus(version["commitId"], resourceId));
-      });  
-      forkJoin(commitObservable).subscribe((res: CommitStatus[]) => {
-        this.DevopsStatus = this.DevopsStatus.concat(res);
+        commitObservable.push(this._diagnosticsService.getDevopsCommitStatus(version["commitId"], this.resourceId));
+      });
+
+
+      forkJoin(commitObservable).subscribe((res: any[]) => {
+        this.response = res;
       }, error => {
-        this.DevopsStatus.concat([]);
+        this.response.concat([]);
         this.loadingTable = false;
       }, () => {
-        this.generateBannerMessage([].concat(...this.DevopsStatus));
+        this.generateBannerMessage(this.response);
         this.loadingTable = false;
-      });          
+      });  
+    
+
       });            
   }
 
-  private generateBannerMessage(devopsStatuses: CommitStatus[]) {
-    let PendingOrFailed = devopsStatuses.filter(s => s.state != DevOpsState.Succeeded);
-    this.table = this.generateTable(PendingOrFailed);
-    if (PendingOrFailed.length > 0) {
+
+
+  private generateBannerMessage(devopsStatuses: any[]) {
+    this.table = this.generatePendingChangesTables(devopsStatuses);
+    if (devopsStatuses.length > 0) {
       this.bannerMessage = 'One or more deployments have not completed. Detectors changes will not be reflected until they are completed.';
     } else {
       this.bannerMessage = '';
     }
   }
-  private generateTable(pendingOrFailed: CommitStatus[]) {
+
+  private generatePendingChangesTables(resultSet:any[]) {
     const columns: DataTableResponseColumn[] = [
-      { columnName: "Commit"},
-      { columnName: "Release URL" },
-      { columnName: "State" }
+      { columnName: "Type"},
+      { columnName: "Description & Link" },      
+      { columnName: "Creation Date"},
+      { columnName: "State" },
+      {columnName: "Commit/Branch"}
   ];
-    let rows: any[][] = [];
-    rows = pendingOrFailed.map(status => {
-      let gitCommitWithLink = '';
-      let displayCommitSha = status.commitId.substring(0,8);
-      gitCommitWithLink = 
-      `<markdown>
-      <a href="https://dev.azure.com/${this.currentDevopsConfig.organization}/${this.currentDevopsConfig.project}/_git/${this.currentDevopsConfig.repository}/commit/${status.commitId}">${displayCommitSha}</a>
-      </markdown>`;
-      const name =
-      `<markdown>
-          <a href="${status.targetUrl}">${status.description}</a>
-      </markdown>`;
-      return [gitCommitWithLink, name, DevOpsState[status.state]];
-    });
-    const dataTableObject: DataTableResponseObject = {
-      columns: columns,
-      rows: rows
+    
+  let rows: any[][] = [];
+  if (resultSet.length > 0 ) {   
+    let pullRequestRows = this.generatePullRequestRows(resultSet[0]);
+    rows = rows.concat(pullRequestRows);
+    for(var start = 1;start<resultSet.length; start++) {      
+      let deploymentRows = this.generatePendingDeploymentsRows(resultSet[start]);
+      rows = rows.concat(deploymentRows); 
+    }
+  }
+  const dataTableObject: DataTableResponseObject = {
+    columns: columns,
+    rows: rows
+  }
+  return dataTableObject;
   }
 
-    return dataTableObject;
+  private generatePullRequestRows(resultSet:any[]):any[][] {
+    let rows: any[][] = [];
+    resultSet.forEach(element => {
+      let sourceBranch:string = element['sourceRefName'];
+      let sourceBranchTrim = sourceBranch.replace('refs/heads/', '');
+      let title:string = element['title'];
+      let link:string = element['remoteUrl'];
+      let creationDate = element['creationDate'];
+      let displayCreationDate = moment(creationDate).format('MMM Do YY'); 
+      let rowElement = `<markdown><a href="${link}" target="_blank">${title}</a></markdown>`;
+       // Note: this logic will work for branches created with following pattern : dev/<user_alias>/<entitytype>/<entityid>, eg: dev/microsoftalias/detector/mydetector or dev/microsoftalias/gist/mygist
+       let branchUserName = sourceBranchTrim.startsWith('dev/') ? sourceBranchTrim.split("/")[1] : sourceBranchTrim;
+      if (branchUserName.toLocaleLowerCase() == this.userId.toLocaleLowerCase() && title != undefined && title != '' && link != undefined && link != '') {  
+        let rowElement = `<markdown><a href="${link}" target="_blank">${title}</a></markdown>`;
+        sourceBranch = sourceBranch.replace('refs/heads/','');
+        let entityid = sourceBranchTrim.split("/")[3];
+        let entityType = sourceBranchTrim.split("/")[2];
+        let path = entityType.toLocaleLowerCase() == 'gist' ? `${this.resourceId}/gists/${entityid}?branchInput=${sourceBranch}` : `${this.resourceId}/detectors/${entityid}/edit?branchInput=${sourceBranch}`;
+        let sourceClickContent =  `<markdown> <a href="${link}" target="_blank"> ${sourceBranch}</a></markdown>`;
+        rows.push(["Pull Request",  rowElement, displayCreationDate, "Active", sourceClickContent]); 
+      }          
+    });
+    return rows;
+  }
+  private generatePendingDeploymentsRows(devopsStatuses: CommitStatus[]):any[][] {
+ 
+    let rows: any[][] = [];
+    devopsStatuses.forEach(status => {
+      if (status.state != DevOpsState.Succeeded) {
+        
+          let gitCommitWithLink = '';
+         let releaseCreationDate = status.creationDate;
+         let displayReleaseDate = moment(releaseCreationDate).format('MMM Do YY'); 
+          let displayCommitSha = status.commitId.substring(0,8);
+          gitCommitWithLink = 
+          `<markdown>
+          <a href="https://dev.azure.com/${this.currentDevopsConfig.organization}/${this.currentDevopsConfig.project}/_git/${this.currentDevopsConfig.repository}/commit/${status.commitId}">${displayCommitSha}</a>
+          </markdown>`;
+          const displayReleaseUrl =
+          `<markdown>
+              <a href="${status.targetUrl}">${status.description}</a>
+          </markdown>`;
+          rows.push(["Release",   displayReleaseUrl, displayReleaseDate, DevOpsState[status.state], gitCommitWithLink]);
+       
+      }
+    });
+  
+    return rows;
   }
 
   goToPendingDeployments() {

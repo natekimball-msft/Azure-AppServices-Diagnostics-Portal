@@ -5,6 +5,7 @@ export class CommitStatus {
     targetUrl: string = "";
     description:string = "";
     commitId: string = "";
+    creationDate:string = "";
 }
 export class Context {
     name: string = "";
