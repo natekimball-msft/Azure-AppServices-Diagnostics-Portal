@@ -34,7 +34,7 @@
   'example-card-critical-outline': data.status == 'critical',
   'example-card-success-outline':  data.status == 'success',
   'example-card-warning-outline':  data.status == 'warning',
-  'example-card-default-outline':  data.status == ''
+  'example-card-default-outline':  data.status == '' || data.status == null
 }">
 
       <div *ngIf = "data.icon == 'webapp'" >
