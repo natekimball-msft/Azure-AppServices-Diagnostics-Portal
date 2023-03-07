@@ -63,7 +63,6 @@ import { RecentResource } from '../../shared/models/user-setting';
 import { UserSettingService } from './services/user-setting.service';
 import { ApplensDocsComponent } from './applens-docs/applens-docs.component';
 import { TabKey } from './tabs/tab-key';
-import { UserActivePullrequestsComponent } from './user-active-pullrequests/user-active-pullrequests.component';
 import { BreadcrumbService } from './services/breadcrumb.service';
 import { FavoriteDetectorsComponent } from './favoite-detectors/favorite-detectors.component';
 import { ApplensDocSectionComponent } from './applens-doc-section/applens-doc-section.component';
@@ -130,6 +129,7 @@ import { GenericOpenAIService } from '../../../../../diagnostic-data/src/public_
 import { OpenAIChatComponent } from './openai-chat/openai-chat.component';
 import {ChatGPTContextService} from 'diagnostic-data';
 import { DevopsDeploymentsComponent } from './devops-deployments/devops-deployments.component';
+import { DevopsNotificationComponent } from './devops-notification/devops-notification.component';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
@@ -481,10 +481,6 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
                 component: ConfigurationComponent
             },
             {
-                path: 'users/:userId/activepullrequests',
-                component: UserActivePullrequestsComponent
-            },
-            {
                 path: 'deployments',
                 component: DevopsDeploymentsComponent
             }
@@ -589,9 +585,9 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         TabMonitoringDevelopComponent, TabAnalyticsDevelopComponent, TabAnalyticsDashboardComponent, GistComponent, TabGistCommonComponent,
         TabGistDevelopComponent, TabChangelistComponent, GistChangelistComponent, TabAnalysisComponent, CategoryPageComponent, SupportTopicPageComponent,
         SelfHelpContentComponent, UserDetectorsComponent, FormatResourceNamePipe, Sort, SearchResultsComponent, ConfigurationComponent, DashboardContainerComponent,
-        L2SideNavComponent, UserActivePullrequestsComponent, FavoriteDetectorsComponent, ApplensDocsComponent, ApplensDocSectionComponent, CreateWorkflowComponent,
+        L2SideNavComponent, FavoriteDetectorsComponent, ApplensDocsComponent, ApplensDocSectionComponent, CreateWorkflowComponent,
         IfElseConditionStepComponent, ConditionIftrueStepComponent, ConditionIffalseStepComponent, SwitchStepComponent, SwitchCaseStepComponent, SwitchCaseDefaultStepComponent,
         KustoQueryDialogComponent, DetectorNodeComponent, KustoNodeComponent, MarkdownNodeComponent, NodeActionsComponent, ConfigureVariablesComponent, CommonNodePropertiesComponent,
-        NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent, DevopsDeploymentsComponent]
+        NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent, DevopsDeploymentsComponent, DevopsNotificationComponent]
 })
 export class DashboardModule { }

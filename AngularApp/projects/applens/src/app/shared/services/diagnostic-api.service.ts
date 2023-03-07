@@ -667,7 +667,7 @@ export class DiagnosticApiService {
 
   public getAppSetting(appSettingName: string): Observable<string> {
     const path = `api/appsettings/${appSettingName}`;
-    return this.get(path).pipe(map((res: string) => {
+    return this.get(path, true).pipe(map((res: string) => {
       return res;
     }));
   }
