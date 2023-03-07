@@ -156,10 +156,23 @@ export class SideNavComponent implements OnInit {
       icon: null
     },
     {
-      label: 'View Pending Changes',
+      label: 'Your Active Pull Requests',
       id: "",
       onClick: () => {
-        this.navigateTo('deployments');
+        this.navigateToActivePRs();
+      },
+      expanded: false,
+      subItems: null,
+      isSelected: () => {
+        return this.currentRoutePath && (this.currentRoutePath.join('/').toLowerCase().indexOf(`activepullrequests`) > 0);
+      },
+      icon: null
+    },
+    {
+      label: 'View Pending Deployments',
+      id: "",
+      onClick: () => {
+        this.navigateTo("deployments");
       },
       expanded: false,
       subItems: null,

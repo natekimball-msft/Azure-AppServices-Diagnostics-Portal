@@ -1,13 +1,13 @@
-import { Component,  OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { DevopsConfig } from '../../../shared/models/devopsConfig';
 import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
 import { CommitStatus, DevOpsState } from '../../../shared/models/devopsCommitStatus';
+import { forkJoin, Observable } from 'rxjs';
 import { DataTableResponseColumn, DataTableResponseObject, ResourceDescriptor, TableColumnOption, TableFilterSelectionOption } from 'diagnostic-data';
+import { MessageBarType } from 'office-ui-fabric-react';
 import { Router } from '@angular/router';
 import { AdalService } from 'adal-angular4';
-import { DevopsserviceService } from '../../../shared/services/devopsservice.service';
 import * as momentNs from 'moment';
-import { forkJoin } from 'rxjs';
 
 const moment = momentNs;
 @Component({
@@ -19,6 +19,7 @@ export class DevopsDeploymentsComponent implements OnInit {
   currentDevopsConfig: DevopsConfig;
   response:any[] = [];
   pullRequests: [];
+  bannerMessage:string = '';
   userId: string = "";
   resourceId: string = "";
   table: DataTableResponseObject = null;
@@ -33,10 +34,13 @@ export class DevopsDeploymentsComponent implements OnInit {
       selectionOption: TableFilterSelectionOption.Multiple
     }
   ];
- 
-  constructor(private _diagnosticsService:ApplensDiagnosticService, private _router:Router, private _adalService: AdalService, private devopsService:DevopsserviceService) { }
+
+  notificationStatusType: MessageBarType = MessageBarType.warning;
+  @Input() showDevopsStatusMessage: boolean = false;
+  constructor(private _diagnosticsService:ApplensDiagnosticService, private _router:Router, private _adalService: AdalService) { }
 
   ngOnInit(): void {
+   
     this.loadingTable = true;
     this.resourceId = this._diagnosticsService.resourceId;
     let alias = Object.keys(this._adalService.userInfo.profile).length > 0 ? this._adalService.userInfo.profile.upn : '';
@@ -58,18 +62,29 @@ export class DevopsDeploymentsComponent implements OnInit {
 
 
       forkJoin(commitObservable).subscribe((res: any[]) => {
-      this.response = res;
-    }, error => {
-      this.response.concat([]);
-      this.loadingTable = false;
-    }, () => {
-      this.generatePendingChangesTables(this.response);
-      this.loadingTable = false;
-    });  
-  });
-             
+        this.response = res;
+      }, error => {
+        this.response.concat([]);
+        this.loadingTable = false;
+      }, () => {
+        this.generateBannerMessage(this.response);
+        this.loadingTable = false;
+      });  
+    
+
+      });            
   }
 
+
+
+  private generateBannerMessage(devopsStatuses: any[]) {
+    this.table = this.generatePendingChangesTables(devopsStatuses);
+    if (devopsStatuses.length > 0) {
+      this.bannerMessage = 'One or more deployments have not completed. Detectors changes will not be reflected until they are completed.';
+    } else {
+      this.bannerMessage = '';
+    }
+  }
 
   private generatePendingChangesTables(resultSet:any[]) {
     const columns: DataTableResponseColumn[] = [
@@ -146,6 +161,8 @@ export class DevopsDeploymentsComponent implements OnInit {
     return rows;
   }
 
-
+  goToPendingDeployments() {
+      this._router.navigateByUrl(`${this._diagnosticsService.resourceId}/deployments`);
+  }
   
 }
