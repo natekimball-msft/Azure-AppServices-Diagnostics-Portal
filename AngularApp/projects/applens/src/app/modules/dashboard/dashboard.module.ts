@@ -131,6 +131,9 @@ import { OpenAIChatComponent } from './openai-chat/openai-chat.component';
 import {ChatGPTContextService} from 'diagnostic-data';
 import { DevopsDeploymentsComponent } from './devops-deployments/devops-deployments.component';
 import { DevopsNotificationComponent } from './devops-notification/devops-notification.component';
+import { ForeachNodeComponent } from './workflow/foreach-node/foreach-node.component';
+import { WorkflowUserAccessComponent } from './workflow/workflow-user-access/workflow-user-access.component';
+
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
     constructor(private _resourceService: ResourceService, private _detectorControlService: DetectorControlService, private _userSettingService: UserSettingService) { }
@@ -236,6 +239,10 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
                 path: 'createWorkflow',
                 component: WorkflowComponent,
                 canDeactivate: [DevelopNavigationGuardService]
+            },
+            {
+                path: 'addworkflowuser',
+                component: WorkflowUserAccessComponent
             },
             {
                 path: 'solutionOrchestrator',
@@ -588,6 +595,10 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         L2SideNavComponent, UserActivePullrequestsComponent, FavoriteDetectorsComponent, ApplensDocsComponent, ApplensDocSectionComponent, CreateWorkflowComponent,
         IfElseConditionStepComponent, ConditionIftrueStepComponent, ConditionIffalseStepComponent, SwitchStepComponent, SwitchCaseStepComponent, SwitchCaseDefaultStepComponent,
         KustoQueryDialogComponent, DetectorNodeComponent, KustoNodeComponent, MarkdownNodeComponent, NodeActionsComponent, ConfigureVariablesComponent, CommonNodePropertiesComponent,
+<<<<<<< HEAD
         NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent, DevopsDeploymentsComponent, DevopsNotificationComponent]
+=======
+        NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent, WorkflowUserAccessComponent, ForeachNodeComponent]
+>>>>>>> bf954654485548a05151ae6d3a00eb2d6d765924
 })
 export class DashboardModule { }

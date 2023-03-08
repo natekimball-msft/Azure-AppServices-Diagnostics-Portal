@@ -26,7 +26,7 @@ export class ApplensOpenAIService {
   }
 
   public generateTextCompletion(queryModel: TextCompletionModel, caching: boolean = true): Observable<OpenAIAPIResponse> {
-    queryModel.prompt = `Please answer questions about ${this.productName}\n${queryModel.prompt}:`;
+    queryModel.prompt = `You are helping support eningeers to debug issues related to ${this.productName}. Do not be repetitive when providing steps in your answer. Please answer the below question\n${queryModel.prompt}:`;
     return this._backendApi.post(this.completionApiPath, {payload: queryModel}, new HttpHeaders({"x-ms-openai-cache": caching.toString()})).pipe(map((response: OpenAIAPIResponse) => {
       return response;
     }));

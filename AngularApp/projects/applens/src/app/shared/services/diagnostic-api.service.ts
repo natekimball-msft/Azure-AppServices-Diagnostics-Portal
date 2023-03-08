@@ -174,11 +174,11 @@ export class DiagnosticApiService {
     return this.invoke<DetectorResponse[]>(path, HttpMethod.POST, body).pipe(retry(1), map(response => response.map(gist => gist.metadata)));
   }
 
-  
-  public getGistId(version: string, resourceId: string, gistId: string, body?: any): Observable<any>{
-    
+
+  public getGistId(version: string, resourceId: string, gistId: string, body?: any): Observable<any> {
+
     let path = `${version}${resourceId}/gists/${gistId}`;
-    return this.invoke<any>(path, HttpMethod.POST, body, true); 
+    return this.invoke<any>(path, HttpMethod.POST, body, true);
   }
 
 
@@ -397,7 +397,7 @@ export class DiagnosticApiService {
     const url = `${this.diagnosticApi}${path}`;
     let bodyString: string = '';
     if (body) {
-        bodyString = JSON.stringify(body);
+      bodyString = JSON.stringify(body);
     }
 
     var requestHeaders = this._getHeaders();
@@ -521,6 +521,10 @@ export class DiagnosticApiService {
     return this._httpClient.post<UserSetting>(url, panelSetting, {
       headers: this._getHeaders()
     });
+  }
+
+  public getUserSettingChatGPT(userId: string, invalidateCache: boolean): Observable<UserSetting> {
+    return this.get<UserSetting>(`api/usersetting/${userId}/userChatGPTSetting`, invalidateCache);
   }
 
   updateUserChatGPTSetting(chatGPTSetting: any, userId: string): Observable<UserSetting> {
@@ -672,7 +676,7 @@ export class DiagnosticApiService {
     }));
   }
 
-  public isUserAllowedForWorkflow(userAlias:string):Observable<boolean>{
+  public isUserAllowedForWorkflow(userAlias: string): Observable<boolean> {
     const path = `api/workflows/isuserallowed/${userAlias}`;
     return this.get(path).pipe(map((res: boolean) => {
       return res;
@@ -682,5 +686,19 @@ export class DiagnosticApiService {
   public getDevopsCommitStatus(commitid: string, resourceUri:string):Observable<CommitStatus[]> {
     let path = `devops/getCommitStatus?commitid=${commitid}&resourceUri=${resourceUri}`;
     return this.invoke(path, HttpMethod.GET, null, false);
+  }
+  
+  public getWorkflowUsers(): Observable<string[]> {
+    const path = `api/workflowusers`;
+    return this.get(path, true).pipe(map((res: string[]) => {
+      return res;
+    }));
+  }
+
+  public addWorkflowUser(useralias: string): Observable<any> {
+    const path = `api/workflowusers`;
+    return this.post(path, useralias).pipe(map(res => {
+      return res;
+    }));
   }
 }

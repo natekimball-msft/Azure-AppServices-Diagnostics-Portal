@@ -78,13 +78,14 @@ namespace AppLensV3.Services
             return PathItemAsync(id, UserSettingConstant.PartitionKey, property, value);
         }
 
-        public async Task<UserSetting> PatchUserPanelSetting(string id, string theme, string viewMode, string expandAnalysisCheckCard)
+        public async Task<UserSetting> PatchUserPanelSetting(string id, string theme, string viewMode, string expandAnalysisCheckCard, string codeCompletion)
         {
             var patchOperations = new[]
             {
                 PatchOperation.Add("/theme",theme),
                 PatchOperation.Add("/viewMode",viewMode),
-                PatchOperation.Add("/expandAnalysisCheckCard",expandAnalysisCheckCard)
+                PatchOperation.Add("/expandAnalysisCheckCard",expandAnalysisCheckCard),
+                PatchOperation.Add("/codeCompletion", codeCompletion)
             };
             return await Container.PatchItemAsync<UserSetting>(id, new PartitionKey(UserSettingConstant.PartitionKey), patchOperations);
         }
@@ -101,7 +102,7 @@ namespace AppLensV3.Services
 
 
 
-        public async Task<UserSetting> GetUserSetting(string id, bool needCreate = true)
+        public async Task<UserSetting> GetUserSetting(string id, bool needCreate = true, bool chatGPT = false)
         {
             UserSetting userSetting = null;
             userSetting = await GetItemAsync(id, UserSettingConstant.PartitionKey);
@@ -118,6 +119,9 @@ namespace AppLensV3.Services
                     newUserSetting = new UserSetting(id);
                 }
                 userSetting = await CreateItemAsync(newUserSetting);
+            }
+            if (!chatGPT) {
+                userSetting.UserChatGPTSetting = "";
             }
             return userSetting;
         }

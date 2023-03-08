@@ -176,6 +176,28 @@
     display: flex;
     align-items: top;
   }
+
+  .chatgpt-feedback-icons {
+    float: right;
+  }
+
+  .chatgpt-feedback-icon {
+    font-size: 16px;
+    margin: 2px 5px;
+    color: transparent;
+    cursor: pointer;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: gray;
+  }
+
+  .chatgpt-feedback-icon-selected {
+    font-size: 16px;
+    margin: 2px 5px;
+    color: gray!important;
+    cursor: pointer;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: gray!important;
+  }
   
   .chatgpt-message-icon :hover {
     cursor: pointer;

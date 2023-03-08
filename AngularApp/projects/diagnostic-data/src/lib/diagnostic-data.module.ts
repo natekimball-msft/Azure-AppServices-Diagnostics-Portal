@@ -154,6 +154,8 @@ import { WorkflowNodeComponent } from './components/workflow-node/workflow-node.
 import { NgFlowchartModule } from 'projects/ng-flowchart/dist';
 import { ChatGPTContextService } from './services/chat-gpt-context-service';
 import { GenericOpenAIService } from '../public_api';
+import { QueryResponseService } from './services/query-response.service';
+import { WorkflowConditionNodeComponent } from './components/workflow-condition-node/workflow-condition-node.component';
 
 @NgModule({
     imports: [
@@ -255,7 +257,8 @@ import { GenericOpenAIService } from '../public_api';
         GanttChartTaskbarColorsComponent,
         WorkflowResultComponent,
         WorkflowViewComponent,
-        WorkflowNodeComponent
+        WorkflowNodeComponent,
+        WorkflowConditionNodeComponent
     ],
     exports: [
         FormsModule, TimeSeriesGraphComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent, ClientScriptViewComponent,
@@ -327,7 +330,8 @@ export class DiagnosticDataModule {
                 HighChartsHoverService,
                 GenericFeatureService,
                 GenericOpenAIService,
-                ChatGPTContextService
+                ChatGPTContextService,
+                QueryResponseService
             ]
         };
     }

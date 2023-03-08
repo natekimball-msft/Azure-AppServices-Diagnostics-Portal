@@ -1,19 +1,16 @@
 import { Component, Inject, Input, OnInit, Output, EventEmitter, OnDestroy } from '@angular/core';
-import { map, catchError, delay, retryWhen, take } from 'rxjs/operators';
 import { ActivatedRoute, Router, Params } from '@angular/router';
-import { of, Observable, forkJoin } from 'rxjs';
-import { ISubscription } from "rxjs/Subscription";
-import { ChatMessage, MessageStatus, MessageSource, MessageRenderingType} from "diagnostic-data";
-import { TextModels, OpenAIAPIResponse, CreateTextCompletionModel } from 'diagnostic-data';
+import { ChatMessage, MessageStatus, MessageSource, MessageRenderingType, UserFeedbackType, 
+        TextModels, OpenAIAPIResponse, CreateTextCompletionModel,
+        ChatGPTContextService} from "diagnostic-data";
 import { v4 as uuid } from 'uuid';
 import { ApplensOpenAIService } from '../../../shared/services/applens-openai.service';
 import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
 import { AdalService } from 'adal-angular4';
-import {ChatGPTContextService} from "diagnostic-data";
 import { UserSettingService } from '../services/user-setting.service';
 import { ResourceProviderMessages, UserChatGPTSetting } from '../../../shared/models/user-setting';
 import { ResourceService } from '../../../shared/services/resource.service';
-import {openAIChatQueries} from '../../../shared/models/openai-chat-samples';
+import { openAIChatQueries } from '../../../shared/models/openai-chat-samples';
 import { TelemetryService, TelemetryEventNames } from 'diagnostic-data';
 
 @Component({
@@ -77,7 +74,7 @@ export class OpenAIChatComponent implements OnInit {
       this._chatContextService.userNameInitial = `${givenName.charAt(0).toLocaleUpperCase()}${familyName.charAt(0).toLocaleUpperCase()}`;
     }
 
-    this._userSettingService.getUserSetting(false).subscribe((settings) => {
+    this._userSettingService.getUserSetting(true, true).subscribe((settings) => {
       this.userChatGPTSetting = settings.userChatGPTSetting && settings.userChatGPTSetting.length>0? JSON.parse(settings.userChatGPTSetting): {
         allMessages: [],
         messageDailyCount: 0
@@ -87,10 +84,25 @@ export class OpenAIChatComponent implements OnInit {
                                   messages.forEach((m: ChatMessage) => {m.messageDisplayDate = this.displayMessageDate(new Date(m.timestamp));});
         this._chatContextService.messages = this.userChatGPTSetting.allMessages.find(rm => rm.resourceProvider==this.currentResourceProvider)?.messages??[];
       }
+      this.scrollToBottom(true);
       this._telemetryService.logEvent(TelemetryEventNames.ChatGPTUserSettingLoaded, { userId: this.userAlias, ts: new Date().getTime().toString()});
       
       this.checkMessageCount();
     });
+  }
+
+  logUserFeedback(messageId: string, feedbackType: UserFeedbackType){
+    var msgObj = this._chatContextService.messages.find(m => m.id == messageId);
+    if (msgObj) {
+      msgObj.userFeedback = feedbackType;
+    };
+    if (feedbackType == 'like') {
+      this._telemetryService.logEvent(TelemetryEventNames.ChatGPTUserFeedbackLike, { userId: this.userAlias, messageId: messageId, messageText: msgObj.message, ts: new Date().getTime().toString()});
+    }
+    else {
+      this._telemetryService.logEvent(TelemetryEventNames.ChatGPTUserFeedbackDislike, { userId: this.userAlias, messageId: messageId, messageText: msgObj.message, ts: new Date().getTime().toString()});
+    }
+    this.saveUserSetting();
   }
 
   checkSameDay(dayts){
@@ -145,11 +157,17 @@ export class OpenAIChatComponent implements OnInit {
     });
   }
 
-  scrollToBottom() {
-    var allChatMessages = document.getElementsByClassName("chatgpt-message-box");
-    if (allChatMessages.length > 0) {
-      allChatMessages[allChatMessages.length - 1].scrollIntoView();
-    }
+  scrollToBottom(initial = false) {
+    this.scrollToBottomOfChatContainer(initial? 2000: 200);
+  }
+
+  scrollToBottomOfChatContainer(timeout=200){
+    setTimeout(() => {
+        var element = document.getElementById("chatgpt-all-messages-container-id");
+        if (element) {
+          element.scrollTop = element.scrollHeight;
+        }
+      }, timeout);
   }
 
   resetChatGPTRequestError(){
@@ -245,6 +263,7 @@ export class OpenAIChatComponent implements OnInit {
   }
 
   triggerChat(){
+    this.chatgptSearchText = this.chatgptSearchText.trimEnd();
     if (this.checkMessageCount()) {
       this._chatContextService.messages.push({
         id: uuid(),
@@ -253,6 +272,7 @@ export class OpenAIChatComponent implements OnInit {
         timestamp: new Date().getTime(),
         messageDisplayDate: this.displayMessageDate(new Date()),
         status: MessageStatus.Finished,
+        userFeedback: UserFeedbackType.None,
         renderingType: MessageRenderingType.Text
       });
       this._chatContextService.chatInputBoxDisabled = true;
@@ -263,6 +283,7 @@ export class OpenAIChatComponent implements OnInit {
         timestamp: new Date().getTime(),
         messageDisplayDate: this.displayMessageDate(new Date()),
         status: MessageStatus.Created,
+        userFeedback: UserFeedbackType.None,
         renderingType: MessageRenderingType.Text
       };
       this._chatContextService.messages.push(chatMessage);

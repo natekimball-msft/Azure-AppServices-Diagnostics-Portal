@@ -16,6 +16,7 @@ export interface UserPanelSetting {
     theme: string;
     viewMode: string;
     expandAnalysisCheckCard: boolean;
+    codeCompletion: string;
 }
 
 export interface RecentResource {

@@ -1,5 +1,5 @@
 import { CompilationProperties } from "./compilation-properties";
-import { DataTableResponseColumn } from "./detector";
+import { DataTableResponseColumn, PropertyBag } from "./detector";
 
 export enum nodeStatus {
   Critical = 'Critical',
@@ -69,6 +69,7 @@ export class workflowNodeData {
   ifconditionExpression: string;
   switchOnValue: string;
   switchCaseValue: string;
+  foreachVariable: string;
 }
 
 export class workflowPublishBody {
@@ -103,6 +104,7 @@ export interface workflowNodeResult {
   workflowPublishBody: workflowPublishBody;
   succeeded: boolean;
   promptType: string;
+  metadataPropertyBag: PropertyBag[]
 }
 
 export interface workflowExecutionTrace {

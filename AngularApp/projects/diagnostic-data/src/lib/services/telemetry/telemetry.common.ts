@@ -116,6 +116,8 @@ export const TelemetryEventNames = {
     ChatGPTLoaded: 'ChatGPTLoaded',
     ChatGPTUserSettingLoaded: 'ChatGPTUserSettingLoaded',
     ChatGPTSampleClicked: 'ChatGPTSampleClicked',
+    ChatGPTUserFeedbackLike: 'ChatGPTUserFeedbackLike',
+    ChatGPTUserFeedbackDislike: 'ChatGPTUserFeedbackDislike',
     ChatGPTCheckMessageCount: 'ChatGPTCheckMessageCount',
     ChatGPTRequestError: 'ChatGPTRequestError',
     ChatGPTUserQuotaExceeded: 'ChatGPTUserQuotaExceeded',
