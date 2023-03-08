@@ -1,10 +1,10 @@
-import {map,  mergeMap, tap } from 'rxjs/operators';
+import {map,  mergeMap, tap, catchError, flatMap } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Observable, of, BehaviorSubject, Subject, ReplaySubject  } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ResourceService } from './resource.service';
 import { BackendCtrlService } from '../../shared/services/backend-ctrl.service';
-import {DocumentSearchConfiguration, globalExcludedSites, Query} from "diagnostic-data";
+import {DocumentSearchConfiguration, globalExcludedSites, Query, DiagnosticService, DetectorControlService, DetectorResponse} from "diagnostic-data";
 
 @Injectable()
 export class ContentService {
@@ -16,9 +16,10 @@ export class ContentService {
   private _config : DocumentSearchConfiguration;
   private featureEnabledForSupportTopic: boolean = false;
   httpOptions = {}
+  private bingDetectorEnabledPesIds = ["14748", "16072", "16170", "15791"]
 
   
-  constructor(private _http: HttpClient, private _resourceService: ResourceService, private _backendApi: BackendCtrlService) { 
+  constructor(private _http: HttpClient, private _resourceService: ResourceService, private _backendApi: BackendCtrlService, private _diagnosticService: DiagnosticService, private _detectorControlService: DetectorControlService) { 
 
     this._config = new DocumentSearchConfiguration();
     this.fetchAppSettingsNeededForDeepSearch();
@@ -34,10 +35,48 @@ export class ContentService {
     return of(searchResults);
   }
 
-  searchWeb(questionString: string, resultsCount: string = '3', useStack: boolean = true, preferredSites: string[] = [], excludedSites: string[] = globalExcludedSites): Observable<any> {
+  processDetectorResponse(response: DetectorResponse) {
+    var status = response.dataset[0]?.table?.rows[0][0];
+    var results = response.dataset[0]?.table?.rows[0][1];
+    if (status && status == "200") {
+      return JSON.parse(results);
+    }
+    else {
+      return null;
+    }
+  }
 
+  searchWebDetector(questionString: string, resultsCount: string = '3', useStack: boolean = true, preferredSites: string[] = [], excludedSites: string[] = globalExcludedSites): Observable<any> {
     const query = this.constructQueryParameters(questionString, useStack,preferredSites, excludedSites);
-    return this._backendApi.get<string>(`api/bing/search?q=${query}&count=${resultsCount}`);
+    let queryString = `q=${query}&count=${resultsCount}`;
+    let queryParams = `&text=${encodeURIComponent(queryString)}`;
+    return this._diagnosticService.getDetector("BingDetectorId-1ce0e6a6-210d-43c8-9d90-0ab0dd171828", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString, true, false, queryParams, null).pipe(
+      map((response: DetectorResponse) => {
+        return this.processDetectorResponse(response);
+      }),
+      catchError((err) => {throw err;})
+    );
+  }
+
+  searchWeb(questionString: string, resultsCount: string = '3', useStack: boolean = true, preferredSites: string[] = [], excludedSites: string[] = globalExcludedSites): Observable<any> {
+    return this._resourceService.getPesId().pipe(flatMap(pesId => {
+      if (this.bingDetectorEnabledPesIds.includes(pesId)) {
+        return this.searchWebDetector(questionString, resultsCount, useStack, preferredSites, excludedSites).pipe(
+          map((response: any) => response),
+          catchError((err) => {
+            if (err.status && err.status == 404) {
+              const query = this.constructQueryParameters(questionString, useStack,preferredSites, excludedSites);
+              return this._backendApi.get<string>(`api/bing/search?q=${query}&count=${resultsCount}`);
+            }
+            throw err;
+          })
+        );
+      }
+      else {
+        const query = this.constructQueryParameters(questionString, useStack,preferredSites, excludedSites);
+        return this._backendApi.get<string>(`api/bing/search?q=${query}&count=${resultsCount}`);
+      }
+    }));
   }
 
   public constructQueryParameters(questionString: string, useStack: boolean, preferredSites: string[], excludedSites: string[],) : string {
