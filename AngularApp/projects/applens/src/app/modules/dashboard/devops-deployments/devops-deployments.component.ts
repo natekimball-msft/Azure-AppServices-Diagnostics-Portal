@@ -19,7 +19,6 @@ export class DevopsDeploymentsComponent implements OnInit {
   currentDevopsConfig: DevopsConfig;
   response:any[] = [];
   pullRequests: [];
-  bannerMessage:string = '';
   userId: string = "";
   resourceId: string = "";
   table: DataTableResponseObject = null;
@@ -35,8 +34,6 @@ export class DevopsDeploymentsComponent implements OnInit {
     }
   ];
 
-  notificationStatusType: MessageBarType = MessageBarType.warning;
-  @Input() showDevopsStatusMessage: boolean = false;
   constructor(private _diagnosticsService:ApplensDiagnosticService, private _router:Router, private _adalService: AdalService) { }
 
   ngOnInit(): void {
@@ -67,23 +64,10 @@ export class DevopsDeploymentsComponent implements OnInit {
         this.response.concat([]);
         this.loadingTable = false;
       }, () => {
-        this.generateBannerMessage(this.response);
+        this.table = this.generatePendingChangesTables(this.response);
         this.loadingTable = false;
       });  
-    
-
       });            
-  }
-
-
-
-  private generateBannerMessage(devopsStatuses: any[]) {
-    this.table = this.generatePendingChangesTables(devopsStatuses);
-    if (devopsStatuses.length > 0) {
-      this.bannerMessage = 'One or more deployments have not completed. Detectors changes will not be reflected until they are completed.';
-    } else {
-      this.bannerMessage = '';
-    }
   }
 
   private generatePendingChangesTables(resultSet:any[]) {
@@ -161,8 +145,5 @@ export class DevopsDeploymentsComponent implements OnInit {
     return rows;
   }
 
-  goToPendingDeployments() {
-      this._router.navigateByUrl(`${this._diagnosticsService.resourceId}/deployments`);
-  }
   
 }
