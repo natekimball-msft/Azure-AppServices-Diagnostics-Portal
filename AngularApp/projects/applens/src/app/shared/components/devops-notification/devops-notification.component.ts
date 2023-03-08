@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { Router } from '@angular/router';
-import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
+import { ApplensDiagnosticService } from '../../../modules/dashboard/services/applens-diagnostic.service';
 import { IPanelProps, PanelType } from 'office-ui-fabric-react';
 import { forkJoin } from 'rxjs';
 import { AdalService } from 'adal-angular4';
@@ -91,6 +91,5 @@ export class DevopsNotificationComponent implements OnInit {
       this.closeNotification();
     }, 10000);
   }
-
 
 }
