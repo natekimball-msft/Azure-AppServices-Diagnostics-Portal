@@ -47,7 +47,7 @@ export class ContentService {
   }
 
   searchWebDetector(questionString: string, resultsCount: string = '3', useStack: boolean = true, preferredSites: string[] = [], excludedSites: string[] = globalExcludedSites): Observable<any> {
-    const query = this.constructQueryParameters(questionString, useStack,preferredSites, excludedSites);
+    const query = this.constructQueryParametersDetectors(questionString, useStack,preferredSites, excludedSites);
     let queryString = `q=${query}&count=${resultsCount}`;
     let queryParams = `&text=${encodeURIComponent(queryString)}`;
     return this._diagnosticService.getDetector("BingDetectorId-1ce0e6a6-210d-43c8-9d90-0ab0dd171828", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString, true, false, queryParams, null).pipe(
@@ -77,6 +77,36 @@ export class ContentService {
         return this._backendApi.get<string>(`api/bing/search?q=${query}&count=${resultsCount}`);
       }
     }));
+  }
+
+  public constructQueryParametersDetectors(questionString: string, useStack: boolean, preferredSites: string[], excludedSites: string[],) : string {
+    const searchSuffix = this._resourceService.searchSuffix;
+    //Decide the stack type to use with query
+    var stackTypeSuffix = this._resourceService["appStack"] ? ` ${this._resourceService["appStack"]}` : "";
+    stackTypeSuffix = stackTypeSuffix.toLowerCase();
+    if (stackTypeSuffix && stackTypeSuffix.length > 0 && stackTypeSuffix == "static only") {
+      stackTypeSuffix = "static content";
+    }
+    if (!this.allowedStacks.some(stack => stackTypeSuffix.includes(stack))) {
+      stackTypeSuffix = "";
+    }
+
+    var preferredSitesSuffix = preferredSites.map(site => `site:${site}`).join(" OR ");
+    if (preferredSitesSuffix && preferredSitesSuffix.length > 0) {
+      preferredSitesSuffix = `(${preferredSitesSuffix})`;
+    }
+
+    var excludedSitesSuffix = excludedSites.map(site => `NOT (site:${site})`).join(" AND ");
+    if (excludedSitesSuffix && excludedSitesSuffix.length > 0) {
+      excludedSitesSuffix = `(${excludedSitesSuffix})`;
+    }
+
+    const query = JSON.stringify({
+      queryText: `${questionString}${useStack ? stackTypeSuffix : ''}`,
+      productName: searchSuffix,
+      siteFilters: `${preferredSitesSuffix} AND ${excludedSitesSuffix}`
+    });
+    return query;
   }
 
   public constructQueryParameters(questionString: string, useStack: boolean, preferredSites: string[], excludedSites: string[],) : string {
