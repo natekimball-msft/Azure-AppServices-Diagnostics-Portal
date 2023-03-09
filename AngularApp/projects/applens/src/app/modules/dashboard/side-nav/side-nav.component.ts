@@ -201,7 +201,6 @@ export class SideNavComponent implements OnInit {
     this._router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(event => {
       this.getCurrentRoutePath();
     });
-    this.initializeDetectors();
     this.initializeFavoriteDetectors();
 
     this._diagnosticApiService.isUserAllowedForWorkflow(this.userId).subscribe(resp => {
