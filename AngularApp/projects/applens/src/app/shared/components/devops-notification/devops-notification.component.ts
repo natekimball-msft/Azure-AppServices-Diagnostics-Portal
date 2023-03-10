@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-
 import { Router } from '@angular/router';
-import { ApplensDiagnosticService } from '../../../modules/dashboard/services/applens-diagnostic.service';
 import { IPanelProps, PanelType } from 'office-ui-fabric-react';
 import { forkJoin } from 'rxjs';
 import { AdalService } from 'adal-angular4';
 import { ResourceDescriptor } from 'diagnostic-data';
 import { DevopsConfig } from '../../../shared/models/devopsConfig';
+import { DiagnosticApiService } from '../../services/diagnostic-api.service';
+import { ResourceService } from '../../services/resource.service';
 
 @Component({
   selector: 'devops-notification',
@@ -33,10 +33,10 @@ export class DevopsNotificationComponent implements OnInit {
     }
   };
   bannerTimer:any = null;
-  constructor(private _router:Router, private _adalService: AdalService, private _diagnosticsService:ApplensDiagnosticService) { }
+  constructor(private _router:Router, private _adalService: AdalService, private _diagnosticsService:DiagnosticApiService, private resourceService:ResourceService) { }
 
   ngOnInit(): void {
-    this.resourceId = this._diagnosticsService.resourceId;
+    this.resourceId = this.resourceService.getCurrentResourceId();
     let alias = Object.keys(this._adalService.userInfo.profile).length > 0 ? this._adalService.userInfo.profile.upn : '';
     this.userId = alias.replace('@microsoft.com', '');
     // fetch all commits on the path.
@@ -79,7 +79,7 @@ export class DevopsNotificationComponent implements OnInit {
 
 
   goToPendingDeployments() {
-      this._router.navigateByUrl(`${this._diagnosticsService.resourceId}/deployments`);
+      this._router.navigateByUrl(`${this.resourceId}/deployments`);
   }
 
   closeNotification() {
