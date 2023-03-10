@@ -225,6 +225,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   detectorReferencesDialogHidden : boolean = true; 
   gistCommitVersion : string = ""; 
   charWarningMessage : string = '';
+  detectorLoaded: boolean = false;
 
   runButtonStyle: any = {
     root: { cursor: "default" }
@@ -473,7 +474,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       this.displayBranch = this.Branch;
       if (this.mode === DevelopMode.Create) this.diagnosticApiService.getDetectorCode(`${this.Branch.split('/')[3].toLowerCase()}/${this.Branch.split('/')[3].toLowerCase()}.csx`, this.Branch, this.resourceId).subscribe(x => {
         this.code = x;
-        this.lastSavedVersion = this.code
+        this.lastSavedVersion = this.code;
+        this.detectorLoaded = true;
       });
       else this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId).subscribe(x => {
         this.code = x;
@@ -725,10 +727,10 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
           var branchRegEx = this.gistMode ? new RegExp(`^dev\/.*\/gist\/.*$`, "i") : new RegExp(`^dev\/.*\/detector\/.*$`, "i");
           let idList = [];
           listDetectors.forEach(det => {
-            idList.push(det.id);
+            idList.push(det.id.toLowerCase());
           });
           branches = branches.filter( bn => {
-            return !idList.includes(bn["branchName"].split("/")[3]);
+            return !idList.includes(bn["branchName"].split("/").length >= 4 ? bn["branchName"].split("/")[3].toLowerCase() : bn["branchName"]);
           })
           branches.forEach(option => {
             if (option["isMainBranch"].toLowerCase() != "true")
@@ -1961,7 +1963,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     }
     else {
       this._diagnosticApi.idExists(this.saveTempId).subscribe(idExists => {
-        if (!idExists) {
+        if (!idExists || this.detectorLoaded) {
           DetectorObservable.subscribe(_ => {
             this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${idForSave.toLowerCase()}/${idForSave.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${idForSave.toLowerCase()}/${idForSave.toLowerCase()}.csx&version=GB${this.Branch}`;
             this.saveSuccess = true;
