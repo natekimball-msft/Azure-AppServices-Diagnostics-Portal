@@ -19,7 +19,6 @@ export class DevopsDeploymentsComponent implements OnInit {
   currentDevopsConfig: DevopsConfig;
   response:any[] = [];
   pullRequests: [];
-  userId: string = "";
   resourceId: string = "";
   table: DataTableResponseObject = null;
   loadingTable: boolean = false;
@@ -41,7 +40,6 @@ export class DevopsDeploymentsComponent implements OnInit {
     this.loadingTable = true;
     this.resourceId = this._diagnosticsService.resourceId;
     let alias = Object.keys(this._adalService.userInfo.profile).length > 0 ? this._adalService.userInfo.profile.upn : '';
-    this.userId = alias.replace('@microsoft.com', '');
     // fetch all commits on the path.
     let provider = ResourceDescriptor.parseResourceUri(this.resourceId).provider;
     let type = ResourceDescriptor.parseResourceUri(this.resourceId).type;
@@ -107,7 +105,7 @@ export class DevopsDeploymentsComponent implements OnInit {
       let rowElement = `<markdown><a href="${link}" target="_blank">${title}</a></markdown>`;
        // Note: this logic will work for branches created with following pattern : dev/<user_alias>/<entitytype>/<entityid>, eg: dev/microsoftalias/detector/mydetector or dev/microsoftalias/gist/mygist
        let branchUserName = sourceBranchTrim.startsWith('dev/') ? sourceBranchTrim.split("/")[1] : sourceBranchTrim;
-      if (branchUserName.toLocaleLowerCase() == this.userId.toLocaleLowerCase() && title != undefined && title != '' && link != undefined && link != '') {  
+      if (title != undefined && title != '' && link != undefined && link != '') {  
         let rowElement = `<markdown><a href="${link}" target="_blank">${title}</a></markdown>`;
         sourceBranch = sourceBranch.replace('refs/heads/','');
         let entityid = sourceBranchTrim.split("/")[3];
