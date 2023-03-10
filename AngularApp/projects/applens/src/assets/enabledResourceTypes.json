@@ -736,6 +736,18 @@
             "staticSelfHelpContent": "",
             "searchSuffix": "WINDOWS NOTIFICATION SERVICE",
             "displayName": "Windows Notification Service"
+        },
+        {
+            "service": "ResourceService",
+            "resourceType": "Microsoft.DevCenter/projects",
+            "templateFileName": "DevCenter",
+            "imgSrc": "assets/img/DevCenter-Logo.svg",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "",
+            "pesId": "17466",
+            "staticSelfHelpContent": "",
+            "searchSuffix": "MICROSOFT DEV BOX",
+            "displayName": "Microsoft Dev Box"
         }
     ]
 }
