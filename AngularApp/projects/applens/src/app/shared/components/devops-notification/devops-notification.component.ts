@@ -7,6 +7,7 @@ import { ResourceDescriptor } from 'diagnostic-data';
 import { DevopsConfig } from '../../../shared/models/devopsConfig';
 import { DiagnosticApiService } from '../../services/diagnostic-api.service';
 import { ResourceService } from '../../services/resource.service';
+import { CommitStatus, DevOpsState } from '../../models/devopsCommitStatus';
 
 @Component({
   selector: 'devops-notification',
@@ -65,9 +66,9 @@ export class DevopsNotificationComponent implements OnInit {
   generateBannerMessage(result:any[]) {
     let finalCount = 0;
     if (result.length > 0 ) {   
-       finalCount += result[0].length;
+       finalCount += this.calculateActivePullRequests(result[0]);
       for(var start = 1;start<result.length; start++) {      
-        finalCount += result[start].length;
+        finalCount +=  this.calculatePendingOrFailedDeployments(result[start]);
       }
     }
     if( finalCount > 0) {
@@ -77,6 +78,15 @@ export class DevopsNotificationComponent implements OnInit {
     }
   }
 
+  calculateActivePullRequests(pullRequests: any[]):number {
+    let filtered = pullRequests.filter((pr) => pr['sourceRefName'].indexOf('dev') > -1);
+    return filtered.length;
+  }
+
+  calculatePendingOrFailedDeployments(devopsStatuses: CommitStatus[]):number {
+    let filtered = devopsStatuses.filter((deployment) => deployment.state != DevOpsState.Succeeded);
+    return filtered.length;
+  }
 
   goToPendingDeployments() {
       this._router.navigateByUrl(`${this.resourceId}/deployments`);

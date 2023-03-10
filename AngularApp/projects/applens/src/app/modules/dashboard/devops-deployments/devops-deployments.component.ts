@@ -105,7 +105,7 @@ export class DevopsDeploymentsComponent implements OnInit {
       let rowElement = `<markdown><a href="${link}" target="_blank">${title}</a></markdown>`;
        // Note: this logic will work for branches created with following pattern : dev/<user_alias>/<entitytype>/<entityid>, eg: dev/microsoftalias/detector/mydetector or dev/microsoftalias/gist/mygist
        let branchUserName = sourceBranchTrim.startsWith('dev/') ? sourceBranchTrim.split("/")[1] : sourceBranchTrim;
-      if (title != undefined && title != '' && link != undefined && link != '') {  
+      if (sourceBranchTrim.indexOf('dev') > -1 && title != undefined && title != '' && link != undefined && link != '') {  
         let rowElement = `<markdown><a href="${link}" target="_blank">${title}</a></markdown>`;
         sourceBranch = sourceBranch.replace('refs/heads/','');
         let entityid = sourceBranchTrim.split("/")[3];
