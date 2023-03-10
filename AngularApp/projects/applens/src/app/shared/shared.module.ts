@@ -33,7 +33,7 @@ import { FabSearchBoxModule } from '@angular-react/fabric/lib/components/search-
 import { FabCalloutModule } from '@angular-react/fabric/lib/components/callout';
 import { FabToggleModule } from '@angular-react/fabric/lib/components/toggle';
 import { FabChoiceGroupModule } from '@angular-react/fabric/lib/components/choice-group';
-import { DevopsNotificationComponent } from './components/devops-notification/devops-notification.component';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -48,8 +48,8 @@ import { DevopsNotificationComponent } from './components/devops-notification/de
     FabToggleModule,
     FabChoiceGroupModule
   ],
-  declarations: [TreeViewComponent, LoginComponent, ApplensBannerComponent, L1SideNavComponent, ApplensHeaderComponent, DevopsNotificationComponent],
-  exports: [TreeViewComponent, ApplensBannerComponent, L1SideNavComponent, ApplensHeaderComponent, DevopsNotificationComponent]
+  declarations: [TreeViewComponent, LoginComponent, ApplensBannerComponent, L1SideNavComponent, ApplensHeaderComponent],
+  exports: [TreeViewComponent, ApplensBannerComponent, L1SideNavComponent, ApplensHeaderComponent]
 })
 export class SharedModule {
   static forRoot(): ModuleWithProviders<SharedModule> {
