@@ -748,6 +748,18 @@
             "staticSelfHelpContent": "",
             "searchSuffix": "MICROSOFT DEV BOX",
             "displayName": "Microsoft Dev Box"
+        },
+        {
+            "service": "ResourceService",
+            "resourceType": "Microsoft.Graph/auth",
+            "templateFileName": "GraphAuth",
+            "imgSrc": "assets/img/Graph-Auth-Logo.svg",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "",
+            "pesId": "16952",
+            "staticSelfHelpContent": "",
+            "searchSuffix": "MICROSOFT GRAPH AUTHENTICATION AND AUTHORIZATION (AZURE AD)",
+            "displayName": "Microsoft Graph Authentication and Authorization (Azure AD)"
         }
     ]
 }
