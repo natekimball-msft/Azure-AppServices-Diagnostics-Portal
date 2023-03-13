@@ -752,7 +752,7 @@
         {
             "service": "ResourceService",
             "resourceType": "Microsoft.Graph/auth",
-            "templateFileName": "Graph-Auth",
+            "templateFileName": "GraphAuth",
             "imgSrc": "assets/img/DevCenter-Logo.svg",
             "versionPrefix": "",
             "azureCommImpactedServicesList": "",
