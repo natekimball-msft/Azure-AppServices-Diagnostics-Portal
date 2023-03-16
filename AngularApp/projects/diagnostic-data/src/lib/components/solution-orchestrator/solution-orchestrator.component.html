@@ -17,7 +17,7 @@
             </div>
             <input class="vanilla-search-box-input" id="fabSearchBox-solutionOrchestrator" type="search" [placeholder]="searchPlaceHolder" [ngModel]="searchTermDisplayed"
               [attr.aria-label]="inputAriaLabel" (ngModelChange)="updateSearchTerm($event)" (focus)="onSearchBoxFocus()"
-              (keydown.escape)="clearSearchTerm($event)" (keyup.enter)="onSearchEnter()"/>
+              (keydown.escape)="clearSearchTerm()" (keyup.enter)="onSearchEnter()"/>
           </div>
         </div>
       </div>
