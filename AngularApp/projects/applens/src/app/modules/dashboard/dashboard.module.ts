@@ -125,8 +125,8 @@ import { MarkdownQueryDialogComponent } from './workflow/markdown-query-dialog/m
 import { WorkflowComponent } from './workflow/workflow/workflow.component';
 import { WorkflowRunDialogComponent } from './workflow/workflow-run-dialog/workflow-run-dialog.component';
 import { WorkflowRootNodeComponent } from './workflow/workflow-root-node/workflow-root-node.component';
-import { ApplensOpenAIService } from '../../shared/services/applens-openai.service';
-import { GenericOpenAIService } from '../../../../../diagnostic-data/src/public_api';
+import { ApplensOpenAIChatService } from '../../shared/services/applens-openai-chat.service';
+import { GenericOpenAIChatService } from '../../../../../diagnostic-data/src/public_api';
 import { OpenAIChatComponent } from './openai-chat/openai-chat.component';
 import {ChatGPTContextService} from 'diagnostic-data';
 import { DevopsDeploymentsComponent } from './devops-deployments/devops-deployments.component';
@@ -562,7 +562,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         ApplensDocumentationService,
         InitResolver,
         ApplensGlobals,
-        ApplensOpenAIService,
+        ApplensOpenAIChatService,
         ChatGPTContextService,
         BreadcrumbService,
         ClientScriptService,
@@ -584,7 +584,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         { provide: GenericBreadcrumbService, useExisting: BreadcrumbService },
         { provide: GenericUserSettingService, useExisting: UserSettingService },
         { provide: GenericClientScriptService, useExisting: ClientScriptService},
-        { provide: GenericOpenAIService, useExisting: ApplensOpenAIService}
+        { provide: GenericOpenAIChatService, useExisting: ApplensOpenAIChatService}
     ],
     declarations: [DashboardComponent, SideNavComponent, ResourceMenuItemComponent, ResourceHomeComponent, OnboardingFlowComponent, SearchTermAdditionComponent,
         SearchMenuPipe, TabDataComponent, TabDevelopComponent, TabCommonComponent, TabDataSourcesComponent, TabMonitoringComponent,

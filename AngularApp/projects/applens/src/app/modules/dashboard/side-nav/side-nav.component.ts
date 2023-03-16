@@ -17,7 +17,7 @@ import { element } from 'protractor';
 import { ApplensDocumentationService } from '../services/applens-documentation.service';
 import { DocumentationRepoSettings } from '../../../shared/models/documentationRepoSettings';
 import { DocumentationFilesList } from './documentationFilesList';
-import { ApplensOpenAIService } from '../../../shared/services/applens-openai.service';
+import { ApplensOpenAIChatService } from '../../../shared/services/applens-openai-chat.service';
 
 @Component({
   selector: 'side-nav',
@@ -68,7 +68,7 @@ export class SideNavComponent implements OnInit {
     private _diagnosticApiService: ApplensDiagnosticService, public resourceService: ResourceService, private _telemetryService: TelemetryService,
     private _userSettingService: UserSettingService, private breadcrumbService: BreadcrumbService, private _diagnosticApi: DiagnosticApiService,
     private _documentationService: ApplensDocumentationService,
-    private _openAIService: ApplensOpenAIService)
+    private _openAIService: ApplensOpenAIChatService)
   {
     this.contentHeight = (window.innerHeight - 139) + 'px';
     if (environment.adal.enabled) {

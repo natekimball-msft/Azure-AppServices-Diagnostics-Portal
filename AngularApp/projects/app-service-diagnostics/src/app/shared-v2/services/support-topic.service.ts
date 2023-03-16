@@ -48,7 +48,12 @@ export class SupportTopicService {
     ];
 
     private solutionOrchestratorConfig = {
-        "14748": ["32629421"]
+        //Enabling solution orchestrator for Antares demo subscription
+        //For windows web apps in a particular support topic called Application Code Deployment/Azure Devops - Deploying Application Code
+        subscriptions: ["ef90e930-9d7f-4a60-8a99-748e0eea69de", ""],
+        products: {
+            "14748": ["32629421"]
+        }
     };
 
     constructor(protected _http: HttpClient, protected _authService: AuthService, protected _diagnosticService: DiagnosticService, protected _resourceService: ResourceService, protected _telemetryService: TelemetryService, protected _armService: ArmService) {
@@ -240,9 +245,9 @@ export class SupportTopicService {
                             }
                         }
                         else {
-                            if ((this._resourceService.subscriptionId == "c258f9c0-3d64-4761-8697-cab631f28422")
-                                && this.solutionOrchestratorConfig && this.solutionOrchestratorConfig[this.pesId]
-                                && this.solutionOrchestratorConfig[this.pesId].length > 0 && this.solutionOrchestratorConfig[this.pesId].findIndex(s => s == this.supportTopicId) >= 0) {
+                            if (this.solutionOrchestratorConfig && (this.solutionOrchestratorConfig.subscriptions.includes(this._resourceService.subscriptionId))
+                                && this.solutionOrchestratorConfig.products[this.pesId]
+                                && this.solutionOrchestratorConfig.products[this.pesId].length > 0 && this.solutionOrchestratorConfig.products[this.pesId].findIndex(s => s == this.supportTopicId) >= 0) {
                                 detectorPath = `solutionorchestrator`;
                                 return observableOf({ path: detectorPath, queryParams: queryParamsDic });
                             }
@@ -252,9 +257,9 @@ export class SupportTopicService {
                         }
                     }
                     else {
-                        if ((this._resourceService.subscriptionId == "c258f9c0-3d64-4761-8697-cab631f28422")
-                            && this.solutionOrchestratorConfig && this.solutionOrchestratorConfig[this.pesId]
-                            && this.solutionOrchestratorConfig[this.pesId].length > 0 && this.solutionOrchestratorConfig[this.pesId].findIndex(s => s == this.supportTopicId) >= 0) {
+                        if (this.solutionOrchestratorConfig && (this.solutionOrchestratorConfig.subscriptions.includes(this._resourceService.subscriptionId))
+                            && this.solutionOrchestratorConfig.products[this.pesId]
+                            && this.solutionOrchestratorConfig.products[this.pesId].length > 0 && this.solutionOrchestratorConfig.products[this.pesId].findIndex(s => s == this.supportTopicId) >= 0) {
                             detectorPath = `solutionorchestrator`;
                             return observableOf({ path: detectorPath, queryParams: queryParamsDic });
                         }

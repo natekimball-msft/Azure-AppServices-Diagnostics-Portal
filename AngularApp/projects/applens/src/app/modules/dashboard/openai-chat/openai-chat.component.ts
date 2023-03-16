@@ -4,7 +4,7 @@ import { ChatMessage, MessageStatus, MessageSource, MessageRenderingType, UserFe
         TextModels, OpenAIAPIResponse, CreateTextCompletionModel,
         ChatGPTContextService} from "diagnostic-data";
 import { v4 as uuid } from 'uuid';
-import { ApplensOpenAIService } from '../../../shared/services/applens-openai.service';
+import { ApplensOpenAIChatService } from '../../../shared/services/applens-openai-chat.service';
 import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
 import { AdalService } from 'adal-angular4';
 import { UserSettingService } from '../services/user-setting.service';
@@ -22,7 +22,7 @@ import { TelemetryService, TelemetryEventNames } from 'diagnostic-data';
 export class OpenAIChatComponent implements OnInit {
 
   constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
-    private _openAIService: ApplensOpenAIService,
+    private _openAIService: ApplensOpenAIChatService,
     private _diagnosticApiService: DiagnosticApiService,
     private _adalService: AdalService,
     public _chatContextService: ChatGPTContextService,

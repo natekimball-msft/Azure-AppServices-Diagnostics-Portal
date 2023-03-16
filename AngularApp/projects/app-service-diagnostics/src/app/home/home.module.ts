@@ -63,8 +63,8 @@ import { FabSpinnerModule } from '@angular-react/fabric/lib/components/spinner';
 import { DownloadReportComponent } from '../shared/components/download-report/download-report.component';
 import { GenericClientScriptService } from 'projects/diagnostic-data/src/lib/services/generic-client-script.service';
 import { ClientScriptService } from '../shared-v2/services/client-script.service';
-import { GenericOpenAIService } from '../../../../diagnostic-data/src/public_api';
-import { OpenAIService } from '../shared-v2/services/openai.service';
+import { GenericOpenAIArmService } from '../../../../diagnostic-data/src/public_api';
+import { OpenAIArmService } from '../shared-v2/services/openai-arm.service';
 
 export const HomeRoutes = RouterModule.forChild([
     {
@@ -753,7 +753,7 @@ export const HomeRoutes = RouterModule.forChild([
             CategoryChatResolver,
             TimeControlResolver,
             ContentService,
-            OpenAIService,
+            OpenAIArmService,
             UncategorizedDetectorsResolver,
             DetectorCategorizationService,
             MetricsPerInstanceAppsResolver,
@@ -762,7 +762,7 @@ export const HomeRoutes = RouterModule.forChild([
             SecurityScanningResolver,
             { provide: GenericSupportTopicService, useExisting: SupportTopicService },
             { provide: GenericContentService, useExisting: ContentService },
-            { provide: GenericOpenAIService, useExisting: OpenAIService },
+            { provide: GenericOpenAIArmService, useExisting: OpenAIArmService },
             { provide: GenericDocumentsSearchService, useExisting: DocumentSearchService },
             { provide: CXPChatService, useExisting: CXPChatCallerService },
             { provide: GenericResourceService, useExisting: ResourceService },
