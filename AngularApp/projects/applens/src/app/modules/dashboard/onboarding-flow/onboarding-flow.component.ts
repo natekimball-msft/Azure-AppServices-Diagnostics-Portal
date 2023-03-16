@@ -620,8 +620,12 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       this.diagnosticApiService.getPPEHostname().subscribe(host => {
         this.PPEHostname = host;
         this.diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
-          this.PPELink = `${this.PPEHostname}${this._router.url}`
+          this.PPELink = `${this.PPEHostname}${this._router.url}`;
           this.isProd = env === "Prod";
+          if (this.isProd){
+            window.open(this.PPELink, '_blank');
+            window.open(this._router.url.replace('/edit?', '?'), '_self');
+          }
         });
       });
 
