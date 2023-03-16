@@ -73,7 +73,7 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
     gptSolution: string = "";
     feedbackLoggingData: any = {};
     fetchingGPTResults: boolean = false;
-    gptQueryTimeout: number = 15000;
+    gptQueryTimeout: number = 25000;
 
     searchPlaceHolder: string = "Search for solutions";
     searchBoxInFocus: boolean = false;
