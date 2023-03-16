@@ -28,7 +28,7 @@
     </div>
     <div class="row" name="top-solution" style="border-bottom: 1px solid #ccc;padding-bottom:15px;">
       <div style="width: 75%; margin: auto;">
-        <div *ngIf="fetchingGPTResults && !showGPTSolutionTimedout" style="width: 60%;margin: 15px 20%;min-width: 300px;background-color: white;">
+        <div *ngIf="fetchingGPTResults && !gptSolutionHasTimedout" style="width: 60%;margin: 15px 20%;min-width: 300px;background-color: white;">
           <loader-detector-view></loader-detector-view>
         </div>
         <div *ngIf="!fetchingGPTResults && showGPTSolution && gptSolution && gptSolution.length > 2" tabindex="0">
@@ -47,7 +47,7 @@
           <div class="sections-loading-title col-md-3" style="display: inline;">Running checks {{detectors.length-getPendingDetectorCount()}}/{{detectors.length}}</div>
         </div>
       </div>
-      <collapsible-list-fabric [iconProps]="observationSectionIcon" *ngIf="issueDetectedViewModels.length>0 && getPendingDetectorCount() === 0" [lessMargin]="true" [collapsed]="!(getPendingDetectorCount() === 0 || showSolutionsTimedout)" [title]="'Observations and solutions (' + issueDetectedViewModels.length + ')'">
+      <collapsible-list-fabric [iconProps]="observationSectionIcon" *ngIf="issueDetectedViewModels.length>0 && getPendingDetectorCount() === 0" [lessMargin]="true" [collapsed]="!(getPendingDetectorCount() === 0 || detectorSolutionsTimedout)" [title]="'Observations and solutions (' + issueDetectedViewModels.length + ')'">
         <collapsible-list-item body *ngFor="let viewModel of issueDetectedViewModels;let i =index" style="display: block; width: 90%; margin: 5px 2.5%;">
           <div class="insight-box">
             <div style="display: block;">

@@ -135,8 +135,9 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
     allSolutions: Solution[] = [];
 
     timeoutToShowSolutions: number = 20000;
-    showGPTSolutionTimedout: boolean = false;
-    showSolutionsTimedout: boolean = false;
+    gptSolutionTimeout: any;
+    gptSolutionHasTimedout: boolean = false;
+    detectorSolutionsTimedout: boolean = false;
     successfulSectionCollapsed: boolean = true;
     successfulSectionCollapsedChanged(event){
         this.successfulSectionCollapsed = event;
@@ -258,7 +259,7 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
     }
 
     clearInsights() {
-        this.showSolutionsTimedout = false;
+        this.detectorSolutionsTimedout = false;
         this.detectorViewModels = [];
         this.issueDetectedViewModels = [];
         this.successfulViewModels = [];
@@ -267,10 +268,11 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
 
     clearGPTResults(){
         this.showThanksMessage = false;
-        this.showGPTSolutionTimedout = false;
+        this.gptSolutionHasTimedout = false;
         this.gptSolution = "";
         this.showGPTSolution = false;
         this.feedbackLoggingData = {};
+        clearTimeout(this.gptSolutionTimeout);
     }
 
     resetGlobals() {
@@ -514,27 +516,37 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
         this.getDocuments();
     }
 
-    getGPTResults(){
-        this.fetchingGPTResults = true;
-        this.showGPTSolutionTimedout = false;
-        setTimeout(() => {
-            if (this.fetchingGPTResults && !(this.getPendingDetectorCount()>0)) {
-                this.showGPTSolutionTimedout = true;
-                this.fetchingGPTResults = false;
-                this.showGPTSolution = false;
-                this.logEvent(TelemetryEventNames.ChatGPTARMQueryTimedout, {
-                    searchMode: this.searchMode,
-                    searchId: this.searchId,
-                    query: this.searchTerm,
-                    timeoutPeriod: this.timeoutToShowSolutions,
-                    ts: Math.floor((new Date()).getTime() / 1000).toString()
-                });
+    gptSolutionSetTimer(extension = 1){
+        this.gptSolutionTimeout = setTimeout(() => {
+            if (this.fetchingGPTResults) {
+                //Extend timeout once if detectors have not finished yet
+                if (this.getPendingDetectorCount() > 0 && extension>0) {
+                    clearTimeout(this.gptSolutionTimeout);
+                    this.gptSolutionTimeout = this.gptSolutionSetTimer(0);
+                }
+                else {
+                    this.gptSolutionHasTimedout = true;
+                    this.fetchingGPTResults = false;
+                    this.showGPTSolution = false;
+                    this.logEvent(TelemetryEventNames.ChatGPTARMQueryTimedout, {
+                        searchMode: this.searchMode,
+                        searchId: this.searchId,
+                        query: this.searchTerm,
+                        timeoutPeriod: this.timeoutToShowSolutions,
+                        ts: Math.floor((new Date()).getTime() / 1000).toString()
+                    });
+                }
             }
         }, this.timeoutToShowSolutions);
+    }
+
+    getGPTResults(){
+        this.fetchingGPTResults = true;
+        this.gptSolutionSetTimer(1);
         this._openAIArmService.CheckEnabled().subscribe(res => {
             if (res) {
                 this._openAIArmService.getAnswer(this.searchTerm).subscribe(gptRes => {
-                    if (!this.showGPTSolutionTimedout) {
+                    if (!this.gptSolutionHasTimedout) {
                         if (gptRes && gptRes.length>2) {
                             this.gptSolution = gptRes;
                             this.feedbackLoggingData = {
@@ -732,7 +744,7 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
         // Log all the children detectors
         setTimeout(() => {
             if (this.getPendingDetectorCount()>0) {
-                this.showSolutionsTimedout = true;
+                this.detectorSolutionsTimedout = true;
             }
         }, this.timeoutToShowSolutions);
         observableForkJoin(requests).subscribe(childDetectorData => {
