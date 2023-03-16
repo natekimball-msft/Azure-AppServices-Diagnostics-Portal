@@ -156,6 +156,10 @@ import { ChatGPTContextService } from './services/chat-gpt-context-service';
 import { GenericOpenAIChatService, GenericOpenAIArmService } from '../public_api';
 import { QueryResponseService } from './services/query-response.service';
 import { WorkflowConditionNodeComponent } from './components/workflow-condition-node/workflow-condition-node.component';
+import { WorkflowAcceptUserinputComponent } from './components/workflow-accept-userinput/workflow-accept-userinput.component';
+import { VideoComponent } from './components/video/video.component';
+import { SafePipe } from './pipe/safe.pipe';
+
 
 @NgModule({
     imports: [
@@ -258,7 +262,10 @@ import { WorkflowConditionNodeComponent } from './components/workflow-condition-
         WorkflowResultComponent,
         WorkflowViewComponent,
         WorkflowNodeComponent,
-        WorkflowConditionNodeComponent
+        WorkflowConditionNodeComponent,
+        WorkflowAcceptUserinputComponent,
+        VideoComponent,
+        SafePipe
     ],
     exports: [
         FormsModule, TimeSeriesGraphComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent, ClientScriptViewComponent,
@@ -300,7 +307,8 @@ import { WorkflowConditionNodeComponent } from './components/workflow-condition-
         FabCardComponent,
         FormStepComponent,
         GanttChartTaskbarColorsComponent,
-        WorkflowViewComponent
+        WorkflowViewComponent,
+        SafePipe
     ]
 })
 export class DiagnosticDataModule {
