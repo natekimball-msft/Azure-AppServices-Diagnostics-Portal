@@ -18,6 +18,7 @@ export class DevopsNotificationComponent implements OnInit {
 
   currentDevopsConfig: DevopsConfig;
   userId:string = "";
+  scenarioMessage:string = "";
   response:any[] = [];
   resourceId: string = "";
   showDevopsStatusMessage: boolean = false;
@@ -64,16 +65,20 @@ export class DevopsNotificationComponent implements OnInit {
   }
 
   generateBannerMessage(result:any[]) {
-    let finalCount = 0;
-    if (result.length > 0 ) {   
-       finalCount += this.calculateActivePullRequests(result[0]);
-      for(var start = 1;start<result.length; start++) {      
-        finalCount +=  this.calculatePendingOrFailedDeployments(result[start]);
-      }
+    let activePRCount = this.calculateActivePullRequests(result[0]);
+    let failedOrPendingDeployments = 0; 
+    // starting from index 1 here as the observable returns 0 index for PRs and starting from 1 for devops statuses APIs.
+     for(var start = 1;start<result.length; start++) {      
+      failedOrPendingDeployments +=  this.calculatePendingOrFailedDeployments(result[start]);
+     }
+    if ( activePRCount > 0 && failedOrPendingDeployments == 0 ) {
+      this.showDevopsStatusMessage = true;
+      this.scenarioMessage = 'One or more Pull Requests are active. Detector code changes will be reflected after your pr is merged and deployed';
+    } else if ( failedOrPendingDeployments > 0) {
+      this.showDevopsStatusMessage = true;
+      this.scenarioMessage = 'We could not update some of your detector(s) because there are still some deployments that are pending or failed ';
     }
-    if( finalCount > 0) {
-      this.showDevopsStatusMessage =  true;
-    } else {
+    else {
       this.showDevopsStatusMessage = false;
     }
   }
