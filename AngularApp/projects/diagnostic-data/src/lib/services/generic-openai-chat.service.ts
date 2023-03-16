@@ -3,7 +3,7 @@ import { TextCompletionModel, OpenAIAPIResponse } from '../models/openai-data-mo
 import { Observable, of} from 'rxjs';
 
 @Injectable()
-export class GenericOpenAIService {
+export class GenericOpenAIChatService {
   public isEnabled: boolean = false;
   
   public CheckEnabled(): Observable<boolean> {

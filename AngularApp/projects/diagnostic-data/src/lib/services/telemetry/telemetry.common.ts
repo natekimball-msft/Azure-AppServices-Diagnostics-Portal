@@ -123,7 +123,11 @@ export const TelemetryEventNames = {
     ChatGPTUserQuotaExceeded: 'ChatGPTUserQuotaExceeded',
     ChatGPTTooManyRequestsError: 'ChatGPTTooManyRequestsError',
     LoadingTimeOut: 'LoadingTimeOut',
-    EmptySearchTerm: 'EmptySearchTerm'
+    EmptySearchTerm: 'EmptySearchTerm',
+    ChatGPTARMQueryResults: 'ChatGPTARMQueryResults',
+    ChatGPTARMQueryError: 'ChatGPTARMQueryError',
+    ChatGPTARMQueryTimedout: 'ChatGPTARMQueryTimedout',
+    ChatGPTARMQueryResultEmpty: 'ChatGPTARMQueryResultEmpty'
 };
 
 export const TelemetrySource = {

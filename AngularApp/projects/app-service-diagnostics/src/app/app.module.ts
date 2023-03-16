@@ -48,7 +48,7 @@ import { RiskAlertService } from './shared-v2/services/risk-alert.service';
 import { ThemeService } from './theme/theme.service';
 import { GenericThemeService } from 'diagnostic-data';
 import { ClientScriptService } from './shared-v2/services/client-script.service';
-import { OpenAIService } from './shared-v2/services/openai.service';
+import { OpenAIArmService } from './shared-v2/services/openai-arm.service';
 
 @NgModule({
   imports: [
@@ -101,7 +101,7 @@ import { OpenAIService } from './shared-v2/services/openai.service';
     { provide: GenieGlobals, useExisting: Globals },
     CategoryChatStateService,
     ContentService,
-    OpenAIService,
+    OpenAIArmService,
     ClientScriptService,
     CategoryService,
     { provide: GenericFeatureService, useExisting: FeatureService },
