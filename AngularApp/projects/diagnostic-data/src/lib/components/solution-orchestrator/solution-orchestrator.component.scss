@@ -1,3 +1,4 @@
+@import "../../../../../app-service-diagnostics/src/styles/main.scss";
 .article {
     border: 1px solid #bbbbbb;
     cursor: pointer;
@@ -27,6 +28,14 @@ a{
 
 br{
    display : none ;
+}
+
+.wide-view {
+    padding: 0;
+}
+
+.centered-view {
+    padding: 0 10%;
 }
 
 .insight-box {
@@ -151,3 +160,22 @@ br{
   .align-width {
     width:98%;
   }
+
+  .control-pill-text {
+    font-size: 13px;
+    color: var(--bodyText);
+}
+
+.control-pill-text:hover{
+    color: var(--bodyBackground);
+}
+
+.control-pill-text :first-child {
+    font-weight: 400;
+}
+
+.error-time-picker-message {
+    color: $error-color;
+    padding-bottom: 10px;
+    font-weight: 600;
+}

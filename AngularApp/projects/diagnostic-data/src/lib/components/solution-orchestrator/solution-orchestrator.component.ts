@@ -10,7 +10,7 @@ import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 import { TelemetryService } from '../../services/telemetry/telemetry.service';
 import { Solution } from '../solution/solution';
 import { ActivatedRoute, Router, NavigationExtras } from '@angular/router';
-import { forkJoin as observableForkJoin, Observable, of } from 'rxjs';
+import { BehaviorSubject, forkJoin as observableForkJoin, Observable, of } from 'rxjs';
 import { map, catchError, delay, retryWhen } from 'rxjs/operators';
 import { DetectorResponse, DetectorMetaData, HealthStatus, DetectorType, DownTime } from '../../models/detector';
 import { Insight, InsightUtils } from '../../models/insight';
@@ -30,6 +30,8 @@ import { GenericContentService } from '../../services/generic-content.service';
 import {GenericOpenAIArmService} from '../../services/generic-openai-arm.service';
 import {PanelType} from "office-ui-fabric-react";
 import { CXPChatService } from '../../services/cxp-chat.service';
+import { IButtonStyles } from 'office-ui-fabric-react/lib/components/Button';
+import { IIconProps } from 'office-ui-fabric-react/lib/components/Icon';
 
 @Component({
     selector: 'solution-orchestrator',
@@ -74,6 +76,31 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
     feedbackLoggingData: any = {};
     fetchingGPTResults: boolean = false;
     gptQueryTimeout: number = 25000;
+    buttonStyle: IButtonStyles = {
+        root: {
+          // color: "#323130",
+          borderRadius: "12px",
+          margin: " 0px 5px",
+          background: "rgba(0, 120, 212, 0.1)",
+          fontSize: "13",
+          fontWeight: "600",
+          height: "80%"
+        },
+        rootFocused: {
+          border: "2px solid black",
+        }
+      }
+      iconStyles: IIconProps["styles"] = {
+        root: {
+          color: "#0078d4"
+        }
+      }
+    openTimePickerSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
+    timePickerButtonStr: string = "";
+    timePickerErrorStr: string = "";
+    updateTimePickerErrorMessage(message: string) {
+        this.timePickerErrorStr = message;
+    }
 
     searchPlaceHolder: string = "Search for solutions";
     searchBoxInFocus: boolean = false;
@@ -255,6 +282,9 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
     }
 
     ngOnInit() {
+        this._detectorControl.timePickerStrSub.subscribe(s => {
+            this.timePickerButtonStr = s;
+        });
         this.getAzureGuides();
         this._activatedRoute.paramMap.subscribe(params => {
             let detectorId = params.get("detectorName") === null ? null : params.get("detectorName");

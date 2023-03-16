@@ -7,7 +7,11 @@
       </solution-view-container>
     </div>
   </fab-panel>
-  <div class="row" *ngIf="!inDrillDownMode" style="padding: 0 10%;">
+  <div *ngIf="!inDrillDownMode">
+    <ng-container *ngTemplateOutlet="detectorTimePickerPill"></ng-container>
+  </div>
+  <div *ngIf="timePickerErrorStr !==''" class="error-time-picker-message">{{timePickerErrorStr}}</div>
+  <div class="row" *ngIf="!inDrillDownMode" class="centered-view">
     <div class="row" name="search-bar" style="margin: 20px auto;">
       <div style="margin: auto 25%;">
         <div class="search-box">
@@ -116,7 +120,7 @@
     <a tabindex="0" (keyup.enter)="goBackToOrchestrator()" aria-label="Link to go back to the solutions view" role="button"
       (click)="goBackToOrchestrator()" >Go back to main screen</a>
   </div>
-  <div *ngIf="inDrillDownMode" style="padding: 0 10%;">
+  <div *ngIf="inDrillDownMode" class="wide-view">
     <router-outlet></router-outlet>
   </div>
 </div>
@@ -124,3 +128,18 @@
   <cxp-chat-launcher *ngIf="showChatButton()" [trackingId]="cxpChatTrackingId" [chatUrl]="cxpChatUrl"
     [supportTopicId]="supportTopicId"></cxp-chat-launcher>
 </div>
+
+<ng-template #detectorTimePickerPill>
+  <div>
+    <fab-primary-button [id]="'time-picker-button'" [styles]="buttonStyle" (onClick)="openTimePickerSubject.next(true);">
+      <fab-icon [iconName]="'Clock'" [styles]="iconStyles"></fab-icon>
+      <span class="ml-3 control-pill-text">
+        <span>Time Range (UTC): </span>
+        {{timePickerButtonStr}}
+      </span>
+    </fab-primary-button>
+  </div>
+</ng-template>
+
+<detector-time-picker [target]="'#time-picker-button'" [openTimePickerCalloutObservable]="openTimePickerSubject" (updateTimerErrorMessage)="updateTimePickerErrorMessage($event)">
+</detector-time-picker>
