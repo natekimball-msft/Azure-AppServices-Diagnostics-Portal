@@ -125,13 +125,14 @@ import { MarkdownQueryDialogComponent } from './workflow/markdown-query-dialog/m
 import { WorkflowComponent } from './workflow/workflow/workflow.component';
 import { WorkflowRunDialogComponent } from './workflow/workflow-run-dialog/workflow-run-dialog.component';
 import { WorkflowRootNodeComponent } from './workflow/workflow-root-node/workflow-root-node.component';
-import { ApplensOpenAIService } from '../../shared/services/applens-openai.service';
-import { GenericOpenAIService } from '../../../../../diagnostic-data/src/public_api';
+import { ApplensOpenAIChatService } from '../../shared/services/applens-openai-chat.service';
+import { GenericOpenAIChatService } from '../../../../../diagnostic-data/src/public_api';
 import { OpenAIChatComponent } from './openai-chat/openai-chat.component';
 import {ChatGPTContextService} from 'diagnostic-data';
 import { DevopsDeploymentsComponent } from './devops-deployments/devops-deployments.component';
 import { ForeachNodeComponent } from './workflow/foreach-node/foreach-node.component';
 import { WorkflowUserAccessComponent } from './workflow/workflow-user-access/workflow-user-access.component';
+import { InputNodeComponent } from './workflow/input-node/input-node.component';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
@@ -562,7 +563,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         ApplensDocumentationService,
         InitResolver,
         ApplensGlobals,
-        ApplensOpenAIService,
+        ApplensOpenAIChatService,
         ChatGPTContextService,
         BreadcrumbService,
         ClientScriptService,
@@ -584,7 +585,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         { provide: GenericBreadcrumbService, useExisting: BreadcrumbService },
         { provide: GenericUserSettingService, useExisting: UserSettingService },
         { provide: GenericClientScriptService, useExisting: ClientScriptService},
-        { provide: GenericOpenAIService, useExisting: ApplensOpenAIService}
+        { provide: GenericOpenAIChatService, useExisting: ApplensOpenAIChatService}
     ],
     declarations: [DashboardComponent, SideNavComponent, ResourceMenuItemComponent, ResourceHomeComponent, OnboardingFlowComponent, SearchTermAdditionComponent,
         SearchMenuPipe, TabDataComponent, TabDevelopComponent, TabCommonComponent, TabDataSourcesComponent, TabMonitoringComponent,
@@ -594,6 +595,6 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         L2SideNavComponent, UserActivePullrequestsComponent, FavoriteDetectorsComponent, ApplensDocsComponent, ApplensDocSectionComponent, CreateWorkflowComponent,
         IfElseConditionStepComponent, ConditionIftrueStepComponent, ConditionIffalseStepComponent, SwitchStepComponent, SwitchCaseStepComponent, SwitchCaseDefaultStepComponent,
         KustoQueryDialogComponent, DetectorNodeComponent, KustoNodeComponent, MarkdownNodeComponent, NodeActionsComponent, ConfigureVariablesComponent, CommonNodePropertiesComponent,
-        NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent, WorkflowUserAccessComponent, ForeachNodeComponent, DevopsDeploymentsComponent]
+        NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent, WorkflowUserAccessComponent, ForeachNodeComponent, DevopsDeploymentsComponent, InputNodeComponent]
 })
 export class DashboardModule { }

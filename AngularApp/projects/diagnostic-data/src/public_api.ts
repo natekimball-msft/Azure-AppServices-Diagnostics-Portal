@@ -28,9 +28,10 @@ export * from './lib/services/generic-breadcrumb.service';
 export * from './lib/services/generic-user-setting.service';
 export * from './lib/services/generic-portal.service';
 export * from './lib/services/generic-feature-service';
-export * from './lib/services/generic-openai.service';
+export * from './lib/services/generic-openai-chat.service';
 export * from './lib/services/chat-gpt-context-service';
 export * from './lib/services/query-response.service';
+export * from './lib/services/generic-openai-arm.service';
 export * from './lib/config/diagnostic-data-config';
 export * from './lib/diagnostic-data.module';
 
@@ -151,3 +152,5 @@ export * from './lib/components/gantt-chart-taskbar-colors/gantt-chart-taskbar-c
 
 export * from './lib/modules/fab-coachmark/coachmark.module'
 export * from './lib/modules/fab-teachingbubble/teachingbubble.module'
+
+export * from './lib/pipe/safe.pipe';

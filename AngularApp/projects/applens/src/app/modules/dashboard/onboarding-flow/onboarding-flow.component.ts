@@ -620,8 +620,12 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       this.diagnosticApiService.getPPEHostname().subscribe(host => {
         this.PPEHostname = host;
         this.diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
-          this.PPELink = `${this.PPEHostname}${this._router.url}`
+          this.PPELink = `${this.PPEHostname}${this._router.url}`;
           this.isProd = env === "Prod";
+          if (this.isProd){
+            window.open(this.PPELink, '_blank');
+            window.open(this._router.url.replace('/edit?', '?'), '_self');
+          }
         });
       });
 
@@ -1906,8 +1910,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
     let isSystemInvoker: boolean = this.mode === DevelopMode.EditMonitoring || this.mode === DevelopMode.EditAnalytics;
 
-    const commitType = this.mode == DevelopMode.Create && !this.isSaved ? "add" : "edit";
-    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved ? "Adding" : "Editing";
+    const commitType = this.mode == DevelopMode.Create && !this.isSaved && !this.detectorLoaded ? "add" : "edit";
+    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved && !this.detectorLoaded ? "Adding" : "Editing";
 
     let gradPublishFiles: string[] = !!this.publishingPackage ? [
       this.publishingPackage.codeString,

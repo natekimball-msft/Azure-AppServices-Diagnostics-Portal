@@ -121,7 +121,13 @@ export const TelemetryEventNames = {
     ChatGPTCheckMessageCount: 'ChatGPTCheckMessageCount',
     ChatGPTRequestError: 'ChatGPTRequestError',
     ChatGPTUserQuotaExceeded: 'ChatGPTUserQuotaExceeded',
-    ChatGPTTooManyRequestsError: 'ChatGPTTooManyRequestsError'
+    ChatGPTTooManyRequestsError: 'ChatGPTTooManyRequestsError',
+    LoadingTimeOut: 'LoadingTimeOut',
+    EmptySearchTerm: 'EmptySearchTerm',
+    ChatGPTARMQueryResults: 'ChatGPTARMQueryResults',
+    ChatGPTARMQueryError: 'ChatGPTARMQueryError',
+    ChatGPTARMQueryTimedout: 'ChatGPTARMQueryTimedout',
+    ChatGPTARMQueryResultEmpty: 'ChatGPTARMQueryResultEmpty'
 };
 
 export const TelemetrySource = {

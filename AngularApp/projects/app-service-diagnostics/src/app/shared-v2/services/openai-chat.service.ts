@@ -7,7 +7,7 @@ import { HttpHeaders } from '@angular/common/http';
 import { ResourceService } from './resource.service';
 
 @Injectable()
-export class OpenAIService {
+export class OpenAIChatService {
 
   content: any[] = [];
 
