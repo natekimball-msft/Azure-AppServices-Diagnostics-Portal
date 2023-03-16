@@ -73,10 +73,10 @@ export class DevopsNotificationComponent implements OnInit {
      }
     if ( activePRCount > 0 && failedOrPendingDeployments == 0 ) {
       this.showDevopsStatusMessage = true;
-      this.scenarioMessage = 'One or more Pull Requests are active. Detector code changes will be reflected after your pr is merged and deployed';
+      this.scenarioMessage = 'One or more Pull Requests are active. Detector code changes will be reflected after your PR is merged and deployed.';
     } else if ( failedOrPendingDeployments > 0) {
       this.showDevopsStatusMessage = true;
-      this.scenarioMessage = 'We could not update some of your detector(s) because there are still some deployments that are pending or failed ';
+      this.scenarioMessage = 'We could not update some of your detector(s) because there are some deployments that are pending or failed ';
     }
     else {
       this.showDevopsStatusMessage = false;
