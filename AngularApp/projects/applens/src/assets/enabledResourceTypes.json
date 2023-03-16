@@ -741,7 +741,7 @@
             "service": "ResourceService",
             "resourceType": "Microsoft.DevCenter/projects",
             "templateFileName": "DevCenter",
-            "imgSrc": "assets/img/Azure-DevCenter-Logo.svg",
+            "imgSrc": "assets/img/Azure-DevBox-Logo.svg",
             "versionPrefix": "",
             "azureCommImpactedServicesList": "",
             "pesId": "17466",
