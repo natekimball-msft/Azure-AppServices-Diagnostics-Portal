@@ -75,7 +75,6 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
     gptSolution: string = "";
     feedbackLoggingData: any = {};
     fetchingGPTResults: boolean = false;
-    gptQueryTimeout: number = 25000;
     buttonStyle: IButtonStyles = {
         root: {
           // color: "#323130",
@@ -135,7 +134,7 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
 
     allSolutions: Solution[] = [];
 
-    timeoutToShowSolutions: number = 10000;
+    timeoutToShowSolutions: number = 20000;
     showGPTSolutionTimedout: boolean = false;
     showSolutionsTimedout: boolean = false;
     successfulSectionCollapsed: boolean = true;
@@ -519,7 +518,7 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
         this.fetchingGPTResults = true;
         this.showGPTSolutionTimedout = false;
         setTimeout(() => {
-            if (this.fetchingGPTResults) {
+            if (this.fetchingGPTResults && !(this.getPendingDetectorCount()>0)) {
                 this.showGPTSolutionTimedout = true;
                 this.fetchingGPTResults = false;
                 this.showGPTSolution = false;
@@ -527,11 +526,11 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
                     searchMode: this.searchMode,
                     searchId: this.searchId,
                     query: this.searchTerm,
-                    timeoutPeriod: this.gptQueryTimeout,
+                    timeoutPeriod: this.timeoutToShowSolutions,
                     ts: Math.floor((new Date()).getTime() / 1000).toString()
                 });
             }
-        }, this.gptQueryTimeout);
+        }, this.timeoutToShowSolutions);
         this._openAIArmService.CheckEnabled().subscribe(res => {
             if (res) {
                 this._openAIArmService.getAnswer(this.searchTerm).subscribe(gptRes => {
