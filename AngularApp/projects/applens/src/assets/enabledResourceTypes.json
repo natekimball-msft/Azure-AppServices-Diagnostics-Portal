@@ -746,8 +746,8 @@
             "azureCommImpactedServicesList": "",
             "pesId": "17466",
             "staticSelfHelpContent": "",
-            "searchSuffix": "MICROSOFT DEV BOX",
-            "displayName": "Microsoft Dev Box"
+            "searchSuffix": "MICROSOFT DEV CENTER",
+            "displayName": "Microsoft Dev Center"
         },
         {
             "service": "ResourceService",
@@ -760,6 +760,19 @@
             "staticSelfHelpContent": "",
             "searchSuffix": "MICROSOFT GRAPH AUTHENTICATION AND AUTHORIZATION (AZURE AD)",
             "displayName": "Microsoft Graph Authentication and Authorization (Azure AD)"
+        }
+        ,
+        {
+            "service": "ResourceService",
+            "resourceType": "Microsoft.AzurePlaywrightService/accounts",
+            "templateFileName": "Playwright",
+            "imgSrc": "assets/img/Azure-Playwright-Logo.svg",
+            "versionPrefix": "",
+            "azureCommImpactedServicesList": "",
+            "pesId": "17935",
+            "staticSelfHelpContent": "",
+            "searchSuffix": "MICROSOFT PLAYWRIGHT TESTING",
+            "displayName": "Microsoft Playwright Testing"
         }
     ]
 }
