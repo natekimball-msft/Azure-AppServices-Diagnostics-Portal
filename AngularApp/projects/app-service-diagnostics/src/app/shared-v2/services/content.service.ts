@@ -102,9 +102,9 @@ export class ContentService {
     }
 
     const query = JSON.stringify({
-      queryText: `${questionString}${useStack ? stackTypeSuffix : ''}`,
-      productName: searchSuffix,
-      siteFilters: `${preferredSitesSuffix} AND ${excludedSitesSuffix}`
+      queryText: encodeURIComponent(`${questionString}${useStack ? stackTypeSuffix : ''}`),
+      productName: encodeURIComponent(searchSuffix),
+      siteFilters: encodeURIComponent(`${preferredSitesSuffix} AND ${excludedSitesSuffix}`)
     });
     return query;
   }
