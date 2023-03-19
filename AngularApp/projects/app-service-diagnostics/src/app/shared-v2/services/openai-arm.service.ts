@@ -52,9 +52,11 @@ export class OpenAIArmService {
     if (!this.allowedStacks.some(stack => stackTypeSuffix.includes(stack))) {
       stackTypeSuffix = "";
     }
+    questionString = questionString.replace(/\\"/g, '');
+    questionString = questionString.replace(/"/g, '');
 
     const query = JSON.stringify({
-      query: questionString,
+      query: encodeURIComponent(questionString),
       resourceType: resourceType,
       stackInfo: stackTypeSuffix
     });

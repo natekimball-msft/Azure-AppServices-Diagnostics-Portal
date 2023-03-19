@@ -100,6 +100,8 @@ export class ContentService {
     if (excludedSitesSuffix && excludedSitesSuffix.length > 0) {
       excludedSitesSuffix = `(${excludedSitesSuffix})`;
     }
+    questionString = questionString.replace(/\\"/g, '');
+    questionString = questionString.replace(/"/g, '');
 
     const query = JSON.stringify({
       queryText: `${questionString}${useStack ? stackTypeSuffix : ''}`,

@@ -499,7 +499,7 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
     }
 
     onSearchEnter() {
-        if (this.searchTermDisplayed !== this.searchTerm) {
+        if (this.searchTermDisplayed !== this.searchTerm && this.searchTermDisplayed.length>1) {
             this._router.navigate([`../solutionorchestrator`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge', preserveFragment: true, queryParams: { searchTerm: this.searchTermDisplayed, hideShieldComponent: true } });
         }
     }
@@ -507,11 +507,16 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
     clearSearchTerm() {
         this.searchTermDisplayed = "";
     }
+    newSearchTriggered: boolean = false;
 
     hitSearch() {
         this.resetGlobals();
         this.searchId = uuid();
-        this.getGPTResults();
+        this.newSearchTriggered = true;
+        //Lower limit is 4 characters and upper limit is 200 characters to trigger GPT search
+        if (this.searchTerm.length > 3 && this.searchTerm.length < 200) {
+            this.getGPTResults();
+        }
         this.searchDetectors();
         this.getDocuments();
     }
@@ -547,7 +552,7 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
             if (res) {
                 this._openAIArmService.getAnswer(this.searchTerm).subscribe(gptRes => {
                     if (!this.gptSolutionHasTimedout) {
-                        if (gptRes && gptRes.length>2) {
+                        if (gptRes && gptRes.length>2 && !gptRes.trim().toLowerCase().includes("we could not find any information about that")) {
                             this.gptSolution = gptRes;
                             this.feedbackLoggingData = {
                                 searchId: this.searchId,
@@ -556,6 +561,7 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
                                 solutionType: "ChatGPT"
                             }
                             this.showGPTSolution = true;
+                            this.newSearchTriggered = false;
                             this.logEvent(TelemetryEventNames.ChatGPTARMQueryResults, {
                                 searchMode: this.searchMode,
                                 searchId: this.searchId,
@@ -644,8 +650,23 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
                 this.fetchingDetectors = true;
                 //this.showPreLoader = true;
                 observableForkJoin([searchTask, detectorsTask]).subscribe(results => {
+                    this.newSearchTriggered = false;
                     var searchResults: DetectorMetaData[] = results[0];
                     var detectorList = results[1];
+
+                    //Include any detectors that have been mapped to the support topic with the highest score 1.0
+                    let supportTopicMappedDetectors: DetectorMetaData[] = [];
+                    if (this._supportTopicService.sapSupportTopicId != "") {
+                        supportTopicMappedDetectors = detectorList.filter(detector =>
+                            detector.supportTopicList &&
+                            detector.supportTopicList.findIndex(supportTopicId => supportTopicId.sapSupportTopicId === this._supportTopicService.sapSupportTopicId) >= 0);
+                    }
+                    if (supportTopicMappedDetectors && supportTopicMappedDetectors.length>0) {
+                        supportTopicMappedDetectors.forEach(detector => {
+                            this.insertInDetectorArray({ name: detector.name, id: detector.id, score: 1.0 });
+                        });
+                    }
+
                     var logDetail = "";
                     
                     // When this happens this means that the RP is not sending the search term parameter to Runtimehost API
