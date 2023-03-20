@@ -715,6 +715,10 @@ export class GenericArmConfigService {
   }
 
   getApiVersion(resourceUri: string): string {
+    if(!!resourceUri && resourceUri.toLowerCase().indexOf('/resourcegroups/') < -1 ) {
+      //Call is for empty resource, return the API version for GET subscription call
+      return '2020-01-01';
+    }
     let apiVersion = '';
     if (!!this.getArmApiConfig(resourceUri) && !!this.getArmApiConfig(resourceUri).armApiVersion) {
       apiVersion = this.getArmApiConfig(resourceUri).armApiVersion;

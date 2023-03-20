@@ -20,7 +20,8 @@ export class SiteService extends ResourceService {
     }
 
     public startInitializationObservable() {
-        this._initialized = this._observerApiService.getSite(this._armResource.resourceName)
+        if(!!this._armResource.resourceName) {
+            this._initialized = this._observerApiService.getSite(this._armResource.resourceName)
             .pipe(
                 map((observerResponse: ObserverSiteResponse) => {
                     const siteObject = this.getSiteFromObserverResponse(observerResponse);
@@ -42,6 +43,12 @@ export class SiteService extends ResourceService {
 
                     return new ResourceInfo(this.getResourceName(), this.imgSrc, this.displayName, this.getCurrentResourceId(), this._siteObject.Kind);
                 }));
+        }
+        else {
+            this._currentResource.next(null);
+            this.updatePesIdAndImgSrc();
+            this._initialized = of(new ResourceInfo(this.getResourceName(), this.imgSrc, this.displayName, this.getCurrentResourceId()));
+        }
     }
 
     public getCurrentResource(): Observable<any> {
@@ -82,6 +89,11 @@ export class SiteService extends ResourceService {
             this.imgSrc = 'assets/img/Azure-Tux-Logo.png';
             this.displayName = "LINUX WEB APP";
             this.templateFileName = "LinuxApp";
+        } else {
+            this.pesId = '14748';
+            this.imgSrc = 'assets/img/Azure-WebApps-Logo.png';
+            this.displayName = "App";
+            this.templateFileName = "WebApp";
         }
     }
 
