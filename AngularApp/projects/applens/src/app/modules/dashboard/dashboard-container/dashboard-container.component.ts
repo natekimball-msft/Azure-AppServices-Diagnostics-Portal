@@ -70,6 +70,11 @@ export class DashboardContainerComponent implements OnInit {
   ngOnInit() {
     this.subscriptionId = this._activatedRoute.snapshot.queryParams['subscriptionId'];
     this.showMetrics = !(this._resourceService.overviewPageMetricsId == undefined || this._resourceService.overviewPageMetricsId == "");
+    if(this.showMetrics) {
+      this._applensDiagnosticApiService.getDetectors().subscribe(detectors => {
+        this.showMetrics = detectors.some(detector => {detector.id.toLowerCase() === this._resourceService?.overviewPageMetricsId?.toLowerCase()});
+      });
+    }    
     let serviceInputs = this._startupService.getInputs();
     let alias = Object.keys(this._adalService.userInfo.profile).length > 0 ? this._adalService.userInfo.profile.upn : '';
     let userId = alias.replace('@microsoft.com', '').toLowerCase();

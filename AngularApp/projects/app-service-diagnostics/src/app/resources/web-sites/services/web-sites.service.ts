@@ -12,6 +12,7 @@ import { DetectorType } from 'diagnostic-data';
 import { of, Observable, merge } from 'rxjs';
 import { ArmResource } from '../../../shared-v2/models/arm';
 import { forkJoin } from 'rxjs/internal/observable/forkJoin';
+import { AuthService } from '../../../startup/services/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class WebSitesService extends ResourceService {
@@ -27,8 +28,8 @@ export class WebSitesService extends ResourceService {
     public hostingEnvironmentKind: HostingEnvironmentKind = HostingEnvironmentKind.All;
     public linuxFxVersion: string = '';
 
-    constructor(protected _armService: ArmService, private _appAnalysisService: AppAnalysisService) {
-        super(_armService);
+    constructor(protected _armService: ArmService, protected _authService:AuthService, private _appAnalysisService: AppAnalysisService) {
+        super(_armService, _authService);
     }
 
     public getIbizaBladeToDetectorMapings(): Observable<PortalReferrerMap[]> {

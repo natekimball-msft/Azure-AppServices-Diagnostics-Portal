@@ -8,22 +8,30 @@ import { ArmResourceConfig } from '../../shared/models/arm/armResourceConfig';
 import { GenericArmConfigService } from '../../shared/services/generic-arm-config.service';
 import { PortalReferrerMap } from '../../shared/models/portal-referrer-map';
 import { DetectorType } from 'diagnostic-data';
+import { AuthService } from '../../startup/services/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class ResourceService {
 
   protected _subscription: string;
+  protected _sapProductId:string = '';
 
   public resource: ArmResource;
 
   public warmUpCallFinished: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(null);
   public error: any;
 
-  constructor(protected _armService: ArmService, private _genericArmConfigService?: GenericArmConfigService) { }
+  constructor(protected _armService: ArmService, protected _authService:AuthService, private _genericArmConfigService?: GenericArmConfigService) { }
 
   private _initialize() {
     const pieces = this.resource.id.toLowerCase().split('/');
     this._subscription = pieces[pieces.indexOf('subscriptions') + 1];
+    this._authService.getStartupInfo()
+    .subscribe(info => {
+      if (info) {
+        this._sapProductId = info.sapProductId? info.sapProductId : '';
+      }
+    });
   }
   
 
@@ -67,16 +75,14 @@ export class ResourceService {
   }
 
   public getSapProductId(): Observable<string> {
-    if (this.armResourceConfig) {
-      return of(this.armResourceConfig.sapProductId);
+    // If case submission has passed us the SapProductId, use that instead of the config file.
+    // This helps in case the same ARM provider has different SAP product id's based on the support topic tree.
+    if(this._sapProductId) {
+      return of(this._sapProductId);
     }
 
-    if(this.resource?.id?.toLowerCase().indexOf('microsoft.web/sites') > -1) {
-      // SapProductId of web app windows.
-      return of('1890289e-747c-7ef6-b4f5-b1dbb0bead28');
-    }
-    else if(this.resource?.id?.toLowerCase().indexOf('microsoft.web/hostingenvironments') > -1) {
-      return of('2fd37acf-7616-eae7-546b-1a78a16d11b5');
+    if (this.armResourceConfig) {
+      return of(this.armResourceConfig.sapProductId);
     }
 
     return of(null);
