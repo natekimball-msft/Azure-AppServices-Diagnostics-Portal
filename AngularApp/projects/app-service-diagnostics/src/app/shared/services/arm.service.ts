@@ -129,7 +129,15 @@ export class ArmService {
     }
 
     createUrl(resourceUri: string, apiVersion?: string) {
-        const uri = `${this.armUrl}${resourceUri}${resourceUri.indexOf('?') >= 0 ? '&' : '?'}` +
+        let resourceUriToUse = resourceUri;
+        if(!!resourceUri && resourceUri.toLowerCase().indexOf('/resourcegroups/')<1) {
+            //Call is for empty resource, remove the providers part however retain any query strings that are present.
+            resourceUriToUse = resourceUri.replace(/\/providers\/[^\/]*\/[^\/]*\//, '/');
+            if(resourceUri.indexOf('?') > 0) {
+                resourceUriToUse = resourceUriToUse + '?' + resourceUri.replace(/^.*\?/, '');
+            }
+        }
+        const uri = `${this.armUrl}${resourceUriToUse}${resourceUriToUse.indexOf('?') >= 0 ? '&' : '?'}` +
             `api-version=${this.getApiVersion(resourceUri, apiVersion)}`
         return uri;
     }

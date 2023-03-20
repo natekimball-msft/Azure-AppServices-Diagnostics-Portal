@@ -141,6 +141,11 @@ export const Routes = RouterModule.forRoot([
                     {
                         path: 'caseCleansing',
                         loadChildren: () => import('./modules/casecleansing/casecleansing.module').then(m => m.CasecleansingModule)
+                    },
+                    {
+                        path:'subscriptions/:subscriptionId/providers/:provider/:resourceTypeName',
+                        loadChildren: () => import('./modules/dashboard/dashboard.module').then(m => m.DashboardModule),
+                        resolve: { validResources: ValidResourceResolver }
                     }
                 ]
             }

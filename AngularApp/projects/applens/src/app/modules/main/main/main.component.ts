@@ -364,11 +364,38 @@ export class MainComponent implements OnInit {
 
       return routeString;
     } else {
-      this.errorMessage = "Invalid ARM resource id. Resource id must be of the following format:\n" +
+      const noResourcePattern = /subscriptions\/(.*)\/providers\/(.*)/i;
+      const noResourceMatchResult = resourceURI.match(noResourcePattern);
+      if (noResourceMatchResult && noResourceMatchResult.length === 3) {
+        let allowedResources: string = "";
+        let routeString: string = '';
+        if (enabledResourceTypes) {
+          enabledResourceTypes.forEach(enabledResource => {
+            allowedResources += `${enabledResource.resourceType}\n`;
+            const resourcePattern = new RegExp(
+              `^${enabledResource.resourceType.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\/$`, 'i'
+            );
+            const enabledResourceResult = noResourceMatchResult[2].match(resourcePattern);
+
+            if (enabledResourceResult) {
+              routeString = `subscriptions/${noResourceMatchResult[1]}/providers/${enabledResource.resourceType}/`;
+            }
+          });
+        }
+
+        this.errorMessage = routeString === '' ?
+          'The supplied ARM resource is not enabled in AppLens. Allowed resource types are as follows\n\n' +
+          `${allowedResources}` :
+          '';
+
+        return routeString;
+      }
+      else {
+        this.errorMessage = "Invalid ARM resource id. Resource id must be of the following format:\n" +
         `  /subscriptions/<sub id>/resourceGroups/<resource group>/providers/${this.selectedResourceType.resourceType}/` +
         "<resource name>";
-
-      return resourceURI;
+        return resourceURI;
+      }
     }
   }
 

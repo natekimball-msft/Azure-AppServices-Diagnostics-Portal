@@ -25,6 +25,7 @@ export class ResourceService {
     const pieces = this.resource.id.toLowerCase().split('/');
     this._subscription = pieces[pieces.indexOf('subscriptions') + 1];
   }
+  
 
   public get resourceIdForRouting() {
     return this.resource.id.toLowerCase();
@@ -53,6 +54,15 @@ export class ResourceService {
     if (this.armResourceConfig) {
       return of(this.armResourceConfig.pesId);
     }
+
+    if(this.resource?.id?.toLowerCase().indexOf('microsoft.web/sites') > -1) {
+      // PesId of web app windows.
+      return of('14748');
+    }
+    else if(this.resource?.id?.toLowerCase().indexOf('microsoft.web/hostingenvironments') > -1) {
+      return of('16533');
+    }
+    
     return of(null);
   }
 
@@ -60,6 +70,15 @@ export class ResourceService {
     if (this.armResourceConfig) {
       return of(this.armResourceConfig.sapProductId);
     }
+
+    if(this.resource?.id?.toLowerCase().indexOf('microsoft.web/sites') > -1) {
+      // SapProductId of web app windows.
+      return of('1890289e-747c-7ef6-b4f5-b1dbb0bead28');
+    }
+    else if(this.resource?.id?.toLowerCase().indexOf('microsoft.web/hostingenvironments') > -1) {
+      return of('2fd37acf-7616-eae7-546b-1a78a16d11b5');
+    }
+
     return of(null);
   }
 
@@ -188,6 +207,15 @@ export class ResourceService {
     }
   }
 
+  private _computeResourceIdFromResource(resourceUri: string, resource: ArmResource): string {
+    if(resource.id.toLowerCase().indexOf('/resourcegroups/') > -1) {
+      return resource.id;
+    }
+    else {
+      return `/subscriptions/${resourceUri.split("subscriptions/")[1].split("/")[0]}/providers/${resourceUri.split("/providers/")[1].split("/")[0]}/${resourceUri.split("/providers/")[1].split("/")[1].split("?")[0]}`;
+    }
+  }
+
   public registerResource(resourceUri: string): Observable<{} | ArmResource> {
     if (this._genericArmConfigService && resourceUri.indexOf('hostingenvironments') < 0) {
       return this._genericArmConfigService.initArmConfig(resourceUri).pipe(
@@ -195,9 +223,10 @@ export class ResourceService {
           return this._armService.getArmResource<ArmResource>(resourceUri).pipe(
             map(resource => {
               this.resource = resource;
+              this.resource.id = this._computeResourceIdFromResource(resourceUri, resource);
               this._initialize();
               this.makeWarmUpCalls();
-              return resource;
+              return this.resource;
             }));
         })
       );
@@ -206,9 +235,10 @@ export class ResourceService {
       return this._armService.getArmResource<ArmResource>(resourceUri).pipe(
         map(resource => {
           this.resource = resource;
+          this.resource.id = this._computeResourceIdFromResource(resourceUri, resource);
           this._initialize();
           this.makeWarmUpCalls();
-          return resource;
+          return this.resource;
         }));
     }
   }
