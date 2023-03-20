@@ -492,7 +492,7 @@ export class MainComponent implements OnInit {
         return this.handleStampForRecentResource(recentResource);
       }
       var descriptor = ResourceDescriptor.parseResourceUri(recentResource.resourceUri);
-      const name = descriptor.resource;
+      const name = !!descriptor.resource? descriptor.resource : `Subscription: ${descriptor.subscription}` ;
       const type = `${descriptor.provider}/${descriptor.type}`.toLowerCase();
       const resourceType = this.enabledResourceTypes.find(t => t.resourceType.toLocaleLowerCase() === type);
       const display: RecentResourceDisplay = {
