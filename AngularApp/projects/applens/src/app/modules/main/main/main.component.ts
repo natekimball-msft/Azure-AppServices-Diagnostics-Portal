@@ -17,6 +17,8 @@ import { defaultResourceTypes } from '../../../shared/utilities/main-page-menu-o
 import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
 import { UserAccessStatus } from '../../../shared/models/alerts';
 import { applensDashboards } from '../../../shared/utilities/applens-dashboards-constant';
+import { Guid } from 'projects/diagnostic-data/src/lib/utilities/guid';
+
 const moment = momentNs;
 
 @Component({
@@ -110,7 +112,7 @@ export class MainComponent implements OnInit {
   openTimePickerSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   timePickerStr: string = "";
   get disableSubmitButton(): boolean {
-    return !this.resourceName || this.resourceName.length === 0 || !!this.errorMessage;
+    return !this.resourceName || this.resourceName.length === 0 ;
   }
   troubleShootIcon: string = "../../../../assets/img/applens-skeleton/main/troubleshoot.svg";
   userGivenName: string = "";
@@ -458,6 +460,10 @@ export class MainComponent implements OnInit {
 
 
     if(this.isNoResource) {
+      if(!Guid.isGuid(this.resourceName.trim())) {
+        this.errorMessage = 'Invalid subscription id.';
+        return;
+      }
       this._userSettingService.updateDefaultServiceType(this.serviceTypePickerSelectedItems[0].name);
       resourceUri = `/subscriptions/${this.resourceName.trim()}/providers/${this.serviceTypePickerSelectedItems[0].name}/`;
     }
