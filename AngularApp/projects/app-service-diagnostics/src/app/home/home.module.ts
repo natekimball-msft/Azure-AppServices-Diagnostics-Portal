@@ -64,6 +64,7 @@ import { DownloadReportComponent } from '../shared/components/download-report/do
 import { GenericClientScriptService } from 'projects/diagnostic-data/src/lib/services/generic-client-script.service';
 import { ClientScriptService } from '../shared-v2/services/client-script.service';
 import { OpenAIArmService } from '../../../../diagnostic-data/src/public_api';
+import { OptinsightsTileComponent } from './components/optinsights-tile/optinsights-tile.component';
 
 export const HomeRoutes = RouterModule.forChild([
     {
@@ -768,7 +769,7 @@ export const HomeRoutes = RouterModule.forChild([
         FabCommandBarModule,
         FabSpinnerModule
     ],
-    declarations: [HomeContainerComponent, HomeComponent, CategoryChatComponent, CategoryTileComponent, SearchResultsComponent, SupportTopicRedirectComponent, DiagnosticsSettingsComponent, CategoryTileV4Component, RiskTileComponent],
+    declarations: [HomeContainerComponent, HomeComponent, CategoryChatComponent, CategoryTileComponent, SearchResultsComponent, SupportTopicRedirectComponent, DiagnosticsSettingsComponent, CategoryTileV4Component, RiskTileComponent, OptinsightsTileComponent],
     providers:
         [
             CategoryTabResolver,
