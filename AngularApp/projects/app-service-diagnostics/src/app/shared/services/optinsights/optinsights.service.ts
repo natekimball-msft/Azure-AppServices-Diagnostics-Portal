@@ -44,14 +44,19 @@ export class OptInsightsService {
     }
     ), mergeMap((validForStack: boolean) => {
       if (validForStack) {
-        return this.appInsightsService.loadAppInsightsResourceObservable.pipe(map(loadStatus => {
-          const appInsightsResourceId = this.appInsightsService.appInsightsSettings.resourceUri;
-          const appId = this.appInsightsService.appInsightsSettings.appId;
-          return { appInsightsResourceId, appId };
+        return this.appInsightsService.CheckIfAppInsightsEnabled().pipe(map(isAppInsightsEnabled => {
+          if (isAppInsightsEnabled) {
+            const appInsightsResourceId = this.appInsightsService.appInsightsSettings.resourceUri;
+            const appId = this.appInsightsService.appInsightsSettings.appId;
+            return { appInsightsResourceId, appId };
+          }
+          else {
+            return of(null);
+          }
         }));
       }
       else {
-        return of(null);
+        return of(null)
       }
     }));
   }
