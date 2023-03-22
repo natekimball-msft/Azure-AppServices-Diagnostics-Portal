@@ -8,6 +8,7 @@ import { AuthService } from '../../startup/services/auth.service';
 import { ArmService } from './arm.service';
 import { DetectorResponse, DetectorMetaData, workflowNodeResult } from 'diagnostic-data';
 import { ArmResource } from '../../shared-v2/models/arm';
+import { GenericArmConfigService } from './generic-arm-config.service';
 
 @Injectable()
 export class GenericApiService {
@@ -19,12 +20,18 @@ export class GenericApiService {
 
     useLocal: boolean = false;
 
+    useApolloApi:boolean = false;
+    apolloApiVersion = '';
+
     effectiveLocale: string = "";
 
-    constructor(private _http: HttpClient, private _armService: ArmService, private _authService: AuthService) {
+    constructor(private _http: HttpClient, private _armService: ArmService, private _authService: AuthService, private _genericArmConfigService : GenericArmConfigService) {
         this._authService.getStartupInfo().subscribe(info => {
             this.resourceId = info.resourceId;
             this.effectiveLocale = !!info.effectiveLocale ? info.effectiveLocale.toLowerCase() : "";
+            // Use apollo api if this is a partial resource or explicitly configured in the config
+            this.useApolloApi = info.resourceId.toLowerCase().indexOf('/resourcegroups/') < 0 || this._genericArmConfigService.getArmApiConfig(info.resourceId)?.useApolloApi === true;
+            this.apolloApiVersion = this._genericArmConfigService.getApiVersion(info.resourceId);
         });
     }
 
@@ -54,6 +61,7 @@ export class GenericApiService {
             return this.invoke<DetectorResponse[]>(path, 'POST').pipe(map(response => response.map(detector => detector.metadata)));
         } else {
             const path = `${resourceId}/detectors`;
+            if(this.useApollo)
             return this._armService.getResourceCollection<DetectorResponse[]>(path, null, false, queryParams).pipe(map((response: ResponseMessageEnvelope<DetectorResponse>[]) => {
 
                 this.detectorList = response.map(listItem => listItem.properties.metadata);
