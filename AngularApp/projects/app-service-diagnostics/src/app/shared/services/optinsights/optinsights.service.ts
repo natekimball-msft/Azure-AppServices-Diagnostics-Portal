@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, forkJoin } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
 import { AggregatedInsight } from '../../models/optinsights';
-import { AppInsightsService } from '../appinsights/appinsights.service';
+//import { AppInsightsService } from '../appinsights/appinsights.service';
 import { ResourceType, StartupInfo } from '../../models/portal';
 import { AuthService } from '../../../startup/services/auth.service';
 
@@ -19,11 +19,16 @@ export class OptInsightsService {
   private authEndpoint: "https://management.azure.com"
   private optInsightsResponse: any;
   private aRMToken: string = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyIsImtpZCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyJ9.eyJhdWQiOiI5ZDViYjgxZi04YzQwLTRjMDAtOTQzMi1lNmI4ZGI1ZjA2OWEiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC83MmY5ODhiZi04NmYxLTQxYWYtOTFhYi0yZDdjZDAxMWRiNDcvIiwiaWF0IjoxNjc5MzI2OTcwLCJuYmYiOjE2NzkzMjY5NzAsImV4cCI6MTY3OTMzMjIwNiwiYWNyIjoiMSIsImFpbyI6IkFWUUFxLzhUQUFBQUR4bGlrbDRocG04bHFHQ3JwNldZWDA2dG5tYXF4b3RNdFVMOEJCeGIybjlsZFdFaTBweE1LcjdMZHk3MkZpbVk5eklraThOa2ZTa0lacXAxWTFGbjJxZlcxeStFTThzcm5Xak82Qmo2Q1k4PSIsImFtciI6WyJyc2EiLCJtZmEiXSwiYXBwaWQiOiI5NWE1ZDk0Yy1hMWEwLTQwZWItYWM2ZC00OGM1YmRlZTk2ZDUiLCJhcHBpZGFjciI6IjIiLCJkZXZpY2VpZCI6ImM5ZjlkZjliLWVjZmUtNDk5YS1iMzhiLTM2YjhlYThhMzcyNCIsImZhbWlseV9uYW1lIjoiVXJpYmUiLCJnaXZlbl9uYW1lIjoiQ3Jpc3RoaWFuIiwiaXBhZGRyIjoiNDcuMTg3LjExMS42MiIsIm5hbWUiOiJDcmlzdGhpYW4gVXJpYmUiLCJvaWQiOiI2MDhkZmFmMy0wN2VhLTQ3MGEtODliNC00ZWE3YjcxYTc0NzUiLCJvbnByZW1fc2lkIjoiUy0xLTUtMjEtMTI0NTI1MDk1LTcwODI1OTYzNy0xNTQzMTE5MDIxLTk1OTE1IiwicHVpZCI6IjEwMDM3RkZFODAxQjEyQUMiLCJyaCI6IjAuQVJvQXY0ajVjdkdHcjBHUnF5MTgwQkhiUngtNFc1MUFqQUJNbERMbXVOdGZCcG9hQUVFLiIsInNjcCI6ImRhdGEucmVhZCIsInN1YiI6IjM3eW1JbThKN3NzdHplU05rVElWLXlWSWhDRV9FQUJUeTNtVXBMSzJOOG8iLCJ0aWQiOiI3MmY5ODhiZi04NmYxLTQxYWYtOTFhYi0yZDdjZDAxMWRiNDciLCJ1bmlxdWVfbmFtZSI6ImN1cmliZUBtaWNyb3NvZnQuY29tIiwidXBuIjoiY3VyaWJlQG1pY3Jvc29mdC5jb20iLCJ1dGkiOiJ5cFNqaG53RktrZWV6a0IzTjNrMEFBIiwidmVyIjoiMS4wIn0.eubMvHTqsQ49h5TcYX1gO441adZziMN4qaoHYAYzWHZFfFciqMHdmg--CLNnPGnUHdxvnDYuR1uWvlb2wCPg3jGqp12rz1K7_PZ2XksZIr_gR9pkCQywkjocfNrEPudkVSBDe_TJRUgKWfA9yw5sd5IwN4Ajt6_joH9bZI7sISiegQnR-XbYZW2ShsEio0eRvB-_r7pK9Xhrlo20xYJBxuaJN4_ld92Vmid4TQmZeskuioNQUfm-jE5DokvpBGrpH7AV7JLyqdJ99-ouAeckNiytx7fJogbzrKTrbOaHRRKGpSQsZqBZAIh_BMZAaZqI4fSKHQGP9BI_hW4Rci6dNQ";
+  isEnabledInProd: boolean = true;
   //private appInsightsResourceId: string = "/subscriptions/a2c49f0f-548f-4f3b-86a4-39c8eafc0780/resourceGroups/OptInsights/providers/microsoft.insights/components/BishopTrouble";
   loading: boolean;
   dependencies: any = [];
+  appInsightsValidationError: string;
+  isAppInsightsEnabled: boolean = false;
+  appInsightsResourceUri: string = "";
+  appId: string = "";
 
-  constructor(private appInsightsService: AppInsightsService, private http: HttpClient, private authService: AuthService) {
+  constructor(private http: HttpClient, private authService: AuthService) {
   }
 
   private getARMToken(): Observable<string | null> {
@@ -38,28 +43,27 @@ export class OptInsightsService {
     }));
   }
 
-  private getAppInsightsInfo(): Observable<{ appInsightsResourceId: string, appId: string } | null> {
-    return this.appInsightsService.loadAppDiagnosticPropertiesObservable.pipe(map(propertiesLoadStatus => {
-      return this.appInsightsService.appInsightsSettings.validForStack;
-    }
-    ), mergeMap((validForStack: boolean) => {
-      if (validForStack) {
-        return this.appInsightsService.CheckIfAppInsightsEnabled().pipe(map(isAppInsightsEnabled => {
-          if (isAppInsightsEnabled) {
-            const appInsightsResourceId = this.appInsightsService.appInsightsSettings.resourceUri;
-            const appId = this.appInsightsService.appInsightsSettings.appId;
-            return { appInsightsResourceId, appId };
-          }
-          else {
-            return of(null);
-          }
-        }));
-      }
-      else {
-        return of(null)
-      }
-    }));
-  }
+  // private getAppInsightsInfo(): Observable<{ appInsightsResourceUri: string, appId: string } | null> {
+  //   if (this.isEnabledInProd) {
+  //     this.appInsightsValidationError = "";
+  //     this._appInsightsService.loadAppInsightsResourceObservable.pipe(
+  //       map(loadStatus => {
+  //       if (loadStatus === true) {
+  //         let appInsightsSettings = this._appInsightsService.appInsightsSettings;
+  //         this.isAppInsightsEnabled = appInsightsSettings.enabledForWebApp;
+  //         this.appInsightsResourceUri = appInsightsSettings.resourceUri;
+  //         this.appId = appInsightsSettings.appId;
+  //         return { "appInsightsResourceUri": this.appInsightsResourceUri, "appId": this.appId };
+  //       }
+  //       else{
+  //         return null;
+  //       }
+  //     }));
+  //   }
+  //   else{
+  //     return null;
+  //   }
+  // }
 
   private getOAuthAccessToken(_armToken: string, _appInsightsResourceId: string): Observable<string> {
     var _token: string = "";
@@ -92,19 +96,19 @@ export class OptInsightsService {
   }
 
 
-  getInfoForOptInsights(): Observable<AggregatedInsight[] | null> {
-    const requests = forkJoin([this.getARMToken(), this.getAppInsightsInfo()]);
-    return requests.pipe(mergeMap(res => {
-      const armToken = res[0];
-      const appInsightInfo = res[1];
-      if (armToken === null || appInsightInfo === null || appInsightInfo.appInsightsResourceId === null || appInsightInfo.appId === null) return of(null);
-      return this.getOAuthAccessToken(armToken, appInsightInfo.appInsightsResourceId).pipe(map(accessToken => {
-        return { accessToken, appInsightInfo };
+  getInfoForOptInsights(appInsightsResourceUri: string, appId: string): Observable<AggregatedInsight[] | null> {
+    //const requests = forkJoin([this.getARMToken(), this.getAppInsightsInfo()]);
+
+    return this.getARMToken().pipe(
+      (mergeMap(res => {
+      const armToken = res[0];      
+      if (armToken === null || appInsightsResourceUri === null || appId === null) return of(null);
+      return this.getOAuthAccessToken(armToken, appInsightsResourceUri).pipe(map(accessToken => {
+        return { accessToken };
       }))
     }), mergeMap(res => {
       if (res === null) return of(null);
-      return this.getAggregatedInsightsbyTimeRange(res.accessToken, res.appInsightInfo.appInsightsResourceId, res.appInsightInfo.appId);
-    }));
+      return this.getAggregatedInsightsbyTimeRange(res, appInsightsResourceUri, appId);
+    })));
   }
-
 }
