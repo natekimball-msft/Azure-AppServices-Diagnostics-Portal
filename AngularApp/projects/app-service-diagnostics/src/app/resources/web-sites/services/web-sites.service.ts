@@ -144,6 +144,10 @@ export class WebSitesService extends ResourceService {
         return this.appType === AppType.WebApp ? this.platform === OperatingSystem.windows ? 'Web App (Windows)' : 'Web App (Linux)' : 'Function App';
     }
 
+    public get useApolloApi():boolean {
+        return false;
+    }
+
     public get isArmApiResponseBase64Encoded(): boolean {
         return false;
     }

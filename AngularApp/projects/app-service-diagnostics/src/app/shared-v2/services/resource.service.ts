@@ -151,6 +151,15 @@ export class ResourceService {
     }
   }
 
+  public get useApolloApi():boolean {
+    if (this._genericArmConfigService) {
+      return this._genericArmConfigService.getArmApiConfig(this.resource.id)?.useApolloApi === true;
+    }
+    else {
+      return false;
+    }
+  }
+
   public get isArmApiResponseBase64Encoded(): boolean {
     if (this._genericArmConfigService) {
       return this._genericArmConfigService.isArmApiResponseBase64Encoded(this.resource.id);
