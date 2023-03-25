@@ -16,7 +16,6 @@
             "emergingIssuesICMLookupEnabled": false,
             "displayName": "App",
             "overviewPageMetricsId" : "applensoverviewmetrics_appservices",
-            "userAuthorizationEnabled": true,
             "workflowsEnabled": true
         },
         {
