@@ -185,6 +185,20 @@ export class SideNavComponent implements OnInit {
     }
   ];
 
+  tools: CollapsibleMenuItem[] = [
+    {
+      label: 'Network Trace Analysis',
+      id: "",
+      onClick: () => {
+        this.navigateTo("networkTraceAnalysis");
+      },
+      expanded: false,
+      subItems: null,
+      isSelected: () => {
+        return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `networkTraceAnalysis`.toLowerCase();
+      },
+      icon: null
+    }];
 
 
   ngOnInit() {
@@ -518,7 +532,6 @@ export class SideNavComponent implements OnInit {
     const gistAriaLabel = `${subGistCount > 0 ? subGistCount : 'No'} ${subGistCount > 1 ? 'Gists' : 'Gist'}`;
     this.searchAriaLabel = `${detectorAriaLabel} And ${gistAriaLabel} Found for ${this.searchValue}`;
   }
-
 
   //Only support filtering for two layer menu-item
   private updateMenuItems(items: CollapsibleMenuItem[], searchValue: string): CollapsibleMenuItem[] {
