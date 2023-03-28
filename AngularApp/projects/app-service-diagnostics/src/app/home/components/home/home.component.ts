@@ -196,7 +196,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
             }
         });
 
-        if (this._resourceService && !!this._resourceService.resource && this._resourceService.resource.type === 'Microsoft.Web/sites') {
+        if (this._resourceService && !!this._resourceService.resource && this._resourceService.resource.type === 'Microsoft.Web/sites' && `${this._resourceService.resourceIdForRouting}`.toLowerCase().indexOf('/resourcegroups/') > -1) {
             if (locationPlacementId.toLowerCase() !== 'geos_2020-01-01') {
                 // Register Change Analysis Resource Provider.
                 this.armService.postResourceFullResponse(this.providerRegisterUrl, {}, true, '2018-05-01').subscribe((response: HttpResponse<{}>) => {

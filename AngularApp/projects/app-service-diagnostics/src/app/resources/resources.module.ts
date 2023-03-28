@@ -33,7 +33,7 @@ const ResourceRoutes = RouterModule.forChild([
     loadChildren: () => import('./generic-arm-resources/generic-arm-resources.module').then(m => m.GenericArmResourcesModule)
   },
   {
-    path:'subscriptions/:subscriptionId/providers/:provider/:resourceTypeName',
+    path:'subscriptions/:subscriptionid/providers/:providerName/:resourceTypeName',
     loadChildren: () => import('./generic-arm-resources/generic-arm-resources.module').then(m => m.GenericArmResourcesModule)
   }
 
