@@ -208,7 +208,13 @@ export class MainComponent implements OnInit {
     this._diagnosticApiService.checkUserAccess().subscribe(res => {
       if (res && res.Status == UserAccessStatus.CaseNumberNeeded) {
         this.caseNumberNeededForUser = true;
-        this.fetchCaseNumberEnforcedRpList();
+        if (res.EnforcedResourceProviders && res.EnforcedResourceProviders.length>0) {
+          this.caseNumberEnabledRPs = res.EnforcedResourceProviders.split(",").map(x => x.toLowerCase());
+          this.hasResourceCaseNumberEnforced();
+        }
+        else {
+          this.fetchCaseNumberEnforcedRpList();
+        }
         this._diagnosticApiService.setCaseNumberNeededForUser(this.caseNumberNeededForUser);
         this.displayLoader = false;
       }
