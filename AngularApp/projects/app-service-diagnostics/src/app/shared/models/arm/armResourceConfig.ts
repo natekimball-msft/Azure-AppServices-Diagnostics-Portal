@@ -26,7 +26,6 @@ export interface ArmApiConfig {
 	armApiVersion?:string;
 	isArmApiResponseBase64Encoded?:boolean;
 	useApolloApi?:boolean;
-	apolloApiVersion?:string;
 }
 
 export interface LiveChatConfig {

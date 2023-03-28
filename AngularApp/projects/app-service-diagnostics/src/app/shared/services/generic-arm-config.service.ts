@@ -123,8 +123,7 @@ export class GenericArmConfigService {
           armApiConfig: {
             armApiVersion: '',
             isArmApiResponseBase64Encoded:false,
-            useApolloApi:false,
-            apolloApiVersion: APOLLO_API_VERSION
+            useApolloApi:false
           },
           isSearchEnabled:true,
           categories: [{
@@ -254,8 +253,7 @@ export class GenericArmConfigService {
               let currArmApiConfig:ArmApiConfig = {
                 armApiVersion:'',
                 isArmApiResponseBase64Encoded:false,
-                useApolloApi:false,
-                apolloApiVersion: APOLLO_API_VERSION
+                useApolloApi:false
               };
               if(this.overrideConfig.armApiConfig && this.resourceConfig.armApiConfig) {
                 //armApiConfig is not present in both configs. Merge.
@@ -301,21 +299,6 @@ export class GenericArmConfigService {
                     "resourceUri": resourceUri,
                     "reason": `${TelemetryEventNames.ArmConfigMergeError}: Error while merging armConfig.`,
                     "field": "armApiConfig.useApolloApi"
-                  });
-                  throw error;
-                }
-
-                //armApiConfig.apolloApiVersion
-                try {
-                  if (!!this.getValue(this.resourceConfig.armApiConfig.apolloApiVersion, this.overrideConfig.armApiConfig.apolloApiVersion)) {
-                    currArmApiConfig.apolloApiVersion = this.getValue(this.resourceConfig.armApiConfig.apolloApiVersion, this.overrideConfig.armApiConfig.apolloApiVersion);
-                  }
-                }
-                catch(error) {
-                  this.logException(error, null, {
-                    "resourceUri": resourceUri,
-                    "reason": `${TelemetryEventNames.ArmConfigMergeError}: Error while merging armConfig.`,
-                    "field": "armApiConfig.apolloApiVersion"
                   });
                   throw error;
                 }
@@ -789,18 +772,17 @@ export class GenericArmConfigService {
     }
   }
 
-  getApolloApiVersion(resourceUri: string): string {
-    let apiVersion = APOLLO_API_VERSION;
-    if (!!this.getArmApiConfig(resourceUri) && !!this.getArmApiConfig(resourceUri).apolloApiVersion) {
-      apiVersion = this.getArmApiConfig(resourceUri).apolloApiVersion;
-    }
-    return apiVersion;
+  getApolloApiVersion(resourceUri):string {
+    return APOLLO_API_VERSION;
   }
 
   getApiVersion(resourceUri: string): string {
-    if(!!resourceUri && resourceUri.toLowerCase().indexOf('/resourcegroups/') < -1 ) {
+    if(resourceUri?.toLowerCase().indexOf('/microsoft.diagnostics/apollo/') > -1) {
+      return APOLLO_API_VERSION;
+    }
+    if(!!resourceUri && resourceUri.toLowerCase().indexOf('/resourcegroups/') < 0  ) {
       //Call is for empty resource, return the API version for GET subscription call
-      return '2020-01-01';
+      return '2019-06-01';
     }
     let apiVersion = '';
     if (!!this.getArmApiConfig(resourceUri) && !!this.getArmApiConfig(resourceUri).armApiVersion) {

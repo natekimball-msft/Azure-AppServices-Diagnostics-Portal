@@ -15,7 +15,7 @@ export class CacheService {
     private inFlightObservables: Map<string, Subject<any>> = new Map<string, Subject<any>>();
 
     // This is useful to enable if you are trying to test and make sure this service is working properly
-    private enableConsoleLogging: boolean = false;
+    private enableConsoleLogging: boolean = true;
 
     constructor(private telemetryService?: PortalKustoTelemetryService) { }
 

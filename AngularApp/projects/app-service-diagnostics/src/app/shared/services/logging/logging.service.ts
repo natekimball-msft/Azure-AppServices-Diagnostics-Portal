@@ -69,26 +69,35 @@ export class LoggingService {
                 }
 
                 if (siteIndex !== -1) {
-                    const siteSpecificDataRequests = forkJoin(
-                        this._armServiceInstance.getResource<IDiagnosticProperties>(this._startUpInfo.resourceId + '/diagnostics/properties'),
-                        this._armServiceInstance.getResource<Site>(this._startUpInfo.resourceId)
-                    );
-
-                    siteSpecificDataRequests.subscribe(partialObserver => {
-                        const propertiesEnvelope: ResponseMessageEnvelope<IDiagnosticProperties> = <ResponseMessageEnvelope<IDiagnosticProperties>>partialObserver[0];
-                        const resourceEnvelope: ResponseMessageEnvelope<Site> = <ResponseMessageEnvelope<Site>>partialObserver[0];
-
-                        if (propertiesEnvelope && propertiesEnvelope.properties) {
-                            this.appStackInfo = propertiesEnvelope.properties.appStack;
-                        }
-
-                        if (resourceEnvelope && resourceEnvelope.properties) {
-                            this.platform = SiteExtensions.operatingSystem(resourceEnvelope.properties) === OperatingSystem.windows ? 'windows' : 'linux';
-                            this._appType = resourceEnvelope.properties.kind && resourceEnvelope.properties.kind.toLowerCase().indexOf('functionapp') >= 0 ? 'functionapp' : 'webapp';
-                        }
-
+                    if(this._startUpInfo.resourceId.toLocaleLowerCase().indexOf('/resourcegroups/') < 0) {
+                        this.appStackInfo = 'Others';
+                        this.platform = 'windows';
+                        this._appType = 'webapp';
                         this.LogStartUpInfo(this._startUpInfo);
-                    });
+                    }
+                    else {
+                        const siteSpecificDataRequests = forkJoin(
+                            this._armServiceInstance.getResource<IDiagnosticProperties>(this._startUpInfo.resourceId + '/diagnostics/properties'),
+                            this._armServiceInstance.getResource<Site>(this._startUpInfo.resourceId)
+                        );
+    
+                        siteSpecificDataRequests.subscribe(partialObserver => {
+                            const propertiesEnvelope: ResponseMessageEnvelope<IDiagnosticProperties> = <ResponseMessageEnvelope<IDiagnosticProperties>>partialObserver[0];
+                            const resourceEnvelope: ResponseMessageEnvelope<Site> = <ResponseMessageEnvelope<Site>>partialObserver[0];
+    
+                            if (propertiesEnvelope && propertiesEnvelope.properties) {
+                                this.appStackInfo = propertiesEnvelope.properties.appStack;
+                            }
+    
+                            if (resourceEnvelope && resourceEnvelope.properties) {
+                                this.platform = SiteExtensions.operatingSystem(resourceEnvelope.properties) === OperatingSystem.windows ? 'windows' : 'linux';
+                                this._appType = resourceEnvelope.properties.kind && resourceEnvelope.properties.kind.toLowerCase().indexOf('functionapp') >= 0 ? 'functionapp' : 'webapp';
+                            }
+    
+                            this.LogStartUpInfo(this._startUpInfo);
+                        });
+                    }                    
+
                 } else {
                     this.LogStartUpInfo(this._startUpInfo);
                 }
