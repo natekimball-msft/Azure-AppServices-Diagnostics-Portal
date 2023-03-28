@@ -53,6 +53,11 @@ export class DiagnosticApiService {
     return this.invoke<any>(path, HttpMethod.GET, null, true, false, true, false);
   }
 
+  public FetchCaseEnabledResourceProviders() {
+    let path = "internal/FetchCaseEnabledResourceProviders";
+    return this.invoke<any>(path, HttpMethod.GET, null, true, false, true, false);
+  }
+
   public unrelatedResourceConfirmation(resourceId: string) {
     let body = {
       caseNumber: this.CustomerCaseNumber,
