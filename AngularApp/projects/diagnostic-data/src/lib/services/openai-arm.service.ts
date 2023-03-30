@@ -1,7 +1,7 @@
 import {map, catchError } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Observable, of  } from 'rxjs';
-import { DiagnosticService, DetectorControlService, DetectorResponse, GenericResourceService} from "diagnostic-data";
+import { DiagnosticService, DetectorControlService, DetectorResponse, GenericResourceService} from "../../public_api";
 
 @Injectable()
 export class OpenAIArmService {
