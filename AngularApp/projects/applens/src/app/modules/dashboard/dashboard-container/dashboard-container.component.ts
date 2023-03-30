@@ -15,7 +15,6 @@ import { HttpClient } from '@angular/common/http';
 import { DetectorControlService } from 'diagnostic-data';
 import { ObserverSiteSku, ObserverSkuType } from '../../../shared/models/observer';
 import { AdalService } from 'adal-angular4';
-import {OpenAIArmService} from "diagnostic-data";
 
 @Component({
   selector: 'dashboard-container',
@@ -59,7 +58,7 @@ export class DashboardContainerComponent implements OnInit {
   };
   vfsFonts: any;
 
-    constructor(public _resourceService: ResourceService, private _startupService: StartupService, private _diagnosticApiService: DiagnosticApiService, private _applensDiagnosticApiService: ApplensDiagnosticService,  private _observerService: ObserverService, private _applensGlobal: ApplensGlobal,  private _activatedRoute: ActivatedRoute, private _telemetryService: TelemetryService, private _http:HttpClient, private _detectorControlService: DetectorControlService, private _adalService: AdalService, private _openAIArmService: OpenAIArmService) {
+    constructor(public _resourceService: ResourceService, private _startupService: StartupService, private _diagnosticApiService: DiagnosticApiService, private _applensDiagnosticApiService: ApplensDiagnosticService,  private _observerService: ObserverService, private _applensGlobal: ApplensGlobal,  private _activatedRoute: ActivatedRoute, private _telemetryService: TelemetryService, private _http:HttpClient, private _detectorControlService: DetectorControlService, private _adalService: AdalService) {
     let caseNumber = this._activatedRoute.snapshot.queryParams['caseNumber']? this._activatedRoute.snapshot.queryParams['caseNumber']: (this._activatedRoute.snapshot.queryParams['srId']? this._activatedRoute.snapshot.queryParams['srId']: null);
     this.detector = this._activatedRoute.snapshot.queryParams['detector']? this._activatedRoute.snapshot.queryParams['detector']: null;
     if(caseNumber && AppLensCloudRegionUtility.getASCCloudSpecificBaseUri()) {
@@ -240,13 +239,6 @@ export class DashboardContainerComponent implements OnInit {
           };
           this.keys.push('ASCLink');
     }
-    this._openAIArmService.getAnswer("How to scale my app?").subscribe(res => {
-      this.keys.push("Hello");
-      this.resource = {
-        ...this.resource,
-        Hello: res
-      };
-    });
   }
 
   updateAdditionalStampInfo() {
