@@ -31,7 +31,7 @@ export * from './lib/services/generic-feature-service';
 export * from './lib/services/generic-openai-chat.service';
 export * from './lib/services/chat-gpt-context-service';
 export * from './lib/services/query-response.service';
-export * from './lib/services/generic-openai-arm.service';
+export * from './lib/services/openai-arm.service';
 export * from './lib/config/diagnostic-data-config';
 export * from './lib/diagnostic-data.module';
 

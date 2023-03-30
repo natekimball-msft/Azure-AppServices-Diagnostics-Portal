@@ -27,7 +27,7 @@ import {detectorSearchEnabledPesIds, detectorSearchEnabledPesIdsInternal } from 
 import { GenericResourceService } from '../../services/generic-resource-service';
 import { WebSearchConfiguration } from '../../models/search';
 import { GenericContentService } from '../../services/generic-content.service';
-import {GenericOpenAIArmService} from '../../services/generic-openai-arm.service';
+import { OpenAIArmService } from '../../services/openai-arm.service';
 import {PanelType} from "office-ui-fabric-react";
 import { CXPChatService } from '../../services/cxp-chat.service';
 import { IButtonStyles } from 'office-ui-fabric-react/lib/components/Button';
@@ -222,7 +222,7 @@ export class SolutionOrchestratorComponent extends DataRenderBaseComponent imple
         protected telemetryService: TelemetryService, public _appInsightsService: AppInsightsQueryService,
         private _supportTopicService: GenericSupportTopicService, protected _globals: GenieGlobals, private _solutionService: SolutionService,
         @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, private portalActionService: PortalActionGenericService, private _resourceService: GenericResourceService, private _contentService: GenericContentService,
-        private _openAIArmService: GenericOpenAIArmService,
+        private _openAIArmService: OpenAIArmService,
         private _cxpChatService: CXPChatService) {
         super(telemetryService);
         this.isPublic = config && config.isPublic;
