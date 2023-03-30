@@ -1,16 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { NgFlowchart, NgFlowchartStepComponent } from 'projects/ng-flowchart/dist';
-import {
-  DocumentCard,
-  DocumentCardPreview,
-  DocumentCardTitle,
-  DocumentCardActivity,
-  IDocumentCardPreviewProps
-} from 'office-ui-fabric-react/lib/DocumentCard';
-import { title } from 'process';
-import {MatCardModule} from '@angular/material/card';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-
 
 @Component({
   selector: 'architecture-diagram-node',
@@ -38,67 +27,18 @@ export class ArchitectureDiagramNodeComponent extends NgFlowchartStepComponent {
 
 
   ngOnInit(): void{
-    console.log("in here:" , this.data); 
-    console.log("in here 2: ", this.canvas.flow); 
-    debugger; 
+    //special ellipses modification for title overflow 
+    if(this.data.title){
+      this._modifyTitle(); 
+    }
   }
 
-  // public render(): JSX.Element {
-  //   const previewProps: IDocumentCardPreviewProps = {
-  //     previewImages: [
-  //       {
-  //         previewImageSrc: String(require('./document-preview.png')),
-  //         iconSrc: String(require('./icon-ppt.png')),
-  //         width: 318,
-  //         height: 196,
-  //         accentColor: '#ce4b1f'
-  //       }
-  //     ],
-  //   };
-  
-  //   return (
-  //     <DocumentCard onClickHref='http://bing.com'>
-  //       <DocumentCardPreview { ...previewProps } />
-  //       <DocumentCardTitle title='Revenue stream proposal fiscal year 2016 version02.pptx' />
-  //       <DocumentCardActivity
-  //         activity='Created Feb 23, 2016'
-  //         people={
-  //           [
-  //             { name: 'Kat Larrson', profileImageSrc: String(require('./avatar-kat.png')) }
-  //           ]
-  //         }
-  //       />
-  //     </DocumentCard>
-  //   );
-  // }
-  
+  private _modifyTitle(){
 
-  // canDrop(dropEvent: NgFlowchart.DropTarget): boolean {
-  //   return true;
-  // }
-
-  
-
-  // onAddRoute() {
-  //   let route = {
-  //     name: 'New Route',
-  //     condition: '',
-  //     sequence: null
-  //   }
-  //   let index = this.routes.push(route);
-  //   route.sequence = index;
-
-  //   this.addChild({
-  //     template: ArchitectureDiagramNodeComponent, //another custom step
-  //     type: 'do-action',
-  //     data: route
-  //   }, {
-  //     sibling: true
-  //   });
-  // }
-  
-  
-
+    if(this.data.title.length > 21){
+      this.data.title = this.data.title.substring(0,10) + "..." + this.data.title.substring(this.data.title.length - 12); 
+    }
+  }
   
 
 }

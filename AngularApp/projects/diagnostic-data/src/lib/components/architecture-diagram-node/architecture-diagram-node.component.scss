@@ -24,7 +24,6 @@
   border: 1px solid #000000;
   overflow: hidden;
 }
-// C:\Users\hmangipudi\Desktop\Azure-AppServices-Diagnostics-Portal\AngularApp\projects\applens\src\assets\img\Azure-WebApps-Logo.png
   
 .example-card{
   width:280px;
@@ -76,9 +75,9 @@
 .card-content-title {
   font-size:16px; 
   flex-basis: 28px;
-  // text-overflow: ellipsis;
-  overflow-wrap: anywhere;
-  // white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
   width: 95%;
   margin: 10px 0px -5px 0px;
 }
