@@ -1,8 +1,7 @@
 import {map, catchError } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Observable, of  } from 'rxjs';
-import { DiagnosticService, DetectorControlService, DetectorResponse} from "diagnostic-data";
-import { ResourceService } from './resource.service';
+import { DiagnosticService, DetectorControlService, DetectorResponse, GenericResourceService} from "../../public_api";
 
 @Injectable()
 export class OpenAIArmService {
@@ -16,7 +15,7 @@ export class OpenAIArmService {
     return of(this.isEnabled);
   }
   
-  constructor(private _resourceService: ResourceService, private _diagnosticService: DiagnosticService, private _detectorControlService: DetectorControlService) { 
+  constructor(private _resourceService: GenericResourceService, private _diagnosticService: DiagnosticService, private _detectorControlService: DetectorControlService) { 
   }
 
   processDetectorResponse(response: DetectorResponse) {

@@ -127,6 +127,7 @@ import { WorkflowRunDialogComponent } from './workflow/workflow-run-dialog/workf
 import { WorkflowRootNodeComponent } from './workflow/workflow-root-node/workflow-root-node.component';
 import { ApplensOpenAIChatService } from '../../shared/services/applens-openai-chat.service';
 import { GenericOpenAIChatService } from '../../../../../diagnostic-data/src/public_api';
+import { OpenAIArmService } from '../../../../../diagnostic-data/src/public_api';
 import { OpenAIChatComponent } from './openai-chat/openai-chat.component';
 import {ChatGPTContextService} from 'diagnostic-data';
 import { DevopsDeploymentsComponent } from './devops-deployments/devops-deployments.component';
@@ -570,6 +571,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         ApplensGlobals,
         ApplensOpenAIChatService,
         ChatGPTContextService,
+        OpenAIArmService,
         BreadcrumbService,
         ClientScriptService,
         WorkflowService,
