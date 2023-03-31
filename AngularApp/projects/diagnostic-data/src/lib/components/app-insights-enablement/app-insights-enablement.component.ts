@@ -5,6 +5,7 @@ import { SettingsService } from '../../services/settings.service';
 import { BackendCtrlQueryService } from '../../services/backend-ctrl-query.service';
 import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 import { MessageBarType } from 'office-ui-fabric-react';
+import { BehaviorSubject } from 'rxjs';
 
 const maxApiKeysPerAiResource: number = 10;
 
@@ -35,6 +36,10 @@ export class AppInsightsEnablementComponent implements OnInit {
   messageBarType = MessageBarType.info;
   canCreateApiKeys: boolean = false;
   appInsightsValiationError: string = "";
+  test1: string = "Value1";
+  test2: string = "Value2";
+  appInsightsResourceUriSubject = new BehaviorSubject<string>("");
+  appInsightsAppIdSubject = new BehaviorSubject<string>("");
 
   @Input()
   resourceId: string = "";
@@ -48,6 +53,8 @@ export class AppInsightsEnablementComponent implements OnInit {
           this.isAppInsightsEnabled = appInsightsSettings.enabledForWebApp;
           this.appInsightsResourceUri = appInsightsSettings.resourceUri;
           this.appId = appInsightsSettings.appId;
+          this.appInsightsResourceUriSubject.next(this.appInsightsResourceUri);
+          this.appInsightsAppIdSubject.next(this.appId);
 
           if (this.isAppInsightsEnabled) {
             this._appInsightsService.logAppInsightsEvent(this.resourceId, TelemetryEventNames.AppInsightsEnabled);

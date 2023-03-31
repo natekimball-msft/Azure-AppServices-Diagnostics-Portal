@@ -35,6 +35,7 @@
                       </tr>
                     </tbody>
                   </table>
+                  <div><opt-insights-enablement [resourceUri]="appInsightsResourceUriSubject" [appId]="appInsightsAppIdSubject"></opt-insights-enablement></div>
                   <div *ngIf="!canCreateApiKeys">
                     <i class="fa fa-exclamation-triangle warning-icon-color mr-2 "></i>
                     Application Insights is enabled for this app but there are already 10 API Keys generated for this

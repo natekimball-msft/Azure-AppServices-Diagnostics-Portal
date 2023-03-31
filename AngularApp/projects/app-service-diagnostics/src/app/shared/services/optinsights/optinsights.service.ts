@@ -1,24 +1,28 @@
 import { Injectable, SimpleChanges } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of, forkJoin } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
-import { AggregatedInsight } from '../../models/optinsights';
+import { Observable, of, forkJoin, BehaviorSubject } from 'rxjs';
+import { map, mergeMap, take, tap } from 'rxjs/operators';
+//import { AggregatedInsight } from '../../models/optinsights';
 //import { AppInsightsService } from '../appinsights/appinsights.service';
-import { ResourceType, StartupInfo } from '../../models/portal';
+import { ResourceType, ScopeAuthorizationToken, StartupInfo } from '../../models/portal';
 import { AuthService } from '../../../startup/services/auth.service';
+import { PortalService } from '../../../startup/services/portal.service';
 
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable(
+  {
+    providedIn: 'root'
+  }
+)
 export class OptInsightsService {
 
   private readonly GATEWAY_HOST_URL: string = "https://gateway.azureserviceprofiler.net";
-  private OAUTH_TOKEN_API: string = "/token";
-  private optInsightsRole: string = 'ProfileReader';
-  private authEndpoint: "https://management.azure.com"
+  private readonly OAUTH_TOKEN_API: string = "/token";
+  private readonly optInsightsRole: string = 'ProfileReader';
+  private readonly authEndpoint: string = "https://management.azure.com"
   private optInsightsResponse: any;
   private aRMToken: string = "";
+  private aRmTokenSubject = new BehaviorSubject<string>("");
   isEnabledInProd: boolean = true;
   //private appInsightsResourceId: string = "";
   loading: boolean;
@@ -28,17 +32,21 @@ export class OptInsightsService {
   appInsightsResourceUri: string = "";
   appId: string = "";
 
-  constructor(private http: HttpClient, private authService: AuthService) {
+
+
+  constructor(private http: HttpClient, private _portalService: PortalService) {
   }
 
   private getARMToken(): Observable<string | null> {
-    return this.authService.getStartupInfo().pipe(map((startupInfo: StartupInfo) => {
-      if (startupInfo.resourceType === ResourceType.Site) {
-        this.aRMToken = startupInfo.token;
-        return this.aRMToken;
+    const scope: ScopeAuthorizationToken = { resourceName: "profile" };
+    return this._portalService.getScopedToken(scope).pipe(map(data => {
+      if (!data.error) {
+        let scopedToken = data.token
+        console.log(scopedToken);
+        return scopedToken;
       }
       else {
-        return "";//of(null);
+        return null;
       }
     }));
   }
@@ -48,29 +56,47 @@ export class OptInsightsService {
   //     this.appInsightsValidationError = "";
   //     this._appInsightsService.loadAppInsightsResourceObservable.pipe(
   //       map(loadStatus => {
-  //       if (loadStatus === true) {
-  //         let appInsightsSettings = this._appInsightsService.appInsightsSettings;
-  //         this.isAppInsightsEnabled = appInsightsSettings.enabledForWebApp;
-  //         this.appInsightsResourceUri = appInsightsSettings.resourceUri;
-  //         this.appId = appInsightsSettings.appId;
-  //         return { "appInsightsResourceUri": this.appInsightsResourceUri, "appId": this.appId };
-  //       }
-  //       else{
-  //         return null;
-  //       }
-  //     }));
+  //         if (loadStatus === true) {
+  //           let appInsightsSettings = this._appInsightsService.appInsightsSettings;
+  //           this.isAppInsightsEnabled = appInsightsSettings.enabledForWebApp;
+  //           this.appInsightsResourceUri = appInsightsSettings.resourceUri;
+  //           this.appId = appInsightsSettings.appId;
+  //           return { "appInsightsResourceUri": this.appInsightsResourceUri, "appId": this.appId };
+  //         }
+  //         else {
+  //           return null;
+  //         }
+  //       }));
   //   }
-  //   else{
+  //   else {
   //     return null;
   //   }
   // }
 
+  // private getAppInsightsInfo(): { appInsightsResourceId: string, appId: string } | null {
+  //   let appInsightsResourceId = this.appInsightsService.appInsightsSettings.resourceUri;
+  //   let appId = this.appInsightsService.appInsightsSettings.appId;
+  //   return { "appInsightsResourceId": appInsightsResourceId, "appId": appId };
+  // return this.appInsightsService.loadAppInsightsResourceObservable.pipe(tap(loadStatus => console.log(loadStatus),error => console.error(error)),
+  //   map(loadStatus => {
+  //     if (loadStatus === true) {
+  //       let appInsightsSettings = this.appInsightsService.appInsightsSettings;
+  //       const appInsightsResourceId: string = appInsightsSettings.resourceId;
+  //       const appId: string = appInsightsSettings.appId;
+  //       return { "appInsightsResourceId": appInsightsResourceId, "appId": appId };
+  //     }
+  //     // else {
+  //     //   return null;
+  //     // }
+  //   }));
+  //}
+
   private getOAuthAccessToken(_armToken: string, _appInsightsResourceId: string): Observable<string> {
     var _token: string = "";
-    const data = `grant_type=password&username=${_appInsightsResourceId}&password=${_armToken}&endpoint=${this.authEndpoint}&role=${this.optInsightsRole}`;
+    const data = `grant_type=password&username=${_appInsightsResourceId}&password=Bearer ${_armToken}&endpoint=${this.authEndpoint}&role=${this.optInsightsRole}`;
     const headers = new HttpHeaders({
       "Content-Type": "application/x-www-form-urlencoded",
-      //"Authorization": "" // override the default portal token
+      "Authorization": "" // override the default portal token
     });
 
     return this.http.post(`${this.GATEWAY_HOST_URL}${this.OAUTH_TOKEN_API}`, data, { headers }).pipe(
@@ -80,7 +106,7 @@ export class OptInsightsService {
       }));
   }
 
-  getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appInsightsResourceId: string, appId: string): Observable<AggregatedInsight[]> {
+  getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appInsightsResourceId: string, appId: string): Observable<any[]> {
     var _startTime = new Date(-30);
     var _endTime = new Date();
     const query: string = `${this.GATEWAY_HOST_URL}/api/apps/${appId}/aggregatedInsights/timeRange?startTime=${_startTime.toISOString()}&endTime=${_endTime.toISOString()}&role=${this.optInsightsRole}`;
@@ -89,26 +115,27 @@ export class OptInsightsService {
       'Content-Type': 'application/json'
     });
     return this.http.get(query, { headers: headers }).pipe(
-      map((aggregatedInsights: AggregatedInsight) => {
+      map((aggregatedInsights: any) => {
         this.optInsightsResponse = aggregatedInsights;
         return this.optInsightsResponse;
       }));
   }
 
-
-  getInfoForOptInsights(appInsightsResourceUri: string, appId: string): Observable<AggregatedInsight[] | null> {
-    //const requests = forkJoin([this.getARMToken(), this.getAppInsightsInfo()]);
-
+  getInfoForOptInsights(aRMToken: string, appInsightsResourceId: string, appId: string): Observable<any[] | null> {
+    // const requests = forkJoin([this.getARMToken(), this.getAppInsightsInfo().pipe(take(2))]);
+    // return requests.pipe(mergeMap(res => {
     return this.getARMToken().pipe(
       (mergeMap(res => {
-      const armToken = res[0];      
-      if (armToken === null || appInsightsResourceUri === null || appId === null) return of(null);
-      return this.getOAuthAccessToken(armToken, appInsightsResourceUri).pipe(map(accessToken => {
-        return { accessToken };
-      }))
-    }), mergeMap(res => {
-      if (res === null) return of(null);
-      return this.getAggregatedInsightsbyTimeRange(res, appInsightsResourceUri, appId);
-    })));
+        const armToken = res[0];
+        //   const appInsightInfo = res[1];
+        let appInsightInfo: any = { "appInsightsResourceId": appInsightsResourceId, "appId": this.appId }
+        if (aRMToken === null || appInsightInfo === null || appInsightInfo.appInsightsResourceUri === null || appInsightInfo.appId === null) return of(null);
+        return this.getOAuthAccessToken(aRMToken, appInsightInfo.appInsightsResourceUri).pipe(map(accessToken => {
+          return { accessToken, appInsightInfo };
+        }), mergeMap(res => {
+          if (res === null || res.accessToken === null || res.appInsightInfo.appInsightsResourceUri === null || res.appInsightInfo.appId === null) return of(null);
+          return this.getAggregatedInsightsbyTimeRange(res.accessToken, res.appInsightInfo.appInsightsResourceUri, res.appInsightInfo.appId);
+        }));
+      })));
   }
 }

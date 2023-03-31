@@ -1,5 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { ResourceType, StartupInfo } from 'projects/app-service-diagnostics/src/app/shared/models/portal';
+//import { AppInsightsService } from 'projects/app-service-diagnostics/src/app/shared/services/appinsights/appinsights.service';
 import { OptInsightsService } from 'projects/app-service-diagnostics/src/app/shared/services/optinsights/optinsights.service';
+import { AuthService } from 'projects/app-service-diagnostics/src/app/startup/services/auth.service';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { map, mergeMap } from 'rxjs/operators';
+//import * as Az from '../../../../../../node_modules/@microsoft/azureportal-reactview/Az';
 
 @Component({
   selector: 'opt-insights-enablement',
@@ -10,7 +16,7 @@ export class OptInsightsEnablementComponent implements OnInit {
 
   constructor(private _optInsightsService: OptInsightsService) { }
 
- table: any = [];
+  table: any = [];
   //columnOptions: TableColumnOption[] = [];
   //columns: DataTableResponseColumn[];
   descriptionColumnName: string = "";
@@ -19,22 +25,31 @@ export class OptInsightsEnablementComponent implements OnInit {
   tableDescription: string = "";
   searchPlaceholder: string = "";
   loading: boolean;
+  aRMToken: string = "";
+  aRMTokenSubject = new BehaviorSubject<string>("");
 
-  @Input()
-  resourceUri: string = "";
-  appId: string = "";
+  @Input() resourceUri: Observable<string>;
+  @Input() appId: Observable<string>;
 
   ngOnInit(): void {
     this.loading = true;
-    this._optInsightsService.getInfoForOptInsights(this.resourceUri, this.appId).subscribe(res => {
-      if (res && res["Tables"]) {
-        let rows = res["Tables"][0]["Rows"];
-        this.parseRowsIntoTable(rows);
-      }
-      this.loading = false;
+    this.resourceUri.subscribe(resourceUri => {
+      this.appId.subscribe(appId => {
+        if (resourceUri !== null && appId !== null) {
+          this._optInsightsService.getInfoForOptInsights(this.aRMToken, resourceUri, appId).subscribe(res => {
+            if (res && res["Tables"]) {
+              let rows = res["Tables"][0]["Rows"];
+              this.parseRowsIntoTable(rows);
+            }
+            this.loading = false;
+          });
+        }
+        else {
+          this.loading = false;
+        }
+      })
     });
   }
-
 
   parseRowsIntoTable(rows: any) {
     if (!rows || rows.length === 0) {
