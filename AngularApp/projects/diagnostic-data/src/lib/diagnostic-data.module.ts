@@ -197,10 +197,7 @@ import { SafePipe } from './pipe/safe.pipe';
         RouterModule,
         FabDatePickerModule,
         FabCalendarModule,
-        NgFlowchartModule,
-        MatCardModule    ,
-        FabPersonaModule,
-        FabHoverCardModule
+        NgFlowchartModule
         
     ],
     providers: [
@@ -268,15 +265,12 @@ import { SafePipe } from './pipe/safe.pipe';
         WorkflowResultComponent,
         WorkflowViewComponent,
         WorkflowNodeComponent,
-<<<<<<< HEAD
         ArchitectureDiagramComponent,
-        ArchitectureDiagramNodeComponent
-=======
+        ArchitectureDiagramNodeComponent,
         WorkflowConditionNodeComponent,
         WorkflowAcceptUserinputComponent,
         VideoComponent,
         SafePipe
->>>>>>> 23f62b29637cbe29a70ffd0c01c301743bfd044f
     ],
     exports: [
         FormsModule, TimeSeriesGraphComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent, ClientScriptViewComponent,

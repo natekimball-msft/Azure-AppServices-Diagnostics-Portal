@@ -205,14 +205,11 @@ export class DynamicDataComponent implements OnInit {
       case RenderingType.ClientScriptComponent:
         return ClientScriptViewComponent;
       case RenderingType.WorkflowResult:
-        return WorkflowResultComponent;
-<<<<<<< HEAD
-      case RenderingType.ArchitectureDiagramResult:
-        return ArchitectureDiagramComponent;   
-=======
+        return WorkflowResultComponent; 
       case RenderingType.Video:
-        return VideoComponent
->>>>>>> 23f62b29637cbe29a70ffd0c01c301743bfd044f
+        return VideoComponent;
+      case RenderingType.ArchitectureDiagramResult:
+        return ArchitectureDiagramComponent;  
       default:
         return null;
     }
