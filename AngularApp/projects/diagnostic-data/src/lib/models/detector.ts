@@ -133,6 +133,7 @@ export enum RenderingType {
     Report,
     ClientScriptComponent,
     WorkflowResult, 
+    Video,
     ArchitectureDiagramResult
 }
 

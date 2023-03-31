@@ -143,7 +143,6 @@ export class DynamicDataComponent implements OnInit {
   }
 
   private _findInputComponent(type: RenderingType): any {
-    debugger; 
     switch (type) {
       case RenderingType.TimeSeries:
         return TimeSeriesGraphComponent;
