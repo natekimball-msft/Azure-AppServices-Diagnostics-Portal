@@ -637,7 +637,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
           this.isProd = env === "Prod";
           if (this.isProd) {
             window.open(this.PPELink, '_blank');
-            window.open(this._router.url.replace('/edit?', '?'), '_self');
+            this.mode === DevelopMode.Create ? window.open(this._router.url.replace('/create?', '?'), '_self') : window.open(this._router.url.replace('/edit?', '?'), '_self');
           }
         });
       });
