@@ -5,7 +5,6 @@ import { OptInsightsService } from 'projects/app-service-diagnostics/src/app/sha
 import { AuthService } from 'projects/app-service-diagnostics/src/app/startup/services/auth.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
-//import * as Az from '../../../../../../node_modules/@microsoft/azureportal-reactview/Az';
 
 @Component({
   selector: 'opt-insights-enablement',
