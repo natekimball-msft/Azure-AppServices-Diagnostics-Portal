@@ -513,6 +513,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
             {
                 path: 'deployments',
                 component: DevopsDeploymentsComponent
+            },
             {
                 path: 'networkTraceAnalysis',
                 component: NetworkTraceAnalysisComponent
