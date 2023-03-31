@@ -154,10 +154,14 @@ import { WorkflowNodeComponent } from './components/workflow-node/workflow-node.
 import { NgFlowchartModule } from 'projects/ng-flowchart/dist';
 import { ArchitectureDiagramComponent } from './components/architecture-diagram/architecture-diagram.component';
 import { ArchitectureDiagramNodeComponent } from './components/architecture-diagram-node/architecture-diagram-node.component';
-import { MatCardModule } from '@angular/material/card';
-import { FabPersonaModule } from '@angular-react/fabric/lib/components/persona';
-// import { FabHoverCardModule} from '@angular-react/fabric/lib/components/hover-card'
-import { FabHoverCardModule } from '@angular-react/fabric/lib/components/hover-card';
+import { ChatGPTContextService } from './services/chat-gpt-context-service';
+import { GenericOpenAIChatService, OpenAIArmService } from '../public_api';
+import { QueryResponseService } from './services/query-response.service';
+import { WorkflowConditionNodeComponent } from './components/workflow-condition-node/workflow-condition-node.component';
+import { WorkflowAcceptUserinputComponent } from './components/workflow-accept-userinput/workflow-accept-userinput.component';
+import { VideoComponent } from './components/video/video.component';
+import { SafePipe } from './pipe/safe.pipe';
+
 
 @NgModule({
     imports: [
@@ -264,8 +268,15 @@ import { FabHoverCardModule } from '@angular-react/fabric/lib/components/hover-c
         WorkflowResultComponent,
         WorkflowViewComponent,
         WorkflowNodeComponent,
+<<<<<<< HEAD
         ArchitectureDiagramComponent,
         ArchitectureDiagramNodeComponent
+=======
+        WorkflowConditionNodeComponent,
+        WorkflowAcceptUserinputComponent,
+        VideoComponent,
+        SafePipe
+>>>>>>> 23f62b29637cbe29a70ffd0c01c301743bfd044f
     ],
     exports: [
         FormsModule, TimeSeriesGraphComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent, ClientScriptViewComponent,
@@ -307,7 +318,8 @@ import { FabHoverCardModule } from '@angular-react/fabric/lib/components/hover-c
         FabCardComponent,
         FormStepComponent,
         GanttChartTaskbarColorsComponent,
-        WorkflowViewComponent
+        WorkflowViewComponent,
+        SafePipe
     ]
 })
 export class DiagnosticDataModule {
@@ -335,7 +347,11 @@ export class DiagnosticDataModule {
                 AppInsightsQueryService,
                 ParseResourceService,
                 HighChartsHoverService,
-                GenericFeatureService
+                GenericFeatureService,
+                GenericOpenAIChatService,
+                OpenAIArmService,
+                ChatGPTContextService,
+                QueryResponseService
             ]
         };
     }

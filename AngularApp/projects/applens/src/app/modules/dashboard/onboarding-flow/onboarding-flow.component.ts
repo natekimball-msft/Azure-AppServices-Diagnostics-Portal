@@ -1,6 +1,6 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, TableColumnOption, TableFilterSelectionOption, DataTableResponseObject, DataTableResponseColumn, FabDataTableComponent
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, TableColumnOption, TableFilterSelectionOption, DataTableResponseObject, DataTableResponseColumn, FabDataTableComponent, QueryResponseService
 } from 'diagnostic-data';
 import * as momentNs from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
@@ -38,6 +38,8 @@ import { CreateWorkflowComponent } from '../workflow/create-workflow/create-work
 import { workflowNodeResult, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { WorkflowRunDialogComponent } from '../workflow/workflow-run-dialog/workflow-run-dialog.component';
+import { UserSettingService } from '../services/user-setting.service';
+import { WorkflowService } from '../workflow/services/workflow.service';
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
 using Diagnostics.DataProviders;
@@ -206,13 +208,14 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   deleteSuccess: boolean = false;
   deleteFailed: boolean = false;
   saveIdFailure: boolean = false;
+  badBranchNameFailure: boolean = false;
   saveButtonText: string = "Save";
   detectorName: string = "";
   submittedPanelTimer: any = null;
   deleteButtonText: string = "Delete";
   deleteDialogTitle: string = "Delete Detector";
   deleteDialogHidden: boolean = true;
-  detectorReferencesTitle : string = "Detector References";
+  detectorReferencesTitle: string = "Detector References";
   deleteAvailable: boolean = false;
   deletingDetector: boolean = false;
   openTimePickerSubject: BehaviorSubject<boolean> = new BehaviorSubject(false);
@@ -220,8 +223,10 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   PPERedirectTimer: number = 10;
   DevopsConfig: DevopsConfig;
   useAutoMergeText: boolean = false;
-  detectorReferencesDialogHidden : boolean = true; 
-  gistCommitVersion : string = ""; 
+  detectorReferencesDialogHidden: boolean = true;
+  gistCommitVersion: string = "";
+  charWarningMessage: string = '';
+  detectorLoaded: boolean = false;
 
   runButtonStyle: any = {
     root: { cursor: "default" }
@@ -343,6 +348,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
   private publishingPackage: Package;
   private userName: string;
+  private userId: string;
 
   private emailRecipients: string = '';
   private _monacoEditor: monaco.editor.ICodeEditor = null;
@@ -371,7 +377,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     private _detectorControlService: DetectorControlService, private _adalService: AdalService,
     public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute,
     private _applensCommandBarService: ApplensCommandBarService, private _router: Router, private _themeService: GenericThemeService, private _applensGlobal: ApplensGlobal,
-    private matDialog: MatDialog) {
+    private matDialog: MatDialog, private _queryResponseService: QueryResponseService, private _userSettingService: UserSettingService,
+    private _workflowService: WorkflowService) {
     this.lightOptions = {
       theme: 'vs',
       language: 'csharp',
@@ -415,6 +422,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
     this.userName = Object.keys(this._adalService.userInfo.profile).length > 0 ? this._adalService.userInfo.profile.upn : '';
     this.emailRecipients = this.userName.replace('@microsoft.com', '');
+    this.userId = this.userName.replace('@microsoft.com', '');
     this.publishAccessControlResponse = {};
   }
 
@@ -446,7 +454,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   dismissDeleteDialog() {
     this.deleteDialogHidden = true;
   }
-  
+
 
   updateTempBranch(event: any) {
     this.tempBranch = event.option.key;
@@ -468,7 +476,12 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     else {
       this.Branch = this.tempBranch;
       this.displayBranch = this.Branch;
-      this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId).subscribe(x => {
+      if (this.mode === DevelopMode.Create) this.diagnosticApiService.getDetectorCode(`${this.Branch.split('/')[3].toLowerCase()}/${this.Branch.split('/')[3].toLowerCase()}.csx`, this.Branch, this.resourceId).subscribe(x => {
+        this.code = x;
+        this.lastSavedVersion = this.code;
+        this.detectorLoaded = true;
+      });
+      else this.diagnosticApiService.getDetectorCode(`${this.id.toLowerCase()}/${this.id.toLowerCase()}.csx`, this.Branch, this.resourceId).subscribe(x => {
         this.code = x;
         this.lastSavedVersion = this.code
       });
@@ -501,25 +514,34 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   defaultBranch: string;
 
   publishWorkflow() {
-    this.runButtonDisabled = true;
-    this.publishButtonDisabled = true;
-    this.modalPublishingButtonText = "Publishing...";
+    this._diagnosticApi.isUserAllowedForWorkflow(this.userId).subscribe(resp => {
+      if (resp) {
+        this.runButtonDisabled = true;
+        this.publishButtonDisabled = true;
+        this.modalPublishingButtonText = "Publishing...";
 
-    let publishBody = this.createWorkflow.getWorkflowPublishBody()
-    if (publishBody == null) {
-      return;
-    }
+        let publishBody = this.createWorkflow.getWorkflowPublishBody()
+        if (publishBody == null) {
+          return;
+        }
 
-    publishBody.CommittedByAlias = this.userName;
-    this.diagnosticApiService.publishWorkflow(publishBody).subscribe(resp => {
-      this.runButtonDisabled = false;
-      this.modalPublishingButtonText = "Publish";
-      this.publishSuccess = true;
-    }, error => {
-      this.modalPublishingButtonText = "Publish";
-      this.runButtonDisabled = false;
-      this.showAlertBox('alert-danger', 'Publishing failed. Please try again after some time.');
+        publishBody.CommittedByAlias = this.userName;
+        this.diagnosticApiService.publishWorkflow(publishBody).subscribe(resp => {
+          this.runButtonDisabled = false;
+          this.modalPublishingButtonText = "Publish";
+          this.publishSuccess = true;
+        }, error => {
+          this.modalPublishingButtonText = "Publish";
+          this.runButtonDisabled = false;
+          this.showAlertBox('alert-danger', 'Publishing failed. Please try again after some time.');
+        });
+      } else {
+        this._workflowService.showMessageBoxWithFooter('Error', 
+        `Workflow publishing is not open to everyone yet. The user '${this.userId}' does not have access to publish workflows. Please request access to this feature by clicking below. <br/><br/>Also, <strong>download the workflow</strong> to ensure you don't loose your created workflow.`,
+        "<a target='_blank' href='mailto:applensv2team@microsoft.com?subject=Requesting Workflow Publishing Access&body=Please provide access to &lt;Enter your alias&gt;'>Request Access</a>");
+      }
     });
+
   }
 
   publishButtonOnClick() {
@@ -554,6 +576,9 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   }
 
   startUp() {
+    this._queryResponseService.getQueryResponse().subscribe(qr => {
+      this.queryResponse = qr;
+    });
     this.detectorGraduation = true;
     let isSystemInvoker: boolean = this.mode === DevelopMode.EditMonitoring || this.mode === DevelopMode.EditAnalytics;
     this.branchInput = this._activatedRoute.snapshot.queryParams['branchInput'];
@@ -608,8 +633,12 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       this.diagnosticApiService.getPPEHostname().subscribe(host => {
         this.PPEHostname = host;
         this.diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
-          this.PPELink = `${this.PPEHostname}${this._router.url}`
+          this.PPELink = `${this.PPEHostname}${this._router.url}`;
           this.isProd = env === "Prod";
+          if (this.isProd) {
+            window.open(this.PPELink, '_blank');
+            window.open(this._router.url.replace('/edit?', '?'), '_self');
+          }
         });
       });
 
@@ -693,57 +722,87 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this.showBranches = [{ key: "", text: "" }];
     this.resourceId = this.resourceId == undefined || this.resourceId == '' ? this.resourceService.getCurrentResourceId() : this.resourceId;
     this.diagnosticApiService.getBranches(this.resourceId).subscribe(branches => {
-      var branchRegEx = this.gistMode ? new RegExp(`^dev\/.*\/gist\/${this.id}$`, "i") : new RegExp(`^dev\/.*\/detector\/${this.id}$`, "i");
-      branches.forEach(option => {
-        this.optionsForSingleChoice.push({
-          key: String(option["branchName"]),
-          text: String(option["branchName"])
+      this.diagnosticApiService.getDetectors().subscribe(listDetectors => {
+
+        if (this.mode != DevelopMode.Create) {
+          var branchRegEx = this.gistMode ? new RegExp(`^dev\/.*\/gist\/${this.id}$`, "i") : new RegExp(`^dev\/.*\/detector\/${this.id}$`, "i");
+          branches.forEach(option => {
+            this.optionsForSingleChoice.push({
+              key: String(option["branchName"]),
+              text: String(option["branchName"])
+            });
+            if (option["isMainBranch"].toLowerCase() === "true") {
+              this.defaultBranch = String(option["branchName"]);
+              this.showBranches.push({
+                key: String(option["branchName"]),
+                text: String(option["branchName"])
+              });
+            }
+          })
+        }
+        else {
+          var branchRegEx = this.gistMode ? new RegExp(`^dev\/.*\/gist\/.*$`, "i") : new RegExp(`^dev\/.*\/detector\/.*$`, "i");
+          let idList = [];
+          listDetectors.forEach(det => {
+            idList.push(det.id.toLowerCase());
+          });
+          branches = branches.filter(bn => {
+            return !idList.includes(bn["branchName"].split("/").length >= 4 ? bn["branchName"].split("/")[3].toLowerCase() : bn["branchName"]);
+          })
+          branches.forEach(option => {
+            if (option["isMainBranch"].toLowerCase() != "true")
+              this.optionsForSingleChoice.push({
+                key: String(option["branchName"]),
+                text: String(option["branchName"])
+              });
+            if (option["isMainBranch"].toLowerCase() === "true") {
+              this.defaultBranch = String(option["branchName"]);
+            }
+          })
+        }
+
+        this.optionsForSingleChoice.forEach(branch => {
+          if (branchRegEx.test(branch.text)) {
+            this.showBranches.push({
+              key: String(branch.key),
+              text: String(`${branch.text.split("/")[1]} : ${branch.text.split("/")[3]}`)
+            });
+          }
         });
-        if (option["isMainBranch"].toLowerCase() === "true") {
-          this.defaultBranch = String(option["branchName"]);
+        // remove temp value from showBranches
+        this.showBranches = this.showBranches.filter(branchName => {
+          return branchName.key != '';
+        });
+        if (this.showBranches.length < 1 || this.mode == DevelopMode.EditMonitoring || this.mode == DevelopMode.EditAnalytics) {
+          this.noBranchesAvailable();
         }
-        if ((option["isMainBranch"].toLowerCase() === "true") && !(this.mode == DevelopMode.Create)) {// if main branch and in edit mode
-          this.showBranches.push({
-            key: String(option["branchName"]),
-            text: String(option["branchName"])
-          });
+        else {
+          if (this.mode != DevelopMode.Create) {
+            var targetBranch = this.gistMode ? `dev/${this.userName.split("@")[0]}/gist/${this.id.toLowerCase()}` : `dev/${this.userName.split("@")[0]}/detector/${this.id.toLowerCase()}`;
+            // if a branch is present via query params, default to that branch.
+            if (this.branchInput != undefined && this.branchInput != '' && this.mode == DevelopMode.Edit) {
+              this.Branch = this.branchInput;
+              this.displayBranch = this.Branch;
+              this.tempBranch = this.Branch;
+            } else {
+              this.Branch = this.targetInShowBranches(targetBranch) ? targetBranch : this.showBranches[0].key;
+              this.displayBranch = this.Branch;
+              this.tempBranch = this.Branch;
+            }
+            this.updateBranch();
+            this.showBranchInfo = true;
+          }
+          else {
+            this.displayBranch = "NA (not published)";
+          }
         }
-      })
-      this.optionsForSingleChoice.forEach(branch => {
-        if (branchRegEx.test(branch.text) && this.id.toLowerCase() != "") {
-          this.showBranches.push({
-            key: String(branch.key),
-            text: String(`${branch.text.split("/")[1]} : ${branch.text.split("/")[3]}`)
-          });
+        if (!this.initialized) {
+          this.initialize();
+          this.initialized = true;
+          this._telemetryService.logPageView(TelemetryEventNames.OnboardingFlowLoaded, {});
         }
+
       });
-      // remove temp value from showBranches
-      this.showBranches = this.showBranches.filter(branchName => {
-        return branchName.key != '';
-      });
-      if (this.showBranches.length < 1 || this.mode == DevelopMode.EditMonitoring || this.mode == DevelopMode.EditAnalytics) {
-        this.noBranchesAvailable();
-      }
-      else {
-        var targetBranch = this.gistMode ? `dev/${this.userName.split("@")[0]}/gist/${this.id.toLowerCase()}` : `dev/${this.userName.split("@")[0]}/detector/${this.id.toLowerCase()}`;
-        // if a branch is present via query params, default to that branch.
-        if (this.branchInput != undefined && this.branchInput != '' && this.mode == DevelopMode.Edit) {
-          this.Branch = this.branchInput;
-          this.displayBranch = this.Branch;
-          this.tempBranch = this.Branch;
-        } else {
-          this.Branch = this.targetInShowBranches(targetBranch) ? targetBranch : this.showBranches[0].key;
-          this.displayBranch = this.Branch;
-          this.tempBranch = this.Branch;
-        }
-        this.updateBranch();
-        this.showBranchInfo = true;
-      }
-      if (!this.initialized) {
-        this.initialize();
-        this.initialized = true;
-        this._telemetryService.logPageView(TelemetryEventNames.OnboardingFlowLoaded, {});
-      }
     });
 
   }
@@ -762,12 +821,13 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   addCodePrefix(codeString) {
     if (this.codeCompletionEnabled) {
       try {
+        // Index of #load
         var isLoadIndex = codeString.indexOf("#load");
         // If gist is being loaded in the code
         if (isLoadIndex >= 0) {
           codeString = StringUtilities.ReplaceAll(codeString, codePrefix, "");
           var splitted = codeString.split("\n");
-          var lastIndex = splitted.slice().reverse().findIndex(x => x.startsWith("#load"));
+          var lastIndex = splitted.slice().reverse().findIndex(x => x.startsWith("#load") || x.trim().startsWith("#load"));
           lastIndex = lastIndex > 0 ? splitted.length - 1 - lastIndex : lastIndex;
           if (lastIndex >= 0) {
             var finalJoin = [...splitted.slice(0, lastIndex + 1), codePrefix, ...splitted.slice(lastIndex + 1,)].join("\n");
@@ -789,38 +849,49 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this._monacoEditor = editor;
     let getEnabled = this._diagnosticApi.get('api/appsettings/CodeCompletion:Enabled');
     let getServerUrl = this._diagnosticApi.get('api/appsettings/CodeCompletion:LangServerUrl');
-    forkJoin([getEnabled, getServerUrl]).subscribe(resList => {
-      this.codeCompletionEnabled = resList[0] == true || resList[0].toString().toLowerCase() == "true";
-      this.languageServerUrl = resList[1];
-      if (this.codeCompletionEnabled && this.languageServerUrl && this.languageServerUrl.length > 0) {
-        if (this.code.indexOf(codePrefix) < 0) {
-          this.code = this.addCodePrefix(this.code);
-          this.lastSavedVersion = this.code
-        }
-        let fileName = uuid();
-        let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse(`file:///workspace/${fileName}.cs`));
-        editor.setModel(editorModel);
-        MonacoServices.install(editor, { rootUri: "file:///workspace" });
-        const webSocket = this.createWebSocket(this.languageServerUrl);
+    try {
+      forkJoin([getEnabled, getServerUrl]).subscribe(resList => {
+        this._userSettingService.getUserSetting().subscribe(res => {
+          let userCodeCompletionEnabled = res && res.codeCompletion == "off" ? false : true;
+          this.codeCompletionEnabled = (resList[0] == true || resList[0].toString().toLowerCase() == "true") && userCodeCompletionEnabled;
+          this.languageServerUrl = resList[1];
+          if (this.codeCompletionEnabled && this.languageServerUrl && this.languageServerUrl.length > 0) {
+            if (this.code.indexOf(codePrefix) < 0) {
+              this.code = this.addCodePrefix(this.code);
+              this.lastSavedVersion = this.code
+            }
+            let fileName = uuid();
+            let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse(`file:///workspace/${fileName}.cs`));
+            editor.setModel(editorModel);
+            MonacoServices.install(editor, { rootUri: "file:///workspace" });
+            const webSocket = this.createWebSocket(this.languageServerUrl);
 
-        listen({
-          webSocket,
-          onConnection: connection => {
-            // create and start the language client
-            const languageClient = this.createLanguageClient(connection);
-            const disposable = languageClient.start();
-            connection.onClose(() => disposable.dispose());
+            listen({
+              webSocket,
+              onConnection: connection => {
+                // create and start the language client
+                const languageClient = this.createLanguageClient(connection);
+                const disposable = languageClient.start();
+                connection.onClose(() => disposable.dispose());
+              }
+            });
           }
         });
-      }
-    });
+      },
+        (err) => {
+          this.codeCompletionEnabled = false;
+        });
+    }
+    catch (err) {
+      this.codeCompletionEnabled = false;
+    }
   }
 
-  loadExamples(){
+  loadExamples() {
     this.examplesDropdownOptions = this.documentsList.getDocumentListOptions();
   }
 
-  changeExampleDoc(event){
+  changeExampleDoc(event) {
     this.showExample = false;
     let selectedDoc = event.option.key.split(":");
 
@@ -898,14 +969,14 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
 
   showUpdateDetectorReferencesDialog() {
-    this.detectorReferencesDialogHidden = false; 
+    this.detectorReferencesDialogHidden = false;
   }
 
 
   dismissDetectorRefDialog() {
-    this.detectorReferencesDialogHidden = true;    
+    this.detectorReferencesDialogHidden = true;
   }
-  
+
 
 
 
@@ -1278,12 +1349,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this.matDialog.open(WorkflowRunDialogComponent, dialogConfig).afterClosed().subscribe(modelData => {
       if (modelData != null) {
         if (modelData.workflowSucceeded === true) {
-
-          //
-          // disabling publish for workflows temporarily till the RuntimeHost production deployment finishes
-          // else production deployment may break if a Workflow DLL gets copied to storage account
-          //
-          // this.enablePublishButton();
+          this.enablePublishButton();
         }
       }
     });
@@ -1293,7 +1359,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     if (this.runButtonDisabled) {
       return;
     }
-    this.queryResponse = undefined;
+    this._queryResponseService.clearQueryResponse();
     this.buildOutput = [];
     this.buildOutput.push("------ Build started ------");
     this.detailedCompilationTraces = [];
@@ -1344,7 +1410,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         getFullResponse: true
       }, this.getDetectorId())
         .subscribe((response: any) => {
-          this.queryResponse = response.body;
+          this._queryResponseService.addQueryResponse(response.body)
           if (this.queryResponse.invocationOutput && this.queryResponse.invocationOutput.metadata && this.queryResponse.invocationOutput.metadata.id && !isSystemInvoker) {
             this.id = this.queryResponse.invocationOutput.metadata.id;
             let dataset = this.queryResponse.invocationOutput.dataset;
@@ -1579,7 +1645,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
       this.Branch = targetBranch.replace(/\s/g, "");
       this.displayBranch = `${targetBranch.replace(/\s/g, "")}`;
     }
-    else if (!(this.showBranches.length > 1) || this.Branch === this.defaultBranch) {
+    else if (!(this.showBranches.length > 1) || this.Branch === this.defaultBranch || this.mode === DevelopMode.Create) {
       this.displayBranch = `${targetBranch.replace(/\s/g, "")} (not published)`;
       this.Branch = targetBranch.replace(/\s/g, "");
     }
@@ -1626,6 +1692,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this.saveSuccess = false;
     this.saveFailed = false;
     this.saveIdFailure = false;
+    this.badBranchNameFailure = false;
     this.deleteSuccess = false;
     this.deleteFailed = false;
   }
@@ -1774,6 +1841,11 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         this._applensCommandBarService.refreshPage();
       }
     }, err => {
+      if (err.error.includes("Branch name cannot contain the following characters:")) {
+        this.charWarningMessage = err.error;
+        this.badBranchNameFailure = true;
+      }
+      this.charWarningMessage = err.error;
       this.publishFailed = true;
       this.postPublish();
     });
@@ -1851,8 +1923,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
     let isSystemInvoker: boolean = this.mode === DevelopMode.EditMonitoring || this.mode === DevelopMode.EditAnalytics;
 
-    const commitType = this.mode == DevelopMode.Create && !this.isSaved ? "add" : "edit";
-    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved ? "Adding" : "Editing";
+    const commitType = this.mode == DevelopMode.Create && !this.isSaved && !this.detectorLoaded ? "add" : "edit";
+    const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved && !this.detectorLoaded ? "Adding" : "Editing";
 
     let gradPublishFiles: string[] = !!this.publishingPackage ? [
       this.publishingPackage.codeString,
@@ -1898,13 +1970,17 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         this._applensCommandBarService.refreshPage();
       }, err => {
         if (err.error.includes('Detector with this ID already exists. Please use a new ID')) this.saveIdFailure = true;
+        if (err.error.includes("Branch name cannot contain the following characters:")) {
+          this.charWarningMessage = err.error;
+          this.badBranchNameFailure = true;
+        }
         this.saveFailed = true;
         this.postSave();
       });
     }
     else {
       this._diagnosticApi.idExists(this.saveTempId).subscribe(idExists => {
-        if (!idExists) {
+        if (!idExists || this.detectorLoaded) {
           DetectorObservable.subscribe(_ => {
             this.PRLink = (this.DevopsConfig.folderPath === "/") ? `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}${idForSave.toLowerCase()}/${idForSave.toLowerCase()}.csx&version=GB${this.Branch}` : `https://dev.azure.com/${this.DevopsConfig.organization}/${this.DevopsConfig.project}/_git/${this.DevopsConfig.repository}?path=${this.DevopsConfig.folderPath}/${idForSave.toLowerCase()}/${idForSave.toLowerCase()}.csx&version=GB${this.Branch}`;
             this.saveSuccess = true;
@@ -1912,6 +1988,10 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
             this.isSaved = true;
             this._applensCommandBarService.refreshPage();
           }, err => {
+            if (err.error.includes("Branch name cannot contain the following characters:")) {
+              this.charWarningMessage = err.error;
+              this.badBranchNameFailure = true;
+            }
             this.saveFailed = true;
             this.postSave();
           });

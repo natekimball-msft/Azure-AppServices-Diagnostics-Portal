@@ -48,6 +48,7 @@ import { ButtonStepComponent } from '../step-views/button-step-view/button-step.
 import { ClientScriptViewComponent } from '../client-script-view/client-script-view.component';
 import { WorkflowResultComponent } from '../workflow-result/workflow-result.component';
 import { ArchitectureDiagramComponent } from '../architecture-diagram/architecture-diagram.component';
+import { VideoComponent } from '../video/video.component';
 
 @Component({
   selector: 'dynamic-data',
@@ -205,8 +206,13 @@ export class DynamicDataComponent implements OnInit {
         return ClientScriptViewComponent;
       case RenderingType.WorkflowResult:
         return WorkflowResultComponent;
+<<<<<<< HEAD
       case RenderingType.ArchitectureDiagramResult:
         return ArchitectureDiagramComponent;   
+=======
+      case RenderingType.Video:
+        return VideoComponent
+>>>>>>> 23f62b29637cbe29a70ffd0c01c301743bfd044f
       default:
         return null;
     }
