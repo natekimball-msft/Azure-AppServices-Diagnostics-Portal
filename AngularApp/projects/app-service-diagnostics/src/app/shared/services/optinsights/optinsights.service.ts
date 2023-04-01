@@ -40,8 +40,9 @@ export class OptInsightsService {
   private getARMToken(): Observable<string | null> {
     const scope: ScopeAuthorizationToken = { resourceName: "profile" };
     return this._portalService.getScopedToken(scope).pipe(map(data => {
-      if (!data.error) {
-        let scopedToken = data.token
+      let authData=JSON.parse(data);
+      if (!authData.error) {
+        let scopedToken = authData.token
         console.log(scopedToken);
         return scopedToken;
       }
@@ -98,7 +99,6 @@ export class OptInsightsService {
       "Content-Type": "application/x-www-form-urlencoded",
       "Authorization": "" // override the default portal token
     });
-
     return this.http.post(`${this.GATEWAY_HOST_URL}${this.OAUTH_TOKEN_API}`, data, { headers }).pipe(
       map((response: any) => {
         _token = response.access_token;
@@ -107,9 +107,12 @@ export class OptInsightsService {
   }
 
   getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appInsightsResourceId: string, appId: string): Observable<any[]> {
-    var _startTime = new Date(-30);
+    var _startTime = new Date();
     var _endTime = new Date();
-    const query: string = `${this.GATEWAY_HOST_URL}/api/apps/${appId}/aggregatedInsights/timeRange?startTime=${_startTime.toISOString()}&endTime=${_endTime.toISOString()}&role=${this.optInsightsRole}`;
+    _startTime.setDate(_startTime.getDate() - 30);
+
+    //const query: string = `${this.GATEWAY_HOST_URL}/api/apps/${appId}/aggregatedInsights/timeRange?startTime=${_startTime.toISOString()}&endTime=${_endTime.toISOString()}&role=${this.optInsightsRole}`;
+    const query: string = `${this.GATEWAY_HOST_URL}/api/apps/${appId}/aggregatedInsights/timeRange?startTime=${_startTime.toISOString()}&endTime=${_endTime.toISOString()}`;
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${oAuthAccessToken}`,
       'Content-Type': 'application/json'
@@ -125,16 +128,15 @@ export class OptInsightsService {
     // const requests = forkJoin([this.getARMToken(), this.getAppInsightsInfo().pipe(take(2))]);
     // return requests.pipe(mergeMap(res => {
     return this.getARMToken().pipe(
-      (mergeMap(res => {
-        const armToken = res[0];
+      (mergeMap(aRMToken => {
         //   const appInsightInfo = res[1];
-        let appInsightInfo: any = { "appInsightsResourceId": appInsightsResourceId, "appId": this.appId }
-        if (aRMToken === null || appInsightInfo === null || appInsightInfo.appInsightsResourceUri === null || appInsightInfo.appId === null) return of(null);
-        return this.getOAuthAccessToken(aRMToken, appInsightInfo.appInsightsResourceUri).pipe(map(accessToken => {
-          return { accessToken, appInsightInfo };
-        }), mergeMap(res => {
-          if (res === null || res.accessToken === null || res.appInsightInfo.appInsightsResourceUri === null || res.appInsightInfo.appId === null) return of(null);
-          return this.getAggregatedInsightsbyTimeRange(res.accessToken, res.appInsightInfo.appInsightsResourceUri, res.appInsightInfo.appId);
+        //let appInsightInfo: any = { "appInsightsResourceId": appInsightsResourceId, "appId": appId }
+        if (aRMToken === null || appInsightsResourceId === null || appId === null) return of(null);
+        return this.getOAuthAccessToken(aRMToken, appInsightsResourceId).pipe(map(accessToken => {
+          return accessToken;
+        }), mergeMap(accessToken => {
+          if (accessToken === null || appInsightsResourceId === null || appId === null) return of(null);
+          return this.getAggregatedInsightsbyTimeRange(accessToken, appInsightsResourceId, appId);
         }));
       })));
   }

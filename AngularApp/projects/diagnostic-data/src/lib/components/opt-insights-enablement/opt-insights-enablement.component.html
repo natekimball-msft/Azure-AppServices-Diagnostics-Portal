@@ -3,31 +3,28 @@
 </div>
 
 <div *ngIf="!loading && table.length > 0">
+    <div style="font-size:16px;padding:10px">
+        <span>Optimization Insights found code recommendations for this application</span>
+    </div>
     <table class="table table-hover table-responsive no-border">
         <thead>
             <tr>
-                <th>Key</th>
-                <th>Insight </th>
-                <th>Metadata</th>
+                <th>Type</th>
+                <th>Performance issue</th>
                 <th>Component</th>
-                <th>Method</th>
                 <th>Count</th>
-                <th>TraceOccurrences</th>
-                <th>MaxImpactPercent</th>
-                <th>MaxBlockingTime</th>
-                <th>maxTimeStamp</th>
+                <th>Impact</th>
+                <th>Role</th>
             </tr>
         </thead>
         <tbody>
             <tr *ngFor="let item of table" style="font-size:13px">
-                <td>{{item.key}}</td>
-                <td>{{item.insight}}</td>
-                <td>{{item.metadata}}</td>
+                <td>{{item.type}}</td>
+                <td>{{item.issue}}</td>
+                <td>{{item.component}}</td>
                 <td>{{item.count}}</td>
-                <td>{{item.traceOccurrences}}</td>
-                <td>{{item.maxImpactPercent}}</td>
-                <td>{{item.maxBlockingTime}}</td>
-                <td>{{item.maxTimeStamp}}</td>
+                <td>{{item.impact}}</td>
+                <td>{{item.role}}</td>
             </tr>
         </tbody>
 

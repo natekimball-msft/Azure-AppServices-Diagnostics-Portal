@@ -36,9 +36,8 @@ export class OptInsightsEnablementComponent implements OnInit {
       this.appId.subscribe(appId => {
         if (resourceUri !== null && appId !== null) {
           this._optInsightsService.getInfoForOptInsights(this.aRMToken, resourceUri, appId).subscribe(res => {
-            if (res && res["Tables"]) {
-              let rows = res["Tables"][0]["Rows"];
-              this.parseRowsIntoTable(rows);
+            if (res) {
+              this.parseRowsIntoTable(res);
             }
             this.loading = false;
           });
@@ -56,16 +55,12 @@ export class OptInsightsEnablementComponent implements OnInit {
     }
     rows.forEach(element => {
       this.table.push({
-        key: element[0],
-        insight: element[1],
-        metadata: element[2],
-        component: element[3],
-        method: element[4],
-        count: element[5],
-        traceOccurrences: element[6],
-        maxImpactPercent: element[7],
-        maxBlockingTime: element[8],
-        maxTimeStamp: element[9]
+        type: element.insight.type,
+        issue: `${element.insight.method} is causing high ${element.insight.type}`,
+        component: element.insight.component,
+        count: element.count,
+        impact: `${element.insight.impactPercent.toFixed(2)}%`,
+        role: element.insight.roleName,
       });
     });
   }
