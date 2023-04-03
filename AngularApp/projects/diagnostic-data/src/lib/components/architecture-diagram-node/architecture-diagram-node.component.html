@@ -8,13 +8,10 @@
 }">
 
       <div *ngIf = "nodeIconType == 'image'">
-        <img class="card-image" [src]="nodeIcon"/>
+        <img class="card-image" [src]="imageTypeList.get(this.data.icon)"/>
       </div>
       <div *ngIf = "nodeIconType == 'icon'" >
-        <!-- adding ngIf in case iconTypeList expands -->
-        <div *ngIf = "nodeIcon == 'cloud'">
-          <i class="fa fa-cloud fa-3x fa-border-icon" aria-hidden="true"></i>
-        </div>
+        <i [class]="iconTypeList.get(this.data.icon)" aria-hidden="true"></i>
       </div>
       
       <div class="card-content">

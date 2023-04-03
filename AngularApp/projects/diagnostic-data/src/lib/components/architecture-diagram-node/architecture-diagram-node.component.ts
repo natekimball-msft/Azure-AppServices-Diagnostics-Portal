@@ -10,28 +10,24 @@ export class ArchitectureDiagramNodeComponent extends NgFlowchartStepComponent {
 
   routes = [];
   nodeIconType: string = ""; 
-  nodeIcon: string = ""; //default value  
+  imageTypeList: Map<string, string> =  new Map([
+    [ "webapp", "assets/img/Azure-WebApps-Logo.png" ],
+    [ "Linux App", "assets/img/Azure-Tux-Logo.png" ],
+    [ "Function App", "assets/img/Azure-Functions-Logo.png" ],
+    [ "Logic App", "assets/img/Azure-LogicAppsPreview-Logo.svg" ],
+    [ "App Service Environment", "assets/img/ASE-Logo.jpg" ],
+    [ "Virtual Machine", "assets/img/Icon-compute-21-Virtual-Machine.svg" ],
+    [ "Container App", "assets/img/Azure-ContainerApp-Logo.png" ],
+    [ "Internal Stamp", "assets/img/Cloud-Service-Logo.svg" ],
+    [ "traffic", "assets/img/SupportTopicImages/traffic.png" ],
+    [ "cloudservice", "assets/img/Cloud-Service-Logo.svg" ],
+    [ "frontdoor", "assets/img/AzureFront-Doors.svg" ],
+    [ "default", "assets/img/Default-Node-Image.svg" ]
+]);
 
-  resourceTypeList = [
-    { name: "webapp", imgSrc: "assets/img/Azure-WebApps-Logo.png" },
-    { name: "Linux App", imgSrc: "assets/img/Azure-Tux-Logo.png" },
-    { name: "Function App", imgSrc: "assets/img/Azure-Functions-Logo.png" },
-    { name: "Logic App", imgSrc: "assets/img/Azure-LogicAppsPreview-Logo.svg" },
-    { name: "App Service Environment", imgSrc: "assets/img/ASE-Logo.jpg" },
-    { name: "Virtual Machine", imgSrc: "assets/img/Icon-compute-21-Virtual-Machine.svg" },
-    { name: "Container App", imgSrc: "assets/img/Azure-ContainerApp-Logo.png" },
-    { name: "Internal Stamp", imgSrc: "assets/img/Cloud-Service-Logo.svg" },
-    { name: "traffic", imgSrc: "assets/img/SupportTopicImages/traffic.png" },
-    { name: "cloudservice", imgSrc: "assets/img/Cloud-Service-Logo.svg" },
-    { name: "frontdoor", imgSrc: "assets/img/AzureFront-Doors.svg" },
-    { name: "default", imgSrc: "assets/img/Default-Node-Image.svg"}
-
-  ];
-
-  iconTypeList = [
-    "cloud"
-  ]
-
+iconTypeList: Map<string, string> =  new Map([
+  [ "cloud", "fa fa-cloud fa-3x fa-border-icon"]
+]);
 
   ngOnInit(): void{
     this.modifyData(); 
@@ -42,8 +38,8 @@ export class ArchitectureDiagramNodeComponent extends NgFlowchartStepComponent {
       if(this.data.title){
         this._modifyTitle(); 
       }
-      this.data.icon = this._trimString(this.data.icon);
-      this.data.status = this._trimString(this.data.status); 
+      this.data.icon = this.data.icon ? this.data.icon.trim() : this.data.icon;
+      this.data.status =this.data.status ? this.data.status.trim() : this.data.status; 
       this._setIcon(); 
   }
 
@@ -55,44 +51,20 @@ export class ArchitectureDiagramNodeComponent extends NgFlowchartStepComponent {
   }
 
   private _setIcon(){
-
     //check if this.data.icon exists or is empty 
-    if(!this.data.icon || this.data.icon == ""){
-      this.nodeIcon = this.resourceTypeList[11].imgSrc; //default icon
-      this.nodeIconType = "image"; 
-      return;
+    //or this.data.icon is invalid 
+    //set this.data.icon to be default value
+    if(!this.data.icon || this.data.icon == "" || 
+    !( this.imageTypeList.has(this.data.icon) || this.iconTypeList.has(this.data.icon))){
+      this.data.icon = "default";;  
+    }
+    //if icon is cloud, set as icon type
+    //image type otherwise
+      if(this.data.icon == "cloud"){
+        this.nodeIconType = "icon"; 
+      }
+      else{
+        this.nodeIconType = "image"; 
+      }
   }
-  //if icon is cloud, use cloud icon 
-    if(this.data.icon == "cloud"){
-      this.nodeIcon = this.iconTypeList[0];
-      this.nodeIconType = "icon"; 
-    }
-    else if(this.data.icon == "webapp"){
-      this.nodeIcon = this.resourceTypeList[0].imgSrc;
-      this.nodeIconType = "image"; 
-    }
-    else if(this.data.icon == "traffic"){
-      this.nodeIcon = this.resourceTypeList[8].imgSrc;
-      this.nodeIconType = "image"; 
-    }
-    else if(this.data.icon == "frontdoor"){
-      this.nodeIcon = this.resourceTypeList[10].imgSrc;
-      this.nodeIconType = "image"; 
-    }
-    else if(this.data.icon == "cloudservice"){
-      this.nodeIcon = this.resourceTypeList[9].imgSrc;
-      this.nodeIconType = "image"; 
-    }
-}
-
-  private _trimString(str: string){
-    //remove white spaces from string to handle empty content 
-    if(str ){
-      return str.trim(); 
-    }
-    return str; 
-
-  }
-  
-
 }
