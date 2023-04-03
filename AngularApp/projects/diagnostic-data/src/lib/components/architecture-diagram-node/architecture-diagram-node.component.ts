@@ -9,6 +9,8 @@ import { NgFlowchart, NgFlowchartStepComponent } from 'projects/ng-flowchart/dis
 export class ArchitectureDiagramNodeComponent extends NgFlowchartStepComponent {
 
   routes = [];
+  nodeIconType: string = ""; 
+  nodeIcon: string = ""; //default value  
 
   resourceTypeList = [
     { name: "webapp", imgSrc: "assets/img/Azure-WebApps-Logo.png" },
@@ -22,22 +24,74 @@ export class ArchitectureDiagramNodeComponent extends NgFlowchartStepComponent {
     { name: "traffic", imgSrc: "assets/img/SupportTopicImages/traffic.png" },
     { name: "cloudservice", imgSrc: "assets/img/Cloud-Service-Logo.svg" },
     { name: "frontdoor", imgSrc: "assets/img/AzureFront-Doors.svg" },
+    { name: "default", imgSrc: "assets/img/Default-Node-Image.svg"}
 
   ];
 
+  iconTypeList = [
+    "cloud"
+  ]
+
 
   ngOnInit(): void{
-    //special ellipses modification for title overflow 
-    if(this.data.title){
-      this._modifyTitle(); 
-    }
+    this.modifyData(); 
+  }
+
+  private modifyData(){
+      //special ellipses modification for title overflow 
+      if(this.data.title){
+        this._modifyTitle(); 
+      }
+      this.data.icon = this._trimString(this.data.icon);
+      this.data.status = this._trimString(this.data.status); 
+      this._setIcon(); 
   }
 
   private _modifyTitle(){
 
-    if(this.data.title.length > 21){
+    if(this.data.title.length > 24){
       this.data.title = this.data.title.substring(0,10) + "..." + this.data.title.substring(this.data.title.length - 12); 
     }
+  }
+
+  private _setIcon(){
+
+    //check if this.data.icon exists or is empty 
+    if(!this.data.icon || this.data.icon == ""){
+      this.nodeIcon = this.resourceTypeList[11].imgSrc; //default icon
+      this.nodeIconType = "image"; 
+      return;
+  }
+  //if icon is cloud, use cloud icon 
+    if(this.data.icon == "cloud"){
+      this.nodeIcon = this.iconTypeList[0];
+      this.nodeIconType = "icon"; 
+    }
+    else if(this.data.icon == "webapp"){
+      this.nodeIcon = this.resourceTypeList[0].imgSrc;
+      this.nodeIconType = "image"; 
+    }
+    else if(this.data.icon == "traffic"){
+      this.nodeIcon = this.resourceTypeList[8].imgSrc;
+      this.nodeIconType = "image"; 
+    }
+    else if(this.data.icon == "frontdoor"){
+      this.nodeIcon = this.resourceTypeList[10].imgSrc;
+      this.nodeIconType = "image"; 
+    }
+    else if(this.data.icon == "cloudservice"){
+      this.nodeIcon = this.resourceTypeList[9].imgSrc;
+      this.nodeIconType = "image"; 
+    }
+}
+
+  private _trimString(str: string){
+    //remove white spaces from string to handle empty content 
+    if(str ){
+      return str.trim(); 
+    }
+    return str; 
+
   }
   
 
