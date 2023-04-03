@@ -152,6 +152,8 @@ import { WorkflowResultComponent } from './components/workflow-result/workflow-r
 import { WorkflowViewComponent } from './components/workflow-view/workflow-view.component';
 import { WorkflowNodeComponent } from './components/workflow-node/workflow-node.component';
 import { NgFlowchartModule } from 'projects/ng-flowchart/dist';
+import { ArchitectureDiagramComponent } from './components/architecture-diagram/architecture-diagram.component';
+import { ArchitectureDiagramNodeComponent } from './components/architecture-diagram-node/architecture-diagram-node.component';
 import { ChatGPTContextService } from './services/chat-gpt-context-service';
 import { GenericOpenAIChatService, OpenAIArmService } from '../public_api';
 import { QueryResponseService } from './services/query-response.service';
@@ -196,6 +198,7 @@ import { SafePipe } from './pipe/safe.pipe';
         FabDatePickerModule,
         FabCalendarModule,
         NgFlowchartModule
+        
     ],
     providers: [
         ClipboardService
@@ -262,6 +265,8 @@ import { SafePipe } from './pipe/safe.pipe';
         WorkflowResultComponent,
         WorkflowViewComponent,
         WorkflowNodeComponent,
+        ArchitectureDiagramComponent,
+        ArchitectureDiagramNodeComponent,
         WorkflowConditionNodeComponent,
         WorkflowAcceptUserinputComponent,
         VideoComponent,
