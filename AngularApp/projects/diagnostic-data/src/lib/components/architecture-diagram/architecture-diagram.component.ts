@@ -42,9 +42,6 @@ canvas: NgFlowchartCanvasDirective;
   ngAfterViewInit() {
 
     //created from custom step component
-    this.stepRegistry.registerStep('sample-step', ArchitectureDiagramNodeComponent);
-    this.stepRegistry.registerStep('do-action', ArchitectureDiagramNodeComponent);
-    this.stepRegistry.registerStep('notification', ArchitectureDiagramNodeComponent);
     this.stepRegistry.registerStep('default', ArchitectureDiagramNodeComponent);
     super.ngOnInit(); 
   }
