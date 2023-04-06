@@ -82,3 +82,13 @@ export interface DataTableResponseColumn {
     dataType?: string;
     columnType?: string;
 }
+
+export interface OptInsightsResource {
+    SubscriptionId: string;
+    ResourceGroup: string;
+    Name: string;
+    LinkedApplicationType: number;
+    ResourceId: string;
+    ResourceType: string;
+    IsAzureFirst: boolean;
+}

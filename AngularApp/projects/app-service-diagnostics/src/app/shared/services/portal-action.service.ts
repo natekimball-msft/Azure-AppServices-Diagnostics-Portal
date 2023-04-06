@@ -11,6 +11,7 @@ import { mergeMap, filter } from 'rxjs/operators';
 import { DetectorType } from 'diagnostic-data';
 import { VersionTestService } from '../../fabric-ui/version-test.service';
 import { Globals } from '../../globals';
+import { OptInsightsResource } from '../models/optinsights';
 
 @Injectable()
 export class PortalActionService {
@@ -157,6 +158,19 @@ export class PortalActionService {
             detailBladeInputs: {
                 resourceUri: this.currentSite.id,
                 linkedComponent: <any>null
+            }
+        };
+
+        this._portalService.openBlade(bladeInfo, 'troubleshoot');
+    }
+
+    public openOptInsightsBlade(appInsightsResourceUri: OptInsightsResource) {
+        const bladeInfo = {
+            detailBlade: 'ServiceProfilerPerflensBlade',
+            extension: 'AppInsightsExtension',
+            detailBladeInputs: {
+                ComponentId: `${JSON.stringify(appInsightsResourceUri)}`,
+                OpenedFrom: 'app-service-diagnose-and-solve-problems'
             }
         };
 

@@ -1,12 +1,11 @@
 <div style="text-align: center; padding:20px" *ngIf="loading">
     <i class="fa fa-circle-o-notch fa-2x fa-spin spin-icon" aria-hidden="true"></i>
 </div>
-
 <div *ngIf="!loading && table.length > 0">
-    <div style="font-size:16px;padding:10px">
-        <span>Optimization Insights found code recommendations for this application</span>
+    <div class="banner">        
+        <span><i class="fa fa-check-circle healthy-icon-color"></i>  Optimization Insights found code recommendations for this application</span>
     </div>
-    <table class="table table-hover table-responsive no-border">
+    <table class="table table-responsive no-border">
         <thead>
             <tr>
                 <th>Type</th>
@@ -15,6 +14,7 @@
                 <th>Count</th>
                 <th>Impact</th>
                 <th>Role</th>
+                <th>Link</th>
             </tr>
         </thead>
         <tbody>
@@ -25,6 +25,11 @@
                 <td>{{item.count}}</td>
                 <td>{{item.impact}}</td>
                 <td>{{item.role}}</td>
+                <td>
+                    <fab-primary-button [contentClass]="'ml-2'" (click)="openOptInsightsBlade()">
+                      Optimization Insights
+                    </fab-primary-button>
+                  </td>
             </tr>
         </tbody>
 
@@ -36,10 +41,11 @@
         </a>
     </div> -->
 </div>
-
-
-
-
 <div *ngIf="!loading && table.length === 0" style="font-size:16px;padding:10px">
-    There are no insights for this application. Insights are generated from profiles and no profiles have been uploaded for this application. Please follow the instructions outlined here <a href="https://aka.ms/serviceprofiler">https://aka.ms/serviceprofiler</a> to enable the App Insights Profiler for this application so the service can start analyzing profiles for insights. If you have any questions, please reach out to us at opt_insights@microsoft.com.
+    There are no insights for this application. Insights are generated from profiles and no profiles have been uploaded for this application. Please follow the instructions outlined here <a href="https://aka.ms/serviceprofiler">https://aka.ms/serviceprofiler</a> to enable the App Insights Profiler for this application, so the service can start analyzing profiles for insights. If you have any questions, please reach out to us at <a href="mailto:opt_insights@microsoft.com">Optimization Insights email</a>.
+    <td>
+        <fab-primary-button [contentClass]="'ml-2'" (click)="openOptInsightsBlade()">
+          Optimization Insights
+        </fab-primary-button>
+      </td>
 </div>
