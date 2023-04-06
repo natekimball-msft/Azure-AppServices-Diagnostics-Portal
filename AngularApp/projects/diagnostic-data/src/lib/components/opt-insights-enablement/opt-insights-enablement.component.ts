@@ -1,10 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ResourceType, StartupInfo } from 'projects/app-service-diagnostics/src/app/shared/models/portal';
-//import { AppInsightsService } from 'projects/app-service-diagnostics/src/app/shared/services/appinsights/appinsights.service';
-import { OptInsightsService } from 'projects/app-service-diagnostics/src/app/shared/services/optinsights/optinsights.service';
-import { AuthService } from 'projects/app-service-diagnostics/src/app/startup/services/auth.service';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+//import { OptInsightsService } from '../../services/optinsights.service';
+import { OptInsightsService } from 'projects/app-service-diagnostics/src/app/shared/services/optinsights/optinsights.service';
 
 @Component({
   selector: 'opt-insights-enablement',
