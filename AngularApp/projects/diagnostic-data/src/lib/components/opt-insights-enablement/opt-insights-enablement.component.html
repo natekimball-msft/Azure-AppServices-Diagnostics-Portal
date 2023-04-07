@@ -30,19 +30,23 @@
                 <td>{{item.role}}</td>
                 <td>
                     <fab-primary-button [contentClass]="'ml-2'" (click)="openOptInsightsBlade()">
-                      Optimization Insights
+                        Details in Optimization Insights
                     </fab-primary-button>
-                  </td>
+                </td>
             </tr>
         </tbody>
 
     </table>
 </div>
 <div *ngIf="!loading && table.length === 0" style="font-size:16px;padding:10px">
-    There are no insights for this application. Insights are generated from profiles and no profiles have been uploaded for this application. Please follow the instructions outlined here <a href="https://aka.ms/serviceprofiler">https://aka.ms/serviceprofiler</a> to enable the App Insights Profiler for this application, so the service can start analyzing profiles for insights. If you have any questions, please reach out to us at <a href="mailto:opt_insights@microsoft.com">Optimization Insights email</a>.
+    There are no insights for this application. Insights are generated from profiles and no profiles have been uploaded
+    for this application. Please follow the instructions outlined here <a
+        href="https://aka.ms/serviceprofiler">https://aka.ms/serviceprofiler</a> to enable the App Insights Profiler for
+    this application, so the service can start analyzing profiles for insights. If you have any questions, please reach
+    out to us at <a href="mailto:opt_insights@microsoft.com">Optimization Insights email</a>.
     <td>
         <fab-primary-button [contentClass]="'ml-2'" (click)="openOptInsightsBlade()">
-          Optimization Insights
+            Optimization Insights
         </fab-primary-button>
-      </td>
+    </td>
 </div>
