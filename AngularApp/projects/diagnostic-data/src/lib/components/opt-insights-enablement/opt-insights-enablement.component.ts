@@ -27,26 +27,23 @@ export class OptInsightsEnablementComponent implements OnInit {
   aRMTokenSubject = new BehaviorSubject<string>("");
   appInsightsResourceUri: string = "";
 
-  @Input() resourceUri: Observable<string>;
-  @Input() appId: Observable<string>;
+  @Input() optInsightResourceInfo: Observable<{ resourceUri: string, appId: string }>;
 
   ngOnInit(): void {
     this.loading = true;
-    this.resourceUri.subscribe(resourceUri => {
-      this.appId.subscribe(appId => {
-        if (resourceUri !== null && appId !== null) {
-          this.appInsightsResourceUri = resourceUri;
-          this._optInsightsService.getInfoForOptInsights(this.aRMToken, resourceUri, appId).subscribe(res => {
-            if (res) {
-              this.parseRowsIntoTable(res);
-            }
-            this.loading = false;
-          });
-        }
-        else {
+    this.optInsightResourceInfo.subscribe(optInsightResourceInfo => {
+      if (optInsightResourceInfo.resourceUri !== null && optInsightResourceInfo.appId !== null) {
+        this.appInsightsResourceUri = optInsightResourceInfo.resourceUri;
+        this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId).subscribe(res => {
+          if (res) {
+            this.parseRowsIntoTable(res);
+          }
           this.loading = false;
-        }
-      })
+        });
+      }
+      else {
+        this.loading = false;
+      }
     });
   }
 
@@ -112,7 +109,7 @@ export class OptInsightsEnablementComponent implements OnInit {
     }
 
 
-    
+
     return output;
   }
 }

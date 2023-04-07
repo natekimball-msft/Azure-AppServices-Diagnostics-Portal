@@ -169,7 +169,15 @@ export class PortalActionService {
             detailBlade: 'ServiceProfilerPerflensBlade',
             extension: 'AppInsightsExtension',
             detailBladeInputs: {
-                ComponentId: `${JSON.stringify(appInsightsResourceUri)}`,
+                ComponentId: {
+                    SubscriptionId: appInsightsResourceUri.SubscriptionId,
+                    ResourceGroup: appInsightsResourceUri.ResourceGroup,
+                    Name: appInsightsResourceUri.Name,
+                    LinkedApplicationType: appInsightsResourceUri.LinkedApplicationType,
+                    ResourceId: appInsightsResourceUri.ResourceId,
+                    ResourceType: appInsightsResourceUri.ResourceType,
+                    IsAzureFirst: appInsightsResourceUri.IsAzureFirst
+                },
                 OpenedFrom: 'app-service-diagnose-and-solve-problems'
             }
         };
