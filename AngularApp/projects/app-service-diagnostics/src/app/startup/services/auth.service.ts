@@ -63,7 +63,6 @@ export class AuthService {
         return startupInfo.pipe(
             map((info: StartupInfo) => {
                 if (info && info.resourceId) {
-                    info.resourceId = '/subscriptions/da511dea-6e00-4728-93ff-6302ad7fe284/providers/Microsoft.Batch/batchAccounts';
                     if(info.resourceId.toLowerCase().indexOf('/providers/') > -1) {
                         info.resourceId = info.resourceId.toLowerCase();
                     }

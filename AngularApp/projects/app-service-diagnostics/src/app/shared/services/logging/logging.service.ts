@@ -10,6 +10,7 @@ import { IncidentNotification, IncidentType, IncidentStatus } from '../../models
 import { PortalService } from '../../../startup/services/portal.service';
 import { Observable, forkJoin } from 'rxjs';
 import { VersioningHelper } from '../../utilities/versioningHelper';
+import { UriUtilities } from 'diagnostic-data';
 
 @Injectable()
 export class LoggingService {
@@ -69,7 +70,7 @@ export class LoggingService {
                 }
 
                 if (siteIndex !== -1) {
-                    if(this._startUpInfo.resourceId.toLocaleLowerCase().indexOf('/resourcegroups/') < 0) {
+                    if(UriUtilities.isNoResourceCall(this._startUpInfo.resourceId)) {
                         this.appStackInfo = 'Others';
                         this.platform = 'windows';
                         this._appType = 'webapp';

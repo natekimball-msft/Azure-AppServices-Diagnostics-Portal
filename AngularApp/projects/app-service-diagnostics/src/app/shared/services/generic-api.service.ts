@@ -6,7 +6,7 @@ import { ApolloDiagApiMap, ResponseMessageEnvelope } from '../models/responsemes
 import { Observable, of, forkJoin } from 'rxjs';
 import { AuthService } from '../../startup/services/auth.service';
 import { ArmService } from './arm.service';
-import { DetectorResponse, DetectorMetaData, workflowNodeResult } from 'diagnostic-data';
+import { DetectorResponse, DetectorMetaData, workflowNodeResult, UriUtilities } from 'diagnostic-data';
 import { ArmResource } from '../../shared-v2/models/arm';
 import { GenericArmConfigService } from './generic-arm-config.service';
 
@@ -29,7 +29,7 @@ export class GenericApiService {
             this.resourceId = info.resourceId;
             this.effectiveLocale = !!info.effectiveLocale ? info.effectiveLocale.toLowerCase() : "";
             // Use apollo api if this is a partial resource or explicitly configured in the config
-            this.useApolloApi = info.resourceId.toLowerCase().indexOf('/resourcegroups/') < 0 || this._genericArmConfigService.getArmApiConfig(info.resourceId)?.useApolloApi === true;
+            this.useApolloApi = UriUtilities.isNoResourceCall(info.resourceId) || this._genericArmConfigService.getArmApiConfig(info.resourceId)?.useApolloApi === true;
         });
     }
 
@@ -60,7 +60,7 @@ export class GenericApiService {
         } else {
             const path = `${resourceId}/detectors`;
             if(this.useApolloApi) {
-                this._armService.invokeApolloApi<DetectorResponse[]>(resourceId, ApolloDiagApiMap.ListDetectors, null, false, queryParams).pipe(map( (response:DetectorResponse[]) => {
+                return this._armService.invokeApolloApi<DetectorResponse[]>(path, ApolloDiagApiMap.ListDetectors, null, false, queryParams).pipe(map( (response:DetectorResponse[]) => {
                     this.detectorList = response?.map(listItem => listItem.metadata);
                     return this.detectorList;
                 }));

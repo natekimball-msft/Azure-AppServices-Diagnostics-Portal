@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { map, catchError } from 'rxjs/operators';
 import { Category } from "../../shared-v2/models/category";
 import { Observable, of, forkJoin } from 'rxjs';
-import { AppInsightsTelemetryService, ResourceDescriptor, TelemetryEventNames } from 'diagnostic-data';
+import { AppInsightsTelemetryService, ResourceDescriptor, TelemetryEventNames, UriUtilities } from 'diagnostic-data';
 import { PortalKustoTelemetryService } from './portal-kusto-telemetry.service';
 
 const APOLLO_API_VERSION:string = '2020-07-01-preview';
@@ -749,6 +749,9 @@ export class GenericArmConfigService {
   }
 
   getArmResourceConfig(resourceUri: string, recurse?: boolean): ArmResourceConfig {
+    if(!resourceUri.endsWith('/')) {
+      resourceUri = `${resourceUri}/`;
+    }
     let returnValue: ArmResourceConfig = new ArmResourceConfig();
     if (this.resourceMap.length > 0) {
       this.resourceMap.some((resource: ArmResourceConfig) => {
@@ -780,7 +783,7 @@ export class GenericArmConfigService {
     if(resourceUri?.toLowerCase().indexOf('/microsoft.diagnostics/apollo/') > -1) {
       return APOLLO_API_VERSION;
     }
-    if(!!resourceUri && resourceUri.toLowerCase().indexOf('/resourcegroups/') < 0  ) {
+    if(resourceUri && UriUtilities.isNoResourceCall(resourceUri) ) {
       //Call is for empty resource, return the API version for GET subscription call
       return '2019-06-01';
     }

@@ -1,3 +1,5 @@
+import { UriUtilities } from "../utilities/uri-utilities";
+
 export enum ResourceDescriptorGroups {
 	subscription = 1,
 	resourceGroup = 3,
@@ -60,7 +62,7 @@ export class ResourceDescriptor {
             }
     
             if (result[ResourceDescriptorGroups.resource]) {
-              if(resourceUri && resourceUri.toLowerCase().indexOf('/resourcegroups/') < 0) {
+              if( UriUtilities.isNoResourceCall(resourceUri) ) {
                 resourceDesc.type = result[ResourceDescriptorGroups.resource].split('/')[0];
                 resourceDesc.resource = '';
                 resourceDesc.types.push(resourceDesc.type);
