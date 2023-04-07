@@ -181,6 +181,7 @@ export class DashboardComponent implements OnDestroy {
     this._alertService.getUnAuthorizedAlerts().subscribe((error: HttpErrorResponse) => {
       let errorObj = JSON.parse(error.error);
       if (errorObj && errorObj.DetailText) {
+        localStorage.setItem('targetedPathBeforeUnauthorized', this._router.url.toString());
         this.accessError = errorObj.DetailText;
         this.navigateBackToHomePage();
       }
