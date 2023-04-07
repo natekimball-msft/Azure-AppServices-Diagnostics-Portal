@@ -7,7 +7,7 @@ import { ArmService } from '../../shared/services/arm.service';
 import { ArmResourceConfig } from '../../shared/models/arm/armResourceConfig';
 import { GenericArmConfigService } from '../../shared/services/generic-arm-config.service';
 import { PortalReferrerMap } from '../../shared/models/portal-referrer-map';
-import { DetectorType } from 'diagnostic-data';
+import { DetectorType, UriUtilities } from 'diagnostic-data';
 import { AuthService } from '../../startup/services/auth.service';
 
 @Injectable({ providedIn: 'root' })
@@ -223,7 +223,7 @@ export class ResourceService {
   }
 
   private _computeResourceIdFromResource(resourceUri: string, resource: ArmResource): string {
-    if(resource.id.toLowerCase().indexOf('/resourcegroups/') > -1) {
+    if(!UriUtilities.isNoResourceCall(resourceUri)) {
       return resource.id;
     }
     else {

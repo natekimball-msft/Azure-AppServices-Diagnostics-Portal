@@ -8,7 +8,7 @@ import { ServerFarm, Sku } from '../../../shared/models/server-farm';
 import { IDiagnosticProperties } from '../../../shared/models/diagnosticproperties';
 import { flatMap } from 'rxjs/operators';
 import { PortalReferrerMap } from '../../../shared/models/portal-referrer-map';
-import { DetectorType } from 'diagnostic-data';
+import { DetectorType, UriUtilities } from 'diagnostic-data';
 import { of, Observable, merge } from 'rxjs';
 import { ArmResource } from '../../../shared-v2/models/arm';
 import { forkJoin } from 'rxjs/internal/observable/forkJoin';
@@ -195,11 +195,10 @@ export class WebSitesService extends ResourceService {
         this.warmUpCallFinished.next(true);
     }
 
-    private _populateSiteInfo(): void {
-        let isPartialResource:boolean = this.resource.id.toLowerCase().indexOf('/resourcegroups/') < 0 ;
+    private _populateSiteInfo(): void {        
         const pieces = this.resource.id.toLowerCase().split('/');
         this._subscription = pieces[pieces.indexOf('subscriptions') + 1];
-        if(!isPartialResource) {
+        if(!UriUtilities.isNoResourceCall(this.resource.id)) {
             this._resourceGroup = pieces[pieces.indexOf('resourcegroups') + 1];
             this._siteName = pieces[pieces.indexOf('sites') + 1];
             this._slotName = pieces.indexOf('slots') >= 0 ? pieces[pieces.indexOf('slots') + 1] : '';

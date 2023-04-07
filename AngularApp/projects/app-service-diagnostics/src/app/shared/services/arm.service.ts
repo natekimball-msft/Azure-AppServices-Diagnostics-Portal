@@ -5,18 +5,19 @@ import { Subscription } from '../models/subscription';
 import { ResponseMessageEnvelope, ResponseMessageCollectionEnvelope, ApolloApiRequestBody, ApolloApiResponse, ApolloDiagApiMap } from '../models/responsemessageenvelope';
 import { AuthService } from '../../startup/services/auth.service';
 import { CacheService } from './cache.service';
-import { catchError, retry, map, retryWhen, mergeMap, timeout, switchMap, takeWhile, take, flatMap } from 'rxjs/operators';
+import { catchError, retry, map, retryWhen, mergeMap, timeout, switchMap, takeWhile, takeLast, take, flatMap } from 'rxjs/operators';
 import { HttpClient, HttpHeaders, HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { GenericArmConfigService } from './generic-arm-config.service';
 import { StartupInfo } from '../models/portal';
 import { PortalKustoTelemetryService } from './portal-kusto-telemetry.service';
 import { Guid } from '../utilities/guid';
 import { Router } from '@angular/router';
-import { TelemetryPayload } from 'diagnostic-data';
+import { TelemetryPayload, UriUtilities } from 'diagnostic-data';
 import { ArmResource } from '../../shared-v2/models/arm';
 
-const APOLLO_POLL_INTERVAL_MS:number = 5000;
-const APOLLO_POLL_TIMEOUT_MS:number = 180000; // Adding the additional 30 seconds to account for the time taken in Apollo. So the total timeout is 90 * 3 (number of retries)
+const APOLLO_INITIAL_POLL_WAIT_MS = 5000;
+const APOLLO_POLL_INTERVAL_MS:number = 5000; 
+const APOLLO_POLL_TIMEOUT_MS:number = 380000; // Adding the additional 30 seconds to account for the time taken in Apollo. So the total timeout is 90 * 3 (number of retries)
 
 @Injectable()
 export class ArmService {
@@ -135,7 +136,7 @@ export class ArmService {
 
     createUrl(resourceUri: string, apiVersion?: string) {
         let resourceUriToUse = resourceUri;
-        if(resourceUri && resourceUri.toLowerCase().indexOf('/resourcegroups/') < 0 && resourceUri.toLowerCase().indexOf('/microsoft.diagnostics/apollo/') < 0) {
+        if( UriUtilities.isNoResourceCall(resourceUri) && !UriUtilities.isApolloApiCall(resourceUri) ) {
             //Call is for get resource with a partial resource uri, convert it into a get subscription call.
             //If the call is for Apollo, then we do not want to modify anything in the resource uri and just construct the URL            
             resourceUriToUse = `/subscriptions/${resourceUri.split("subscriptions/")[1].split("/")[0]}` ;//resourceUri.replace(/\/providers\/[^\/]*\/[^\/]*\//, '/');
@@ -156,7 +157,7 @@ export class ArmService {
         return requestBody;
     }
 
-    private prepareApolloRequestBody(apolloSolutionId: string, diagApiName:ApolloDiagApiMap, resourceUri:string, headers:HttpHeaders):ApolloApiRequestBody {
+    private prepareApolloRequestBody(apolloSolutionId: string, diagApiName:ApolloDiagApiMap, requestedApiPath:string, headers:HttpHeaders):ApolloApiRequestBody {
         let requestBody: ApolloApiRequestBody = { 
             properties : {
                 triggerCriteria: [{
@@ -167,15 +168,12 @@ export class ArmService {
             }
         };
 
-        this.updateRequestBodyIfValueNotEmpty(requestBody, 'x-ms-path', encodeURI(resourceUri));
+        this.updateRequestBodyIfValueNotEmpty(requestBody, 'x-ms-path', requestedApiPath);
         this.updateRequestBodyIfValueNotEmpty(requestBody, 'x-ms-diag-applens-map', diagApiName);
-
-        if(resourceUri.toLowerCase().indexOf('/resourcegroups/') < 0) {
-            this.updateRequestBodyIfValueNotEmpty(requestBody, 'PartialResourceUri', resourceUri.indexOf('?')>-1 ? resourceUri.split('?')[0] : resourceUri);
-        }
-        else {
-            this.updateRequestBodyIfValueNotEmpty(requestBody, 'ResourceUri', resourceUri.indexOf('?')>-1 ? resourceUri.split('?')[0] : resourceUri);
-        }
+        
+        // Because Apollo call is always sent at a subscription level, we will always use PartialResourceUri whether or not the resourceUri is actually partial.
+        // If we decide to call Apollo API at resource level, then we'll need to use ResourceUri instead of PartialResourceUri.
+        this.updateRequestBodyIfValueNotEmpty(requestBody, 'PartialResourceUri', requestedApiPath.indexOf('?')>-1 ? requestedApiPath.split('?')[0] : requestedApiPath);
         
         this.updateRequestBodyIfValueNotEmpty(requestBody, 'SapProductId', this._startupInfo.sapProductId);
         this.updateRequestBodyIfValueNotEmpty(requestBody, 'ProductId', this._startupInfo.sapProductId);
@@ -200,7 +198,7 @@ export class ArmService {
     }
 
     public pollUntillSuccessOrError(url:string, putResponseBody:ResponseMessageEnvelope<ApolloApiResponse>) : Observable<ResponseMessageEnvelope<ApolloApiResponse>> {
-        return timer(0, APOLLO_POLL_INTERVAL_MS).pipe(
+        return timer(APOLLO_INITIAL_POLL_WAIT_MS, APOLLO_POLL_INTERVAL_MS).pipe(
             switchMap( ()=> {
                 return this._http.get<ResponseMessageEnvelope<ApolloApiResponse>>(url, { headers: this.getHeaders() }).pipe(
                     catchError( this.handleError.bind(this))
@@ -208,18 +206,29 @@ export class ArmService {
             }),
             takeWhile(apolloGetResponse => {
                 // Keep polling until the provisioningState is not Succeeded
-                return apolloGetResponse?.properties?.provisioningState !== 'Succeeded';
+                return apolloGetResponse?.properties?.provisioningState !== 'Succeeded' && apolloGetResponse?.properties?.provisioningState !== 'Failed';
             }, true),
+            takeLast(1),
             catchError(this.handleError.bind(this))
         );
     }
 
-    public invokeApolloApi<T>(resourceUri:string, diagApiName:ApolloDiagApiMap, apiVersion?:string, invalidateCache: boolean = false, 
+    public invokeApolloApi<T>(path:string, diagApiName:ApolloDiagApiMap, apiVersion?:string, invalidateCache: boolean = false, 
         additionalQueryParams?: any[] , additionalHeaders?: Map<string, string>, apolloSolutionId?:string) : Observable<T> {
-        let subscriptionId:string = resourceUri.split("subscriptions/")[1].split("/")[0];
+
+        if(UriUtilities.isNoResourceCall(path)) {
+            path = path.toLowerCase().replace('/providers/microsoft.containerservice/managedclusters', '/resourcegroups/akschallenge/providers/microsoft.containerservice/managedclusters/aksworkshop');
+        }
+
+        const requestedApiPath:string = path;
+        if(this._cache.has(requestedApiPath)) {
+            return this._cache.get(requestedApiPath);
+        }
+
+        let subscriptionId:string = requestedApiPath.split("subscriptions/")[1].split("/")[0];
         let requestId = Guid.newGuid();
 
-        apiVersion = apiVersion? apiVersion : this._genericArmConfigService.getApolloApiVersion(resourceUri);        
+        apiVersion = apiVersion? apiVersion : this._genericArmConfigService.getApolloApiVersion(requestedApiPath);        
         apolloSolutionId = apolloSolutionId? apolloSolutionId: 'a9fab365-c9b7-4a35-b433-c5537ca70603';
         
         
@@ -232,7 +241,7 @@ export class ArmService {
         }
 
         let eventProps = {
-            'resourceId': resourceUri,
+            'resourceId': requestedApiPath,
             'requestId': requestId,
             'requestUrl': url,
             'routerUrl': this._router.url,
@@ -244,10 +253,14 @@ export class ArmService {
             eventPayload: eventProps
         } as TelemetryPayload;
 
-        const request = this.getSubscriptionLocation(subscriptionId).pipe(
+        const apolloRequest = this.getSubscriptionLocation(subscriptionId).pipe(
             mergeMap((response:any) => {
 
-                const subscriptionLocation = response?.subscriptionPolicies?.locationPlacementId ?? '';
+                let subscriptionLocation = response?.subscriptionPolicies?.locationPlacementId ?? '';
+                if(!subscriptionLocation) {
+                    subscriptionLocation = response.body['subscriptionPolicies'] ? response.body['subscriptionPolicies']['locationPlacementId'] : '';
+                }
+
                 if (!additionalHeaders) {
                     additionalHeaders = new Map<string, string>();
                 }
@@ -264,12 +277,13 @@ export class ArmService {
 
                 let requestHeaders = this.getHeaders(null, additionalHeaders);
                 // Make Apollo request here
-                let requestBody = this.prepareApolloRequestBody(apolloSolutionId, diagApiName, resourceUri, requestHeaders);
+                let requestBody = this.prepareApolloRequestBody(apolloSolutionId, diagApiName, requestedApiPath, requestHeaders);
 
                 return this._http.put<ResponseMessageEnvelope<ApolloApiResponse>>(url, requestBody, { headers:  this.getHeaders() });
             }),
             catchError(this.handleError.bind(this)),
             mergeMap(apolloPutResponse => this.pollUntillSuccessOrError(url, apolloPutResponse)),
+            catchError(this.handleError.bind(this)),
             timeout(APOLLO_POLL_TIMEOUT_MS),
             catchError(this.handleError.bind(this)),
             map(finalResponse => {
@@ -287,31 +301,42 @@ export class ArmService {
                 }
 
                 try {
-                    if(completedApiResponse.properties.provisioningState !== 'Succeeded') {
+                    if(`${completedApiResponse.properties.provisioningState}` !== 'Succeeded' ) {
                         // Log this
                         throw <HttpErrorResponse>{
                             error: new Error(`AppLens API failed as Apollo call did not complete. Last checked state : ${completedApiResponse.properties.provisioningState}`),
                             message:`AppLens API failed as Apollo call did not complete. Last checked state : ${completedApiResponse.properties.provisioningState}`
                         };
                     }
-                    if(completedApiResponse.properties.replacementMaps.diagnostics[0].insights.find(insight=> insight.title.trim().toLowerCase() === 'Status').results.indexOf('200') < 0) {
+
+                    if(`${completedApiResponse.properties.replacementMaps?.diagnostics[0]?.status}`!== 'Succeeded') {
+                        // Log this
                         throw <HttpErrorResponse>{
-                            error: new Error(`AppLens API failed with status code : ${completedApiResponse.properties.replacementMaps.diagnostics[0].insights.find(insight=> insight.title.trim().toLowerCase() === 'Status').results}`),
-                            message:`AppLens API failed with status code : ${completedApiResponse.properties.replacementMaps.diagnostics[0].insights.find(insight=> insight.title.trim().toLowerCase() === 'Status').results}`
+                            error: new Error(`AppLens API failed as Apollo call was not able to successfully execute the package. Last checked state : ${completedApiResponse.properties.replacementMaps?.diagnostics[0]?.status}`),
+                            message:`AppLens API failed as Apollo call was not able to successfully execute the package : ${completedApiResponse.properties.replacementMaps?.diagnostics[0]?.status}`
+                        };
+                    }
+
+                    let responseContent:string = completedApiResponse.properties.replacementMaps?.diagnostics[0]?.insights?.find(insight=> insight.title.trim().toLowerCase() === 'requesteddata')?.results;
+                    if(completedApiResponse.properties.replacementMaps.diagnostics[0].insights.find(insight=> insight.title.trim().toLowerCase() === 'status').results.indexOf('200') < 0) {
+                        throw <HttpErrorResponse>{
+                            error: new Error(`AppLens API failed with status code : ${completedApiResponse.properties.replacementMaps.diagnostics[0].insights.find(insight=> insight.title.trim().toLowerCase() === 'status').results}`),
+                            message:`AppLens API failed with status code : ${completedApiResponse.properties.replacementMaps.diagnostics[0].insights.find(insight=> insight.title.trim().toLowerCase() === 'status').results}. ResponseBody: ${responseContent}`
                         };                
                     } else {
-                        let encodedApiResponse = completedApiResponse.properties.replacementMaps.diagnostics[0].insights.find(insight=> insight.title.trim().toLowerCase() === 'RequestedData').results;
-                        return this.parseBase64EncodedData<T>(url, encodedApiResponse, 'ApolloApiResponseBase64DecodingFailure');
+                        return this.parseBase64EncodedData<T>(url, responseContent, 'ApolloApiResponseBase64DecodingFailure');
                     }
                 }
                 catch(error) {
                     // Log the error here.. We were unable to parse the Apollo response.
+                    this.handleError(error)
                     throw error;
                 }
-            })
+            },
+            catchError(this.handleError.bind(this)))
         );
         
-        return this._cache.get(url, request, invalidateCache, logData);
+        return this._cache.get(requestedApiPath, apolloRequest, invalidateCache, logData);
     }
 
     getResource<T>(resourceUri: string, apiVersion?: string, invalidateCache: boolean = false, additionalHeaders?: Map<string, string>): Observable<{} | ResponseMessageEnvelope<T>> {

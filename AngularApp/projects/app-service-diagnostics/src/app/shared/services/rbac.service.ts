@@ -3,6 +3,7 @@ import {map} from 'rxjs/operators';
 import {Injectable} from '@angular/core';
 import {ArmService} from './arm.service';
 import {Permissions, PermissionsAsRegExp} from '../models/arm/permission';
+import { UriUtilities } from 'diagnostic-data';
 
 @Injectable()
 export class RBACService {
@@ -17,7 +18,7 @@ export class RBACService {
     }
 
     hasPermission(resourceId: string, requestedActions: string[]) {
-        if(resourceId.toLowerCase().indexOf('/resourcegroups/') < 0) {
+        if(UriUtilities.isNoResourceCall(resourceId)) {
             let split = resourceId.toLowerCase().split('/');
             resourceId = `/subscriptions/${split[split.indexOf('subscriptions') + 1]}`;
         }
