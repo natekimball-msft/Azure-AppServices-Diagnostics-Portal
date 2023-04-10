@@ -1,52 +1,69 @@
 <div style="text-align: center; padding:10px" *ngIf="loading">
     <i class="fa fa-circle-o-notch fa-2x fa-spin spin-icon" aria-hidden="true"></i>
 </div>
-<div *ngIf="!loading && table.length > 0">
-    <div class="header">
-        <span class="fxs-blade-header-icon" id="_weave_e_1001">
-            <img src="assets/img/azure-icons/AzureOptInsights.svg" alt="">
-            Optimization Insights found code recommendations:
-        </span>
-    </div>
-    <table class="table table-responsive no-border" class="table">
-        <thead>
-            <tr>
-                <th>Type</th>
-                <th>Performance issue</th>
-                <th>Component</th>
-                <th>Count</th>
-                <th>Impact</th>
-                <th>Role</th>
-                <th>More Details</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let item of table" style="font-size:13px">
-                <td>{{item.type}}</td>
-                <td>{{item.issue}}</td>
-                <td>{{item.component}}</td>
-                <td>{{item.count}}</td>
-                <td>{{item.impact}}</td>
-                <td>{{item.role}}</td>
-                <td>
-                    <fab-primary-button [contentClass]="'ml-2'" (click)="openOptInsightsBladewithTimeRange()">
-                        Details in Optimization Insights
-                    </fab-primary-button>
-                </td>
-            </tr>
-        </tbody>
+<div>
+    <div *ngIf="!loading && error; else errorOptInsights">
+        <div *ngIf="!loading && table.length > 0">
+            <div class="header">
+                <span class="fxs-blade-header-icon" id="_weave_e_1001">
+                    <img src="assets/img/azure-icons/AzureOptInsights.svg" alt="">
+                    Optimization Insights found code recommendations:
+                </span>
+            </div>
+            <table class="table table-responsive no-border" class="table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Performance issue</th>
+                        <th>Component</th>
+                        <th>Count</th>
+                        <th>Impact</th>
+                        <th>Role</th>
+                        <th>More Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of table" style="font-size:13px">
+                        <td>{{item.type}}</td>
+                        <td>{{item.issue}}</td>
+                        <td>{{item.component}}</td>
+                        <td>{{item.count}}</td>
+                        <td>{{item.impact}}</td>
+                        <td>{{item.role}}</td>
+                        <td>
+                            <fab-primary-button [contentClass]="'ml-2'" (click)="openOptInsightsBladewithTimeRange()">
+                                Details in Optimization Insights
+                            </fab-primary-button>
+                        </td>
+                    </tr>
+                </tbody>
 
-    </table>
-</div>
-<div *ngIf="!loading && table.length === 0" style="font-size:16px;padding:10px">
-    There are no insights for this application. Insights are generated from profiles and no profiles have been uploaded
-    for this application. Please follow the instructions outlined here <a
-        href="https://aka.ms/serviceprofiler">https://aka.ms/serviceprofiler</a> to enable the App Insights Profiler for
-    this application, so the service can start analyzing profiles for insights. If you have any questions, please reach
-    out to us at <a href="mailto:opt_insights@microsoft.com">Optimization Insights email</a>.
-    <td>
-        <fab-primary-button [contentClass]="'ml-2'" (click)="openOptInsightsBlade()">
-            Optimization Insights
-        </fab-primary-button>
-    </td>
+            </table>
+        </div>
+        <div *ngIf="!loading && table.length === 0" style="font-size:16px;padding:10px">
+            There are no insights for this application. Insights are generated from profiles and no profiles have been
+            uploaded
+            for this application. Please follow the instructions outlined here <a
+                href="https://aka.ms/serviceprofiler">https://aka.ms/serviceprofiler</a> to enable the App Insights
+            Profiler
+            for
+            this application, so the service can start analyzing profiles for insights. If you have any questions,
+            please
+            reach
+            out to us at <a href="mailto:opt_insights@microsoft.com">Optimization Insights email</a>.
+            <td>
+                <fab-primary-button [contentClass]="'ml-2'" (click)="openOptInsightsBlade()">
+                    Optimization Insights
+                </fab-primary-button>
+            </td>
+        </div>
+    </div>    
+    <ng-template #errorOptInsights>
+        <div class="header">
+            <span class="fxs-blade-header-icon" id="_weave_e_1001">
+                <img src="assets/img/azure-icons/AzureOptInsights.svg" alt="">
+                Error while calling Optimization Insights. Please try again later.
+            </span>
+        </div>
+    </ng-template>
 </div>

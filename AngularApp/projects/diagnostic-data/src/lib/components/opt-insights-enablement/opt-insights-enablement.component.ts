@@ -11,6 +11,7 @@ import { PortalActionGenericService } from '../../services/portal-action.service
   styleUrls: ['./opt-insights-enablement.component.scss']
 })
 export class OptInsightsEnablementComponent implements OnInit {
+  error: any;
 
   constructor(private _optInsightsService: OptInsightsGenericService, private portalActionService: PortalActionGenericService, private _detectorControlService: DetectorControlService) { }
 
@@ -37,6 +38,9 @@ export class OptInsightsEnablementComponent implements OnInit {
             this.parseRowsIntoTable(res);
           }
           this.loading = false;
+        },error => {
+          this.loading = false;
+          this.error = error;
         });
       }
       else {
