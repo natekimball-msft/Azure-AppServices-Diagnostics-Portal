@@ -1,9 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { OptInsightsResource } from 'projects/app-service-diagnostics/src/app/shared/models/optinsights';
+import { OptInsightsResource, OptInsightsTimeContext } from 'projects/app-service-diagnostics/src/app/shared/models/optinsights';
 import { OptInsightsService } from 'projects/app-service-diagnostics/src/app/shared/services/optinsights/optinsights.service';
 import { PortalActionService } from 'projects/app-service-diagnostics/src/app/shared/services/portal-action.service';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import { DetectorControlService } from '../../services/detector-control.service';
 
 @Component({
   selector: 'opt-insights-enablement',
@@ -12,7 +12,7 @@ import { map, mergeMap } from 'rxjs/operators';
 })
 export class OptInsightsEnablementComponent implements OnInit {
 
-  constructor(private _optInsightsService: OptInsightsService, private portalActionService: PortalActionService) { }
+  constructor(private _optInsightsService: OptInsightsService, private portalActionService: PortalActionService, private _detectorControlService: DetectorControlService) { }
 
   table: any = [];
   //columnOptions: TableColumnOption[] = [];
@@ -74,6 +74,14 @@ export class OptInsightsEnablementComponent implements OnInit {
     let optInsightsResource: OptInsightsResource = this.parseOptInsightsResource(this.appInsightsResourceUri, 0, 'microsoft.insights/components', false);
     this.portalActionService.openOptInsightsBlade(optInsightsResource);
   }
+
+  public openOptInsightsBladewithTimeRange() {
+    var durationMs = Math.abs(this._detectorControlService.endTime - this._detectorControlService.startTime);
+    let optInsightsResource: OptInsightsResource = this.parseOptInsightsResource(this.appInsightsResourceUri, 0, 'microsoft.insights/components', false);
+    let optInsightsTimeContext: OptInsightsTimeContext = {durationMs:durationMs, createdTime:this._detectorControlService.startTime.toISOString(), isInitialTime: false, grain: 1, useDashboardTimeRange: false};
+    this.portalActionService.openOptInsightsBladewithTimeRange(optInsightsResource, optInsightsTimeContext);
+  }
+  
 
   parseOptInsightsResource(resourceUri: string, linkedApplicationType: number, resourceType: string, isAzureFirst: boolean): OptInsightsResource {
 

@@ -92,3 +92,11 @@ export interface OptInsightsResource {
     ResourceType: string;
     IsAzureFirst: boolean;
 }
+
+export interface OptInsightsTimeContext {
+    durationMs: number; // Duration from now in ms
+    createdTime: string; // Now
+    isInitialTime: boolean;
+    grain: number; // This isn't respected by OptInsights as of April 6th 2023 (the time range filter won't show up properly. Will need to fix)
+    useDashboardTimeRange: boolean;
+}

@@ -11,7 +11,7 @@ import { mergeMap, filter } from 'rxjs/operators';
 import { DetectorType } from 'diagnostic-data';
 import { VersionTestService } from '../../fabric-ui/version-test.service';
 import { Globals } from '../../globals';
-import { OptInsightsResource } from '../models/optinsights';
+import { OptInsightsResource, OptInsightsTimeContext } from '../models/optinsights';
 
 @Injectable()
 export class PortalActionService {
@@ -177,6 +177,34 @@ export class PortalActionService {
                     ResourceId: appInsightsResourceUri.ResourceId,
                     ResourceType: appInsightsResourceUri.ResourceType,
                     IsAzureFirst: appInsightsResourceUri.IsAzureFirst
+                },
+                OpenedFrom: 'app-service-diagnose-and-solve-problems'
+            }
+        };
+
+        this._portalService.openBlade(bladeInfo, 'troubleshoot');
+    }
+
+    public openOptInsightsBladewithTimeRange(appInsightsResourceUri: OptInsightsResource, optInsightsTimeContext: OptInsightsTimeContext) {
+        const bladeInfo = {
+            detailBlade: 'ServiceProfilerPerflensBlade',
+            extension: 'AppInsightsExtension',
+            detailBladeInputs: {
+                ComponentId: {
+                    SubscriptionId: appInsightsResourceUri.SubscriptionId,
+                    ResourceGroup: appInsightsResourceUri.ResourceGroup,
+                    Name: appInsightsResourceUri.Name,
+                    LinkedApplicationType: appInsightsResourceUri.LinkedApplicationType,
+                    ResourceId: appInsightsResourceUri.ResourceId,
+                    ResourceType: appInsightsResourceUri.ResourceType,
+                    IsAzureFirst: appInsightsResourceUri.IsAzureFirst
+                },
+                TimeContext:{
+                    durationMs: optInsightsTimeContext.durationMs,
+                    createdTime: optInsightsTimeContext.createdTime,
+                    isInitialTime: optInsightsTimeContext.isInitialTime,
+                    grain: optInsightsTimeContext.grain,
+                    useDashboardTimeRange: optInsightsTimeContext.useDashboardTimeRange
                 },
                 OpenedFrom: 'app-service-diagnose-and-solve-problems'
             }
