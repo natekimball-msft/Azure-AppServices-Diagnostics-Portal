@@ -1,0 +1,34 @@
+.banner {
+    background-color: var(--homeBannerProd);
+    min-height: 48px;
+    color: var(--bodyText);
+    display: table;
+    border-color: none;
+  }
+  
+  .banner-child {
+    display: table-cell;
+    vertical-align: middle;
+    width: 100vw;
+    margin: 10px;
+    border-color: none;
+  }
+
+.noHover:hover { 
+    background-color: inherit;     
+    opacity: 1.0;
+ }
+
+ .table {
+    /* Remove or override the CSS properties associated with hover */
+    background-color: var(--homeBannerProd);
+    color: var(--bodyText);
+    padding: auto;
+    margin-top: 20px;
+}
+
+.header {
+    background-color: var(--homeBannerProd);
+    color: var(--bodyText);
+    margin-top: 10px;
+}
