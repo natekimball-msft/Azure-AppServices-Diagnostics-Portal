@@ -8,10 +8,9 @@ import { PortalService } from '../../startup/services/portal.service';
 import { ArmService } from './arm.service';
 import { AuthService } from '../../startup/services/auth.service';
 import { mergeMap, filter } from 'rxjs/operators';
-import { DetectorType } from 'diagnostic-data';
+import { DetectorType, OptInsightsResource, OptInsightsTimeContext } from 'diagnostic-data';
 import { VersionTestService } from '../../fabric-ui/version-test.service';
 import { Globals } from '../../globals';
-import { OptInsightsResource, OptInsightsTimeContext } from '../models/optinsights';
 
 @Injectable()
 export class PortalActionService {

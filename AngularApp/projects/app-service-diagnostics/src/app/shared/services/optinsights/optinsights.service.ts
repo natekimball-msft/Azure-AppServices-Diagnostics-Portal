@@ -1,16 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of, BehaviorSubject } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map, mergeMap, take, tap } from 'rxjs/operators';
 import { ScopeAuthorizationToken  } from '../../models/portal';
 import { PortalService } from '../../../startup/services/portal.service';
 
 
-@Injectable(
-  {
-    providedIn: 'root'
-  }
-)
+@Injectable()
 export class OptInsightsService {
 
   private readonly GATEWAY_HOST_URL: string = "https://gateway.azureserviceprofiler.net";

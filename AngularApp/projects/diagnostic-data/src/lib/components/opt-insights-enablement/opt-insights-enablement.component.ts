@@ -1,9 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { OptInsightsResource, OptInsightsTimeContext } from 'projects/app-service-diagnostics/src/app/shared/models/optinsights';
-import { OptInsightsService } from 'projects/app-service-diagnostics/src/app/shared/services/optinsights/optinsights.service';
-import { PortalActionService } from 'projects/app-service-diagnostics/src/app/shared/services/portal-action.service';
+import { OptInsightsResource, OptInsightsTimeContext } from '../../models/optinsights';
+import { OptInsightsGenericService } from '../../services/optinsights.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { DetectorControlService } from '../../services/detector-control.service';
+import { PortalActionGenericService } from '../../services/portal-action.service';
 
 @Component({
   selector: 'opt-insights-enablement',
@@ -12,11 +12,9 @@ import { DetectorControlService } from '../../services/detector-control.service'
 })
 export class OptInsightsEnablementComponent implements OnInit {
 
-  constructor(private _optInsightsService: OptInsightsService, private portalActionService: PortalActionService, private _detectorControlService: DetectorControlService) { }
+  constructor(private _optInsightsService: OptInsightsGenericService, private portalActionService: PortalActionGenericService, private _detectorControlService: DetectorControlService) { }
 
   table: any = [];
-  //columnOptions: TableColumnOption[] = [];
-  //columns: DataTableResponseColumn[];
   descriptionColumnName: string = "";
   allowColumnSearch: boolean = false;
   tableHeight: string = "";

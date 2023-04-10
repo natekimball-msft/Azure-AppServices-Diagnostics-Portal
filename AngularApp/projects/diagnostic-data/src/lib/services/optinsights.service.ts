@@ -1,15 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, of, ReplaySubject } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 
-@Injectable(
-    {
-        providedIn: 'root'
-    }
-)
-export class OptInsightsService {
+@Injectable()
+export class OptInsightsGenericService {
 
-    getInfoForOptInsights(aRMToken: string, appInsightsResourceId: string, appId: string): Observable<any[] | null> {
-        return null;
+    getInfoForOptInsights(appInsightsResourceId: string, appId: string): Observable<any[] | null> {
+        return of(null);
     }
 }
