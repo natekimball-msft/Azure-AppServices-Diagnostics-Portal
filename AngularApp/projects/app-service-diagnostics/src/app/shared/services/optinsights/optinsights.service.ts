@@ -55,11 +55,10 @@ export class OptInsightsService {
       }));
   }
 
-  getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appId: string): Observable<any[]> {
-    var _startTime = new Date();
-    var _endTime = new Date();
-    _startTime.setDate(_startTime.getDate() - 30);
-
+  getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appId: string, startTime: Date, endTime: Date): Observable<any[]> {
+    var _startTime: Date = startTime;
+    var _endTime:Date = endTime;
+    
     const query: string = `${this.GATEWAY_HOST_URL}/api/apps/${appId}/aggregatedInsights/timeRange?startTime=${_startTime.toISOString()}&endTime=${_endTime.toISOString()}`;
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${oAuthAccessToken}`,
@@ -72,7 +71,7 @@ export class OptInsightsService {
       }));
   }
 
-  getInfoForOptInsights(appInsightsResourceId: string, appId: string): Observable<any[] | null> {
+  getInfoForOptInsights(appInsightsResourceId: string, appId: string, startTime: Date, endTime: Date): Observable<any[] | null> {
     return this.getARMToken().pipe(
       (mergeMap(aRMToken => {
       if (aRMToken === null || appInsightsResourceId === null || appId === null) return of(null);
@@ -80,7 +79,7 @@ export class OptInsightsService {
           return accessToken;
         }), mergeMap(accessToken => {
           if (accessToken === null || appInsightsResourceId === null || appId === null) return of(null);
-          return this.getAggregatedInsightsbyTimeRange(accessToken, appId);
+          return this.getAggregatedInsightsbyTimeRange(accessToken, appId, startTime, endTime);
         }));
       })));
   }

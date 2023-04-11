@@ -36,3 +36,9 @@ table th {
     color: var(--bodyText);
     margin-top: 10px;
 }
+
+.error {
+  background-color: inherit; /*var(--homeBannerProd);*/
+  color: var(--bodyText);
+  margin: 10px;
+}

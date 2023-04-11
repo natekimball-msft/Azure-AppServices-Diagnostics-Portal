@@ -40,7 +40,8 @@ export interface OptInsightsResource {
 }
 
 export interface OptInsightsTimeContext {
-    durationMs: number; // Duration from now in ms
+    durationMs: number; // Duration from now in ms. If 0, then both endTime and createdTime needs to be sent
+    endTime: string;
     createdTime: string; // Now
     isInitialTime: boolean;
     grain: number; // This isn't respected by OptInsights as of April 6th 2023 (the time range filter won't show up properly. Will need to fix)

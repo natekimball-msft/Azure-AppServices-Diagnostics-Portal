@@ -200,6 +200,7 @@ export class PortalActionService {
                 },
                 TimeContext:{
                     durationMs: optInsightsTimeContext.durationMs,
+                    endTime: optInsightsTimeContext.endTime,
                     createdTime: optInsightsTimeContext.createdTime,
                     isInitialTime: optInsightsTimeContext.isInitialTime,
                     grain: optInsightsTimeContext.grain,

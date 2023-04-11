@@ -33,7 +33,7 @@ export class OptInsightsEnablementComponent implements OnInit {
     this.optInsightResourceInfo.subscribe(optInsightResourceInfo => {
       if (optInsightResourceInfo.resourceUri !== null && optInsightResourceInfo.appId !== null) {
         this.appInsightsResourceUri = optInsightResourceInfo.resourceUri;
-        this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId).subscribe(res => {
+        this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId, this._detectorControlService.startTime, this._detectorControlService.endTime).subscribe(res => {
           if (res) {
             this.parseRowsIntoTable(res);
           }
@@ -78,9 +78,10 @@ export class OptInsightsEnablementComponent implements OnInit {
   }
 
   public openOptInsightsBladewithTimeRange() {
-    var durationMs = Math.abs(this._detectorControlService.endTime - this._detectorControlService.startTime);
+    let nowDate = Date.now()
+    var durationMs = Math.abs(nowDate - this._detectorControlService.startTime);
     let optInsightsResource: OptInsightsResource = this.parseOptInsightsResource(this.appInsightsResourceUri, 0, 'microsoft.insights/components', false);
-    let optInsightsTimeContext: OptInsightsTimeContext = {durationMs:durationMs, createdTime:this._detectorControlService.startTime.toISOString(), isInitialTime: false, grain: 1, useDashboardTimeRange: false};
+    let optInsightsTimeContext: OptInsightsTimeContext = {durationMs:durationMs, endTime:this._detectorControlService.endTime.toISOString(), createdTime:this._detectorControlService.startTime.toISOString(), isInitialTime: false, grain: 1, useDashboardTimeRange: false};
     this.portalActionService.openOptInsightsBladewithTimeRange(optInsightsResource, optInsightsTimeContext);
   }
   
