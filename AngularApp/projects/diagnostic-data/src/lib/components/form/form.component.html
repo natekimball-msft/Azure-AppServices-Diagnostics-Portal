@@ -60,6 +60,20 @@
         </div>
       </div>
 
+      <div class="form-group row">
+        <fab-date-picker *ngIf="isDateTimePicker(formInput.inputType) && formInput.isVisible"
+        placeholder="Select a date..." ariaLabel="Select start date" allowTextInput="true"
+        showMonthPickerAsOverlay="true" (onSelectDate)="onSelectStartDateHandler($event)"
+        [value]="startDate">
+        </fab-date-picker>
+        <fab-date-picker *ngIf="isDateTimePicker(formInput.inputType) && formInput.isVisible"
+        placeholder="Select a date..." ariaLabel="Select end date" allowTextInput="true"
+        showMonthPickerAsOverlay="true" (onSelectDate)="onSelectEndDateHandler($event)"
+        [value]="endDate">
+        </fab-date-picker>
+      </div>
+      
+
     </ng-template>
     <!-- Display form buttons -->
     <div class="btn-toolbar">
@@ -89,6 +103,7 @@
         </div>
       </div>
     </div>
+
 
 
   </div>
