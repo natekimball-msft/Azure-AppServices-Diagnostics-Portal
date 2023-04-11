@@ -83,13 +83,25 @@ export class Dropdown extends FormInput {
     }
 }
 
+export class DateTimePicker extends FormInput {
+    defaultSelectedDateTime : Date;
+    restrictToDate : Date;
+    hideTimerPicker : boolean;
+    constructor(internalId: string, id: number, inputType: InputType, label: string, defaultSelectedDateTime: Date, restrictToDate: Date, hideTimerPicker: boolean, isVisible: boolean = true) {
+        super(internalId, id, inputType, label, false, "", "", isVisible);
+        this.defaultSelectedDateTime = defaultSelectedDateTime;
+        this.restrictToDate = restrictToDate;
+        this.hideTimerPicker = hideTimerPicker;
+    }
+}
 
 export enum InputType {
     TextBox,
     Checkbox,
     RadioButton,
     DropDown,
-    Button
+    Button,
+    DateTimePicker
 }
 
 export enum ButtonStyles {

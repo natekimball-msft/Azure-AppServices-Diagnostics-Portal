@@ -20,6 +20,16 @@ import { QueryResponseService } from '../../services/query-response.service';
   styleUrls: ['./form.component.scss']
 })
 export class FormComponent extends DataRenderBaseComponent {
+  startDate: Date;
+  endDate: Date;
+  onSelectStartDateHandler(e: { date: Date }) {
+    this.startDate = e.date;
+    console.log(this.startDate);
+  }
+  onSelectEndDateHandler(e: { date: Date }) {
+    this.endDate = e.date;
+    console.log(this.endDate);
+  }
 
   renderingProperties: Rendering;
   detectorForms: Form[] = [];
@@ -63,6 +73,10 @@ export class FormComponent extends DataRenderBaseComponent {
 
   public isDropdown(inputType: InputType) {
     return inputType === InputType.DropDown;
+  }
+
+  public isDateTimePicker(inputType: InputType) {
+    return inputType === InputType.DateTimePicker;
   }
 
   // parses the incoming data to render a form
