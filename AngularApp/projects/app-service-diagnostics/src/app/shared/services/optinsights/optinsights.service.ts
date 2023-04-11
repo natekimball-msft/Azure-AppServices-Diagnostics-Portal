@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map, mergeMap, take, tap } from 'rxjs/operators';
+import { map, mergeMap, retry, take, tap } from 'rxjs/operators';
 import { ScopeAuthorizationToken  } from '../../models/portal';
 import { PortalService } from '../../../startup/services/portal.service';
+import { CacheService } from '../cache.service';
 
 
 @Injectable()
@@ -21,10 +22,11 @@ export class OptInsightsService {
   isAppInsightsEnabled: boolean = false;
   appInsightsResourceUri: string = "";
   appId: string = "";
+  error: any;
 
 
 
-  constructor(private http: HttpClient, private _portalService: PortalService) {
+  constructor(private http: HttpClient, private _portalService: PortalService, private _cache: CacheService) {
   }
 
   private getARMToken(): Observable<string | null> {
@@ -55,7 +57,7 @@ export class OptInsightsService {
       }));
   }
 
-  getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appId: string, startTime: Date, endTime: Date): Observable<any[]> {
+  getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appId: string, startTime: Date, endTime: Date, invalidateCache: boolean = false): Observable<any[]> {
     var _startTime: Date = startTime;
     var _endTime:Date = endTime;
     
@@ -64,14 +66,18 @@ export class OptInsightsService {
       'Authorization': `Bearer ${oAuthAccessToken}`,
       'Content-Type': 'application/json'
     });
-    return this.http.get(query, { headers: headers }).pipe(
+    const request = this.http.get(query, { headers: headers }).pipe(
+      retry(2),
       map((aggregatedInsights: any) => {
         this.optInsightsResponse = aggregatedInsights;
         return this.optInsightsResponse;
+      },(error: any) => {
+        this.error = error;
       }));
+    return this._cache.get(query,request,invalidateCache);      
   }
 
-  getInfoForOptInsights(appInsightsResourceId: string, appId: string, startTime: Date, endTime: Date): Observable<any[] | null> {
+  getInfoForOptInsights(appInsightsResourceId: string, appId: string, startTime: Date, endTime: Date, invalidateCache: boolean = false): Observable<any[] | null> {
     return this.getARMToken().pipe(
       (mergeMap(aRMToken => {
       if (aRMToken === null || appInsightsResourceId === null || appId === null) return of(null);
@@ -79,7 +85,7 @@ export class OptInsightsService {
           return accessToken;
         }), mergeMap(accessToken => {
           if (accessToken === null || appInsightsResourceId === null || appId === null) return of(null);
-          return this.getAggregatedInsightsbyTimeRange(accessToken, appId, startTime, endTime);
+          return this.getAggregatedInsightsbyTimeRange(accessToken, appId, startTime, endTime, invalidateCache);
         }));
       })));
   }

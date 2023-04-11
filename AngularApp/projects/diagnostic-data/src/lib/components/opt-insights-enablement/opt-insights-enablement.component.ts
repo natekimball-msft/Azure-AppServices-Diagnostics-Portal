@@ -33,7 +33,7 @@ export class OptInsightsEnablementComponent implements OnInit {
     this.optInsightResourceInfo.subscribe(optInsightResourceInfo => {
       if (optInsightResourceInfo.resourceUri !== null && optInsightResourceInfo.appId !== null) {
         this.appInsightsResourceUri = optInsightResourceInfo.resourceUri;
-        this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId, this._detectorControlService.startTime, this._detectorControlService.endTime).subscribe(res => {
+        this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId, this._detectorControlService.startTime, this._detectorControlService.endTime, false).subscribe(res => {
           if (res) {
             this.parseRowsIntoTable(res);
           }
