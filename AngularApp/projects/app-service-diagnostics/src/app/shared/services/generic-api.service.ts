@@ -60,7 +60,7 @@ export class GenericApiService {
         } else {
             const path = `${resourceId}/detectors`;
             if(this.useApolloApi) {
-                return this._armService.invokeApolloApi<DetectorResponse[]>(path, ApolloDiagApiMap.ListDetectors, null, false, queryParams).pipe(map( (response:DetectorResponse[]) => {
+                return this._armService.invokeApolloApiForPassThrough<DetectorResponse[]>(path, resourceId, ApolloDiagApiMap.ListDetectors, null, false, queryParams).pipe(map( (response:DetectorResponse[]) => {
                     this.detectorList = response?.map(listItem => listItem.metadata);
                     return this.detectorList;
                 }));
@@ -82,7 +82,7 @@ export class GenericApiService {
             const path = `${this.resourceId}/detectors`;
             var queryParams = [{ "key": "text", "value": searchTerm }];
             if(this.useApolloApi) {
-                return this._armService.invokeApolloApi<DetectorResponse[]>(path, ApolloDiagApiMap.ListDetectors, null, false, queryParams).pipe(map((response: DetectorResponse[]) => {
+                return this._armService.invokeApolloApiForPassThrough<DetectorResponse[]>(path, this.resourceId, ApolloDiagApiMap.ListDetectors, null, false, queryParams).pipe(map((response: DetectorResponse[]) => {
                     var searchResults = response.map(listItem => listItem.metadata).sort((a, b) => { return b.score > a.score ? 1 : -1; });
                     return searchResults;
                 }));
@@ -118,7 +118,7 @@ export class GenericApiService {
                             if (resource.properties && resource.properties.sku) {
                                 requestHeaders.set('x-ms-sku', resource.properties.sku);
                             }
-                            return this._armService.invokeApolloApi<DetectorResponse>(path, ApolloDiagApiMap.GetDetector, null, refresh, null, requestHeaders).pipe(
+                            return this._armService.invokeApolloApiForPassThrough<DetectorResponse>(path, resourceId, ApolloDiagApiMap.GetDetector, null, refresh, null, requestHeaders).pipe(
                                 map((response: DetectorResponse) => {
                                     return response;
                                 })
@@ -128,7 +128,7 @@ export class GenericApiService {
                 }
                 else {
                     //There is no location or SKU if this is a partial resource. We can simply get the detectector.
-                    return this._armService.invokeApolloApi<DetectorResponse>(path, ApolloDiagApiMap.GetDetector, null, refresh).pipe(
+                    return this._armService.invokeApolloApiForPassThrough<DetectorResponse>(path, resourceId, ApolloDiagApiMap.GetDetector, null, refresh).pipe(
                         map((response: DetectorResponse) => {
                             return response;
                         })
