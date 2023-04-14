@@ -167,6 +167,8 @@ import { ChatUIContextService } from './services/chatui-context.service';
 import {OpenAIChatComponent} from './components/openai-chat/openai-chat.component';
 import {OpenAIGenieComponent} from './components/openai-genie/openai-genie.component';
 import {OpenAIChatContainerComponent} from './components/openai-chat-container/openai-chat-container.component';
+import { MarkdownRenderingSettingsComponent } from './markdown-rendering-settings/markdown-rendering-settings.component';
+import { GraphRenderingSettingsComponent } from './graph-rendering-settings/graph-rendering-settings.component';
 
 import { FabDialogModule } from '@angular-react/fabric/lib/components/dialog';
 
@@ -285,7 +287,9 @@ import { FabDialogModule } from '@angular-react/fabric/lib/components/dialog';
         ChatUIComponent,
         OpenAIChatComponent,
         OpenAIGenieComponent,
-        OpenAIChatContainerComponent
+        OpenAIChatContainerComponent,
+        MarkdownRenderingSettingsComponent,
+        GraphRenderingSettingsComponent
     ],
     exports: [
         FormsModule, TimeSeriesGraphComponent, DynamicDataComponent, DetectorViewComponent, DetectorSearchComponent, ClientScriptViewComponent,

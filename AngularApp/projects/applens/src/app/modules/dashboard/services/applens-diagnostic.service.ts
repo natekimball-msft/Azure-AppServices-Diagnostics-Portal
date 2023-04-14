@@ -10,6 +10,7 @@ import { map } from 'rxjs/operators';
 import { dynamicExpressionBody } from '../workflow/models/kusto';
 import { workflowNodeResult, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
 import { CommitStatus } from '../../../shared/models/devopsCommitStatus';
+import { NoCodeExpressionBody } from '../dynamic-node-settings/node-rendering-json-models';
 
 
 @Injectable()
@@ -293,6 +294,10 @@ export class ApplensDiagnosticService {
 
   evaluateDynamicExpression(dynamicExpression: dynamicExpressionBody, startTime: string, endTime: string): Observable<any> {
     return this._diagnosticApi.evaluateDynamicExpression(this._resourceService.getCurrentResourceId(true), dynamicExpression, startTime, endTime);
+  }
+
+  evaluateNoCodeExpression(expression: NoCodeExpressionBody, startTime: string, endTime: string): Observable<any> {
+    return this._diagnosticApi.evaluateNoCodeExpression(this._resourceService.getCurrentResourceId(true), expression, startTime, endTime);
   }
 
   publishWorkflow(publishBody: workflowPublishBody) {
