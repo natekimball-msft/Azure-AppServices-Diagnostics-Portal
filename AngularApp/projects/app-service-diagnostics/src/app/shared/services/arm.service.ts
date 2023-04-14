@@ -12,12 +12,13 @@ import { StartupInfo } from '../models/portal';
 import { PortalKustoTelemetryService } from './portal-kusto-telemetry.service';
 import { Guid } from '../utilities/guid';
 import { Router } from '@angular/router';
-import { TelemetryPayload, UriUtilities } from 'diagnostic-data';
+import { ResourceDescriptor, TelemetryPayload, UriUtilities } from 'diagnostic-data';
 import { ArmResource } from '../../shared-v2/models/arm';
 
 const APOLLO_INITIAL_POLL_WAIT_MS = 5000;
 const APOLLO_POLL_INTERVAL_MS:number = 5000; 
 const APOLLO_POLL_TIMEOUT_MS:number = 380000; // Adding the additional 30 seconds to account for the time taken in Apollo. So the total timeout is 90 * 3 (number of retries)
+const APOLLO_SOLUTION_ID:string = 'a9fab365-c9b7-4a35-b433-c5537ca70603'
 
 @Injectable()
 export class ArmService {
@@ -157,7 +158,7 @@ export class ArmService {
         return requestBody;
     }
 
-    private prepareApolloRequestBody(apolloSolutionId: string, diagApiName:ApolloDiagApiMap, requestedApiPath:string, headers:HttpHeaders):ApolloApiRequestBody {
+    private prepareApolloRequestBody(apolloSolutionId: string, diagApiName:ApolloDiagApiMap, requestedApiPath:string, resourceId:string, headers:HttpHeaders):ApolloApiRequestBody {
         let requestBody: ApolloApiRequestBody = { 
             properties : {
                 triggerCriteria: [{
@@ -173,7 +174,12 @@ export class ArmService {
         
         // Because Apollo call is always sent at a subscription level, we will always use PartialResourceUri whether or not the resourceUri is actually partial.
         // If we decide to call Apollo API at resource level, then we'll need to use ResourceUri instead of PartialResourceUri.
-        this.updateRequestBodyIfValueNotEmpty(requestBody, 'PartialResourceUri', requestedApiPath.indexOf('?')>-1 ? requestedApiPath.split('?')[0] : requestedApiPath);
+        if(UriUtilities.isNoResourceCall(resourceId) ) {
+            this.updateRequestBodyIfValueNotEmpty(requestBody, 'PartialResourceUri', `${resourceId}`.split('?')[0] );
+        } else {
+            this.updateRequestBodyIfValueNotEmpty(requestBody, 'ResourceUri', `${resourceId}`.split('?')[0]);
+        }
+        
         
         this.updateRequestBodyIfValueNotEmpty(requestBody, 'SapProductId', this._startupInfo.sapProductId);
         this.updateRequestBodyIfValueNotEmpty(requestBody, 'ProductId', this._startupInfo.sapProductId);
@@ -213,26 +219,25 @@ export class ArmService {
         );
     }
 
-    public invokeApolloApi<T>(path:string, diagApiName:ApolloDiagApiMap, apiVersion?:string, invalidateCache: boolean = false, 
-        additionalQueryParams?: any[] , additionalHeaders?: Map<string, string>, apolloSolutionId?:string) : Observable<T> {
-
-        if(UriUtilities.isNoResourceCall(path)) {
-            path = path.toLowerCase().replace('/providers/microsoft.containerservice/managedclusters', '/resourcegroups/akschallenge/providers/microsoft.containerservice/managedclusters/aksworkshop');
-        }
-
+    public invokeApolloApiForPassThrough<T>(path:string, resourceId:string, diagApiName:ApolloDiagApiMap, apiVersion?:string, invalidateCache: boolean = false, additionalQueryParams?: any[] , additionalHeaders?: Map<string, string>, apolloSolutionId?:string) : Observable<T> {
         const requestedApiPath:string = path;
         if(this._cache.has(requestedApiPath)) {
             return this._cache.get(requestedApiPath);
         }
+        if(!resourceId.startsWith('/')) {
+            resourceId = '/' + resourceId;
+        }
 
-        let subscriptionId:string = requestedApiPath.split("subscriptions/")[1].split("/")[0];
+        let subscriptionId:string = resourceId.split("subscriptions/")[1].split("/")[0];
         let requestId = Guid.newGuid();
 
-        apiVersion = apiVersion? apiVersion : this._genericArmConfigService.getApolloApiVersion(requestedApiPath);        
-        apolloSolutionId = apolloSolutionId? apolloSolutionId: 'a9fab365-c9b7-4a35-b433-c5537ca70603';
-        
+        apiVersion = apiVersion? apiVersion : this._genericArmConfigService.getApolloApiVersion(requestedApiPath);
+        apolloSolutionId = apolloSolutionId? apolloSolutionId: APOLLO_SOLUTION_ID;
         
         let url = this.createUrl(`/subscriptions/${subscriptionId}/providers/Microsoft.Diagnostics/apollo/${requestId}`, apiVersion);
+        if(!UriUtilities.isNoResourceCall(resourceId)) {            
+            url = this.createUrl(`${resourceId}${!resourceId.endsWith('/') ? '/' : ''}providers/Microsoft.Diagnostics/apollo/${requestId}`, apiVersion);;
+        }
 
         if(additionalQueryParams && additionalQueryParams.length > 0) {
             additionalQueryParams.forEach(param => {
@@ -241,7 +246,8 @@ export class ArmService {
         }
 
         let eventProps = {
-            'resourceId': requestedApiPath,
+            'resourceId': resourceId,
+            'apiPath': requestedApiPath,
             'requestId': requestId,
             'requestUrl': url,
             'routerUrl': this._router.url,
@@ -277,7 +283,7 @@ export class ArmService {
 
                 let requestHeaders = this.getHeaders(null, additionalHeaders);
                 // Make Apollo request here
-                let requestBody = this.prepareApolloRequestBody(apolloSolutionId, diagApiName, requestedApiPath, requestHeaders);
+                let requestBody = this.prepareApolloRequestBody(apolloSolutionId, diagApiName, requestedApiPath, resourceId, requestHeaders);
 
                 return this._http.put<ResponseMessageEnvelope<ApolloApiResponse>>(url, requestBody, { headers:  this.getHeaders() });
             }),
