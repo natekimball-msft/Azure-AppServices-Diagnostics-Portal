@@ -5,6 +5,14 @@ import { map, mergeMap, retry, take, tap } from 'rxjs/operators';
 import { ScopeAuthorizationToken  } from '../../models/portal';
 import { PortalService } from '../../../startup/services/portal.service';
 import { CacheService } from '../cache.service';
+import { OperatingSystem } from 'projects/app-service-diagnostics/src/app/shared/models/site';
+import { WebSitesService } from 'projects/app-service-diagnostics/src/app/resources/web-sites/services/web-sites.service';
+import { ResourceService } from 'projects/app-service-diagnostics/src/app/shared-v2/services/resource.service';
+import { AppType } from 'projects/app-service-diagnostics/src/app/shared/models/portal';
+import { Sku } from 'projects/app-service-diagnostics/src/app/shared/models/server-farm';
+import { DetectorControlService, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
+import { ActivatedRoute } from '@angular/router';
+
 
 
 @Injectable()
@@ -23,10 +31,17 @@ export class OptInsightsService {
   appInsightsResourceUri: string = "";
   appId: string = "";
   error: any;
+  subscriptionId: string;
+  resourcePlatform: OperatingSystem = OperatingSystem.any;
+  resourceAppType: AppType = AppType.WebApp;
+  resourceSku: Sku = Sku.All;
+  site: any;
+  startTime: string;
+  endTime: string;
+  
 
 
-
-  constructor(private http: HttpClient, private _portalService: PortalService, private _cache: CacheService) {
+  constructor(private http: HttpClient, private _portalService: PortalService, private _cache: CacheService, private telemetryService: TelemetryService, private _resourceService: ResourceService, private _route: ActivatedRoute, private _detectorControlService: DetectorControlService) {
   }
 
   private getARMToken(): Observable<string | null> {
@@ -35,9 +50,11 @@ export class OptInsightsService {
       let authData=JSON.parse(data);
       if (!authData.error) {
         let scopedToken = authData.token
+        this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsARMTokenSuccessful);
         return scopedToken;
       }
       else {
+        this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsARMTokenFailure, authData.error);
         return null;
       }
     }));
@@ -53,7 +70,11 @@ export class OptInsightsService {
     return this.http.post(`${this.GATEWAY_HOST_URL}${this.OAUTH_TOKEN_API}`, data, { headers }).pipe(
       map((response: any) => {
         _token = response.access_token;
+        this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsOAuthAccessTokenSuccessful);
         return _token;
+      },(error:any) => {
+        this.error = error;
+        this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsOAuthAccessTokenFailure, error);
       }));
   }
 
@@ -70,14 +91,17 @@ export class OptInsightsService {
       retry(2),
       map((aggregatedInsights: any) => {
         this.optInsightsResponse = aggregatedInsights;
+        this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsAggregatedInsightsbyTimeRangeSuccessful, aggregatedInsights.length);        
         return this.optInsightsResponse;
       },(error: any) => {
         this.error = error;
+        this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsAggregatedInsightsbyTimeRangeFailure, error);
       }));
     return this._cache.get(query,request,invalidateCache);      
   }
 
   getInfoForOptInsights(appInsightsResourceId: string, appId: string, startTime: Date, endTime: Date, invalidateCache: boolean = false): Observable<any[] | null> {
+    this.appInsightsResourceUri = appInsightsResourceId;
     return this.getARMToken().pipe(
       (mergeMap(aRMToken => {
       if (aRMToken === null || appInsightsResourceId === null || appId === null) return of(null);
@@ -88,5 +112,29 @@ export class OptInsightsService {
           return this.getAggregatedInsightsbyTimeRange(accessToken, appId, startTime, endTime, invalidateCache);
         }));
       })));
+  }
+
+  logOptInsightsEvent(resourceUri: string, telemetryEvent: string, error?:string, totalInsights?: number){
+    this.subscriptionId = this._route.parent.snapshot.params['subscriptionid'];
+    this.site = this._route.parent.snapshot.params['site'];
+    let webSiteService = this._resourceService as WebSitesService;
+    this.resourcePlatform = webSiteService.platform;
+    this.resourceAppType = webSiteService.appType;
+    this.resourceSku = webSiteService.sku;
+    this.startTime = this._detectorControlService.startTime;
+    this.endTime = this._detectorControlService.endTime;
+    const aICodeEventProperties = {
+      'Site': this.site,
+      'AppInsightsResourceUri': resourceUri,
+      'Subscription': this.subscriptionId,
+      'Platform': this.resourcePlatform != undefined ? this.resourcePlatform.toString() : "",
+      'AppType': this.resourceAppType != undefined ? this.resourceAppType.toString(): "",
+      'ResourceSku': this.resourceSku != undefined ? this.resourceSku.toString(): "",
+      'StartTime': this.startTime != undefined ? this.startTime.toString(): "",
+      'EndTime': this.endTime != undefined ? this.endTime.toString(): "",
+      'Error': error != undefined ? error.toString(): "",
+      'TotalInsights': totalInsights != undefined ? totalInsights.toString(): ""
+    };
+    this.telemetryService.logEvent(telemetryEvent, aICodeEventProperties);
   }
 }

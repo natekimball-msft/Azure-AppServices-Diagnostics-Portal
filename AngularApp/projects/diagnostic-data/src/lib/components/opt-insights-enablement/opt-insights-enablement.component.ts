@@ -4,6 +4,7 @@ import { OptInsightsGenericService } from '../../services/optinsights.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { DetectorControlService } from '../../services/detector-control.service';
 import { PortalActionGenericService } from '../../services/portal-action.service';
+import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 
 @Component({
   selector: 'opt-insights-enablement',
@@ -26,16 +27,19 @@ export class OptInsightsEnablementComponent implements OnInit {
   aRMTokenSubject = new BehaviorSubject<string>("");
   appInsightsResourceUri: string = "";
 
+
   @Input() optInsightResourceInfo: Observable<{ resourceUri: string, appId: string }>;
 
   ngOnInit(): void {
     this.loading = true;
+
     this.optInsightResourceInfo.subscribe(optInsightResourceInfo => {
       if (optInsightResourceInfo.resourceUri !== null && optInsightResourceInfo.appId !== null) {
         this.appInsightsResourceUri = optInsightResourceInfo.resourceUri;
         this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId, this._detectorControlService.startTime, this._detectorControlService.endTime, false).subscribe(res => {
           if (res) {
             this.parseRowsIntoTable(res);
+            this._optInsightsService.logOptInsightsEvent(optInsightResourceInfo.resourceUri, TelemetryEventNames.AICodeOptimizerInsightsReceived);            
           }
           this.loading = false;
         },error => {

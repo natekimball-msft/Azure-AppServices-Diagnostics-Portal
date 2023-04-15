@@ -8,4 +8,7 @@ export class OptInsightsGenericService {
     getInfoForOptInsights(appInsightsResourceId: string, appId: string, startTime: Date, endTime: Date, invalidateCache: boolean = false): Observable<any[] | null> {
         return of(null);
     }
+
+    logOptInsightsEvent(resourceUri: string, telemetryEvent: string, error?:string){
+    }
 }
