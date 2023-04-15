@@ -11,8 +11,6 @@ import { ResourceService } from 'projects/app-service-diagnostics/src/app/shared
 import { AppType } from 'projects/app-service-diagnostics/src/app/shared/models/portal';
 import { Sku } from 'projects/app-service-diagnostics/src/app/shared/models/server-farm';
 import { DetectorControlService, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
-import { ActivatedRoute } from '@angular/router';
-
 
 
 @Injectable()
@@ -39,9 +37,7 @@ export class OptInsightsService {
   startTime: string;
   endTime: string;
   
-
-
-  constructor(private http: HttpClient, private _portalService: PortalService, private _cache: CacheService, private telemetryService: TelemetryService, private _resourceService: ResourceService, private _route: ActivatedRoute, private _detectorControlService: DetectorControlService) {
+  constructor(private http: HttpClient, private _portalService: PortalService, private _cache: CacheService, private telemetryService: TelemetryService, private _resourceService: ResourceService, private _detectorControlService: DetectorControlService) {
   }
 
   private getARMToken(): Observable<string | null> {
@@ -78,7 +74,7 @@ export class OptInsightsService {
       }));
   }
 
-  getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appId: string, startTime: Date, endTime: Date, invalidateCache: boolean = false): Observable<any[]> {
+  getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appId: string, startTime: Date, endTime: Date, invalidateCache: boolean = false, type?:string): Observable<any[]> {
     var _startTime: Date = startTime;
     var _endTime:Date = endTime;
     
@@ -92,7 +88,17 @@ export class OptInsightsService {
       map((aggregatedInsights: any) => {
         this.optInsightsResponse = aggregatedInsights;
         this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsAggregatedInsightsbyTimeRangeSuccessful, aggregatedInsights.length);        
-        return this.optInsightsResponse;
+        if (this.optInsightsResponse.length <= 1){
+          return this.optInsightsResponse;
+        }
+        else{
+          if (type != undefined){
+            return this.getTopTypebyImpact(this.optInsightsResponse, type, 3);
+          }
+          else{
+             return [].concat(this.getTopTypebyImpact(this.optInsightsResponse, "CPU", 1), this.getTopTypebyImpact(this.optInsightsResponse, "Memory", 1), this.getTopTypebyImpact(this.optInsightsResponse, "Blocking", 1));
+          }
+        }
       },(error: any) => {
         this.error = error;
         this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsAggregatedInsightsbyTimeRangeFailure, error);
@@ -100,8 +106,17 @@ export class OptInsightsService {
     return this._cache.get(query,request,invalidateCache);      
   }
 
-  getInfoForOptInsights(appInsightsResourceId: string, appId: string, startTime: Date, endTime: Date, invalidateCache: boolean = false): Observable<any[] | null> {
+  getTopTypebyImpact(array: any, type:string, top: number): any{
+    const result = array.filter(insight => insight.type == type);
+    return result
+          .sort((a, b) => a.impact - b.impact)
+          .slice(0,top)
+          .map(insight => insight.type);
+  }
+
+  getInfoForOptInsights(appInsightsResourceId: string, appId: string, site:string, startTime: Date, endTime: Date, invalidateCache: boolean = false): Observable<any[] | null> {
     this.appInsightsResourceUri = appInsightsResourceId;
+    this.site = site;
     return this.getARMToken().pipe(
       (mergeMap(aRMToken => {
       if (aRMToken === null || appInsightsResourceId === null || appId === null) return of(null);
@@ -114,9 +129,7 @@ export class OptInsightsService {
       })));
   }
 
-  logOptInsightsEvent(resourceUri: string, telemetryEvent: string, error?:string, totalInsights?: number){
-    this.subscriptionId = this._route.parent.snapshot.params['subscriptionid'];
-    this.site = this._route.parent.snapshot.params['site'];
+  logOptInsightsEvent(resourceUri: string, telemetryEvent: string, error?:string, totalInsights?: number, site?:string){
     let webSiteService = this._resourceService as WebSitesService;
     this.resourcePlatform = webSiteService.platform;
     this.resourceAppType = webSiteService.appType;
@@ -124,9 +137,8 @@ export class OptInsightsService {
     this.startTime = this._detectorControlService.startTime;
     this.endTime = this._detectorControlService.endTime;
     const aICodeEventProperties = {
-      'Site': this.site,
+      'Site': site != undefined ? site: this.site != undefined ? this.site : "",
       'AppInsightsResourceUri': resourceUri,
-      'Subscription': this.subscriptionId,
       'Platform': this.resourcePlatform != undefined ? this.resourcePlatform.toString() : "",
       'AppType': this.resourceAppType != undefined ? this.resourceAppType.toString(): "",
       'ResourceSku': this.resourceSku != undefined ? this.resourceSku.toString(): "",

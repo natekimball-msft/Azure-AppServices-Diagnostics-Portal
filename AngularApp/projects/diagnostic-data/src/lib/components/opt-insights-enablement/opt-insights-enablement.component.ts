@@ -5,6 +5,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { DetectorControlService } from '../../services/detector-control.service';
 import { PortalActionGenericService } from '../../services/portal-action.service';
 import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'opt-insights-enablement',
@@ -14,7 +15,7 @@ import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 export class OptInsightsEnablementComponent implements OnInit {
   error: any;
 
-  constructor(private _optInsightsService: OptInsightsGenericService, private portalActionService: PortalActionGenericService, private _detectorControlService: DetectorControlService) { }
+  constructor(private _optInsightsService: OptInsightsGenericService, private portalActionService: PortalActionGenericService, private _detectorControlService: DetectorControlService, private _route: ActivatedRoute) { }
 
   table: any = [];
   descriptionColumnName: string = "";
@@ -36,7 +37,7 @@ export class OptInsightsEnablementComponent implements OnInit {
     this.optInsightResourceInfo.subscribe(optInsightResourceInfo => {
       if (optInsightResourceInfo.resourceUri !== null && optInsightResourceInfo.appId !== null) {
         this.appInsightsResourceUri = optInsightResourceInfo.resourceUri;
-        this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId, this._detectorControlService.startTime, this._detectorControlService.endTime, false).subscribe(res => {
+        this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId, this._route.parent.snapshot.params['site'], this._detectorControlService.startTime, this._detectorControlService.endTime, false).subscribe(res => {
           if (res) {
             this.parseRowsIntoTable(res);
             this._optInsightsService.logOptInsightsEvent(optInsightResourceInfo.resourceUri, TelemetryEventNames.AICodeOptimizerInsightsReceived);            
