@@ -60,19 +60,21 @@
         </div>
       </div>
 
-      <div class="form-group row">
-        <fab-date-picker *ngIf="isDateTimePicker(formInput.inputType) && formInput.isVisible"
-        placeholder="Select a date..." ariaLabel="Select start date" allowTextInput="true"
-        showMonthPickerAsOverlay="true" (onSelectDate)="onSelectStartDateHandler($event)"
-        [value]="startDate">
-        </fab-date-picker>
-        <fab-date-picker *ngIf="isDateTimePicker(formInput.inputType) && formInput.isVisible"
-        placeholder="Select a date..." ariaLabel="Select end date" allowTextInput="true"
-        showMonthPickerAsOverlay="true" (onSelectDate)="onSelectEndDateHandler($event)"
-        [value]="endDate">
-        </fab-date-picker>
+      <div *ngIf="isDateTimePicker(formInput.inputType)" class="form-group row">
+        <div style="display: flex;" class="ml-3 mt-3">
+          <div  class="mr-2 date-picker-label">Date&nbsp;</div> 
+          <fab-date-picker [minDate]="formInput.restrictToDate" [maxDate]="maxDate"
+            placeholder="Select a date..." ariaLabel="Select a date" allowTextInput="true"
+            showMonthPickerAsOverlay="true" (onSelectDate)="setDate($event, formInput)" [formatDate]="formatDate"
+            [value]="formInput.dateComponent" [parseDateFromString]="parseDateFromString" [contentStyle]="'width:130px'">
+          </fab-date-picker>
+            <fab-masked-text-field [contentClass]="'col-md-4'" maxLength="6" [(value)]="formInput.timeComponent"
+            [iconProps]="{iconName: 'Clock'}" [mask]="'99:99'" [maskChar]="'-'" [validateOnFocusOut]="true"
+            [getErrorMessage]="getErrorMessageOnTextField" [ariaLabel]="'endTime'" [styles]="maskTextFieldStyles">
+          </fab-masked-text-field>
+          <div class="date-picker-label">(UTC)</div>
+        </div>
       </div>
-      
 
     </ng-template>
     <!-- Display form buttons -->

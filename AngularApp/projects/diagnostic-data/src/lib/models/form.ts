@@ -87,11 +87,43 @@ export class DateTimePicker extends FormInput {
     defaultSelectedDateTime : Date;
     restrictToDate : Date;
     hideTimerPicker : boolean;
-    constructor(internalId: string, id: number, inputType: InputType, label: string, defaultSelectedDateTime: Date, restrictToDate: Date, hideTimerPicker: boolean, isVisible: boolean = true) {
-        super(internalId, id, inputType, label, false, "", "", isVisible);
+
+    private _dateComponent: Date;
+    public get dateComponent(): Date {
+        return this._dateComponent;
+    }
+    public set dateComponent(value: Date) {
+        this._dateComponent = value;
+        this.mergeDateTime();
+    }
+
+    private _timeComponent: string = "00:00";
+    public get timeComponent(): string {
+        return this._timeComponent;
+    }
+    public set timeComponent(value: string) {
+        var values = value.split(":");
+        if ((values.length > 1 && +values[0] <= 24 && +values[1] <= 59)) {
+            this._timeComponent = value;
+            this.mergeDateTime();
+        }
+    }
+
+    public mergeDateTime() {
+        // this.inputValue = this.dateComponent;
+        // var time = this.timeComponent.split(":")
+        // this.inputValue.setHours(Number(time[0]), Number(time[1]));
+        this.inputValue = "" + this.dateComponent.getFullYear() + "-" + this.dateComponent.getMonth() + "-" + this.dateComponent.getDate() + " " + this.timeComponent;
+    } 
+
+    constructor(internalId: string, id: number, inputType: InputType, label: string, defaultSelectedDateTime: Date, restrictToDate: Date, hideTimerPicker: boolean, isVisible: boolean = true, isRequired: boolean = false, tooltip: string = "", tooltipIcon: string = "") {
+        super(internalId, id, inputType, label, isRequired, tooltip, tooltipIcon, isVisible);
         this.defaultSelectedDateTime = defaultSelectedDateTime;
         this.restrictToDate = restrictToDate;
         this.hideTimerPicker = hideTimerPicker;
+
+        this.dateComponent = this.defaultSelectedDateTime;
+        this.timeComponent = this.defaultSelectedDateTime.getHours() + ":" + this.defaultSelectedDateTime.getMinutes();
     }
 }
 
