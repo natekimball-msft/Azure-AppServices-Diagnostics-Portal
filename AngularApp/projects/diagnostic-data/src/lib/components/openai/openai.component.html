@@ -39,7 +39,7 @@
     </fab-teachingbubble>
   </ng-container>
   <ng-container *ngIf="!slice.tooltip">
-    {{slice.value}}
+    <span [innerHTML]="slice.value"></span>
     <span *ngIf="slice.enhance">
       <img src="assets/img/enhance.svg" style="position: relative; top: -0.4em; height: 1em; width: 1em;" />
     </span>

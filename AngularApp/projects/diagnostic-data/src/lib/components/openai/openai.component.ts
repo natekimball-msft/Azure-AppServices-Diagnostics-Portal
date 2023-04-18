@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChildren, QueryList, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, ViewChildren, QueryList, ViewContainerRef, ElementRef, ViewChild } from '@angular/core';
 import { DirectionalHint } from 'office-ui-fabric-react/lib/Tooltip';
 import { ITooltipOptions } from '@angular-react/fabric/lib/components/tooltip';
 import { FabTeachingBubbleComponent } from './../../modules/fab-teachingbubble/public-api';
@@ -6,16 +6,20 @@ import { OpenAIArmService } from './../../services/openai-arm.service';
 import { TelemetryService } from '../../services/telemetry/telemetry.service';
 import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 import { ICalloutProps, ITeachingBubbleProps } from 'office-ui-fabric-react';
+import { MarkdownService, MarkedOptions } from 'ngx-markdown';
 
 @Component({
   selector: 'openai',
   templateUrl: './openai.component.html',
   styleUrls: ['./openai.component.scss']
 })
-export class OpenaiComponent implements OnInit {
+export class OpenaiComponent implements OnInit, AfterViewInit {
 
   @Input() text: string;
+  @Input() isMarkdown: boolean;
   @ViewChildren('tip') tips : QueryList<FabTeachingBubbleComponent>;
+  @ViewChildren('sv') sliceValues: QueryList<ElementRef<HTMLElement>>;
+  innerText: string;
 
   slices: any[] = [];
   chatResponse: string;
@@ -52,11 +56,40 @@ export class OpenaiComponent implements OnInit {
     doNotLayer: true
   };
 
-  constructor(private chatService: OpenAIArmService, private telemetryService: TelemetryService, private changeDetectorRef: ChangeDetectorRef) { }
+  constructor(private chatService: OpenAIArmService, private markDownService: MarkdownService, private telemetryService: TelemetryService) { }
 
   ngOnInit() {
     this.initCoachmarkFlag();
-    this.processWithAiService(this.text);
+
+    let text: string;
+    if (this.isMarkdown) {
+      text = this.markDownService.compile(this.text).trim().replace(/^\<p\>/, '').replace(/\<\/p\>$/, '');
+    } else {
+      text = this.text;
+    }
+    this.processWithAiService(text);
+  }
+
+  ngAfterViewInit() {
+    /*
+    // Put s.value into <span>'s innerHTML
+    this.sliceValues.forEach(sv => {
+      const sid = sv.nativeElement.getAttribute("id");
+      for(let i = 0; i < this.slices.length; i++) {
+        if (this.slices[i].id === sid) {
+          sv.nativeElement.innerHTML = this.slices[i].value;
+          break;
+        }
+      }
+    });
+    */
+    for(let i = 0; i < this.slices.length; i++) {
+      const s = this.slices[i];
+      if (!s.enhance) {
+//        s.style = lastStyleForUnenhancedSlice;
+      }
+      console.log(`slice id=${s.id}, enhance=${s.enhance}, styles=${s.styles}, value=${s.value}`);
+    }
   }
 
   initCoachmarkFlag() {
@@ -150,14 +183,14 @@ export class OpenaiComponent implements OnInit {
     }
 
     // TODO: make this customizable
-    const match: RegExp = /(^|\s)0x[8F][0-9A-F]{7}(\s|\.|$)/ig;
+    const match: RegExp = /(?<=^|\s|>|\.|,|\()0x[8-F][0-9A-F]{7}(?=\s|\.|,|<|:|\)|$)/ig;
     let lastIndex = 0;
     let id = 0;
     let r;
     let isCoachmarkSet = false;
 
     while ((r = match.exec(originalText))) {
-      this.slices.push({ id: `slice${id}`, enhance: false, value: r.input.substring(lastIndex, r.index) });
+      this.slices.push({ id: `slice${id}`, enhance: false, styles: {}, value: r.input.substring(lastIndex, r.index) });
       id++;
       const s: string = r.input.substring(r.index, match.lastIndex);
       // Only the first enhancing slice will have showCoachMark enabled
@@ -166,7 +199,7 @@ export class OpenaiComponent implements OnInit {
       id++;
       lastIndex = match.lastIndex;
     }
-    this.slices.push({ id: `slice${id}`, enhance: false, value: originalText.substring(lastIndex) });
+    this.slices.push({ id: `slice${id}`, enhance: false, styles: {}, value: originalText.substring(lastIndex) });
 
     // For each slice, call OpenAI service and store the response
     for(let i = 0; i < this.slices.length; i++) {
