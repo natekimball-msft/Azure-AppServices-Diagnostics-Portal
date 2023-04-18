@@ -17,14 +17,15 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
 
   @Input() text: string;
   @Input() isMarkdown: boolean;
-  @ViewChildren('tip') tips : QueryList<FabTeachingBubbleComponent>;
+  @ViewChildren('tip') tips: QueryList<FabTeachingBubbleComponent>;
   @ViewChildren('sv') sliceValues: QueryList<ElementRef<HTMLElement>>;
   innerText: string;
 
-  slices: any[] = [];
+  slices: Slice[] = [];
   chatResponse: string;
   footer: string = 'Powered by App Service Diagnostics AI';
   promptPrefix: string = 'Explain this Win32 status code ';
+  html: string;
 
   // For tooltip display
   directionalHint = DirectionalHint.rightTopEdge;
@@ -83,10 +84,10 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
       }
     });
     */
-    for(let i = 0; i < this.slices.length; i++) {
+    for (let i = 0; i < this.slices.length; i++) {
       const s = this.slices[i];
       if (!s.enhance) {
-//        s.style = lastStyleForUnenhancedSlice;
+        //        s.style = lastStyleForUnenhancedSlice;
       }
       console.log(`slice id=${s.id}, enhance=${s.enhance}, styles=${s.styles}, value=${s.value}`);
     }
@@ -137,7 +138,7 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
 
   dismissTooltip(slice: any) {
     if (slice && slice.visible) {
-//      this.removeTeachingBubbleFromDom(slice);
+      //      this.removeTeachingBubbleFromDom(slice);
       this.removeTeachingBubbleFromDom2(slice);
     }
   }
@@ -145,14 +146,12 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
   removeTeachingBubbleFromDom(slice: any) {
     const targetLabel = 'teachingbubble-' + slice.id;
     const htmlElements = document.querySelectorAll<HTMLElement>('.ms-TeachingBubble-content');
-    for(let i = 0; i < htmlElements.length; i++) {
+    for (let i = 0; i < htmlElements.length; i++) {
       const el = htmlElements[i];
       const label = el.getAttribute('aria-labelledby');
-      if (label === targetLabel)
-      {
-        const calloutContainer : HTMLElement | null = el.closest('.ms-Callout-container');
-        if (calloutContainer)
-        {
+      if (label === targetLabel) {
+        const calloutContainer: HTMLElement | null = el.closest('.ms-Callout-container');
+        if (calloutContainer) {
           calloutContainer.remove();
           slice.visible = false;
         }
@@ -202,7 +201,7 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
     this.slices.push({ id: `slice${id}`, enhance: false, styles: {}, value: originalText.substring(lastIndex) });
 
     // For each slice, call OpenAI service and store the response
-    for(let i = 0; i < this.slices.length; i++) {
+    for (let i = 0; i < this.slices.length; i++) {
       const s = this.slices[i];
       if (s.enhance) {
         const query: string = this.promptPrefix + s.value;
@@ -211,11 +210,31 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
             s.tooltip = resp;
           }
         },
-        error => {
-          const e = new Error('failed to retrieve respones from server: ' + error);
-          this.telemetryService.logException(e);
-        });
+          error => {
+            const e = new Error('failed to retrieve respones from server: ' + error);
+            this.telemetryService.logException(e);
+          });
       }
     }
+
+    for (const slice of this.slices) {
+      let sliceHTML = "";
+      if (slice.tooltip) {
+        sliceHTML = `<span [id]="slice.id" class="slice" (click)="onTooltipToggle(slice)">${slice.value}<img src="assets/img/enhance.svg" class="slice-icon" /><img src="assets/img/enhance-checked.svg" class="slice-icon-hovered" /></span>`;
+      } else {
+        sliceHTML = slice.value;
+      }
+      this.html = this.html + sliceHTML;
+    }
   }
+}
+
+interface Slice {
+  id: string;
+  enhance: boolean;
+  value: string;
+  tooltip?: string;
+  styles?: any;
+  visible?: boolean;
+  showCoachmark?: boolean;
 }
