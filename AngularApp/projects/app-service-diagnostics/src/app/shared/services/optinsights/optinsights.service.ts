@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, mergeMap, retry, take, tap } from 'rxjs/operators';
-import { ScopeAuthorizationToken  } from '../../models/portal';
+import { ScopeAuthorizationToken } from '../../models/portal';
 import { PortalService } from '../../../startup/services/portal.service';
 import { CacheService } from '../cache.service';
 import { OperatingSystem } from 'projects/app-service-diagnostics/src/app/shared/models/site';
@@ -10,7 +10,7 @@ import { WebSitesService } from 'projects/app-service-diagnostics/src/app/resour
 import { ResourceService } from 'projects/app-service-diagnostics/src/app/shared-v2/services/resource.service';
 import { AppType } from 'projects/app-service-diagnostics/src/app/shared/models/portal';
 import { Sku } from 'projects/app-service-diagnostics/src/app/shared/models/server-farm';
-import { DetectorControlService, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
+import { CodeOptimizationType, DetectorControlService, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
 
 
 @Injectable()
@@ -36,14 +36,14 @@ export class OptInsightsService {
   site: any;
   startTime: string;
   endTime: string;
-  
+
   constructor(private http: HttpClient, private _portalService: PortalService, private _cache: CacheService, private telemetryService: TelemetryService, private _resourceService: ResourceService, private _detectorControlService: DetectorControlService) {
   }
 
   private getARMToken(): Observable<string | null> {
     const scope: ScopeAuthorizationToken = { resourceName: "profile" };
     return this._portalService.getScopedToken(scope).pipe(take(1), map(data => {
-      let authData=JSON.parse(data);
+      let authData = JSON.parse(data);
       if (!authData.error) {
         let scopedToken = authData.token
         this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsARMTokenSuccessful);
@@ -55,7 +55,7 @@ export class OptInsightsService {
       }
     }));
   }
-  
+
   private getOAuthAccessToken(_armToken: string, _appInsightsResourceId: string): Observable<string> {
     var _token: string = "";
     const data = `grant_type=password&username=${_appInsightsResourceId}&password=Bearer ${_armToken}&endpoint=${this.authEndpoint}&role=${this.optInsightsRole}`;
@@ -68,16 +68,16 @@ export class OptInsightsService {
         _token = response.access_token;
         this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsOAuthAccessTokenSuccessful);
         return _token;
-      },(error:any) => {
+      }, (error: any) => {
         this.error = error;
         this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsOAuthAccessTokenFailure, error);
       }));
   }
 
-  getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appId: string, startTime: Date, endTime: Date, invalidateCache: boolean = false, type?:string): Observable<any[]> {
+  getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appId: string, startTime: Date, endTime: Date, invalidateCache: boolean = false, type?: CodeOptimizationType): Observable<any[]> {
     var _startTime: Date = startTime;
-    var _endTime:Date = endTime;
-    
+    var _endTime: Date = endTime;
+
     const query: string = `${this.GATEWAY_HOST_URL}/api/apps/${appId}/aggregatedInsights/timeRange?startTime=${_startTime.toISOString()}&endTime=${_endTime.toISOString()}`;
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${oAuthAccessToken}`,
@@ -86,40 +86,69 @@ export class OptInsightsService {
     const request = this.http.get(query, { headers: headers }).pipe(
       retry(2),
       map((aggregatedInsights: any) => {
-        this.optInsightsResponse = aggregatedInsights;
-        this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsAggregatedInsightsbyTimeRangeSuccessful, aggregatedInsights.length);        
-        if (this.optInsightsResponse.length <= 1){
+        this.optInsightsResponse = this.parseRowsIntoTable(aggregatedInsights);
+        this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsAggregatedInsightsbyTimeRangeSuccessful, aggregatedInsights.length);
+        if (this.optInsightsResponse.length <= 1) {
           return this.optInsightsResponse;
         }
-        else{
-          if (type != undefined){
-            return this.getTopTypebyImpact(this.optInsightsResponse, type, 3);
+        else {
+          if (type != undefined) {
+            return this.getTopTypeByImpact(this.optInsightsResponse, type, 3);
           }
-          else{
-             return [].concat(this.getTopTypebyImpact(this.optInsightsResponse, "CPU", 1), this.getTopTypebyImpact(this.optInsightsResponse, "Memory", 1), this.getTopTypebyImpact(this.optInsightsResponse, "Blocking", 1));
+          else {
+            return this.getTopTypeByImpact(this.optInsightsResponse, CodeOptimizationType.All, 3);
           }
         }
-      },(error: any) => {
+      }, (error: any) => {
         this.error = error;
         this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsAggregatedInsightsbyTimeRangeFailure, error);
       }));
-    return this._cache.get(query,request,invalidateCache);      
+    return this._cache.get(query, request, invalidateCache);
   }
 
-  getTopTypebyImpact(array: any, type:string, top: number): any{
-    const result = array.filter(insight => insight.type == type);
-    return result
-          .sort((a, b) => a.impact - b.impact)
-          .slice(0,top)
-          .map(insight => insight.type);
+  parseRowsIntoTable(rows: any) {
+    let table: any = [];
+    if (!rows || rows.length === 0) {
+      return;
+    }
+    rows.forEach(element => {
+      table.push({
+        type: element.insight.type,
+        issue: `${element.insight.method} is causing high ${element.insight.type}`,
+        component: element.insight.component,
+        count: element.count,
+        impact: `${element.insight.impactPercent.toFixed(2)}%`,
+        role: element.insight.roleName,
+      });
+    });
+    return table;
   }
 
-  getInfoForOptInsights(appInsightsResourceId: string, appId: string, site:string, startTime: Date, endTime: Date, invalidateCache: boolean = false): Observable<any[] | null> {
+  getTopTypeByImpact(array: any, type: CodeOptimizationType, top: number): any {
+    var result: any[];
+    if (type == CodeOptimizationType.All) {
+      result = array;
+    }
+    else {
+      result = array.filter(insight => <CodeOptimizationType>insight.type == type);
+    }
+    if (result.length < 2) {
+      return result;
+    }
+    else {
+      return result
+        .sort((a, b) => (Number(b.count) * Number(b.impact.replace("%", ""))) - (Number(a.count) * Number(a.impact.replace("%", ""))))
+        .slice(0, top);
+      //.map(insight => insight);
+    }
+  }
+
+  getInfoForOptInsights(appInsightsResourceId: string, appId: string, site: string, startTime: Date, endTime: Date, invalidateCache: boolean = false, type?: CodeOptimizationType): Observable<any[] | null> {
     this.appInsightsResourceUri = appInsightsResourceId;
     this.site = site;
     return this.getARMToken().pipe(
       (mergeMap(aRMToken => {
-      if (aRMToken === null || appInsightsResourceId === null || appId === null) return of(null);
+        if (aRMToken === null || appInsightsResourceId === null || appId === null) return of(null);
         return this.getOAuthAccessToken(aRMToken, appInsightsResourceId).pipe(map(accessToken => {
           return accessToken;
         }), mergeMap(accessToken => {
@@ -129,7 +158,7 @@ export class OptInsightsService {
       })));
   }
 
-  logOptInsightsEvent(resourceUri: string, telemetryEvent: string, error?:string, totalInsights?: number, site?:string){
+  logOptInsightsEvent(resourceUri: string, telemetryEvent: string, error?: string, totalInsights?: number, site?: string) {
     let webSiteService = this._resourceService as WebSitesService;
     this.resourcePlatform = webSiteService.platform;
     this.resourceAppType = webSiteService.appType;
@@ -137,15 +166,15 @@ export class OptInsightsService {
     this.startTime = this._detectorControlService.startTime;
     this.endTime = this._detectorControlService.endTime;
     const aICodeEventProperties = {
-      'Site': site != undefined ? site: this.site != undefined ? this.site : "",
+      'Site': site != undefined ? site : this.site != undefined ? this.site : "",
       'AppInsightsResourceUri': resourceUri,
       'Platform': this.resourcePlatform != undefined ? this.resourcePlatform.toString() : "",
-      'AppType': this.resourceAppType != undefined ? this.resourceAppType.toString(): "",
-      'ResourceSku': this.resourceSku != undefined ? this.resourceSku.toString(): "",
-      'StartTime': this.startTime != undefined ? this.startTime.toString(): "",
-      'EndTime': this.endTime != undefined ? this.endTime.toString(): "",
-      'Error': error != undefined ? error.toString(): "",
-      'TotalInsights': totalInsights != undefined ? totalInsights.toString(): ""
+      'AppType': this.resourceAppType != undefined ? this.resourceAppType.toString() : "",
+      'ResourceSku': this.resourceSku != undefined ? this.resourceSku.toString() : "",
+      'StartTime': this.startTime != undefined ? this.startTime.toString() : "",
+      'EndTime': this.endTime != undefined ? this.endTime.toString() : "",
+      'Error': error != undefined ? error.toString() : "",
+      'TotalInsights': totalInsights != undefined ? totalInsights.toString() : ""
     };
     this.telemetryService.logEvent(telemetryEvent, aICodeEventProperties);
   }

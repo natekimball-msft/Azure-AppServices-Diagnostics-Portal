@@ -39,40 +39,17 @@ export class OptInsightsEnablementComponent implements OnInit {
         this.appInsightsResourceUri = optInsightResourceInfo.resourceUri;
         this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId, this._route.parent.snapshot.params['site'], this._detectorControlService.startTime, this._detectorControlService.endTime, false).subscribe(res => {
           if (res) {
-            this.parseRowsIntoTable(res);
-            this._optInsightsService.logOptInsightsEvent(optInsightResourceInfo.resourceUri, TelemetryEventNames.AICodeOptimizerInsightsReceived);            
+            this.table = res;
+            this._optInsightsService.logOptInsightsEvent(optInsightResourceInfo.resourceUri, TelemetryEventNames.AICodeOptimizerInsightsReceived);
           }
           this.loading = false;
-        },error => {
+        }, error => {
           this.loading = false;
           this.error = error;
         });
       }
       else {
         this.loading = false;
-      }
-    });
-  }
-
-  parseRowsIntoTable(rows: any) {
-    if (!rows || rows.length === 0) {
-      return;
-    }
-    let rowsCounter = 0;
-    rows.forEach(element => {
-      if (rowsCounter === 3) {
-        return;
-      }
-      else {
-        rowsCounter++;
-        this.table.push({
-          type: element.insight.type,
-          issue: `${element.insight.method} is causing high ${element.insight.type}`,
-          component: element.insight.component,
-          count: element.count,
-          impact: `${element.insight.impactPercent.toFixed(2)}%`,
-          role: element.insight.roleName,
-        });
       }
     });
   }
@@ -86,10 +63,10 @@ export class OptInsightsEnablementComponent implements OnInit {
     let nowDate = Date.now()
     var durationMs = Math.abs(nowDate - this._detectorControlService.startTime);
     let optInsightsResource: OptInsightsResource = this.parseOptInsightsResource(this.appInsightsResourceUri, 0, 'microsoft.insights/components', false);
-    let optInsightsTimeContext: OptInsightsTimeContext = {durationMs:durationMs, endTime:this._detectorControlService.endTime.toISOString(), createdTime:this._detectorControlService.startTime.toISOString(), isInitialTime: false, grain: 1, useDashboardTimeRange: false};
+    let optInsightsTimeContext: OptInsightsTimeContext = { durationMs: durationMs, endTime: this._detectorControlService.endTime.toISOString(), createdTime: this._detectorControlService.startTime.toISOString(), isInitialTime: false, grain: 1, useDashboardTimeRange: false };
     this.portalActionService.openOptInsightsBladewithTimeRange(optInsightsResource, optInsightsTimeContext);
   }
-  
+
 
   parseOptInsightsResource(resourceUri: string, linkedApplicationType: number, resourceType: string, isAzureFirst: boolean): OptInsightsResource {
 
@@ -123,9 +100,6 @@ export class OptInsightsEnablementComponent implements OnInit {
     if (nameIndex > -1) {
       output.Name = resourceUriParts[nameIndex + 1];
     }
-
-
-
     return output;
   }
 }

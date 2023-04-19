@@ -47,3 +47,10 @@ export interface OptInsightsTimeContext {
     grain: number; // This isn't respected by OptInsights as of April 6th 2023 (the time range filter won't show up properly. Will need to fix)
     useDashboardTimeRange: boolean;
 }
+
+export enum CodeOptimizationType {
+    CPU = 1 << 0,
+    Memory = 1 << 1,
+    Blocking = 1 << 2,
+    All = 1 << 3
+}
