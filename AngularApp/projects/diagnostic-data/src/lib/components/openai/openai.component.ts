@@ -1,4 +1,5 @@
 import { Component, Renderer2, Input, OnInit, AfterViewInit, ViewChildren, QueryList, ElementRef, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { DirectionalHint } from 'office-ui-fabric-react/lib/Tooltip';
 import { ITooltipOptions } from '@angular-react/fabric/lib/components/tooltip';
 import { FabTeachingBubbleComponent } from './../../modules/fab-teachingbubble/public-api';
@@ -56,7 +57,7 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
     doNotLayer: true
   };
 
-  constructor(private chatService: OpenAIArmService, private renderer: Renderer2, private markDownService: MarkdownService, private telemetryService: TelemetryService) { }
+  constructor(private chatService: OpenAIArmService, private telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute, private renderer: Renderer2, private markDownService: MarkdownService) { }
 
   ngOnInit() {
     this.initCoachmarkFlag();
@@ -101,8 +102,13 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
     catch (error) {
       // Use TelemetryService logEvent when not able to access local storage.
       // Most likely due to browsing in InPrivate/Incognito mode.
-      const e = new Error(`Error trying to retrieve ${this.coachMarkCookieName} from localStorage: ` + error);
-      this.telemetryService.logException(e);
+      const eventProperties = {
+        'Subscription': this._activatedRoute.parent?.snapshot.params['subscriptionid'],
+        'ReportType': 'Openai',
+        'Error': error,
+        'Message': `Error trying to retrieve ${this.coachMarkCookieName} from localStorage`
+      }
+      this.telemetryService.logEvent(TelemetryEventNames.OpenAiInPrivateAccess, eventProperties);
     }
   }
 
