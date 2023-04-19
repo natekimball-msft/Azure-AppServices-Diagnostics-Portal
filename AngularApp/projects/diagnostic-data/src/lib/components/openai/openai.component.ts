@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, AfterViewInit, ViewChildren, QueryList, ViewContainerRef, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, ViewChildren, QueryList, ElementRef, ViewChild } from '@angular/core';
 import { DirectionalHint } from 'office-ui-fabric-react/lib/Tooltip';
 import { ITooltipOptions } from '@angular-react/fabric/lib/components/tooltip';
 import { FabTeachingBubbleComponent } from './../../modules/fab-teachingbubble/public-api';
@@ -22,10 +22,9 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
   innerText: string;
 
   slices: Slice[] = [];
-  chatResponse: string;
   footer: string = 'Powered by App Service Diagnostics AI';
   promptPrefix: string = 'Explain this Win32 status code ';
-  html: string;
+  html: string = '';
 
   // For tooltip display
   directionalHint = DirectionalHint.rightTopEdge;
@@ -69,6 +68,7 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
       text = this.text;
     }
     this.processWithAiService(text);
+    this.updateHtml();
   }
 
   ngAfterViewInit() {
@@ -89,7 +89,7 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
       if (!s.enhance) {
         //        s.style = lastStyleForUnenhancedSlice;
       }
-      console.log(`slice id=${s.id}, enhance=${s.enhance}, styles=${s.styles}, value=${s.value}`);
+      console.log(`slice id=${s.id}, enhance=${s.enhance}, value=${s.value}`);
     }
   }
 
@@ -143,6 +143,22 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
     }
   }
 
+  updateHtml() {
+    for (const slice of this.slices) {
+      let sliceHTML = "";
+//      console.log(`slice.id=${slice.id}, slice.value=${slice.value}`);
+      if (slice.tooltip) {
+        sliceHTML = `<span [id]="${slice.id}" class="slice" (click)="onTooltipToggle(slice)">${slice.value}<img src="assets/img/enhance.svg" class="slice-icon" /><img src="assets/img/enhance-checked.svg" class="slice-icon-hovered" /></span>`;
+      } else if (slice.enhance) {
+        sliceHTML = slice.value + '<img src="assets/img/enhance.svg" class="slice-icon-notooltip" />';
+      } else {
+        sliceHTML = slice.value;
+      }
+      this.html = this.html + sliceHTML;
+    }
+    console.log('html = ' + this.html);
+  }
+
   removeTeachingBubbleFromDom(slice: any) {
     const targetLabel = 'teachingbubble-' + slice.id;
     const htmlElements = document.querySelectorAll<HTMLElement>('.ms-TeachingBubble-content');
@@ -184,21 +200,19 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
     // TODO: make this customizable
     const match: RegExp = /(?<=^|\s|>|\.|,|\()0x[8-F][0-9A-F]{7}(?=\s|\.|,|<|:|\)|$)/ig;
     let lastIndex = 0;
-    let id = 0;
     let r;
     let isCoachmarkSet = false;
 
     while ((r = match.exec(originalText))) {
-      this.slices.push({ id: `slice${id}`, enhance: false, styles: {}, value: r.input.substring(lastIndex, r.index) });
-      id++;
+      const sliceId = this.getRandomId();
+      this.slices.push({ id: this.getRandomId(), enhance: false, value: r.input.substring(lastIndex, r.index) });
       const s: string = r.input.substring(r.index, match.lastIndex);
       // Only the first enhancing slice will have showCoachMark enabled
-      this.slices.push({ id: `slice${id}`, enhance: true, visible: false, value: s, showCoachmark: !isCoachmarkSet });
+      this.slices.push({ id: this.getRandomId(), enhance: true, visible: false, value: s, showCoachmark: !isCoachmarkSet });
       isCoachmarkSet = true;
-      id++;
       lastIndex = match.lastIndex;
     }
-    this.slices.push({ id: `slice${id}`, enhance: false, styles: {}, value: originalText.substring(lastIndex) });
+    this.slices.push({ id: this.getRandomId(), enhance: false, value: originalText.substring(lastIndex) });
 
     // For each slice, call OpenAI service and store the response
     for (let i = 0; i < this.slices.length; i++) {
@@ -208,6 +222,7 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
         this.chatService.getAnswer(query, true).subscribe((resp) => {
           if (resp && resp.length > 2 && !resp.trim().toLowerCase().includes("we could not find any information about that")) {
             s.tooltip = resp;
+            this.updateHtml();
           }
         },
           error => {
@@ -216,16 +231,10 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
           });
       }
     }
+  }
 
-    for (const slice of this.slices) {
-      let sliceHTML = "";
-      if (slice.tooltip) {
-        sliceHTML = `<span [id]="slice.id" class="slice" (click)="onTooltipToggle(slice)">${slice.value}<img src="assets/img/enhance.svg" class="slice-icon" /><img src="assets/img/enhance-checked.svg" class="slice-icon-hovered" /></span>`;
-      } else {
-        sliceHTML = slice.value;
-      }
-      this.html = this.html + sliceHTML;
-    }
+  getRandomId(): string {
+    return 'slice-' + Math.floor((Math.random() * 10000) + 1).toString();
   }
 }
 
@@ -234,7 +243,6 @@ interface Slice {
   enhance: boolean;
   value: string;
   tooltip?: string;
-  styles?: any;
   visible?: boolean;
   showCoachmark?: boolean;
 }

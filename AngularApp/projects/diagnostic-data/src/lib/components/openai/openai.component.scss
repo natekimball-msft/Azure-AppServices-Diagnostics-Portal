@@ -6,6 +6,7 @@
 .slice:not(:hover) .slice-icon-hovered {
     display: none;
 }
+.slice-icon-notooltip,
 .slice:hover .slice-icon-hovered,
 .slice:not(:hover) .slice-icon {
     position: relative;

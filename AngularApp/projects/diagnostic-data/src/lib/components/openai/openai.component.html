@@ -48,26 +48,26 @@
   <span [innerHTML]="html"></span>
 </ng-container> 
 <ng-container *ngFor="let slice of slices">
-  <fab-coachmark *ngIf="showCoachmark && slice.showCoachmark"
-  [target]="'#' + slice.id"
-  (onAnimationOpenEnd)="showTooltip(slice)"
-  [positioningContainerProps]="coachmarkPositioningContainerProps"
-  ariaAlertText="A coachmark has appeared"
-  ariaDescribedBy="coachmark-desc1"
-  ariaLabelledBy="coachmark-label1"
-  ariaDescribedByText="Press enter or alt + C to open the coachmark notification"
-  ariaLabelledByText="Coachmark notification">
-</fab-coachmark>
-<fab-teachingbubble #tip *ngIf="slice.visible"
-  [footerContent]= "footer"
-  (onDismiss)="dismissTooltip(slice)"
-  [target]="'#' + slice.id"
-  [hasCloseIcon]="true"
-  [calloutProps]="teachingBubbleCalloutProps"
-  closeButtonAriaLabel="Close"
-  hasCondensedHeadline="true"
-  ariaDescribedBy="openai-description1"
-  [ariaLabelledBy]="'teachingbubble-' + slice.id">
-  {{slice.tooltip}}
-</fab-teachingbubble>
+    <fab-coachmark *ngIf="showCoachmark && slice.showCoachmark"
+    [target]="'#' + slice.id"
+    (onAnimationOpenEnd)="showTooltip(slice)"
+    [positioningContainerProps]="coachmarkPositioningContainerProps"
+    ariaAlertText="A coachmark has appeared"
+    ariaDescribedBy="coachmark-desc1"
+    ariaLabelledBy="coachmark-label1"
+    ariaDescribedByText="Press enter or alt + C to open the coachmark notification"
+    ariaLabelledByText="Coachmark notification">
+  </fab-coachmark>
+  <fab-teachingbubble #tip *ngIf="slice.visible"
+    [footerContent]= "footer"
+    (onDismiss)="dismissTooltip(slice)"
+    [target]="'#' + slice.id"
+    [hasCloseIcon]="true"
+    [calloutProps]="teachingBubbleCalloutProps"
+    closeButtonAriaLabel="Close"
+    hasCondensedHeadline="true"
+    ariaDescribedBy="openai-description1"
+    [ariaLabelledBy]="'teachingbubble-' + slice.id">
+    {{slice.tooltip}}
+  </fab-teachingbubble>
 </ng-container>
