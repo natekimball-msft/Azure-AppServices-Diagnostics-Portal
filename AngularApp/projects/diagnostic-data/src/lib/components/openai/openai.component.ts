@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, AfterViewInit, ViewChildren, QueryList, ElementRef, ViewChild } from '@angular/core';
+import { Component, Renderer2, Input, OnInit, AfterViewInit, ViewChildren, QueryList, ElementRef, ViewChild } from '@angular/core';
 import { DirectionalHint } from 'office-ui-fabric-react/lib/Tooltip';
 import { ITooltipOptions } from '@angular-react/fabric/lib/components/tooltip';
 import { FabTeachingBubbleComponent } from './../../modules/fab-teachingbubble/public-api';
@@ -18,7 +18,7 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
   @Input() text: string;
   @Input() isMarkdown: boolean;
   @ViewChildren('tip') tips: QueryList<FabTeachingBubbleComponent>;
-  @ViewChildren('sv') sliceValues: QueryList<ElementRef<HTMLElement>>;
+  @ViewChild('raw') raw: ElementRef<HTMLElement>;
   innerText: string;
 
   slices: Slice[] = [];
@@ -56,7 +56,7 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
     doNotLayer: true
   };
 
-  constructor(private chatService: OpenAIArmService, private markDownService: MarkdownService, private telemetryService: TelemetryService) { }
+  constructor(private chatService: OpenAIArmService, private renderer: Renderer2, private markDownService: MarkdownService, private telemetryService: TelemetryService) { }
 
   ngOnInit() {
     this.initCoachmarkFlag();
@@ -106,7 +106,9 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onTooltipToggle(slice: any) {
+  onTooltipToggle(event: any) {
+    return;
+    /*
     slice.visible = !slice.visible;
     if (slice.visible && !slice.hasBeenVisible) {
       slice.hasBeenVisible = true;
@@ -128,6 +130,7 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
     else if (!slice.visible) {
       this.removeTeachingBubbleFromDom2(slice);
     }
+    */
   }
 
   showTooltip(slice: any) {
@@ -145,10 +148,59 @@ export class OpenaiComponent implements OnInit, AfterViewInit {
 
   updateHtml() {
     for (const slice of this.slices) {
+      let sliceHTML;
+//      console.log(`slice.id=${slice.id}, slice.value=${slice.value}`);
+      if (slice.tooltip) {
+        //onClick="onTooltipToggle(event)"
+        sliceHTML = `<span id="${slice.id}" class="slice">${slice.value}<img src="assets/img/enhance.svg" class="slice-icon" /><img src="assets/img/enhance-checked.svg" class="slice-icon-hovered" /></span>`;
+/*
+        const span = this.renderer.createElement('span');
+        this.renderer.addClass(span, 'slice');
+        this.renderer.setAttribute(span, 'id', slice.id);
+        this.renderer.setValue(span, slice.value);
+
+        const imgUnchecked = this.renderer.createElement('img');
+        this.renderer.addClass(imgUnchecked, 'slice-icon');
+        this.renderer.setAttribute(imgUnchecked, 'src', 'assets/img/enhance.svg');
+
+        const imgChecked = this.renderer.createElement('img');
+        this.renderer.addClass(imgChecked, 'slice-icon-hovered');
+        this.renderer.setAttribute(imgChecked, 'src', 'assets/img/enhance-checked.svg');
+
+        this.renderer.appendChild(span, imgUnchecked);
+        this.renderer.appendChild(span, imgChecked);
+
+        this.renderer.appendChild(this.raw, span);
+*/
+      } else if (slice.enhance) {
+        sliceHTML = slice.value + '<img src="assets/img/enhance.svg" class="slice-icon-notooltip" />';
+      } else {
+        sliceHTML = slice.value;
+      }
+      this.html = this.html + sliceHTML;
+    }
+    console.log('html = ' + this.html);
+
+    for (const slice of this.slices) {
+      if (slice.tooltip) {
+        const span = this.renderer.selectRootElement('.slice', true);
+        console.log(span);
+        if (span) {
+          this.renderer.setStyle(span, 'text-decoration', 'underline dotted 2px;');
+          this.renderer.setAttribute(span, 'id', slice.id);
+          this.renderer.setValue(span, slice.value);
+        }
+      }
+    }
+  }
+
+  updateHtmlWithInnerHtml() {
+    for (const slice of this.slices) {
       let sliceHTML = "";
 //      console.log(`slice.id=${slice.id}, slice.value=${slice.value}`);
       if (slice.tooltip) {
-        sliceHTML = `<span [id]="${slice.id}" class="slice" (click)="onTooltipToggle(slice)">${slice.value}<img src="assets/img/enhance.svg" class="slice-icon" /><img src="assets/img/enhance-checked.svg" class="slice-icon-hovered" /></span>`;
+        //onClick="onTooltipToggle(event)"
+        sliceHTML = `<span id="${slice.id}" class="slice">${slice.value}<img src="assets/img/enhance.svg" class="slice-icon" /><img src="assets/img/enhance-checked.svg" class="slice-icon-hovered" /></span>`;
       } else if (slice.enhance) {
         sliceHTML = slice.value + '<img src="assets/img/enhance.svg" class="slice-icon-notooltip" />';
       } else {

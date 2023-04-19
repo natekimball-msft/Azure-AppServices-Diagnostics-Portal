@@ -43,10 +43,14 @@
   </ng-container>
 </ng-container> -->
 
-
-<ng-container>
-  <span [innerHTML]="html"></span>
-</ng-container> 
+<!-- dummy class to make the style class available -->
+<!--ng-container>
+  <span class="slice"></span>
+  <span class="slice-icon"></span>
+  <span class="slice-icon-notooltip"></span>
+  <span class="slice-icon-hovered"></span>
+</ng-container--> 
+<span #raw [innerHTML]="html"></span>
 <ng-container *ngFor="let slice of slices">
     <fab-coachmark *ngIf="showCoachmark && slice.showCoachmark"
     [target]="'#' + slice.id"
