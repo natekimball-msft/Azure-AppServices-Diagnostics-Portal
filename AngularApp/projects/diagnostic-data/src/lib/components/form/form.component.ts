@@ -347,6 +347,13 @@ export class FormComponent extends DataRenderBaseComponent {
       if ((input.isRequired && !hasInputValue) || (hasInputValue && input.inputValue.length > this.maxInputLength)) {
         input.displayValidation = true;
         return false;
+      } 
+      if (this.isDateTimePicker(input.inputType)) {
+        let time = (input as DateTimePicker).timeComponent.split(":");
+        if (!(time.length > 1 && +time[0] <= 24 && +time[1] <= 59)) {
+          input.displayValidation = true;
+          return false;
+        }
       }
     }
     return true;
