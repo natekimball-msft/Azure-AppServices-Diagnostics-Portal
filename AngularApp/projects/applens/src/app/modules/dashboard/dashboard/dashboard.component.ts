@@ -501,7 +501,8 @@ export class DashboardComponent implements OnDestroy {
 
     return {
       'left': left,
-      'width': width
+      'width': width,
+      'min-width': 'fit-content'
     }
   }
 
