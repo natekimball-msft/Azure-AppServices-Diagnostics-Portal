@@ -110,10 +110,8 @@ export class DateTimePicker extends FormInput {
     }
 
     public mergeDateTime() {
-        // this.inputValue = this.dateComponent;
-        // var time = this.timeComponent.split(":")
-        // this.inputValue.setHours(Number(time[0]), Number(time[1]));
-        this.inputValue = "" + this.dateComponent.getFullYear() + "-" + this.dateComponent.getMonth() + "-" + this.dateComponent.getDate() + " " + this.timeComponent;
+        // this.inputValue = this.dateComponent.getFullYear() + "-" + (this.dateComponent.getMonth() + 1) + "-" + this.dateComponent.getDate() + " " + this.timeComponent;
+        this.inputValue = `${this.dateComponent.toLocaleDateString()} ${this.timeComponent}`;
     } 
 
     constructor(internalId: string, id: number, inputType: InputType, label: string, defaultSelectedDateTime: Date, restrictToDate: Date, hideTimerPicker: boolean, isVisible: boolean = true, isRequired: boolean = false, tooltip: string = "", tooltipIcon: string = "") {
@@ -121,9 +119,8 @@ export class DateTimePicker extends FormInput {
         this.defaultSelectedDateTime = defaultSelectedDateTime;
         this.restrictToDate = restrictToDate;
         this.hideTimerPicker = hideTimerPicker;
-
-        this.dateComponent = this.defaultSelectedDateTime;
-        this.timeComponent = this.defaultSelectedDateTime.getHours() + ":" + this.defaultSelectedDateTime.getMinutes();
+        this.dateComponent = defaultSelectedDateTime;
+        this.timeComponent = hideTimerPicker ? "00:00" : defaultSelectedDateTime.toLocaleTimeString('en-US', { hour12: false });
     }
 }
 

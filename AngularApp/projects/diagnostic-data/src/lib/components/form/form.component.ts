@@ -297,18 +297,27 @@ export class FormComponent extends DataRenderBaseComponent {
       detectorQueryParams.inputs.forEach(ip => {
         let inputElement = formToSetValues.formInputs.find(input => input.inputId == ip.inpId);
         inputElement.inputType = ip.inpType;
-        if (this.isDropdown(ip.inpType)) {
-          let selection = ip.val;
-          let isMultiSelect = ip["isMultiSelect"];
-          if (isMultiSelect) {
-            inputElement["defaultSelectedKeys"] = selection.split(",");
-            inputElement.inputValue = selection.split(",");
-          } else {
-            inputElement["defaultSelectedKey"] = selection;
-            inputElement.inputValue = selection;
-          }
-          // Set visibility in case detector refreshed or opened with deep link
-          inputElement.isVisible = true;
+        if(this.isDropdown(ip.inpType)) {
+            let selection = ip.val;
+            let isMultiSelect = ip["isMultiSelect"];
+            if (isMultiSelect) {
+                inputElement["defaultSelectedKeys"] = selection.split(",");
+                inputElement.inputValue = selection.split(",");
+            }  else {
+                inputElement["defaultSelectedKey"] = selection;
+                inputElement.inputValue = selection;
+            }
+            // Set visibility in case detector refreshed or opened with deep link
+            inputElement.isVisible = true;
+        } else if (this.isDateTimePicker(ip.inpType)) {
+            // this will allow sharing of deep link to work; if someone has all the params set and send a link, they should be able to see the same thing once the link is opened 
+            console.log(ip.val);
+            let datetime = ip.val.split(" ");
+
+            inputElement["dateComponent"] = datetime[0];
+            inputElement["timeComponent"] = datetime[1];
+
+            inputElement.inputValue = ip.val;
         } else {
           inputElement.inputValue = ip.val;
         }
@@ -347,6 +356,13 @@ export class FormComponent extends DataRenderBaseComponent {
       if ((input.isRequired && !hasInputValue) || (hasInputValue && input.inputValue.length > this.maxInputLength)) {
         input.displayValidation = true;
         return false;
+      } 
+      if (this.isDateTimePicker(input.inputType)) {
+        let time = (input as DateTimePicker).timeComponent.split(":");
+        if (!(time.length > 1 && +time[0] <= 24 && +time[1] <= 59)) {
+          input.displayValidation = true;
+          return false;
+        }
       }
     }
     return true;
