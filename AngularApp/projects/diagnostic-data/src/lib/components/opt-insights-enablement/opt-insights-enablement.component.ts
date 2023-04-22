@@ -1,11 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { OptInsightsResource, OptInsightsTimeContext } from '../../models/optinsights';
+import { CodeOptimizationType, OptInsightsResource, OptInsightsTimeContext } from '../../models/optinsights';
 import { OptInsightsGenericService } from '../../services/optinsights.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { DetectorControlService } from '../../services/detector-control.service';
 import { PortalActionGenericService } from '../../services/portal-action.service';
 import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 import { ActivatedRoute } from '@angular/router';
+import { DemoSubscriptions } from 'projects/app-service-diagnostics/src/app/betaSubscriptions';
+
 
 @Component({
   selector: 'opt-insights-enablement',
@@ -17,6 +19,7 @@ export class OptInsightsEnablementComponent implements OnInit {
 
   constructor(private _optInsightsService: OptInsightsGenericService, private portalActionService: PortalActionGenericService, private _detectorControlService: DetectorControlService, private _route: ActivatedRoute) { }
 
+  subscriptionId: string;
   table: any = [];
   descriptionColumnName: string = "";
   allowColumnSearch: boolean = false;
@@ -27,31 +30,41 @@ export class OptInsightsEnablementComponent implements OnInit {
   aRMToken: string = "";
   aRMTokenSubject = new BehaviorSubject<string>("");
   appInsightsResourceUri: string = "";
+  type: CodeOptimizationType = CodeOptimizationType.All;
+  isBetaSubscription: boolean = false;
+  
 
 
-  @Input() optInsightResourceInfo: Observable<{ resourceUri: string, appId: string }>;
+  @Input() optInsightResourceInfo: Observable<{ resourceUri: string, appId: string, type?:CodeOptimizationType}>;
 
   ngOnInit(): void {
     this.loading = true;
-
-    this.optInsightResourceInfo.subscribe(optInsightResourceInfo => {
-      if (optInsightResourceInfo.resourceUri !== null && optInsightResourceInfo.appId !== null) {
-        this.appInsightsResourceUri = optInsightResourceInfo.resourceUri;
-        this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId, this._route.parent.snapshot.params['site'], this._detectorControlService.startTime, this._detectorControlService.endTime, false).subscribe(res => {
-          if (res) {
-            this.table = res;
-            this._optInsightsService.logOptInsightsEvent(optInsightResourceInfo.resourceUri, TelemetryEventNames.AICodeOptimizerInsightsReceived);
-          }
+    this.subscriptionId = this._route.parent.snapshot.params['subscriptionid'];
+    // allowlisting beta subscriptions for testing purposes
+    this.isBetaSubscription = DemoSubscriptions.betaSubscriptions.indexOf(this.subscriptionId) >= 0;
+    if (this.isBetaSubscription) {
+      this.optInsightResourceInfo.subscribe(optInsightResourceInfo => {
+        if (optInsightResourceInfo.type !== null){
+          this.type = optInsightResourceInfo.type;
+        }
+        if (optInsightResourceInfo.resourceUri !== null && optInsightResourceInfo.appId !== null) {
+          this.appInsightsResourceUri = optInsightResourceInfo.resourceUri;
+          this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId, this._route.parent.snapshot.params['site'], this._detectorControlService.startTime, this._detectorControlService.endTime, false).subscribe(res => {
+            if (res) {
+              this.table = res;
+              this._optInsightsService.logOptInsightsEvent(optInsightResourceInfo.resourceUri, TelemetryEventNames.AICodeOptimizerInsightsReceived);
+            }
+            this.loading = false;
+          }, error => {
+            this.loading = false;
+            this.error = error;
+          });
+        }
+        else {
           this.loading = false;
-        }, error => {
-          this.loading = false;
-          this.error = error;
-        });
-      }
-      else {
-        this.loading = false;
-      }
-    });
+        }
+      });
+    }
   }
 
   public openOptInsightsBlade() {
