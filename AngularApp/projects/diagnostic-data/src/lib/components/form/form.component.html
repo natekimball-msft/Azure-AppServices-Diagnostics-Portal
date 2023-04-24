@@ -15,7 +15,7 @@
             <input type="text" class="form-control" [id]=formInput.internalId [(ngModel)]="formInput.inputValue"
               (keyup)="inputChanged(formInput)">
 
-            <div class="text-danger" *ngIf="formInput.displayValidation">Please provide a value.</div>
+            <div class="text-danger" *ngIf="formInput.displayValidation">Please provide a value and input is no more than {{maxInputLength}} characters</div>
           </div>
 
         </div>
