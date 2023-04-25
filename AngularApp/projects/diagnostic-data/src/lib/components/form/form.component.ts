@@ -13,8 +13,8 @@ import { DirectionalHint } from 'office-ui-fabric-react/lib/Tooltip';
 import { IDropdownOption, IDropdown } from 'office-ui-fabric-react';
 import { UriUtilities } from '../../utilities/uri-utilities';
 import { QueryResponseService } from '../../services/query-response.service';
-import { addMonths, addDays } from 'office-ui-fabric-react/lib/utilities/dateMath/DateMath';
-import { ICalendarStrings, IDatePickerProps, IChoiceGroupOption, ITextFieldStyles } from 'office-ui-fabric-react';
+import { addDays } from 'office-ui-fabric-react/lib/utilities/dateMath/DateMath';
+import { IDatePickerProps, ITextFieldStyles } from 'office-ui-fabric-react';
 import * as momentNs from 'moment';
 
 const moment = momentNs;
@@ -25,43 +25,6 @@ const moment = momentNs;
   styleUrls: ['./form.component.scss']
 })
 export class FormComponent extends DataRenderBaseComponent {
-  today: Date = new Date(Date.now());
-  maxDate: Date = this.convertUTCToLocalDate(this.today);
-  minDate: Date = this.convertUTCToLocalDate(addDays(this.today, -3));
-
-  selectedDate: Date;
-
-  maskTextFieldStyles: Partial<ITextFieldStyles> = { fieldGroup: { width: "80px" } };
-
-  private convertUTCToLocalDate(date: Date): Date {
-    const moment = momentNs.utc(date);
-    return new Date(
-      moment.year(), moment.month(), moment.date(),
-      moment.hour(), moment.minute()
-    );
-  }
-
-  parseDateFromString: IDatePickerProps['parseDateFromString'] = (s) => {
-    const dateStr = s || "";
-    const datePart = dateStr.split("-");
-    const year = datePart[0].length > 0 ? Number.parseInt(datePart[0], 10) : this.selectedDate.getFullYear();
-    const month = datePart[1].length > 0 ? Math.max(1, Math.min(12, parseInt(datePart[1], 10))) - 1 : this.selectedDate.getMonth();
-    const date = datePart[2].length > 1 ? Math.max(1, Math.min(31, parseInt(datePart[2], 10))) : this.selectedDate.getDate();
-    return new Date(year, month, date);
-  }
-  getErrorMessageOnTextField(value: string): string {
-    var values = value.split(":");
-    var errorMessage = "";
-    if (!(values.length > 1 && +values[0] <= 24 && +values[1] <= 59)) {
-      errorMessage = `Invalid time`;
-    }
-    return errorMessage;
-  }
-  formatDate: IDatePickerProps['formatDate'] = (date) => {
-    //only this format can do both fill in date and select date
-    return moment(date).format('YYYY-MM-DD');
-  };
-
   renderingProperties: Rendering;
   detectorForms: Form[] = [];
   isPublic: boolean;
@@ -69,6 +32,11 @@ export class FormComponent extends DataRenderBaseComponent {
   datasourcesKey: string = '';
   readonly maxInputLength = 150;
 
+  today: Date = new Date(Date.now());
+  maxDate: Date = this.convertUTCToLocalDate(this.today);
+  minDate: Date = this.convertUTCToLocalDate(addDays(this.today, -3));
+  selectedDate: Date;
+  maskTextFieldStyles: Partial<ITextFieldStyles> = { fieldGroup: { width: "80px" } };
 
   @ViewChild('formDropdown') formdropDownRef: ElementRef<IDropdown>;
   constructor(@Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, private _diagnosticService: DiagnosticService, private _router: Router, protected telemetryService: TelemetryService,
@@ -84,7 +52,11 @@ export class FormComponent extends DataRenderBaseComponent {
     super.processData(data);
     this.renderingProperties = <Rendering>data.renderingProperties;
     this.parseData(data.table);
-    if (this.detectorControlService.detectorQueryParamsString != "" && !this.developmentMode) {
+    // if (this.detectorControlService.detectorQueryParamsString != "" && !this.developmentMode) {
+    //   this.setInputValues();
+    //   this.getDetectorResponse();
+    // }
+    if (true) {
       this.setInputValues();
       this.getDetectorResponse();
     }
@@ -292,6 +264,7 @@ export class FormComponent extends DataRenderBaseComponent {
 
   setInputValues() {
     let detectorQueryParams = JSON.parse(this.detectorControlService.detectorQueryParamsString);
+    // let detectorQueryParams = JSON.parse("%7B%22detectorId%22:%22%22,%22fId%22:1,%22btnId%22:2,%22inputs%22:%5B%7B%22inpId%22:3,%22val%22:%22abcd%22,%22inpType%22:0%7D,%7B%22inpId%22:4,%22inpType%22:5%7D%5D,%22startTime%22:%222023-04-02T17:24%22,%22endTime%22:%222023-04-03T17:08%22%7D");
     if (detectorQueryParams != undefined && detectorQueryParams.detectorId == this.detector) {
       let formToSetValues = this.detectorForms.find(form => form.formId == detectorQueryParams.fId);
       detectorQueryParams.inputs.forEach(ip => {
@@ -466,4 +439,35 @@ export class FormComponent extends DataRenderBaseComponent {
     let formInput = form.formInputs.find(inp => inp.inputId == inputId);
     (formInput as DateTimePicker).dateComponent = e.date;
   }
+
+  private convertUTCToLocalDate(date: Date): Date {
+    const moment = momentNs.utc(date);
+    return new Date(
+      moment.year(), moment.month(), moment.date(),
+      moment.hour(), moment.minute()
+    );
+  }
+
+  parseDateFromString: IDatePickerProps['parseDateFromString'] = (s) => {
+    const dateStr = s || "";
+    const datePart = dateStr.split("-");
+    const year = datePart[0].length > 0 ? Number.parseInt(datePart[0], 10) : this.selectedDate.getFullYear();
+    const month = datePart[1].length > 0 ? Math.max(1, Math.min(12, parseInt(datePart[1], 10))) - 1 : this.selectedDate.getMonth();
+    const date = datePart[2].length > 1 ? Math.max(1, Math.min(31, parseInt(datePart[2], 10))) : this.selectedDate.getDate();
+    return new Date(year, month, date);
+  }
+
+  getErrorMessageOnTextField(value: string): string {
+    var values = value.split(":");
+    var errorMessage = "";
+    if (!(values.length > 1 && +values[0] <= 24 && +values[1] <= 59)) {
+      errorMessage = `Invalid time`;
+    }
+    return errorMessage;
+  }
+
+  formatDate: IDatePickerProps['formatDate'] = (date) => {
+    //only this format can do both fill in date and select date
+    return moment(date).format('YYYY-MM-DD');
+  };
 }

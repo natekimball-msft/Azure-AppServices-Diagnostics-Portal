@@ -83,6 +83,34 @@ export class Dropdown extends FormInput {
     }
 }
 
+export enum InputType {
+    TextBox,
+    Checkbox,
+    RadioButton,
+    DropDown,
+    Button,
+    DateTimePicker
+}
+
+export enum ButtonStyles {
+    Primary = 0,
+    Secondary,
+    Success,
+    Danger,
+    Warning,
+    Info,
+    Light,
+    Dark,
+    Link
+}
+
+export interface ListItem {
+    text: string;
+    value: string;
+    isSelected: boolean;
+    tooltipIcon: string;
+}
+
 export class DateTimePicker extends FormInput {
     defaultSelectedDateTime : Date;
     restrictToDate : Date;
@@ -110,7 +138,6 @@ export class DateTimePicker extends FormInput {
     }
 
     public mergeDateTime() {
-        // this.inputValue = this.dateComponent.getFullYear() + "-" + (this.dateComponent.getMonth() + 1) + "-" + this.dateComponent.getDate() + " " + this.timeComponent;
         this.inputValue = `${this.dateComponent.toLocaleDateString()} ${this.timeComponent}`;
     } 
 
@@ -122,32 +149,4 @@ export class DateTimePicker extends FormInput {
         this.dateComponent = defaultSelectedDateTime;
         this.timeComponent = hideTimerPicker ? "00:00" : defaultSelectedDateTime.toLocaleTimeString('en-US', { hour12: false });
     }
-}
-
-export enum InputType {
-    TextBox,
-    Checkbox,
-    RadioButton,
-    DropDown,
-    Button,
-    DateTimePicker
-}
-
-export enum ButtonStyles {
-    Primary = 0,
-    Secondary,
-    Success,
-    Danger,
-    Warning,
-    Info,
-    Light,
-    Dark,
-    Link
-}
-
-export interface ListItem {
-    text: string;
-    value: string;
-    isSelected: boolean;
-    tooltipIcon: string;
 }
