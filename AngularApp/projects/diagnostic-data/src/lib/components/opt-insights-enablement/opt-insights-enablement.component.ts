@@ -39,7 +39,7 @@ export class OptInsightsEnablementComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.subscriptionId = this._route.parent.snapshot.params['subscriptions'];
+    this.subscriptionId = this._route.parent.snapshot.parent.params['subscriptionid'];
     // allowlisting beta subscriptions for testing purposes
     this.isBetaSubscription = DemoSubscriptions.betaSubscriptions.indexOf(this.subscriptionId) >= 0;
     if (this.isBetaSubscription) {
