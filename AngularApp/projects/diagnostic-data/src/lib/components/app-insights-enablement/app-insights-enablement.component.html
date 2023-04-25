@@ -34,7 +34,7 @@
                         </td>
                       </tr>
                     </tbody>
-                  </table>                  
+                  </table>
                   <div *ngIf="!canCreateApiKeys">
                     <i class="fa fa-exclamation-triangle warning-icon-color mr-2 "></i>
                     Application Insights is enabled for this app but there are already 10 API Keys generated for this
@@ -81,7 +81,8 @@
                           <i class="fa fa-exclamation-triangle warning-icon-color mr-2"></i>
                         </td>
                         <td colspan="3">We failed to validate the saved AppInsights configuration. This might be a
-                          temporary error. Please retry after some time. Additional Details: {{ appInsightsValiationError }}</td>
+                          temporary error. Please retry after some time. Additional Details: {{
+                          appInsightsValiationError }}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -134,85 +135,41 @@
   </div>
 </div>
 
-<div *ngIf="isEnabledInProd" class="animated fadeIn panel panel-info width-90">
+<div *ngIf="isEnabledInProd && !loadingSettings && appInsightsValiationError.length == 0" class="animated fadeIn panel panel-info width-90">
   <div class="banner">
     <div class="banner-child">
       <div class="ml-3">
-        <!-- <div *ngIf="loadingSettings">
+        <div *ngIf="loadingSettings">
           <i class="fa fa-circle-o-notch fa-spin spin-icon" aria-hidden="true"></i>
           Verifying Optimization Insights...
-        </div> -->
+        </div>
         <div *ngIf="!loadingSettings">
           <div *ngIf="!connecting && !error">
             <div *ngIf="isAppInsightsEnabled">
-              <!-- <div *ngIf="!isAppInsightsConnected"> -->
-                <!-- <div *ngIf="hasWriteAccess"> -->
-                  <table *ngIf="hasWriteAccess && !isAppInsightsConnected && canCreateApiKeys">
-                    <tbody>
-                      <tr>
-                        <td><i class="fa fa-exclamation-triangle warning-icon-color mr-2"></i>
-                        </td>
-                        <td>Connect Application Insights with App Service Diagnostics to allow App Service Diagnostics
-                          to
-                          access Optimization Insights information.
-                        </td>
-                        <td>
-                          <fab-primary-button [contentClass]="'ml-2'" (click)="connect()">
-                            Connect
-                          </fab-primary-button>
-                        </td>
-                        <td>
-                          <div class="ml-2">
-                            <a href="https://aka.ms/serviceprofiler"
-                              aria-label="Click to know more about Optimization Insights"
-                              target="_blank">Learn more</a>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>                  
-                <!-- </div> -->
-              <!-- </div> -->
-              <!-- <div *ngIf="isAppInsightsConnected && appInsightsValidated"> -->
-                <div *ngIf="appInsightsValidated">
-                  <div><opt-insights-enablement [optInsightResourceInfo]="optInsightResourceInfoSubject"></opt-insights-enablement></div>
-                </div>
-              <!-- </div> -->
+              <table *ngIf="hasWriteAccess && !isAppInsightsConnected && canCreateApiKeys">
+                <tbody>
+                  <tr>
+                    <td><i class="fa fa-exclamation-triangle warning-icon-color mr-2"></i>
+                    </td>
+                    <td>Connect Application Insights with App Service Diagnostics to allow App Service Diagnostics
+                      to
+                      access Code Optimizations insights.
+                    </td>
+                    <td>
+                      <div class="ml-2">
+                        <a href="https://aka.ms/serviceprofiler"
+                          aria-label="Click to know more about Code Optimizations insights" target="_blank">Learn
+                          more</a>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <ng-container *ngIf="appInsightsValidated">
+                <div><opt-insights-enablement
+                    [optInsightResourceInfo]="optInsightResourceInfoSubject"></opt-insights-enablement></div>
+              </ng-container>
             </div>
-            <div *ngIf="!isAppInsightsEnabled">
-              <div *ngIf="appSettingsHaveInstrumentationKey">
-                <i class="fa fa-exclamation-triangle warning-icon-color"></i>
-                Either we failed to look up the App Settings for the App or we failed to look up the associated
-                Application Insights resource information for this app. This can happen if you do not have permissions
-                to read the app settings or you do not have read access on the Azure subscription that is hosting the
-                connected Application Insights resource.
-              </div>
-              <div *ngIf="!appSettingsHaveInstrumentationKey">
-                <table>
-                  <tbody>
-                    <tr>
-                      <td><i class="fa fa-exclamation-triangle warning-icon-color mr-2"></i>
-                      </td>
-                      <td> Enable Application insights for your app to collect application level monitoring data
-                      </td>
-                      <td>
-                        <fab-primary-button [contentClass]="'ml-2'" (click)="enable()">
-                          Enable
-                        </fab-primary-button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          <div *ngIf="connecting">
-            <i class="fa fa-circle-o-notch fa-spin spin-icon" aria-hidden="true"></i>
-            Connecting AppInsights with App Service Diagnostics...
-          </div>
-          <div *ngIf="error">
-            <i class="fa fa-exclamation-triangle warning-icon-color mr-2"></i>
-            Failed while connecting App Insights with App Service Diagnostics. {{ error }}
           </div>
         </div>
       </div>
