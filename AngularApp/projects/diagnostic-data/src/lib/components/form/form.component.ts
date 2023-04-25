@@ -52,11 +52,7 @@ export class FormComponent extends DataRenderBaseComponent {
     super.processData(data);
     this.renderingProperties = <Rendering>data.renderingProperties;
     this.parseData(data.table);
-    // if (this.detectorControlService.detectorQueryParamsString != "" && !this.developmentMode) {
-    //   this.setInputValues();
-    //   this.getDetectorResponse();
-    // }
-    if (true) {
+    if (this.detectorControlService.detectorQueryParamsString != "" && !this.developmentMode) {
       this.setInputValues();
       this.getDetectorResponse();
     }
@@ -264,7 +260,6 @@ export class FormComponent extends DataRenderBaseComponent {
 
   setInputValues() {
     let detectorQueryParams = JSON.parse(this.detectorControlService.detectorQueryParamsString);
-    // let detectorQueryParams = JSON.parse("%7B%22detectorId%22:%22%22,%22fId%22:1,%22btnId%22:2,%22inputs%22:%5B%7B%22inpId%22:3,%22val%22:%22abcd%22,%22inpType%22:0%7D,%7B%22inpId%22:4,%22inpType%22:5%7D%5D,%22startTime%22:%222023-04-02T17:24%22,%22endTime%22:%222023-04-03T17:08%22%7D");
     if (detectorQueryParams != undefined && detectorQueryParams.detectorId == this.detector) {
       let formToSetValues = this.detectorForms.find(form => form.formId == detectorQueryParams.fId);
       detectorQueryParams.inputs.forEach(ip => {
