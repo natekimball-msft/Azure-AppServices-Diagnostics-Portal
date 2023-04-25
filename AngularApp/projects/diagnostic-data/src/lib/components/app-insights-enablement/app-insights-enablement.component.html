@@ -174,9 +174,9 @@
                 <!-- </div> -->
               <!-- </div> -->
               <!-- <div *ngIf="isAppInsightsConnected && appInsightsValidated"> -->
-                <ng-container *ngIf="appInsightsValidated">
+                <div *ngIf="appInsightsValidated">
                   <div><opt-insights-enablement [optInsightResourceInfo]="optInsightResourceInfoSubject"></opt-insights-enablement></div>
-                </ng-container>
+                </div>
               <!-- </div> -->
             </div>
             <div *ngIf="!isAppInsightsEnabled">
