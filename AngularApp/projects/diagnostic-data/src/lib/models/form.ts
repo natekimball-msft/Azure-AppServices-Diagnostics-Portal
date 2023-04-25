@@ -139,14 +139,13 @@ export class DateTimePicker extends FormInput {
 
     public mergeDateTime() {
         this.inputValue = `${this.dateComponent.toLocaleDateString()} ${this.timeComponent}`;
-    } 
+    }  
 
-    constructor(internalId: string, id: number, inputType: InputType, label: string, defaultSelectedDateTime: Date, restrictToDate: Date, hideTimerPicker: boolean, isVisible: boolean = true, isRequired: boolean = false, tooltip: string = "", tooltipIcon: string = "") {
+    constructor(internalId: string, id: number, inputType: InputType, label: string,
+        defaultSelectedDateTime: Date, restrictToDate: Date, hideTimerPicker: boolean, isVisible: boolean = true, isRequired: boolean = false, tooltip: string = "", tooltipIcon: string = "") {
         super(internalId, id, inputType, label, isRequired, tooltip, tooltipIcon, isVisible);
         this.defaultSelectedDateTime = defaultSelectedDateTime;
         this.restrictToDate = restrictToDate;
         this.hideTimerPicker = hideTimerPicker;
-        this.dateComponent = defaultSelectedDateTime;
-        this.timeComponent = hideTimerPicker ? "00:00" : defaultSelectedDateTime.toLocaleTimeString('en-US', { hour12: false });
     }
 }

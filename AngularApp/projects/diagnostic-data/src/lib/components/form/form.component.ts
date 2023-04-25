@@ -52,11 +52,7 @@ export class FormComponent extends DataRenderBaseComponent {
     super.processData(data);
     this.renderingProperties = <Rendering>data.renderingProperties;
     this.parseData(data.table);
-    // if (this.detectorControlService.detectorQueryParamsString != "" && !this.developmentMode) {
-    //   this.setInputValues();
-    //   this.getDetectorResponse();
-    // }
-    if (true) {
+    if (this.detectorControlService.detectorQueryParamsString != "" && !this.developmentMode) {
       this.setInputValues();
       this.getDetectorResponse();
     }
@@ -264,7 +260,6 @@ export class FormComponent extends DataRenderBaseComponent {
 
   setInputValues() {
     let detectorQueryParams = JSON.parse(this.detectorControlService.detectorQueryParamsString);
-    // let detectorQueryParams = JSON.parse("%7B%22detectorId%22:%22%22,%22fId%22:1,%22btnId%22:2,%22inputs%22:%5B%7B%22inpId%22:3,%22val%22:%22abcd%22,%22inpType%22:0%7D,%7B%22inpId%22:4,%22inpType%22:5%7D%5D,%22startTime%22:%222023-04-02T17:24%22,%22endTime%22:%222023-04-03T17:08%22%7D");
     if (detectorQueryParams != undefined && detectorQueryParams.detectorId == this.detector) {
       let formToSetValues = this.detectorForms.find(form => form.formId == detectorQueryParams.fId);
       detectorQueryParams.inputs.forEach(ip => {
@@ -283,14 +278,11 @@ export class FormComponent extends DataRenderBaseComponent {
             // Set visibility in case detector refreshed or opened with deep link
             inputElement.isVisible = true;
         } else if (this.isDateTimePicker(ip.inpType)) {
-            // this will allow sharing of deep link to work; if someone has all the params set and send a link, they should be able to see the same thing once the link is opened 
-            console.log("in setInputValues: " + ip.val);
-            let datetime = ip.val.split(" ");
-
-            inputElement["dateComponent"] = datetime[0];
-            inputElement["timeComponent"] = datetime[1];
-
             inputElement.inputValue = ip.val;
+
+            let datetime = ip.val.split(" ");
+            inputElement["dateComponent"] = new Date(datetime[0]);
+            inputElement["timeComponent"] = datetime[1];
         } else {
           inputElement.inputValue = ip.val;
         }
