@@ -162,6 +162,7 @@ import { WorkflowConditionNodeComponent } from './components/workflow-condition-
 import { OptInsightsEnablementComponent } from './components/opt-insights-enablement/opt-insights-enablement.component';
 import { OptInsightsMarkdownComponent } from './components/opt-insights-markdown/opt-insights-markdown.component';
 import { OptInsightsGenericService } from './services/optinsights.service';
+import { DemoSubscriptions } from './models/betaSubscriptions';
 import { WorkflowAcceptUserinputComponent } from './components/workflow-accept-userinput/workflow-accept-userinput.component';
 import { VideoComponent } from './components/video/video.component';
 import { SafePipe } from './pipe/safe.pipe';
@@ -354,7 +355,8 @@ export class DiagnosticDataModule {
                 OpenAIArmService,
                 ChatGPTContextService,
                 QueryResponseService,
-                OptInsightsGenericService
+                OptInsightsGenericService,
+                DemoSubscriptions
             ]
         };
     }

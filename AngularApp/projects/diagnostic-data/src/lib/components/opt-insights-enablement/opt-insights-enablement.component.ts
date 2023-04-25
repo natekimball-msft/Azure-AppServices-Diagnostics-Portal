@@ -6,7 +6,7 @@ import { DetectorControlService } from '../../services/detector-control.service'
 import { PortalActionGenericService } from '../../services/portal-action.service';
 import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 import { ActivatedRoute } from '@angular/router';
-import { DemoSubscriptions } from 'projects/app-service-diagnostics/src/app/betaSubscriptions';
+import { DemoSubscriptions } from 'projects/diagnostic-data/src/lib/models/betaSubscriptions';
 
 
 @Component({
