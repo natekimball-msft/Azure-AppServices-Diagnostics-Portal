@@ -109,7 +109,7 @@ export class OptInsightsService {
   parseRowsIntoTable(rows: any) {
     let table: any = [];
     if (!rows || rows.length === 0) {
-      return;
+      return table;
     }
     rows.forEach(element => {
       table.push({
