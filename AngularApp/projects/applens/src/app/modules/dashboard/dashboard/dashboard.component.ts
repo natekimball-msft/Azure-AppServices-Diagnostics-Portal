@@ -182,7 +182,6 @@ export class DashboardComponent implements OnDestroy {
     this._alertService.getUnAuthorizedAlerts().subscribe((error: HttpErrorResponse) => {
       let errorObj = JSON.parse(error.error);
       if (errorObj && errorObj.DetailText) {
-        localStorage.setItem('targetedPathBeforeUnauthorized', this._router.url.toString());
         this.accessError = errorObj.DetailText;
         this.navigateBackToHomePage();
       }
@@ -213,7 +212,8 @@ export class DashboardComponent implements OnDestroy {
       errorMessage: this.accessError,
       resourceType: mainPageResourceType? mainPageResourceType.resourceType: "armresourceid",
       resourceName: resourceInfo.resourceName,
-      resourceId: this._resourceService.getCurrentResourceId()
+      resourceId: this._resourceService.getCurrentResourceId(),
+      targetPathBeforeError: this._router.url.toString()
     };
     const queryString = new URLSearchParams(queryParams).toString();
     window.location.href = "/?" + queryString;
