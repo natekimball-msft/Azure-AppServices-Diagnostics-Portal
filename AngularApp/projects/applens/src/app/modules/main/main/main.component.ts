@@ -135,8 +135,8 @@ export class MainComponent implements OnInit {
   }
 
   validateCaseNumber() {
-    if (!this.caseNumber || this.caseNumber.length < 12) {
-      this.caseNumberValidationError = "Case number too short. It should be a minimum of 12 digits.";
+    if (!this.caseNumber || this.caseNumber.length < 15) {
+      this.caseNumberValidationError = "Case number too short. It should be a minimum of 15 digits.";
       return false;
     }
     if (this.caseNumber.length > 18) {
