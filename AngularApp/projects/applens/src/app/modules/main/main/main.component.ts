@@ -60,6 +60,7 @@ export class MainComponent implements OnInit {
   inIFrame = false;
   errorMessage = "";
   status = HealthStatus.Critical;
+  targetPathBeforeError: string = "";
 
   fabDropdownOptions: IDropdownOption[] = [];
   fabDropdownStyles: IDropdownProps["styles"] = {
@@ -119,6 +120,9 @@ export class MainComponent implements OnInit {
     if (this._activatedRoute.snapshot.queryParams['caseNumberNeeded']) {
       this.caseNumberNeededForProduct = true;
     }
+    if (this._activatedRoute.snapshot.queryParams['targetPathBeforeError']) {
+      this.targetPathBeforeError = this._activatedRoute.snapshot.queryParams['targetPathBeforeError'];
+    }
     if (this._activatedRoute.snapshot.queryParams['resourceType']) {
       let foundResourceType = this.defaultResourceTypes.find(resourceType => resourceType.resourceType.toLowerCase() === this._activatedRoute.snapshot.queryParams['resourceType'].toLowerCase());
       if (!foundResourceType) {
@@ -135,7 +139,7 @@ export class MainComponent implements OnInit {
   }
 
   validateCaseNumber() {
-    if (!this.caseNumber || this.caseNumber.length < 15) {
+    if (!this.caseNumber || this.caseNumber.length < 12) {
       this.caseNumberValidationError = "Case number too short. It should be a minimum of 15 digits.";
       return false;
     }
@@ -426,10 +430,8 @@ export class MainComponent implements OnInit {
       }
     }
 
-    let targetedPathBeforeUnauthorized = localStorage.getItem('targetedPathBeforeUnauthorized');
-    if (targetedPathBeforeUnauthorized && targetedPathBeforeUnauthorized.length>0) {
-      localStorage.removeItem('targetedPathBeforeUnauthorized');
-      var extraction = this.extractQueryParams(targetedPathBeforeUnauthorized);
+    if (this.targetPathBeforeError && this.targetPathBeforeError.length>0) {
+      var extraction = this.extractQueryParams(this.targetPathBeforeError);
       route = extraction.url;
       //Case number should not be passed to the targeted path
       if (extraction.queryParams.hasOwnProperty('caseNumber')) {
