@@ -68,7 +68,7 @@
             </fab-tooltip-host>
           </label>
           <div style="display: flex;" class="col-sm-8 col-md-6">
-            <fab-date-picker [minDate]="formInput.restrictToDate" [datePickerMaxDate]="datePickerMaxDate"
+            <fab-date-picker [minDate]="formInput.restrictToDate" [maxDate]="datePickerMaxDate"
               placeholder="Select a date..." ariaLabel="Select a date" allowTextInput="true"
               showMonthPickerAsOverlay="true" (onSelectDate)="setDate($event, formInput)" [formatDate]="formatDate"
               [value]="formInput.dateComponent" [parseDateFromString]="parseDateFromString" [contentStyle]="'width:130px'">
