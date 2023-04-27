@@ -166,15 +166,15 @@ export class OptInsightsService {
     this.startTime = this._detectorControlService.startTime;
     this.endTime = this._detectorControlService.endTime;
     const aICodeEventProperties = {
-      'Site': site != undefined ? site : this.site != undefined ? this.site : "",
-      'AppInsightsResourceUri': resourceUri,
-      'Platform': this.resourcePlatform != undefined ? this.resourcePlatform.toString() : "",
-      'AppType': this.resourceAppType != undefined ? this.resourceAppType.toString() : "",
-      'ResourceSku': this.resourceSku != undefined ? this.resourceSku.toString() : "",
-      'StartTime': this.startTime != undefined ? this.startTime.toString() : "",
-      'EndTime': this.endTime != undefined ? this.endTime.toString() : "",
-      'Error': error != undefined ? error.toString() : "",
-      'TotalInsights': totalInsights != undefined ? totalInsights.toString() : ""
+      'Site': site != undefined ? site : this.site != undefined ? `${this.site}` : "",
+      'AppInsightsResourceUri': `${resourceUri}`,
+      'Platform': this.resourcePlatform != undefined ? `${this.resourcePlatform}` : "",
+      'AppType': this.resourceAppType != undefined ? `${this.resourceAppType}` : "",
+      'ResourceSku': this.resourceSku != undefined ? `${this.resourceSku}` : "",
+      'StartTime': this.startTime != undefined ? `${this.startTime}` : "",
+      'EndTime': this.endTime != undefined ? `${this.endTime}` : "",
+      'Error': error != undefined ? `${error}` : "",
+      'TotalInsights': totalInsights != undefined ? `${totalInsights}` : ""
     };
     this.telemetryService.logEvent(telemetryEvent, aICodeEventProperties);
   }
