@@ -11,6 +11,7 @@ import { ResourceService } from 'projects/app-service-diagnostics/src/app/shared
 import { AppType } from 'projects/app-service-diagnostics/src/app/shared/models/portal';
 import { Sku } from 'projects/app-service-diagnostics/src/app/shared/models/server-farm';
 import { CodeOptimizationType, DetectorControlService, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
+import * as moment from 'moment';
 
 
 @Injectable()
@@ -74,9 +75,9 @@ export class OptInsightsService {
       }));
   }
 
-  getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appId: string, startTime: Date, endTime: Date, invalidateCache: boolean = false, type?: CodeOptimizationType): Observable<any[]> {
-    var _startTime: Date = startTime;
-    var _endTime: Date = endTime;
+  getAggregatedInsightsbyTimeRange(oAuthAccessToken: string, appId: string, startTime: moment.Moment, endTime: moment.Moment, invalidateCache: boolean = false, type?: CodeOptimizationType): Observable<any[]> {
+    const _startTime = startTime.clone();
+    const _endTime = endTime.clone();
 
     const query: string = `${this.GATEWAY_HOST_URL}/api/apps/${appId}/aggregatedInsights/timeRange?startTime=${_startTime.toISOString()}&endTime=${_endTime.toISOString()}`;
     const headers = new HttpHeaders({
@@ -143,7 +144,7 @@ export class OptInsightsService {
     }
   }
 
-  getInfoForOptInsights(appInsightsResourceId: string, appId: string, site: string, startTime: Date, endTime: Date, invalidateCache: boolean = false, type?: CodeOptimizationType): Observable<any[] | null> {
+  getInfoForOptInsights(appInsightsResourceId: string, appId: string, site: string, startTime: moment.Moment, endTime: moment.Moment, invalidateCache: boolean = false, type?: CodeOptimizationType): Observable<any[] | null> {
     this.appInsightsResourceUri = appInsightsResourceId;
     this.site = site;
     return this.getARMToken().pipe(
@@ -163,8 +164,8 @@ export class OptInsightsService {
     this.resourcePlatform = webSiteService.platform;
     this.resourceAppType = webSiteService.appType;
     this.resourceSku = webSiteService.sku;
-    this.startTime = this._detectorControlService.startTime;
-    this.endTime = this._detectorControlService.endTime;
+    this.startTime = this._detectorControlService.startTime.toISOString();
+    this.endTime = this._detectorControlService.endTime.toISOString();
     const aICodeEventProperties = {
       'Site': site != undefined ? site : this.site != undefined ? `${this.site}` : "",
       'AppInsightsResourceUri': `${resourceUri}`,

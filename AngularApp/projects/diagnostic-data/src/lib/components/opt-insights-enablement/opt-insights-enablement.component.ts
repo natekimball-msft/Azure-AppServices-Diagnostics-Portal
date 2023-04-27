@@ -7,6 +7,7 @@ import { PortalActionGenericService } from '../../services/portal-action.service
 import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 import { ActivatedRoute } from '@angular/router';
 import { DemoSubscriptions } from 'projects/diagnostic-data/src/lib/models/betaSubscriptions';
+import * as moment from 'moment';
 
 
 @Component({
@@ -73,8 +74,8 @@ export class OptInsightsEnablementComponent implements OnInit {
   }
 
   public openOptInsightsBladewithTimeRange() {
-    let nowDate = Date.now()
-    var durationMs = Math.abs(nowDate - this._detectorControlService.startTime);
+    const currentMoment = moment.utc();
+    var durationMs = currentMoment.diff(this._detectorControlService.startTime, 'milliseconds');
     let optInsightsResource: OptInsightsResource = this.parseOptInsightsResource(this.appInsightsResourceUri, 0, 'microsoft.insights/components', false);
     let optInsightsTimeContext: OptInsightsTimeContext = { durationMs: durationMs, endTime: this._detectorControlService.endTime.toISOString(), createdTime: this._detectorControlService.startTime.toISOString(), isInitialTime: false, grain: 1, useDashboardTimeRange: false };
     this.portalActionService.openOptInsightsBladewithTimeRange(optInsightsResource, optInsightsTimeContext);
