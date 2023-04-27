@@ -34,7 +34,6 @@ export class FormComponent extends DataRenderBaseComponent {
 
   today: Date = new Date(Date.now());
   datePickerMaxDate: Date = this.convertUTCToLocalDate(this.today);
-  datePickerMinDate: Date = this.convertUTCToLocalDate(addDays(this.today, -3));
   selectedDate: Date;
   maskTextFieldStyles: Partial<ITextFieldStyles> = { fieldGroup: { width: "80px" } };
 
