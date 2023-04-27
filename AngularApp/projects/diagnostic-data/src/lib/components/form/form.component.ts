@@ -33,8 +33,8 @@ export class FormComponent extends DataRenderBaseComponent {
   readonly maxInputLength = 150;
 
   today: Date = new Date(Date.now());
-  maxDate: Date = this.convertUTCToLocalDate(this.today);
-  minDate: Date = this.convertUTCToLocalDate(addDays(this.today, -3));
+  datePickerMaxDate: Date = this.convertUTCToLocalDate(this.today);
+  datePickerMinDate: Date = this.convertUTCToLocalDate(addDays(this.today, -3));
   selectedDate: Date;
   maskTextFieldStyles: Partial<ITextFieldStyles> = { fieldGroup: { width: "80px" } };
 
@@ -134,7 +134,7 @@ export class FormComponent extends DataRenderBaseComponent {
               formInputs[ip]["label"],
               new Date(formInputs[ip]["defaultSelectedDateTime"]),
               new Date(formInputs[ip]["restrictToDate"]),
-              formInputs[ip]["hideTimerPicker"],
+              formInputs[ip]["showDatePickerOnly"],
               formInputs[ip]["isVisible"] != undefined ?  formInputs[ip]["isVisible"] : true,
               formInputs[ip]["isRequired"] != undefined ?  formInputs[ip]["isRequired"] : false,
               formInputs[ip]["toolTip"] != undefined ? formInputs[ip]["toolTip"] : "",
