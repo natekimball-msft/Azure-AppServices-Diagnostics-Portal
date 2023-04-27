@@ -159,6 +159,10 @@ import { GenericOpenAIChatService, OpenAIArmService } from '../public_api';
 import { OpenaiComponent } from './components/openai/openai.component';
 import { QueryResponseService } from './services/query-response.service';
 import { WorkflowConditionNodeComponent } from './components/workflow-condition-node/workflow-condition-node.component';
+import { OptInsightsEnablementComponent } from './components/opt-insights-enablement/opt-insights-enablement.component';
+import { OptInsightsMarkdownComponent } from './components/opt-insights-markdown/opt-insights-markdown.component';
+import { OptInsightsGenericService } from './services/optinsights.service';
+import { DemoSubscriptions } from './models/betaSubscriptions';
 import { WorkflowAcceptUserinputComponent } from './components/workflow-accept-userinput/workflow-accept-userinput.component';
 import { VideoComponent } from './components/video/video.component';
 import { SafePipe } from './pipe/safe.pipe';
@@ -269,6 +273,8 @@ import { SafePipe } from './pipe/safe.pipe';
         ArchitectureDiagramComponent,
         ArchitectureDiagramNodeComponent,
         WorkflowConditionNodeComponent,
+        OptInsightsEnablementComponent,
+        OptInsightsMarkdownComponent,
         WorkflowAcceptUserinputComponent,
         VideoComponent,
         SafePipe,
@@ -348,7 +354,9 @@ export class DiagnosticDataModule {
                 GenericOpenAIChatService,
                 OpenAIArmService,
                 ChatGPTContextService,
-                QueryResponseService
+                QueryResponseService,
+                OptInsightsGenericService,
+                DemoSubscriptions
             ]
         };
     }
