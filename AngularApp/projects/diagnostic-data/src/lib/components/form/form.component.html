@@ -68,12 +68,12 @@
             </fab-tooltip-host>
           </label>
           <div style="display: flex;" class="col-sm-8 col-md-6">
-            <fab-date-picker [minDate]="formInput.restrictToDate" [maxDate]="maxDate"
+            <fab-date-picker [minDate]="formInput.restrictToDate" [datePickerMaxDate]="datePickerMaxDate"
               placeholder="Select a date..." ariaLabel="Select a date" allowTextInput="true"
               showMonthPickerAsOverlay="true" (onSelectDate)="setDate($event, formInput)" [formatDate]="formatDate"
               [value]="formInput.dateComponent" [parseDateFromString]="parseDateFromString" [contentStyle]="'width:130px'">
             </fab-date-picker>
-            <fab-masked-text-field *ngIf= "!formInput.hideTimerPicker" [contentClass]="'col-md-4'" maxLength="6" [(value)]="formInput.timeComponent"
+            <fab-masked-text-field *ngIf= "!formInput.showDatePickerOnly" [contentClass]="'col-md-4'" maxLength="6" [(value)]="formInput.timeComponent"
               [iconProps]="{iconName: 'Clock'}" [mask]="'99:99'" [maskChar]="'-'" [validateOnFocusOut]="true"
               [getErrorMessage]="getErrorMessageOnTextField" [ariaLabel]="'endTime'" [styles]="maskTextFieldStyles">
             </fab-masked-text-field>

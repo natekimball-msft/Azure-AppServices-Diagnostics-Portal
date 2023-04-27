@@ -114,7 +114,7 @@ export interface ListItem {
 export class DateTimePicker extends FormInput {
     defaultSelectedDateTime : Date;
     restrictToDate : Date;
-    hideTimerPicker : boolean;
+    showDatePickerOnly : boolean;
 
     private _dateComponent: Date;
     public get dateComponent(): Date {
@@ -142,10 +142,10 @@ export class DateTimePicker extends FormInput {
     }  
 
     constructor(internalId: string, id: number, inputType: InputType, label: string,
-        defaultSelectedDateTime: Date, restrictToDate: Date, hideTimerPicker: boolean, isVisible: boolean = true, isRequired: boolean = false, tooltip: string = "", tooltipIcon: string = "") {
+        defaultSelectedDateTime: Date, restrictToDate: Date, showDatePickerOnly: boolean, isVisible: boolean = true, isRequired: boolean = false, tooltip: string = "", tooltipIcon: string = "") {
         super(internalId, id, inputType, label, isRequired, tooltip, tooltipIcon, isVisible);
         this.defaultSelectedDateTime = defaultSelectedDateTime;
         this.restrictToDate = restrictToDate;
-        this.hideTimerPicker = hideTimerPicker;
+        this.showDatePickerOnly = showDatePickerOnly;
     }
 }
