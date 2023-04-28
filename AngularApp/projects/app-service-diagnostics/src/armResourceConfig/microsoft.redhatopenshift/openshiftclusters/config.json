@@ -18,14 +18,14 @@
 	},
     "categories": [
         {
-            "id": "knownissueavailabilityperfaks",
-            "name": "Known Issues, Availability and Performance",
-            "description": "Check your cluster health and investigate performance issues",
-            "keywords": [ "Latency", "Throttling", "Autoscaler", "Helm-2", "Tiller", "OOMKilled", "CRUD"],
+            "id": "crudaro",
+            "name": "Create, Upgrade, Delete, and Scale",
+            "description": "Check your cluster for CRUD operations",
+            "keywords": [ "failed operations"],
             "color": "rgb(186, 211, 245)",
             "createFlowForCategory": true,
             "chatEnabled": false,
-            "overviewDetectorId": "aks-category-availability-perf"
+            "overviewDetectorId": "arocreateupgradedeletescale"
         }
     ],
 
