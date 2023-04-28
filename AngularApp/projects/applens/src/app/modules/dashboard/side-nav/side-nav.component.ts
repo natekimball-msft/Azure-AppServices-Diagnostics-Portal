@@ -199,7 +199,21 @@ export class SideNavComponent implements OnInit {
         return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `networkTraceAnalysis`.toLowerCase();
       },
       icon: null
-    }];
+    },
+    {
+      label: 'RCA Toolkit',
+      id: "",
+      onClick: () => {
+        this.navigateTo("communicationToolkit");
+      },
+      expanded: false,
+      subItems: null,
+      isSelected: () => {
+        return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `communicationToolkit`.toLowerCase();
+      },
+      icon: null
+    },
+  ];
 
   ngOnInit() {
     this._openAIService.CheckEnabled().subscribe(enabled => {

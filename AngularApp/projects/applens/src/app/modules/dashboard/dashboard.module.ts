@@ -135,6 +135,7 @@ import { ForeachNodeComponent } from './workflow/foreach-node/foreach-node.compo
 import { WorkflowUserAccessComponent } from './workflow/workflow-user-access/workflow-user-access.component';
 import { InputNodeComponent } from './workflow/input-node/input-node.component';
 import { NetworkTraceAnalysisComponent } from './network-trace-analysis/network-trace-analysis.component';
+import { CommunicationToolkitComponent } from './communication-toolkit/communication-toolkit.component';
 
 @Injectable()
 export class InitResolver implements Resolve<Observable<ResourceInfo>>{
@@ -497,6 +498,10 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
                 path: 'networkTraceAnalysis',
                 component: NetworkTraceAnalysisComponent
             },
+            { 
+                path: 'communicationToolkit',
+                component: CommunicationToolkitComponent
+            }
         ]
     },
 
@@ -602,6 +607,6 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         L2SideNavComponent, UserActivePullrequestsComponent, FavoriteDetectorsComponent, ApplensDocsComponent, ApplensDocSectionComponent, CreateWorkflowComponent,
         IfElseConditionStepComponent, ConditionIftrueStepComponent, ConditionIffalseStepComponent, SwitchStepComponent, SwitchCaseStepComponent, SwitchCaseDefaultStepComponent,
         KustoQueryDialogComponent, DetectorNodeComponent, KustoNodeComponent, MarkdownNodeComponent, NodeActionsComponent, ConfigureVariablesComponent, CommonNodePropertiesComponent,
-        NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent, WorkflowUserAccessComponent, ForeachNodeComponent, DevopsDeploymentsComponent, InputNodeComponent, NetworkTraceAnalysisComponent]
+        NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent, OpenAIChatComponent, WorkflowUserAccessComponent, ForeachNodeComponent, DevopsDeploymentsComponent, InputNodeComponent, NetworkTraceAnalysisComponent, CommunicationToolkitComponent]
 })
 export class DashboardModule { }

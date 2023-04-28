@@ -1,0 +1,27 @@
+
+
+<div class="rca-bot-container">
+    <div class="rca-box-row-container rca-header-container">
+        <h1 class="rca-header-text">Applens <img src="/assets/img/handshakelogo.png" class="chatgpt-handshake-logo"/> RCA</h1>
+    </div>
+    <div class="rca-box-row-container rca-samples-container">
+        <div class="rca-box-row">
+            <ng-container>
+            <!-- <div class="chatgpt-box" *ngIf="i<=2" (click)="onchatSampleClick(i)" [innerHTML]="chatQuerySamples[i].key"></div> -->
+            <div class="rca-box">File Server Issues</div>
+            <div class="rca-box">Health Check Issues</div>
+            <div class="rca-box">Customer Code Issues</div>
+            </ng-container>
+        </div>
+        <div class="rca-box-row">
+        <!-- <ng-container *ngFor="let querySample of chatQuerySamples; let i = index">
+            <div class="chatgpt-box" *ngIf="i>=3" (click)="onchatSampleClick(i)" [innerHTML]="chatQuerySamples[i].key"></div>
+        </ng-container> -->
+        <ng-container>
+            <div class="rca-box">Platform Issue RCAs</div>
+            <div class="rca-box">Unplanned Hardware RCAs</div>
+            <div class="rca-box">Modify/Edit Existing RCAs</div>
+        </ng-container> 
+        </div>
+    </div>
+</div>
