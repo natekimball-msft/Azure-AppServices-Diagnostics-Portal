@@ -6,6 +6,8 @@ import { BackendCtrlQueryService } from '../../services/backend-ctrl-query.servi
 import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 import { MessageBarType } from 'office-ui-fabric-react';
 import { BehaviorSubject } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { DemoSubscriptions } from '../../../lib/models/betaSubscriptions';
 
 const maxApiKeysPerAiResource: number = 10;
 
@@ -19,10 +21,12 @@ export class AppInsightsEnablementComponent implements OnInit {
 
   constructor(private _appInsightsService: AppInsightsQueryService,
     private _backendCtrlService: BackendCtrlQueryService,
-    private _settingsService: SettingsService) {
+    private _settingsService: SettingsService,
+    private _route: ActivatedRoute) {
   }
 
   loadingSettings: boolean = true;
+  loadingCodeOptimizationSettings: boolean = true;
   isAppInsightsEnabled: boolean = false;
   isAppInsightsConnected: boolean = false;
   appInsightsValidated: boolean = false;
@@ -39,11 +43,16 @@ export class AppInsightsEnablementComponent implements OnInit {
   test1: string = "Value1";
   test2: string = "Value2";
   optInsightResourceInfoSubject = new BehaviorSubject<{ resourceUri: string, appId: string }>({ resourceUri: "", appId: "" });
+  subscriptionId: string;
+  isBetaSubscription: boolean = false;
 
   @Input()
   resourceId: string = "";
 
   ngOnInit() {
+    this.subscriptionId = this._route.parent.snapshot.parent.params['subscriptionid'];
+    // allowlisting beta subscriptions for testing purposes
+    this.isBetaSubscription = DemoSubscriptions.betaSubscriptions.indexOf(this.subscriptionId) >= 0;
     if (this.isEnabledInProd) {
       this.appInsightsValiationError = "";
       this._appInsightsService.loadAppInsightsResourceObservable.subscribe(loadStatus => {
