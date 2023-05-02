@@ -760,8 +760,7 @@
             "staticSelfHelpContent": "",
             "searchSuffix": "MICROSOFT GRAPH AUTHENTICATION AND AUTHORIZATION (AZURE AD)",
             "displayName": "Microsoft Graph Authentication and Authorization (Azure AD)"
-        }
-        ,
+        },
         {
             "service": "ResourceService",
             "resourceType": "Microsoft.AzurePlaywrightService/accounts",
