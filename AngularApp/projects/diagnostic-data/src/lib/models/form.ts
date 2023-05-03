@@ -112,8 +112,8 @@ export interface ListItem {
 }
 
 export class DateTimePicker extends FormInput {
-    defaultSelectedDateTime : Date;
-    restrictToDate : Date;
+    defaultSelectedDateTime : moment.Moment;
+    restrictToDate : moment.Moment;
     showDatePickerOnly : boolean;
 
     private _dateComponent: Date;
@@ -137,12 +137,21 @@ export class DateTimePicker extends FormInput {
         }
     }
 
+    private _startMoment: moment.Moment;
+    public get startMoment(): moment.Moment {
+        return this._startMoment;
+    }
+    public set startMoment(startMoment: moment.Moment) {
+        this.startMoment = startMoment.clone();
+        this.inputValue = this.startMoment.format('YYYY-MM-DD HH:mm');
+    }
+
     public mergeDateTime() {
         this.inputValue = `${this.dateComponent.toLocaleDateString()} ${this.timeComponent}`;
     }  
 
     constructor(internalId: string, id: number, inputType: InputType, label: string,
-        defaultSelectedDateTime: Date, restrictToDate: Date, showDatePickerOnly: boolean, isVisible: boolean = true, isRequired: boolean = false, tooltip: string = "", tooltipIcon: string = "") {
+        defaultSelectedDateTime: moment.Moment, restrictToDate: moment.Moment, showDatePickerOnly: boolean, isVisible: boolean = true, isRequired: boolean = false, tooltip: string = "", tooltipIcon: string = "") {
         super(internalId, id, inputType, label, isRequired, tooltip, tooltipIcon, isVisible);
         this.defaultSelectedDateTime = defaultSelectedDateTime;
         this.restrictToDate = restrictToDate;

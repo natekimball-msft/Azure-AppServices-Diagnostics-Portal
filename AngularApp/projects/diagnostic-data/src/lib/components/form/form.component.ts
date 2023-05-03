@@ -36,6 +36,15 @@ export class FormComponent extends DataRenderBaseComponent {
   datePickerMaxDate: Date = this.convertUTCToLocalDate(this.today);
   selectedDate: Date;
   maskTextFieldStyles: Partial<ITextFieldStyles> = { fieldGroup: { width: "80px" } };
+  
+  // refactoring attempt
+  startMoment: moment.Moment;
+  onChangeStartMoment(startMoment: moment.Moment, formInput) {
+    this.startMoment = startMoment.clone();
+    formInput.inputValue = this.startMoment.format('YYYY-MM-DD HH:mm');
+    const currentMoment = this.detectorControlService.currentUTCMoment;
+    const plusOneDayMoment = startMoment.clone().add(1, 'day');
+  }
 
   @ViewChild('formDropdown') formdropDownRef: ElementRef<IDropdown>;
   constructor(@Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, private _diagnosticService: DiagnosticService, private _router: Router, protected telemetryService: TelemetryService,
@@ -131,8 +140,9 @@ export class FormComponent extends DataRenderBaseComponent {
               formInputs[ip]["inputId"],
               formInputs[ip]["inputType"],
               formInputs[ip]["label"],
-              new Date(formInputs[ip]["defaultSelectedDateTime"]),
-              new Date(formInputs[ip]["restrictToDate"]),
+              //new Date(formInputs[ip]["defaultSelectedDateTime"]),
+              moment.utc(formInputs[ip]["defaultSelectedDateTime"]),
+              moment.utc(formInputs[ip]["restrictToDate"]),
               formInputs[ip]["showDatePickerOnly"],
               formInputs[ip]["isVisible"] != undefined ?  formInputs[ip]["isVisible"] : true,
               formInputs[ip]["isRequired"] != undefined ?  formInputs[ip]["isRequired"] : false,
@@ -279,9 +289,9 @@ export class FormComponent extends DataRenderBaseComponent {
         } else if (this.isDateTimePicker(ip.inpType)) {
             inputElement.inputValue = ip.val;
 
-            let datetime = ip.val.split(" ");
-            inputElement["dateComponent"] = new Date(datetime[0]);
-            inputElement["timeComponent"] = datetime[1];
+            // let datetime = ip.val.split(" ");
+            // inputElement["dateComponent"] = new Date(datetime[0]);
+            // inputElement["timeComponent"] = datetime[1];
         } else {
           inputElement.inputValue = ip.val;
         }
