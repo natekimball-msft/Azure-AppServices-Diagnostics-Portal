@@ -13,8 +13,6 @@ import { DirectionalHint } from 'office-ui-fabric-react/lib/Tooltip';
 import { IDropdownOption, IDropdown } from 'office-ui-fabric-react';
 import { UriUtilities } from '../../utilities/uri-utilities';
 import { QueryResponseService } from '../../services/query-response.service';
-import { addDays } from 'office-ui-fabric-react/lib/utilities/dateMath/DateMath';
-import { IDatePickerProps, ITextFieldStyles } from 'office-ui-fabric-react';
 import * as momentNs from 'moment';
 
 const moment = momentNs;
@@ -32,19 +30,7 @@ export class FormComponent extends DataRenderBaseComponent {
   datasourcesKey: string = '';
   readonly maxInputLength = 150;
 
-  today: Date = new Date(Date.now());
-  datePickerMaxDate: Date = this.convertUTCToLocalDate(this.today);
-  selectedDate: Date;
-  maskTextFieldStyles: Partial<ITextFieldStyles> = { fieldGroup: { width: "80px" } };
-  
-  // refactoring attempt
   startMoment: moment.Moment;
-  onChangeStartMoment(startMoment: moment.Moment, formInput) {
-    this.startMoment = startMoment.clone();
-    formInput.inputValue = this.startMoment.format('YYYY-MM-DD HH:mm');
-    const currentMoment = this.detectorControlService.currentUTCMoment;
-    const plusOneDayMoment = startMoment.clone().add(1, 'day');
-  }
 
   @ViewChild('formDropdown') formdropDownRef: ElementRef<IDropdown>;
   constructor(@Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, private _diagnosticService: DiagnosticService, private _router: Router, protected telemetryService: TelemetryService,
@@ -140,7 +126,6 @@ export class FormComponent extends DataRenderBaseComponent {
               formInputs[ip]["inputId"],
               formInputs[ip]["inputType"],
               formInputs[ip]["label"],
-              //new Date(formInputs[ip]["defaultSelectedDateTime"]),
               moment.utc(formInputs[ip]["defaultSelectedDateTime"]),
               moment.utc(formInputs[ip]["restrictToDate"]),
               formInputs[ip]["showDatePickerOnly"],
@@ -274,24 +259,21 @@ export class FormComponent extends DataRenderBaseComponent {
       detectorQueryParams.inputs.forEach(ip => {
         let inputElement = formToSetValues.formInputs.find(input => input.inputId == ip.inpId);
         inputElement.inputType = ip.inpType;
-        if(this.isDropdown(ip.inpType)) {
-            let selection = ip.val;
-            let isMultiSelect = ip["isMultiSelect"];
-            if (isMultiSelect) {
-                inputElement["defaultSelectedKeys"] = selection.split(",");
-                inputElement.inputValue = selection.split(",");
-            }  else {
-                inputElement["defaultSelectedKey"] = selection;
-                inputElement.inputValue = selection;
-            }
-            // Set visibility in case detector refreshed or opened with deep link
-            inputElement.isVisible = true;
+        if (this.isDropdown(ip.inpType)) {
+          let selection = ip.val;
+          let isMultiSelect = ip["isMultiSelect"];
+          if (isMultiSelect) {
+            inputElement["defaultSelectedKeys"] = selection.split(",");
+            inputElement.inputValue = selection.split(",");
+          } else {
+            inputElement["defaultSelectedKey"] = selection;
+            inputElement.inputValue = selection;
+          }
+          // Set visibility in case detector refreshed or opened with deep link
+          inputElement.isVisible = true;
         } else if (this.isDateTimePicker(ip.inpType)) {
-            inputElement.inputValue = ip.val;
-
-            // let datetime = ip.val.split(" ");
-            // inputElement["dateComponent"] = new Date(datetime[0]);
-            // inputElement["timeComponent"] = datetime[1];
+          (inputElement as DateTimePicker).selectedMoment = moment.utc(ip.val);
+          inputElement.inputValue = ip.val;
         } else {
           inputElement.inputValue = ip.val;
         }
@@ -331,13 +313,6 @@ export class FormComponent extends DataRenderBaseComponent {
         input.displayValidation = true;
         return false;
       } 
-      if (this.isDateTimePicker(input.inputType)) {
-        let time = (input as DateTimePicker).timeComponent.split(":");
-        if (!(time.length > 1 && +time[0] <= 24 && +time[1] <= 59)) {
-          input.displayValidation = true;
-          return false;
-        }
-      }
     }
     return true;
   }
@@ -436,48 +411,9 @@ export class FormComponent extends DataRenderBaseComponent {
     });
   }
 
-  setDate(e: { date: Date }, data: DateTimePicker) {
-    this.selectedDate = e.date;
-
-    let internalId = data.internalId;
-    let formId = Number(internalId.split(".")[0]);
-    let inputId = Number(internalId.split(".")[1]);
-
-    // Find matching form
-    let form = this.detectorForms.find(f => f.formId == formId);
-    // Find the input
-    let formInput = form.formInputs.find(inp => inp.inputId == inputId);
-    (formInput as DateTimePicker).dateComponent = e.date;
+  onChangeSelectedMoment(selectedMoment: moment.Moment, formInput: DateTimePicker) {
+    formInput.selectedMoment = selectedMoment.clone();
+    formInput.inputValue = selectedMoment.clone().format('YYYY-MM-DD HH:mm');
   }
 
-  private convertUTCToLocalDate(date: Date): Date {
-    const moment = momentNs.utc(date);
-    return new Date(
-      moment.year(), moment.month(), moment.date(),
-      moment.hour(), moment.minute()
-    );
-  }
-
-  parseDateFromString: IDatePickerProps['parseDateFromString'] = (s) => {
-    const dateStr = s || "";
-    const datePart = dateStr.split("-");
-    const year = datePart[0].length > 0 ? Number.parseInt(datePart[0], 10) : this.selectedDate.getFullYear();
-    const month = datePart[1].length > 0 ? Math.max(1, Math.min(12, parseInt(datePart[1], 10))) - 1 : this.selectedDate.getMonth();
-    const date = datePart[2].length > 1 ? Math.max(1, Math.min(31, parseInt(datePart[2], 10))) : this.selectedDate.getDate();
-    return new Date(year, month, date);
-  }
-
-  getErrorMessageOnTextField(value: string): string {
-    var values = value.split(":");
-    var errorMessage = "";
-    if (!(values.length > 1 && +values[0] <= 24 && +values[1] <= 59)) {
-      errorMessage = `Invalid time`;
-    }
-    return errorMessage;
-  }
-
-  formatDate: IDatePickerProps['formatDate'] = (date) => {
-    //only this format can do both fill in date and select date
-    return moment(date).format('YYYY-MM-DD');
-  };
 }

@@ -112,48 +112,15 @@ export interface ListItem {
 }
 
 export class DateTimePicker extends FormInput {
-    defaultSelectedDateTime : moment.Moment;
     restrictToDate : moment.Moment;
     showDatePickerOnly : boolean;
-
-    private _dateComponent: Date;
-    public get dateComponent(): Date {
-        return this._dateComponent;
-    }
-    public set dateComponent(value: Date) {
-        this._dateComponent = value;
-        this.mergeDateTime();
-    }
-
-    private _timeComponent: string = "00:00";
-    public get timeComponent(): string {
-        return this._timeComponent;
-    }
-    public set timeComponent(value: string) {
-        var values = value.split(":");
-        if ((values.length > 1 && +values[0] <= 24 && +values[1] <= 59)) {
-            this._timeComponent = value;
-            this.mergeDateTime();
-        }
-    }
-
-    private _startMoment: moment.Moment;
-    public get startMoment(): moment.Moment {
-        return this._startMoment;
-    }
-    public set startMoment(startMoment: moment.Moment) {
-        this.startMoment = startMoment.clone();
-        this.inputValue = this.startMoment.format('YYYY-MM-DD HH:mm');
-    }
-
-    public mergeDateTime() {
-        this.inputValue = `${this.dateComponent.toLocaleDateString()} ${this.timeComponent}`;
-    }  
+    selectedMoment: moment.Moment;
 
     constructor(internalId: string, id: number, inputType: InputType, label: string,
         defaultSelectedDateTime: moment.Moment, restrictToDate: moment.Moment, showDatePickerOnly: boolean, isVisible: boolean = true, isRequired: boolean = false, tooltip: string = "", tooltipIcon: string = "") {
         super(internalId, id, inputType, label, isRequired, tooltip, tooltipIcon, isVisible);
-        this.defaultSelectedDateTime = defaultSelectedDateTime;
+        this.selectedMoment = defaultSelectedDateTime.clone();
+        this.inputValue = this.selectedMoment.clone().format('YYYY-MM-DD HH:mm');
         this.restrictToDate = restrictToDate;
         this.showDatePickerOnly = showDatePickerOnly;
     }

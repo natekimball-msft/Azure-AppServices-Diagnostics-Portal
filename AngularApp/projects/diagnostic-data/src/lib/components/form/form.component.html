@@ -68,25 +68,10 @@
             </fab-tooltip-host>
           </label>
           <div class="col-sm-8 col-md-6" style="display: flex; align-items: center;">
-            <!-- <fab-date-picker [minDate]="formInput.restrictToDate" [maxDate]="datePickerMaxDate"
-              placeholder="Select a date..." ariaLabel="Select a date" allowTextInput="true"
-              showMonthPickerAsOverlay="true" (onSelectDate)="setDate($event, formInput)" [formatDate]="formatDate"
-              [value]="formInput.dateComponent" [parseDateFromString]="parseDateFromString" [contentStyle]="'width:130px'">
-            </fab-date-picker>
-            <fab-masked-text-field *ngIf= "!formInput.showDatePickerOnly" [contentClass]="'col-md-4'" maxLength="6" [(value)]="formInput.timeComponent"
-              [iconProps]="{iconName: 'Clock'}" [mask]="'99:99'" [maskChar]="'-'" [validateOnFocusOut]="true"
-              [getErrorMessage]="getErrorMessageOnTextField" [ariaLabel]="'endTime'" [styles]="maskTextFieldStyles">
-            </fab-masked-text-field>
-            <div class="date-picker-label" style="padding-left: 5px;"> (UTC)</div> -->
-            <!-- <div class="row">
-              <div class="date-time-picker-row"> -->
-            <date-time-picker [moment]="startMoment" [minMoment]="formInput.restrictToDate" [maxMoment]="maxMoment" 
-              (momentChange)="onChangeStartMoment($event, formInput)" [validateOnFocusOut]="true"
+            <date-time-picker [moment]="formInput.selectedMoment" [minMoment]="formInput.restrictToDate" (momentChange)="onChangeSelectedMoment($event, formInput)"
               [required]="formInput.isRequired" [showDatePickerOnly]="formInput.showDatePickerOnly" [validateOnFocusOut]="true"> 
             </date-time-picker>
             <div class="date-picker-label" style="height: fit-content; padding-left: 5px;">(UTC)</div>
-              <!-- </div>
-            </div> -->
           </div>
         </div>
       </div>
