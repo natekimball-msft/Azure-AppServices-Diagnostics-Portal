@@ -69,7 +69,7 @@
           </label>
           <div class="col-sm-8 col-md-6" style="display: flex; align-items: center;">
             <date-time-picker [moment]="formInput.selectedMoment" [minMoment]="formInput.restrictToDate" (momentChange)="onChangeSelectedMoment($event, formInput)"
-              [required]="formInput.isRequired" [showDatePickerOnly]="formInput.showDatePickerOnly" [validateOnFocusOut]="true"> 
+              [required]="formInput.isRequired" [showDatePickerOnly]="formInput.showDatePickerOnly"> 
             </date-time-picker>
             <div class="date-picker-label" style="height: fit-content; padding-left: 5px;">(UTC)</div>
           </div>
