@@ -274,7 +274,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   }
   examplesDropdownStyle: IDropdownProps['styles'] = {
     root: {
-      width: "150px"
+      width: "95%",
+      maxWidth: "332px"
     }
   }
   documentsList: DocumentationFilesList = new DocumentationFilesList();
@@ -1875,7 +1876,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
           this.publishSuccess = true;
           this.lastSavedVersion = this.publishingPackage.codeString;
           this.postPublish();
-          this._applensCommandBarService.refreshPage();
+          //this._applensCommandBarService.refreshPage();
         }, err => {
           this.publishFailed = true;
           this.postPublish();
@@ -1888,7 +1889,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         this.postPublish();
         this.codeOnDefaultBranch = true;
         this.deleteBranch(this.Branch, this.resourceId);
-        this._applensCommandBarService.refreshPage();
+        //this._applensCommandBarService.refreshPage();
       }
     }, err => {
       if (err.error.includes("Branch name cannot contain the following characters:")) {
@@ -2034,7 +2035,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         this.lastSavedVersion = gradPublishFiles[0]
         this.postSave();
         this.isSaved = true;
-        this._applensCommandBarService.refreshPage();
+        //this._applensCommandBarService.refreshPage();
       }, err => {
         if (err.error.includes('Detector with this ID already exists. Please use a new ID')) this.saveIdFailure = true;
         if (err.error.includes("Branch name cannot contain the following characters:")) {
@@ -2053,7 +2054,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
             this.saveSuccess = true;
             this.postSave();
             this.isSaved = true;
-            this._applensCommandBarService.refreshPage();
+            //this._applensCommandBarService.refreshPage();
           }, err => {
             if (err.error.includes("Branch name cannot contain the following characters:")) {
               this.charWarningMessage = err.error;
