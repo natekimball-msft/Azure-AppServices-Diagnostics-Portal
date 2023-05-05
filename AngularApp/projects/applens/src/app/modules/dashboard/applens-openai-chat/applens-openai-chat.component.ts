@@ -8,7 +8,6 @@ import { AdalService } from 'adal-angular4';
 import { UserSettingService } from '../services/user-setting.service';
 import { ResourceProviderMessages, UserChatGPTSetting } from '../../../shared/models/user-setting';
 import { ResourceService } from '../../../shared/services/resource.service';
-import { openAIChatQueries } from '../../../shared/models/openai-chat-samples';
 import { TelemetryService, TelemetryEventNames } from 'diagnostic-data';
 import { TimeUtilities } from '../../../../../../diagnostic-data/src/public_api';
 import { Observable } from 'rxjs';
@@ -47,7 +46,6 @@ export class ApplensOpenAIChatComponent implements OnInit {
   // Variables that can be taken as input
   dailyMessageQuota: number = 20;
   messageQuotaWarningThreshold: number = 10;
-  chatQuerySamplesFileName: string = "openai-chat-samples";
   
   originalResourceProvider: string;
   currentResourceProvider: string;
@@ -57,7 +55,6 @@ export class ApplensOpenAIChatComponent implements OnInit {
   isEnabledChecked: boolean = false;
   displayLoader: boolean = false;
   chatgptSearchText: string = "";
-  chatQuerySamples = openAIChatQueries;
     
   ngOnInit() {
     this.originalResourceProvider = `${this._resourceService.ArmResource.provider}/${this._resourceService.ArmResource.resourceTypeName}`.toLowerCase();
