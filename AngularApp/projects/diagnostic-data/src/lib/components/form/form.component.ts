@@ -13,9 +13,8 @@ import { DirectionalHint } from 'office-ui-fabric-react/lib/Tooltip';
 import { IDropdownOption, IDropdown } from 'office-ui-fabric-react';
 import { UriUtilities } from '../../utilities/uri-utilities';
 import { QueryResponseService } from '../../services/query-response.service';
-import * as momentNs from 'moment';
-
-const moment = momentNs;
+import * as moment from 'moment';
+import { TimeUtilities } from '../../utilities/time-utilities';
 
 @Component({
   selector: 'custom-form',
@@ -413,7 +412,7 @@ export class FormComponent extends DataRenderBaseComponent {
 
   onChangeSelectedMoment(selectedMoment: moment.Moment, formInput: DateTimePicker) {
     formInput.selectedMoment = selectedMoment.clone();
-    formInput.inputValue = selectedMoment.clone().format('YYYY-MM-DD HH:mm');
+    formInput.inputValue = selectedMoment.clone().format(TimeUtilities.fullStringFormat);
   }
 
 }

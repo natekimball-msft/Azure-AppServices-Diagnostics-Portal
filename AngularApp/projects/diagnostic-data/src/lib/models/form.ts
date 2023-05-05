@@ -1,5 +1,6 @@
 import { DetectorResponse } from '../models/detector';
 import { IDropdownOption } from 'office-ui-fabric-react/lib/components/Dropdown';
+import { TimeUtilities } from '../utilities/time-utilities';
 
 export class Form {
     formId: number;
@@ -120,7 +121,7 @@ export class DateTimePicker extends FormInput {
         defaultSelectedDateTime: moment.Moment, restrictToDate: moment.Moment, showDatePickerOnly: boolean, isVisible: boolean = true, isRequired: boolean = false, tooltip: string = "", tooltipIcon: string = "") {
         super(internalId, id, inputType, label, isRequired, tooltip, tooltipIcon, isVisible);
         this.selectedMoment = defaultSelectedDateTime.clone();
-        this.inputValue = this.selectedMoment.clone().format('YYYY-MM-DD HH:mm');
+        this.inputValue = this.selectedMoment.clone().format(TimeUtilities.fullStringFormat);
         this.restrictToDate = restrictToDate;
         this.showDatePickerOnly = showDatePickerOnly;
     }
