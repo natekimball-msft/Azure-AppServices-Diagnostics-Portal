@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
         // Models 
-        ChatMessage, MessageStatus, MessageSource, MessageRenderingType, UserFeedbackType, TextModels, OpenAIAPIResponse, CreateTextCompletionModel,
+        ChatMessage, MessageStatus, MessageSource, MessageRenderingType, TextModels, OpenAIAPIResponse, CreateTextCompletionModel,
         // Services
         ChatUIContextService, GenericOpenAIChatService,
         // Telemetry
@@ -111,7 +111,7 @@ export class OpenAIChatComponent implements OnInit {
     }
   }
 
-  logUserFeedback = (messageId: string, feedbackType: UserFeedbackType) => {
+  logUserFeedback = (messageId: string, feedbackType: string) => {
     var msgObj = this._chatContextService.messages.find(m => m.id == messageId);
     if (msgObj) {
       msgObj.userFeedback = feedbackType;
@@ -252,7 +252,7 @@ export class OpenAIChatComponent implements OnInit {
         timestamp: new Date().getTime(),
         messageDisplayDate: TimeUtilities.displayMessageDate(new Date()),
         status: MessageStatus.Created,
-        userFeedback: UserFeedbackType.None,
+        userFeedback: "none",
         renderingType: MessageRenderingType.Text
       };
       this._chatContextService.messages.push(chatMessage);

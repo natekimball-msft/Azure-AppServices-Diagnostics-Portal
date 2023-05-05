@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { KeyValuePair } from '../../models/common-models';
-import { ChatMessage, ChatAlignment, UserFeedbackType, MessageSource, MessageStatus, MessageRenderingType } from '../../models/chatbot-models';
+import { ChatMessage, ChatAlignment, MessageSource, MessageStatus, MessageRenderingType } from '../../models/chatbot-models';
 import {TelemetryService} from '../../services/telemetry/telemetry.service';
 import { v4 as uuid } from 'uuid';
 import { TimeUtilities } from '../../utilities/time-utilities';
@@ -19,7 +19,7 @@ export class ChatUIComponent implements OnInit {
     @Input() onSendMessage: Function = (message: ChatMessage) => {};
     @Input() chatAlignment: ChatAlignment = ChatAlignment.Center;
     @Input() showFeedbackOptions: boolean = false;
-    @Input() onFeedbackClick: Function = (messageId: string, feedbackType: UserFeedbackType) => {};
+    @Input() onFeedbackClick: Function = (messageId: string, feedbackType: string) => {};
 
     @Input() userNameInitial: string = '';
     @Input() userPhotoSource: string = '';
@@ -84,14 +84,14 @@ export class ChatUIComponent implements OnInit {
             timestamp: new Date().getTime(),
             messageDisplayDate: TimeUtilities.displayMessageDate(new Date()),
             status: MessageStatus.Finished,
-            userFeedback: UserFeedbackType.None,
+            userFeedback: "none",
             renderingType: MessageRenderingType.Text
         };
 
         this.onSendMessage(message);
     }
 
-    feedbackClicked(message: ChatMessage, feedbackType: UserFeedbackType) {
+    feedbackClicked(message: ChatMessage, feedbackType: string) {
         message.userFeedback = feedbackType;
         if (this.onFeedbackClick) {
             this.onFeedbackClick(message.id, feedbackType);
