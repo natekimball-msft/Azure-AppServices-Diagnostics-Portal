@@ -28,6 +28,7 @@ import { Observable, of } from 'rxjs';
 export class OpenAIChatComponent implements OnInit {
   @ViewChild('chatUIComponent') chatUIComponentRef: ChatUIComponent;
 
+  @Input() customInitialPrompt: string = '';
   @Input() userId: string = '';
   @Input() userNameInitial: string = '';
   @Input() userPhotoSource: string = '';
@@ -176,7 +177,7 @@ export class OpenAIChatComponent implements OnInit {
     try {
       let openAIQueryModel = CreateTextCompletionModel(searchQuery);
       messageObj.status = messageObj.status == MessageStatus.Created ? MessageStatus.Waiting: messageObj.status;
-      this._openAIService.generateTextCompletion(openAIQueryModel, '', true).subscribe((res: OpenAIAPIResponse) => {
+      this._openAIService.generateTextCompletion(openAIQueryModel, this.customInitialPrompt, true).subscribe((res: OpenAIAPIResponse) => {
           var result = res?.choices[0];
           messageObj.message = messageObj.message + (trimnewline? result.text.trim(): result.text.trimEnd());
           // Check if the response is truncated
