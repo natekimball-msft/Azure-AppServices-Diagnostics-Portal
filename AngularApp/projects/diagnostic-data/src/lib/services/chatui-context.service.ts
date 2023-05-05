@@ -5,7 +5,7 @@ import { ChatMessage } from '../models/chatbot-models';
 @Injectable({
   providedIn: 'root'
 })
-export class ChatGPTContextService {
+export class ChatUIContextService {
 
   constructor() {
   }
