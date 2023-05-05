@@ -17,6 +17,7 @@ import { ResourceService } from '../../shared/services/resource.service';
 import { ResourceServiceFactory } from '../../shared/providers/resource.service.provider';
 import { ResourceHomeComponent } from './resource-home/resource-home.component';
 import { OnboardingFlowComponent } from './onboarding-flow/onboarding-flow.component';
+import { DetectorCopilotComponent } from './onboarding-flow/detector-copilot/detector-copilot.component';
 import { TabCommonComponent } from './tabs/tab-common/tab-common.component';
 import { TabDataComponent } from './tabs/tab-data/tab-data.component';
 import { TabDevelopComponent } from './tabs/tab-develop/tab-develop.component';
@@ -595,7 +596,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         { provide: GenericClientScriptService, useExisting: ClientScriptService},
         { provide: GenericOpenAIChatService, useExisting: ApplensOpenAIChatService}
     ],
-    declarations: [DashboardComponent, SideNavComponent, ResourceMenuItemComponent, ResourceHomeComponent, OnboardingFlowComponent, SearchTermAdditionComponent,
+    declarations: [DashboardComponent, SideNavComponent, ResourceMenuItemComponent, ResourceHomeComponent, OnboardingFlowComponent, DetectorCopilotComponent, SearchTermAdditionComponent,
         SearchMenuPipe, TabDataComponent, TabDevelopComponent, TabCommonComponent, TabDataSourcesComponent, TabMonitoringComponent,
         TabMonitoringDevelopComponent, TabAnalyticsDevelopComponent, TabAnalyticsDashboardComponent, GistComponent, TabGistCommonComponent,
         TabGistDevelopComponent, TabChangelistComponent, GistChangelistComponent, TabAnalysisComponent, CategoryPageComponent, SupportTopicPageComponent,

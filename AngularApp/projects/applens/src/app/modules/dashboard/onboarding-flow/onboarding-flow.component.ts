@@ -52,50 +52,7 @@ using Kusto.Data;
 //*****END OF DO NOT MODIFY PART*****
 `;
 
-
 const newDetectorId: string = "NEW_DETECTOR";
-
-// const commandbaritems: ICommandBarItemProps[] = [
-//   {
-//     key: 'newItem',
-//     text: 'New',
-//     cacheKey: 'myCacheKey', // changing this key will invalidate this item's cache
-//     iconProps: { iconName: 'Add' },
-//     subMenuProps: {
-//       items: [
-//         {
-//           key: 'emailMessage',
-//           text: 'Email message',
-//           iconProps: { iconName: 'Mail' },
-//           ['data-automation-id']: 'newEmailButton', // optional
-//         },
-//         {
-//           key: 'calendarEvent',
-//           text: 'Calendar event',
-//           iconProps: { iconName: 'Calendar' },
-//         },
-//       ],
-//     },
-//   },
-//   {
-//     key: 'upload',
-//     text: 'Upload',
-//     iconProps: { iconName: 'Upload' },
-//     href: 'https://developer.microsoft.com/en-us/fluentui',
-//   },
-//   {
-//     key: 'share',
-//     text: 'Share',
-//     iconProps: { iconName: 'Share' },
-//     onClick: () => console.log('Share'),
-//   },
-//   {
-//     key: 'download',
-//     text: 'Download',
-//     iconProps: { iconName: 'Download' },
-//     onClick: () => console.log('Download'),
-//   },
-// ];
 
 export enum DevelopMode {
   Create,
@@ -228,6 +185,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   charWarningMessage: string = '';
   detectorLoaded: boolean = false;
   workflowPackage: Package;
+  showDetectorCopilot: boolean = false;
 
   runButtonStyle: any = {
     root: { cursor: "default" }
@@ -733,7 +691,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
         if (this.mode != DevelopMode.Create) {
           var branchRegEx = this.gistMode ? new RegExp(`^dev\/.*\/gist\/${this.id}$`, "i") : new RegExp(`^dev\/.*\/detector\/${this.id}$`, "i");
-          if (this.isWorkflowDetector){
+          if (this.isWorkflowDetector) {
             branchRegEx = new RegExp(`^dev\/.*\/workflow\/${this.id}$`, "i")
           }
           branches.forEach(option => {
@@ -752,7 +710,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         }
         else {
           var branchRegEx = this.gistMode ? new RegExp(`^dev\/.*\/gist\/.*$`, "i") : new RegExp(`^dev\/.*\/detector\/.*$`, "i");
-          if (this.isWorkflowDetector){
+          if (this.isWorkflowDetector) {
             branchRegEx = new RegExp(`^dev\/.*\/workflow\/.*$`, "i")
           }
 
@@ -2339,7 +2297,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     detectorFile.subscribe(res => {
       // if (!this.code)
       this.code = this.addCodePrefix(res);
-      this.lastSavedVersion = this.code
+      this.lastSavedVersion = this.code;
       this.originalCode = this.code;
       this.codeLoaded = true;
     }, err => {
@@ -2370,10 +2328,6 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
           this.allGists.push(m.id);
         });
       }
-
-      // if (!this.hideModal && !this.gistMode) {
-      //   this.ngxSmartModalService.getModal('devModeModal').open();
-      // }
     });
   }
 
@@ -2430,5 +2384,9 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     let file = $event.target.files[0];
     const text = await file.text();
     this.createWorkflow.uploadFlowData(text);
+  }
+
+  onCodeSuggestionFromCopilot($event) {
+    console.log($event);
   }
 }

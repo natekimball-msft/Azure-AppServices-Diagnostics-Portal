@@ -1,0 +1,7 @@
+<div>
+  <fab-panel [isOpen]="openPanel" [type]="panelType" [customWidth]="panelWidth" [isHiddenOnDismiss]="true"
+    [hasCloseButton]="true" [closeButtonAriaLabel]="'close'" [isBlocking]="false"
+    (onDismiss)="dismissedHandler()" 
+    [headerText]="'Detector Copilot'"
+    [isLightDismiss]="false" (onLightDismissClick)="dismissedHandler()"></fab-panel>
+</div>
