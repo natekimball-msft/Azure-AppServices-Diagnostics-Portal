@@ -32,6 +32,8 @@ export class OpenAIChatComponent implements OnInit {
   @Input() userId: string = '';
   @Input() userNameInitial: string = '';
   @Input() userPhotoSource: string = '';
+  @Input() systemNameInitial: string = 'AI';
+  @Input() systemPhotoSource: string = '/assets/img/openailogo.svg';
   @Input() persistChat: boolean = false;
   @Input() chatIdentifier: string = '';
   @Input() chatHeader: string = '';

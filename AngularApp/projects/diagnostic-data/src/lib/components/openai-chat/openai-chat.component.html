@@ -1,6 +1,6 @@
 <div *ngIf="isEnabled">
   <chat-ui #chatUIComponent
-  [chatIdentifier]="chatComponentIdentifier"
+  [chatIdentifier]="chatIdentifier"
   [chatInputText]="openaiChatSearchText"
   [chatHeader]="chatHeader"
   [chatAlignment]="chatAlignment"
@@ -10,8 +10,8 @@
   [onFeedbackClick]="logUserFeedback"
   [userPhotoSource]="_chatContextService.userPhotoSource"
   [userNameInitial]="_chatContextService.userNameInitial"
-  [systemPhotoSource]="'/assets/img/openailogo.svg'"
-  [systemNameInitial]="'AI'"
+  [systemPhotoSource]="systemPhotoSource"
+  [systemNameInitial]="systemNameInitial"
   [chatInputBoxDisabled]="_chatContextService.chatInputBoxDisabled"
   [topErrorBarMessage]="openAIChatRequestError"
   [showTopErrorBar]="showChatRequestError"
