@@ -1,0 +1,26 @@
+<div *ngIf="isEnabled">
+  <chat-ui #chatUIComponent
+  [chatIdentifier]="chatComponentIdentifier"
+  [chatInputText]="openaiChatSearchText"
+  [chatHeader]="chatHeader"
+  [chatAlignment]="chatAlignment"
+  [messages]="_chatContextService.messages"
+  [onSendMessage]="onUserSendMessage"
+  [showFeedbackOptions]="showFeedbackOptions"
+  [onFeedbackClick]="logUserFeedback"
+  [userPhotoSource]="_chatContextService.userPhotoSource"
+  [userNameInitial]="_chatContextService.userNameInitial"
+  [systemPhotoSource]="'/assets/img/openailogo.svg'"
+  [systemNameInitial]="'AI'"
+  [chatInputBoxDisabled]="_chatContextService.chatInputBoxDisabled"
+  [topErrorBarMessage]="openAIChatRequestError"
+  [showTopErrorBar]="showChatRequestError"
+  [chatQuerySamples]="chatQuerySamples"
+  [showContentDisclaimer]="showContentDisclaimer"
+  [contentDisclaimerMessage]="contentDisclaimerMessage"
+  [showValidationWarning]="showMessageQuotaWarning"
+  [validationWarningMessage]="messageQuotaWarningMessage"
+  [showValidationError]="showMessageQuotaError"
+  [validationErrorMessage]="messageQuotaErrorMessage"
+  ></chat-ui>
+</div>

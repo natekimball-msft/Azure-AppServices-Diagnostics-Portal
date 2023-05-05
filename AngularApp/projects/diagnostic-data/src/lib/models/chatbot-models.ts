@@ -32,3 +32,8 @@ export enum MessageSource {
     User = "user",
     System = "system"
 }
+
+export enum ChatAlignment {
+    Left = "left",
+    Center = "center"
+}
