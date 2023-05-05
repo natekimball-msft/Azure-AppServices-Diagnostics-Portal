@@ -11,7 +11,8 @@ import {
         ChatUIComponent,
         // Utilities
         TimeUtilities,
-        ChatAlignment
+        ChatAlignment,
+        StringUtilities
     
 } from "../../../public_api";
 import { v4 as uuid } from 'uuid';
@@ -181,7 +182,7 @@ export class OpenAIChatComponent implements OnInit {
       messageObj.status = messageObj.status == MessageStatus.Created ? MessageStatus.Waiting: messageObj.status;
       this._openAIService.generateTextCompletion(openAIQueryModel, this.customInitialPrompt, true).subscribe((res: OpenAIAPIResponse) => {
           var result = res?.choices[0];
-          messageObj.message = messageObj.message + (trimnewline? result.text.trim(): result.text.trimEnd());
+          messageObj.message = messageObj.message + (trimnewline? StringUtilities.TrimBoth(result.text): StringUtilities.TrimEnd(result.text));
           // Check if the response is truncated
           if (result.finish_reason == "length") {
             messageObj.status = MessageStatus.InProgress;

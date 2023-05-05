@@ -4,6 +4,7 @@ import { ChatMessage, ChatAlignment, MessageSource, MessageStatus, MessageRender
 import {TelemetryService} from '../../services/telemetry/telemetry.service';
 import { v4 as uuid } from 'uuid';
 import { TimeUtilities } from '../../utilities/time-utilities';
+import { StringUtilities } from '../../utilities/string-utilities';
 
 @Component({
     selector: 'chat-ui',
@@ -75,7 +76,7 @@ export class ChatUIComponent implements OnInit {
     }
 
     triggerChat() {
-        this.chatInputTextInternal = this.chatInputTextInternal.trimEnd();
+        this.chatInputTextInternal = StringUtilities.TrimEnd(this.chatInputTextInternal);
         this.chatInputBoxDisabled = true;
         let message = {
             id: uuid(),
