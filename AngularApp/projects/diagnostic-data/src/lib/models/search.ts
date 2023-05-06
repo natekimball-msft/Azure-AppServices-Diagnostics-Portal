@@ -2,7 +2,7 @@ interface PreferredSitesConfig {
     [index: string]: string[];
 }
 
-export var detectorSearchEnabledPesIds: string[] = ["14748", "16072", "16170", "15791", "15551", "16450"];
+export var detectorSearchEnabledPesIds: string[] = ["14748", "16072", "16170", "15791", "15551", "16450", "17378"];
 export var detectorSearchEnabledSapProductIds: string[] = [
     'b4d0e877-0166-0474-9a76-b5be30ba40e4',
     'b452a42b-3779-64de-532c-8a32738357a6',
