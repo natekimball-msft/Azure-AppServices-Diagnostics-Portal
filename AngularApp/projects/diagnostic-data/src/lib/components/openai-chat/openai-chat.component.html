@@ -4,7 +4,7 @@
   [chatInputText]="openaiChatSearchText"
   [chatHeader]="chatHeader"
   [chatAlignment]="chatAlignment"
-  [messages]="_chatContextService.messages"
+  [messages]="_chatContextService.messageStore[chatIdentifier]"
   [onSendMessage]="onUserSendMessage"
   [showFeedbackOptions]="showFeedbackOptions"
   [onFeedbackClick]="logUserFeedback"

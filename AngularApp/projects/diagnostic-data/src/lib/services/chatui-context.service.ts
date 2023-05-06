@@ -10,7 +10,7 @@ export class ChatUIContextService {
   constructor() {
   }
 
-  public messages: ChatMessage[] = [];
+  public messageStore = {};
   public chatInputBoxDisabled: boolean = false;
   public userPhotoSource: any = "";
   public userNameInitial: string = "";
