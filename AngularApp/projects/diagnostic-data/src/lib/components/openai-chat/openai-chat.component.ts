@@ -62,7 +62,7 @@ export class OpenAIChatComponent implements OnInit {
 
   constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
     private _openAIService: GenericOpenAIChatService,
-    private _chatContextService: ChatUIContextService,
+    public _chatContextService: ChatUIContextService,
     private _telemetryService: TelemetryService,
     private http: HttpClient) {
   }
@@ -224,13 +224,14 @@ export class OpenAIChatComponent implements OnInit {
           messageObj.timestamp = new Date().getTime();
           messageObj.messageDisplayDate = TimeUtilities.displayMessageDate(new Date());
 
-          if (this.persistChat) {
-            this.saveChatToStore();
-          }
           this.openaiChatSearchText = "";
           this._chatContextService.chatInputBoxDisabled = false;
           this.chatUIComponentRef.scrollToBottom();
           this.chatUIComponentRef.focusChatInput();
+
+          if (this.persistChat) {
+            this.saveChatToStore();
+          }
         }
       },
         (err) => {
