@@ -224,13 +224,14 @@ export class OpenAIChatComponent implements OnInit {
           messageObj.timestamp = new Date().getTime();
           messageObj.messageDisplayDate = TimeUtilities.displayMessageDate(new Date());
 
-          if (this.persistChat) {
-            this.saveChatToStore();
-          }
           this.openaiChatSearchText = "";
           this._chatContextService.chatInputBoxDisabled = false;
           this.chatUIComponentRef.scrollToBottom();
           this.chatUIComponentRef.focusChatInput();
+
+          if (this.persistChat) {
+            this.saveChatToStore();
+          }
         }
       },
         (err) => {
@@ -265,6 +266,7 @@ export class OpenAIChatComponent implements OnInit {
 
   prepareChatContext() {
 
+    //Take last 'chatContextLength' messages to build context
     var context = this._chatContextService.messageStore[this.chatIdentifier].slice(-1 * this.chatContextLength).map((x: ChatMessage, index: number) => {
       if (index >= this._chatContextService.messageStore[this.chatIdentifier].length - 2) {
         return `${x.messageSource}: ${x.message}`;
