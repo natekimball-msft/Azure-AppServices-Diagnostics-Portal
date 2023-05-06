@@ -40,7 +40,7 @@
             <div class="chatui-message-{{message.renderingType}}" [ngClass]="{'chatui-message': chatAlignment=='center', 'chatui-message-left-aligned': chatAlignment=='left'}">
               <div class="chat-message-timestamp">{{message.messageDisplayDate}}</div>
               <div style="white-space:pre-wrap">
-                <p [ngClass]="{'blinking-cursor': message.status==2}" [innerText]="message.message">
+                <p [ngClass]="{'blinking-cursor': message.status==2}" [innerText]="message.displayMessage">
                 </p>
               </div>
               <ng-container *ngIf="showFeedbackOptions && message.messageSource=='system'">

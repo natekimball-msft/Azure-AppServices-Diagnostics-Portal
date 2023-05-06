@@ -1,7 +1,17 @@
 <div>
   <fab-panel [isOpen]="openPanel" [type]="panelType" [customWidth]="panelWidth" [isHiddenOnDismiss]="true"
-    [hasCloseButton]="true" [closeButtonAriaLabel]="'close'" [isBlocking]="false"
-    (onDismiss)="dismissedHandler()" 
-    [headerText]="'Detector Copilot'"
-    [isLightDismiss]="false" (onLightDismissClick)="dismissedHandler()"></fab-panel>
+    [hasCloseButton]="true" [closeButtonAriaLabel]="'close'" [isBlocking]="false" (onDismiss)="dismissedHandler()"
+    [headerText]="'Detector Copilot'" [isLightDismiss]="false" (onLightDismissClick)="dismissedHandler()">
+
+    <div style="height:80vh;">
+      <openai-chat [customInitialPrompt] = "" [userId]="userAlias" [persistChat]="false" [chatAlignment]="'center'"
+      [chatIdentifier]="chatComponentIdentifier" [chatContextLength]="10"
+      [chatQuerySamplesFileUri]="'assets/chatConfigs/applensChatGPT.json'" [showFeedbackOptions]="true"
+      [showContentDisclaimer]="true" [contentDisclaimerMessage]="contentDisclaimerMessage" [quotaEnforced]="true"
+      [dailyMessageQuota]="20" [messageQuotaWarningThreshold]="10" [chatHeader]="chatHeader"
+      [systemPhotoSource]="'/assets/img/openailogo.svg'" [preprocessUserMessage]="onUserMessageSend" [postProcessSystemMessage]="onSystemMessageReceived">
+    </openai-chat> 
+    </div>
+
+  </fab-panel>
 </div>

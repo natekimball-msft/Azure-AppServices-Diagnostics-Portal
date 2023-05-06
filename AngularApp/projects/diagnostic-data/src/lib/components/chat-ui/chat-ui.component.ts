@@ -80,6 +80,7 @@ export class ChatUIComponent implements OnInit {
         this.chatInputBoxDisabled = true;
         let message = {
             id: uuid(),
+            displayMessage: this.chatInputTextInternal,
             message: this.chatInputTextInternal,
             messageSource: MessageSource.User,
             timestamp: new Date().getTime(),
@@ -100,10 +101,10 @@ export class ChatUIComponent implements OnInit {
         //Default handling if no callback is provided
         else{
             if (feedbackType == 'like') {
-                this._telemetryService.logEvent(`ChatResponseUserFeedbackLike--${this.chatIdentifier}`, { messageId: message.id, messageText: message.message, ts: new Date().getTime().toString()});
+                this._telemetryService.logEvent(`ChatResponseUserFeedbackLike--${this.chatIdentifier}`, { messageId: message.id, messageText: message.displayMessage, ts: new Date().getTime().toString()});
             }
             else {
-                this._telemetryService.logEvent(`ChatResponseUserFeedbackDislike--${this.chatIdentifier}`, { messageId: message.id, messageText: message.message, ts: new Date().getTime().toString()});
+                this._telemetryService.logEvent(`ChatResponseUserFeedbackDislike--${this.chatIdentifier}`, { messageId: message.id, messageText: message.displayMessage, ts: new Date().getTime().toString()});
             }
         }
     }

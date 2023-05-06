@@ -2388,5 +2388,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
   onCodeSuggestionFromCopilot($event) {
     console.log($event);
+    let incomingCode = $event;
+    this.code = incomingCode;
   }
 }
