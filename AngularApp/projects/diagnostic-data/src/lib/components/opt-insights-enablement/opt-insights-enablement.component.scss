@@ -35,20 +35,19 @@ table th {
 .header {
     background-color: inherit; /*var(--homeBannerProd);*/
     color: var(--bodyText);
-    margin-top: 10px;
-    margin-left: 0px;    
+    margin: 4px 0px;   
+    padding: 1px;     
 }
 
 .h2CodeOptimizations {
   color: var(--bodyText);
-  font-size: 13px;
-  margin-left: 6px;
+  font-size: 13px;  
+  font-weight: inherit;
 }
 
 .error {
   background-color: inherit; /*var(--homeBannerProd);*/
   color: var(--bodyText);
-  margin: 10px;
 }
 
 #app-root[theme=dark] a{ 

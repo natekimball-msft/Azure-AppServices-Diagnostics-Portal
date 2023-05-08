@@ -134,8 +134,8 @@
     </div>
   </div>
 </div>
-<div *ngIf="isBetaSubscription">
-  <div *ngIf="isEnabledInProd && !loadingSettings && appInsightsValiationError.length == 0"
+<div *ngIf="isCodeInsightsEnabledInProd">
+  <div *ngIf="!loadingSettings && appInsightsValiationError.length == 0"
     class="animated fadeIn panel panel-info width-90">
     <div class="banner">
       <div class="banner-child">
