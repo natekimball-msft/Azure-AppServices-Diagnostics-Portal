@@ -1990,7 +1990,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     const commitMessageStart = this.mode == DevelopMode.Create && !this.isSaved && !this.detectorLoaded ? "Adding" : "Editing";
 
     let gradPublishFiles: string[] = !!this.publishingPackage ? [
-      this.publishingPackage.codeString,
+      this.code,
       this.publishingPackage.metadata,
       this.publishingPackage.packageConfig
     ] : [
