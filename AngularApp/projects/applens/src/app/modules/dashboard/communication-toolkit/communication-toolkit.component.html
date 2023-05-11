@@ -1,32 +1,44 @@
 
 
-<div *ngIf = "!rcaLoading && !rcaDisplayed" class="rca-bot-container">
+<div *ngIf = "!rcaLoading && !rcaDisplayed && !otherDisplayed" class="rca-bot-container">
     <div class="rca-box-row-container rca-header-container">
         <h1 class="rca-header-text">EasyRCA!</h1>
     </div>
     <div *ngIf = "!subcategoriesDisplayed" class="rca-box-row-container rca-samples-container">
         
         <div class="rca-box-row">
-            <ng-container *ngFor="let cat of categoryMapping.keys(); let i = index">
-              <div class="rca-box" *ngIf = "i<=2"  (click) = "mainCategoryClicked(cat)" [innerHTML] = "cat"></div>
+            <ng-container *ngFor="let cat of [].constructor(6); let i = index">
+              <div class="rca-box" *ngIf = "i<=2 && ( i < categoryMapping.size) "  
+              (click) = "mainCategoryClicked(categoryMappingKeys[i])" [innerHTML] = "categoryMappingKeys[i]"></div>
+              <div class="empty-box" *ngIf = "i<=2 && ( i >= categoryMapping.size) "  
+                [innerHTML] = ""></div>
             </ng-container>
         </div>
         <div class="rca-box-row">
-            <ng-container *ngFor="let cat of categoryMapping.keys(); let i = index">
-              <div class="rca-box" *ngIf = "i>=3 && i<=5" (click) = "mainCategoryClicked(cat)" [innerHTML] = "cat"></div>
+            <ng-container *ngFor="let cat of [].constructor(6); let i = index">
+                <div class="rca-box" *ngIf = "(i>=3 && i<=5) && ( i < categoryMapping.size) "  
+                    (click) = "mainCategoryClicked(categoryMappingKeys[i])" [innerHTML] = "categoryMappingKeys[i]"></div>
+                <div class="empty-box" *ngIf = "(i>=3 && i<=5) && ( i >= categoryMapping.size) "  
+                    [innerHTML] = ""></div>
             </ng-container>
         </div>
     </div>
     <div *ngIf = "subcategoriesDisplayed" class="rca-box-row-container rca-samples-container">
         
         <div class="rca-box-row">
-            <ng-container *ngFor="let subcat of categoryMapping.get(currentSelectedRCATopic); let i = index">
-              <div class="rca-box" *ngIf = "i<=2"  (click) = "subCategoryClicked(subcat)" [innerHTML] = "subcat"></div>
+            <ng-container *ngFor="let cat of [].constructor(6); let i = index">
+              <div class="rca-box" *ngIf = "i<=2 && ( i < categoryMapping.get(currentSelectedRCATopic).length )"  
+              (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])" [innerHTML] = "categoryMapping.get(currentSelectedRCATopic)[i]"></div>
+              <div class="empty-box" *ngIf = "i<=2 && ( i >= categoryMapping.get(currentSelectedRCATopic).length )"  
+             [innerHTML] = ""></div>
             </ng-container>
         </div>
         <div class="rca-box-row">
-            <ng-container *ngFor="let subcat of categoryMapping.get(currentSelectedRCATopic); let i = index">
-              <div class="rca-box" *ngIf = "i>=3 && i<=5" (click) = "subCategoryClicked(subcat)" [innerHTML] = "subcat"></div>
+            <ng-container *ngFor="let cat of [].constructor(6);let i = index">
+              <div class="rca-box" *ngIf = "(i>=3 && i<=5) && ( i < categoryMapping.get(currentSelectedRCATopic).length) " 
+                (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])" [innerHTML] = "categoryMapping.get(currentSelectedRCATopic)[i]"></div>
+                <div class="empty-box" *ngIf = "(i>=3 && i<=5) && ( i >= categoryMapping.get(currentSelectedRCATopic).length )" 
+                    [innerHTML] = ""></div>
             </ng-container>
         </div>
     </div>
@@ -38,9 +50,29 @@
     <!-- <span style="display: block;" class="loader-text">Our premium plan loads faster...</span> -->
     <fab-spinner [size] = "loadingSize" [label] = "'Our premium plan loads faster...'" ></fab-spinner>
 </div>
-<div *ngIf = "!rcaLoading && rcaDisplayed" class = " rca-template-box-header">
+<div *ngIf = "!rcaLoading && rcaDisplayed" class = "rca-bot-container rca-template-box-header">
     <!-- <h1 class="rca-header-text">Applens <img src="/assets/img/handshakelogo.png" class="chatgpt-handshake-logo"/> RCA</h1> -->
-    The RCA template for {{currentSelectedRCATopic}} is below:
+    <div class="rca-box-row-container rca-header-container">
+        <h1 class="rca-header-text">EasyRCA!</h1>
+        <div class = "rca-body-container rca-body-text">The RCA template for {{currentSelectedRCATopic}} is below:
+            <textarea class = "input-box"></textarea>
+        </div>
+    </div>
+    
 </div>
-<div *ngIf = "!rcaLoading && rcaDisplayed" class = "rca-template-box rca-bot-container"  [innerHTML] = "currentSelectedRCA">
+<!-- <div *ngIf = "!rcaLoading && rcaDisplayed" class = "rca-template-box rca-bot-container"  [innerHTML] = "currentSelectedRCA">
+</div> -->
+<!-- displaying "other" mode when clicked  -->
+<div *ngIf = "!rcaLoading && !rcaDisplayed && !subcategoriesDisplayed && otherDisplayed" class = "rca-bot-container rca-template-box-header">
+    <div class="rca-box-row-container rca-header-container">
+        <h1 class="rca-header-text">EasyRCA!</h1>
+        <div class = "rca-body-container rca-body-text">{{otherDisplayText}} 
+            <textarea class = "input-box"></textarea>
+        </div>
+        
+        <!-- <button type = "button"></button> -->
+        
+    </div>
+    
+   
 </div>

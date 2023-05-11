@@ -17,11 +17,14 @@ export class CommunicationToolkitComponent implements OnInit {
   currentSelectedRCATopic : string = ""; 
   currentSelectedRCA : string = ""; 
   subcategoriesDisplayed = false; 
+  otherDisplayed = false; 
+  otherDisplayText = "We do not currently offer RCA templates for other issues at this time, but are looking to expand to offer these in the future. \nPlease\
+  add a description of the issue you would like us to create a template for, and will accommodate this for the future. "; 
 
   categoryMapping : Map<string, any> = new Map([
-    ["File Server Issues", ["High CPU", "Noisy Neighbor", "Unplanned Hardware"] ],
-    ["Customer Code Issues", []],
-    ["Platform Issues", []],
+    ["File Server Issues", ["High CPU", "Noisy Neighbor", "Unplanned Hardware", "File Server Upgrade"] ],
+    ["Customer Code Issues", ["App Issue, Slow", "App issue, deadlock at .Result", "App issue, too big zip file for RUN_FROM_PACKAGE"]],
+    ["Platform Issues", ["Storage Volume Caused Downtime"]],
     ["Modify/Edit Existing RCAs", []],
     ["Other", []],
     ["Health Check Issues", []]
@@ -55,8 +58,12 @@ export class CommunicationToolkitComponent implements OnInit {
       ["Health Check Issues", "health check rca"],
       ["Other", ""]
         ]);
+
+    categoryMappingKeys = Array.from(this.categoryMapping.keys()); 
+    
   
   constructor() { 
+    
   }
 
   ngOnInit(): void {
@@ -67,8 +74,18 @@ export class CommunicationToolkitComponent implements OnInit {
     debugger; 
     this.currentSelectedRCATopic = rcaTopic;
 
+    if(rcaTopic == "Other"){
+      this.otherClicked(); 
+      return; 
+    }
+
+    else if(rcaTopic == "Modify/Edit Existing RCAs"){
+
+      return; 
+    }
+
     //show subcategories if subcategories not empty 
-    if(this.categoryMapping.get(this.currentSelectedRCATopic).length != 0 ){
+    else if(this.categoryMapping.get(this.currentSelectedRCATopic).length != 0 ){
       
       this.showRCASubCategories(); 
 
@@ -81,9 +98,6 @@ export class CommunicationToolkitComponent implements OnInit {
         
      }, 3000);
     }
-
-    
-
     
   }
 
@@ -109,13 +123,20 @@ export class CommunicationToolkitComponent implements OnInit {
   showRCA(): void{
     this.rcaLoading = false; 
     this.subcategoriesDisplayed = false; 
-
-    this.currentSelectedRCATopic = "Unplanned Hardware";    
-    
+    //this.currentSelectedRCATopic = "Unplanned Hardware";    
     this.currentSelectedRCA = this.rcaMapping.get(this.currentSelectedRCATopic); 
     this.rcaDisplayed = true; 
   }
 
+  otherClicked(): void {
+
+    this.otherDisplayed = true; 
+
+  }
+
+  modifierClicked(): void {
+
+  }
 
 
 }
