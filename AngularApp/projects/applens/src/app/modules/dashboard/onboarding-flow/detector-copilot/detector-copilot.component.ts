@@ -132,7 +132,7 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
     this.codeUsedInPrompt = this.detectorCode;
     let message = this.detectorCode && this.detectorCode != '' && this.detectorCode != this.detectorTemplate ?
       `Here is the initial detector code : \n <code>\n${this.detectorCode}\n</code>\n` : '';
-    message = `${message}Action you need to take : ${chatMessageObj.message}\n`;
+    message = `${message}Action assistant need to take : ${chatMessageObj.message}\n`;
 
 
     let linesCountInCode = this.detectorCode && this.detectorCode != '' ? this.detectorCode.split("\n").length : 0;
@@ -145,7 +145,7 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
       3. The output should be rendered in markdown`;
     }
 
-    message = `${message}Rules you have to follow :\n ${rules}`;
+    message = `${message}Rules assistant have to follow :\n ${rules}`;
     return message;
   }
 }
