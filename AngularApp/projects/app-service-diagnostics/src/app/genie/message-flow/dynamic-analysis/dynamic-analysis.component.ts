@@ -29,7 +29,6 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
     loading: boolean = true;
     searchMode: SearchAnalysisMode = SearchAnalysisMode.Genie;
     viewUpdated: boolean = false;
-    webSearchId: string = null;
 
     constructor(private _routerLocal: Router, private _activatedRouteLocal: ActivatedRoute, private injector: Injector, private _contentService: ContentService, private _chatState: CategoryChatStateService, private _logger: LoggingV2Service, private _telemetryService: TelemetryService) { }
     noSearchResult: boolean = false;
@@ -39,6 +38,8 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
     ratingEventProperties: { [name: string]: string };
     content: any[];
     analysisListSubject: ReplaySubject<any> = new ReplaySubject<any>(1);
+    showDeepSearchSolution: boolean = false;
+    deepSearchPrompt: string = "";
 
     ngOnInit() {
         this.searchMode = SearchAnalysisMode.Genie;
@@ -50,60 +51,43 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
             'Url': window.location.href
         };
 
-        this._contentService.searchWeb(this.keyword, this.documentResultCount).subscribe(searchResults => {
-            this.webSearchId = uuid();
-            if (searchResults && searchResults.webPages && searchResults.webPages.value && searchResults.webPages.value.length > 0) {
-                this.content = searchResults.webPages.value.map(result => {
-                    return {
-                        title: result.name,
-                        description: result.snippet,
-                        link: result.url
-                    };
-                });
-                this._telemetryService.logEvent(TelemetryEventNames.WebQueryResults, {
-                    searchId: this.webSearchId,
-                    searchMode: "1",
-                    query: this.keyword,
-                    results: JSON.stringify(this.content),
-                    ts: Math.floor((new Date()).getTime() / 1000).toString()
-                });
-
-                setTimeout(() => {
-                    this.onViewUpdate.emit();
-                }, 100);
-                this.viewUpdated = true;
+        this.analysisListSubject.subscribe((dataOutput) => {
+            let nextKey = "";
+            if ((dataOutput == undefined || dataOutput.data == undefined || dataOutput.data.detectors == undefined || dataOutput.data.detectors.length === 0) && (this.content == undefined || this.content.length == 0)) {
+                this.noSearchResult = true;
+            }
+            else {
+                this.noSearchResult = false;
+                nextKey = "feedback";
             }
 
-            this.analysisListSubject.subscribe((dataOutput) => {
-                let nextKey = "";
-                if ((dataOutput == undefined || dataOutput.data == undefined || dataOutput.data.detectors == undefined || dataOutput.data.detectors.length === 0) && (this.content == undefined || this.content.length == 0)) {
-                    this.noSearchResult = true;
+            let statusValue = {
+                status: dataOutput && dataOutput.status ? dataOutput.status : false,
+                data: {
+                    hasResult: !this.noSearchResult,
+                    next_key: nextKey,
                 }
-                else {
-                    this.noSearchResult = false;
-                    nextKey = "feedback";
-                }
+            };
 
-                let statusValue = {
-                    status: dataOutput && dataOutput.status ? dataOutput.status : false,
-                    data: {
-                        hasResult: !this.noSearchResult,
-                        next_key: nextKey,
-                    }
-                };
-                this.onComplete.emit(statusValue);
-            });
+            if (dataOutput.status && dataOutput.data && dataOutput.data.issueDetectedViewModels && dataOutput.data.issueDetectedViewModels.length > 0) {
+                let numInsights = dataOutput.data.issueDetectedViewModels.length;
+                numInsights = numInsights > 3 ? 3 : numInsights;
+                let maxLengthEach = Math.floor(400/numInsights);
+                let insights = dataOutput.data.issueDetectedViewModels.slice(0, numInsights).map((insight) => { return insight.insightDescription.substring(0, maxLengthEach);}).join("\n");
+                this.showDeepSearchSolution = true;
+                this.deepSearchPrompt = `UserQuery: ${this.keyword}\n Diagnostic Tool Findings:\n ${insights}`;
+            }
+            else {
+                this.showDeepSearchSolution = false;
+                this.deepSearchPrompt = "";
+            }
+
+            this.onComplete.emit(statusValue);
+            setTimeout(() => {
+                this.onViewUpdate.emit();
+            }, 100);
+            this.viewUpdated = true;
         });
-    }
-
-
-    openArticle(article: any) {
-        this._telemetryService.logEvent(TelemetryEventNames.WebQueryResultClicked, { searchId: this.webSearchId, searchMode: "1", article: JSON.stringify(article), ts: Math.floor((new Date()).getTime() / 1000).toString() });
-        window.open(article.link, '_blank');
-    }
-
-    getLink(link: string) {
-        return !link || link.length < 20 ? link : link.substr(0, 25) + '...';
     }
 
     ngAfterViewInit() {

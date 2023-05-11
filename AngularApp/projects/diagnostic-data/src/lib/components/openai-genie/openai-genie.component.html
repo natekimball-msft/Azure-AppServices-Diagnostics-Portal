@@ -1,0 +1,10 @@
+<div *ngIf="!isDisabled" class="row" style="border-bottom: 1px solid #ccc;padding-bottom:15px;">
+    <div style="width: 95%; margin: auto;">
+      <div *ngIf="!fetchingDeepSearchSolution && showDeepSearchSolution && deepSearchSolution" tabindex="0">
+        <solution-view-container [solutionTitle]="''" [isRecommended]="false" [detector]="'detector'"
+          [isAnalysisView]="false" [isKeystoneDetector]="false" [askReasonNotHelpful]="false" [showThanksMessage]="false">
+          <markdown [data]="deepSearchSolution"></markdown>
+        </solution-view-container>
+      </div>
+    </div>
+</div>
