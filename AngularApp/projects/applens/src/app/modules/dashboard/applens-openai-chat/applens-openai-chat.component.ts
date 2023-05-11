@@ -95,7 +95,7 @@ export class ApplensOpenAIChatComponent implements OnInit {
       };
       if (this.userChatGPTSetting && this.userChatGPTSetting.allMessages && this.userChatGPTSetting.allMessages.length > 0) {
         this.userChatGPTSetting.allMessages.find(rm => rm.resourceProvider==this.currentResourceProvider)?.
-                                  messages.forEach((m: ChatMessage) => {m.messageDisplayDate = TimeUtilities.displayMessageDate(new Date(m.timestamp));});
+                                  messages.forEach((m: ChatMessage) => {m.messageDisplayDate = TimeUtilities.displayMessageDate(new Date(m.timestamp)); if (m.displayMessage == undefined) {m.displayMessage = m.message;}});
         let messages = this.userChatGPTSetting.allMessages.find(rm => rm.resourceProvider==this.currentResourceProvider)?.messages??[];
         return messages;
       }

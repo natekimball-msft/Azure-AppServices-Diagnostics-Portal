@@ -33,39 +33,34 @@ export class OptInsightsEnablementComponent implements OnInit {
   appInsightsResourceUri: string = "";
   type: CodeOptimizationType = CodeOptimizationType.All;
   isBetaSubscription: boolean = false;
-  
 
 
-  @Input() optInsightResourceInfo: Observable<{ resourceUri: string, appId: string, type?:CodeOptimizationType}>;
+
+  @Input() optInsightResourceInfo: Observable<{ resourceUri: string, appId: string, type?: CodeOptimizationType }>;
 
   ngOnInit(): void {
     this.loading = true;
-    this.subscriptionId = this._route.parent.snapshot.parent.params['subscriptionid'];
-    // allowlisting beta subscriptions for testing purposes
-    this.isBetaSubscription = DemoSubscriptions.betaSubscriptions.indexOf(this.subscriptionId) >= 0;
-    if (this.isBetaSubscription) {
-      this.optInsightResourceInfo.subscribe(optInsightResourceInfo => {
-        if (optInsightResourceInfo.type !== null){
-          this.type = optInsightResourceInfo.type;
-        }
-        if (optInsightResourceInfo.resourceUri !== null && optInsightResourceInfo.appId !== null) {
-          this.appInsightsResourceUri = optInsightResourceInfo.resourceUri;
-          this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId, this._route.parent.snapshot.params['site'], this._detectorControlService.startTime, this._detectorControlService.endTime, false).subscribe(res => {
-            if (res) {
-              this.table = res;
-              this._optInsightsService.logOptInsightsEvent(optInsightResourceInfo.resourceUri, TelemetryEventNames.AICodeOptimizerInsightsReceived);
-            }
-            this.loading = false;
-          }, error => {
-            this.loading = false;
-            this.error = error;
-          });
-        }
-        else {
+    this.optInsightResourceInfo.subscribe(optInsightResourceInfo => {
+      if (optInsightResourceInfo.type !== null) {
+        this.type = optInsightResourceInfo.type;
+      }
+      if (optInsightResourceInfo.resourceUri !== null && optInsightResourceInfo.appId !== null) {
+        this.appInsightsResourceUri = optInsightResourceInfo.resourceUri;
+        this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId, this._route.parent.snapshot.params['site'], this._detectorControlService.startTime, this._detectorControlService.endTime, false).subscribe(res => {
+          if (res) {
+            this.table = res;
+            this._optInsightsService.logOptInsightsEvent(optInsightResourceInfo.resourceUri, TelemetryEventNames.AICodeOptimizerInsightsReceived);
+          }
           this.loading = false;
-        }
-      });
-    }
+        }, error => {
+          this.loading = false;
+          this.error = error;
+        });
+      }
+      else {
+        this.loading = false;
+      }
+    });
   }
 
   public openOptInsightsBlade() {
