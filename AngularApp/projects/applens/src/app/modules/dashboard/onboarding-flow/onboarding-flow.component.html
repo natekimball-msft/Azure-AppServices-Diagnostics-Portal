@@ -486,7 +486,9 @@
     <create-workflow [id]="id" [Branch]="Branch"></create-workflow>
   </div>
 
-  <detector-copilot [openPanel]="showDetectorCopilot" [detectorCode]="code" (onCodeSuggestion)="onCodeSuggestionFromCopilot($event)" (onPanelClose)="showDetectorCopilot = false;"></detector-copilot>
+  <detector-copilot [openPanel]="showDetectorCopilot" [detectorCode]="code" [detectorDevelopMode]="mode"
+    (onCodeSuggestion)="onCodeSuggestionFromCopilot($event)"
+    (onPanelClose)="showDetectorCopilot = false;"></detector-copilot>
 
 </div>
 <ng-template #redirectBlock>

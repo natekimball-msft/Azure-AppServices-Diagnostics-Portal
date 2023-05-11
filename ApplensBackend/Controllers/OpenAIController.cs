@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 using AppLensV3.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Xml;
+using Azure.AI.OpenAI;
+using System.Collections.Generic;
+using System.Linq;
+using AppLensV3.Models;
 
 namespace AppLensV3.Controllers
 {
@@ -75,6 +79,45 @@ namespace AppLensV3.Controllers
             {
                 _logger.LogError(ex.ToString());
                 return StatusCode(500, "An error occurred while processing the text completion request.");
+            }
+        }
+
+        [HttpPost("runChatCompletion")]
+        public async Task<IActionResult> RunChatCompletion([FromBody] RequestChatPayload chatPayload)
+        {
+            if (!_openAIService.IsEnabled())
+            {
+                return StatusCode(422, "Chat Completion Feature is currently disabled.");
+            }
+
+            if(chatPayload == null)
+            {
+                return BadRequest("Request body cannot be null or empty");
+            }
+
+            if (chatPayload.Messages == null || chatPayload.Messages.Length == 0)
+            {
+                return BadRequest("Please provide list of chat messages in the request body");
+            }
+
+            try
+            {
+                var chatCompletions = await _openAIService.RunChatCompletion(chatPayload.Messages.ToList(), chatPayload.MetaData);
+
+                if (chatCompletions != null)
+                {
+                    return Ok(chatCompletions);
+                }
+                else
+                {
+                    _logger.LogError("OpenAIChatCompletionError: chatCompletions are null.");
+                    return StatusCode(500, "chatCompletions are null");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"OpenAIChatCompletionError: {ex}");
+                return StatusCode(500, "An error occurred while processing the chat completion request.");
             }
         }
 

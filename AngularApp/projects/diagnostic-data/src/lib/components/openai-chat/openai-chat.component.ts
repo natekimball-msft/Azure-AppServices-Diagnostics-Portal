@@ -2,23 +2,28 @@ import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   // Models 
-  ChatMessage, MessageStatus, MessageSource, MessageRenderingType, TextModels, OpenAIAPIResponse, CreateTextCompletionModel,
+  ChatMessage, ChatResponse, MessageStatus, MessageSource, MessageRenderingType, CreateTextCompletionModel,
   // Services
   ChatUIContextService, GenericOpenAIChatService,
   // Telemetry
-  TelemetryService, TelemetryEventNames,
+  TelemetryService,
   // Components
   ChatUIComponent,
   // Utilities
   TimeUtilities,
   ChatAlignment,
-  StringUtilities
+  StringUtilities,
+  ChatModel,
+  CreateChatCompletionModel,
+  ResponseTokensSize,
+  TextModels
 
 } from "../../../public_api";
 import { v4 as uuid } from 'uuid';
 import { HttpClient } from '@angular/common/http';
 import { KeyValuePair } from '../../models/common-models';
 import { Observable, of } from 'rxjs';
+import { retry } from 'rxjs-compat/operator/retry';
 
 @Component({
   selector: 'openai-chat',
@@ -43,13 +48,17 @@ export class OpenAIChatComponent implements OnInit {
   @Input() fetchChat: Function = (chatIdentifier: string): Observable<ChatMessage[]> => { return of([]); }
   @Input() saveChat: Function = (chatIdentifier: string, chat: ChatMessage[]): Observable<any> => { return of({}); }
   @Input() chatAlignment: ChatAlignment = ChatAlignment.Center;
+  @Input() chatModel: ChatModel = ChatModel.GPT3;
+  @Input() responseTokenSize: ResponseTokensSize = ResponseTokensSize.Small;
 
   // Callback methods for pre and post processing messages
   @Input() preprocessUserMessage: (message: ChatMessage) => ChatMessage = function (message: ChatMessage) {
     return message;
   };
-
   @Input() postProcessSystemMessage: (message: ChatMessage) => ChatMessage;
+  @Input() postPrepareChatContext: (context: any) => any = function (context: any) {
+    return context;
+  };
 
   // Variables that can be taken as input
   @Input() showFeedbackOptions: boolean = true;
@@ -190,25 +199,41 @@ export class OpenAIChatComponent implements OnInit {
   }
 
   /**Chat Message Request section */
-  fetchOpenAIResult(searchQuery: string, messageObj: ChatMessage, retry: boolean = true, trimnewline: boolean = true) {
+  fetchOpenAIResult(searchQuery: any, messageObj: ChatMessage, retry: boolean = true, trimnewline: boolean = false) {
+
     this.resetChatRequestError();
     this._chatContextService.chatInputBoxDisabled = true;
+
     try {
-      let openAIQueryModel = CreateTextCompletionModel(searchQuery);
+
       messageObj.status = messageObj.status == MessageStatus.Created ? MessageStatus.Waiting : messageObj.status;
-      this._openAIService.generateTextCompletion(openAIQueryModel, this.customInitialPrompt, true).subscribe((res: OpenAIAPIResponse) => {
-        var result = res?.choices[0];
+
+      let openAIAPICall: Observable<ChatResponse>;
+
+      if (this.chatModel == ChatModel.GPT3) {
+        let openAIQueryModel = CreateTextCompletionModel(searchQuery, TextModels.Default, this.responseTokenSize);
+        openAIAPICall = this._openAIService.generateTextCompletion(openAIQueryModel, this.customInitialPrompt, true);
+      }
+      else {
+        let chatCompletionQueryModel = CreateChatCompletionModel(searchQuery, this.chatIdentifier, this.chatModel, this.responseTokenSize);
+        openAIAPICall = this._openAIService.getChatCompletion(chatCompletionQueryModel, this.customInitialPrompt);
+      }
+
+      openAIAPICall.subscribe((response: ChatResponse) => {
+
+        let trimmedText = trimnewline ? StringUtilities.TrimBoth(response.text) : StringUtilities.TrimEnd(response.text);
+        messageObj.message = messageObj.message + trimmedText;
+        messageObj.status = response.truncated === true ? MessageStatus.InProgress : MessageStatus.Finished;
 
         if (this.postProcessSystemMessage == undefined) {
-          messageObj.displayMessage = messageObj.displayMessage + (trimnewline ? StringUtilities.TrimBoth(result.text) : StringUtilities.TrimEnd(result.text));
+          messageObj.displayMessage = messageObj.displayMessage + trimmedText;
+        }
+        else {
+          messageObj = this.postProcessSystemMessage(messageObj);
         }
 
-        messageObj.message = messageObj.message + (trimnewline ? StringUtilities.TrimBoth(result.text) : StringUtilities.TrimEnd(result.text));
-
         // Check if the response is truncated
-        if (result.finish_reason == "length") {
-          messageObj.status = MessageStatus.InProgress;
-
+        if (response.truncated) {
           //Do not trim newline for the next query
           this.fetchOpenAIResult(this.prepareChatContext(), messageObj, retry, trimnewline = false);
           this.chatUIComponentRef.scrollToBottom();
@@ -216,11 +241,6 @@ export class OpenAIChatComponent implements OnInit {
 
         else {
 
-          if (this.postProcessSystemMessage != undefined) {
-            messageObj = this.postProcessSystemMessage(messageObj);
-          }
-
-          messageObj.status = MessageStatus.Finished;
           messageObj.timestamp = new Date().getTime();
           messageObj.messageDisplayDate = TimeUtilities.displayMessageDate(new Date());
 
@@ -267,12 +287,36 @@ export class OpenAIChatComponent implements OnInit {
   prepareChatContext() {
 
     //Take last 'chatContextLength' messages to build context
-    var context = this._chatContextService.messageStore[this.chatIdentifier].slice(-1 * this.chatContextLength).map((x: ChatMessage, index: number) => {
-      if (index >= this._chatContextService.messageStore[this.chatIdentifier].length - 2) {
-        return `${x.messageSource}: ${x.message}`;
-      }
-      return `${x.messageSource}: ${x.displayMessage}`;
-    }).join('\n');
+    var context;
+    let messagesToConsider = this._chatContextService.messageStore[this.chatIdentifier].slice(-1 * this.chatContextLength);
+
+    if (this.chatModel == ChatModel.GPT3) {
+      context = messagesToConsider.map((x: ChatMessage, index: number) => {
+        if (index >= messagesToConsider.length - 2) {
+          return `${x.messageSource}: ${x.message}`;
+        }
+        return `${x.messageSource}: ${x.displayMessage}`;
+      }).join('\n');
+    }
+    else {
+      context = [];
+      messagesToConsider.forEach((element: ChatMessage, index: number) => {
+        let role = element.messageSource == MessageSource.User ? "User" : "Assistant";
+        let content = index >= messagesToConsider.length - 2 ?
+          element.message : element.displayMessage;
+
+        if (content != '') {
+          context.push({
+            "role": role,
+            "content": content
+          });
+        }
+      });
+    }
+
+    // Invoke callback if callers have specified 
+    context = this.postPrepareChatContext(context);
+
     return context;
   }
 

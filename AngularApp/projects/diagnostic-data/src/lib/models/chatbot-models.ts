@@ -30,12 +30,6 @@ export enum MessageStatus {
     Finished = 3,
 }
 
-/*export enum UserFeedbackType {
-    Like = "like",
-    Dislike = "dislike",
-    None = "none"
-}*/
-
 export enum MessageSource {
     User = "user",
     System = "system"
@@ -44,4 +38,9 @@ export enum MessageSource {
 export enum ChatAlignment {
     Left = "left",
     Center = "center"
+}
+
+export enum ChatModel {
+    GPT3 = "gpt3",
+    GPT4 = "gpt4"
 }

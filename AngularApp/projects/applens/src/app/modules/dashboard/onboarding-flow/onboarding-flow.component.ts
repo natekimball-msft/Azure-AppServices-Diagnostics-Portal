@@ -1,16 +1,15 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, TableColumnOption, TableFilterSelectionOption, DataTableResponseObject, DataTableResponseColumn, FabDataTableComponent, QueryResponseService
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, QueryResponseService
 } from 'diagnostic-data';
 import * as moment from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
 import {
-  concat,
   forkJoin
   , Observable, of
 } from 'rxjs';
-import { catchError, finalize, flatMap, last, map, mergeMap, retryWhen, switchMap, retry, delay, tap } from 'rxjs/operators'
-import { ChangeDetectorRef, Component, ComponentFactoryResolver, ComponentRef, Injectable, Input, OnChanges, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { flatMap, map } from 'rxjs/operators'
+import { ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { Package } from '../../../shared/models/package';
 import { GithubApiService } from '../../../shared/services/github-api.service';
 import { DetectorGistApiService } from '../../../shared/services/detectorgist-template-api.service';
@@ -19,13 +18,12 @@ import { ApplensDiagnosticService } from '../services/applens-diagnostic.service
 import { RecommendedUtterance, RenderingType } from '../../../../../../diagnostic-data/src/public_api';
 import { TelemetryService } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.service';
 import { TelemetryEventNames } from '../../../../../../diagnostic-data/src/lib/services/telemetry/telemetry.common';
-import { ActivatedRoute, ActivatedRouteSnapshot, CanDeactivate, Params, Router, RouterStateSnapshot } from "@angular/router";
+import { ActivatedRoute, Params, Router } from "@angular/router";
 import { DiagnosticApiService } from "../../../shared/services/diagnostic-api.service";
 import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
-import ReconnectingWebSocket from 'reconnecting-websocket';
-import { MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection, ReferencesRequest } from 'monaco-languageclient';
+import { MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection } from 'monaco-languageclient';
 import { v4 as uuid } from 'uuid';
-import { IButtonStyles, IChoiceGroupOption, IDialogContentProps, IDialogProps, IDropdownOption, IDropdownProps, IPanelProps, IPivotProps, MessageBarType, PanelType, TagItemSuggestion } from 'office-ui-fabric-react';
+import { IButtonStyles, IChoiceGroupOption, IDialogContentProps, IDropdownOption, IDropdownProps, IPanelProps, IPivotProps, MessageBarType, PanelType } from 'office-ui-fabric-react';
 import { BehaviorSubject } from 'rxjs';
 import { Commit } from '../../../shared/models/commit';
 import { ApplensCommandBarService } from '../services/applens-command-bar.service';
@@ -2388,7 +2386,39 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
   onCodeSuggestionFromCopilot($event) {
     console.log($event);
-    let incomingCode = $event;
-    this.code = incomingCode;
+
+    if($event.append)
+    {
+      this.code = `${this.code}${$event.code}`;
+    }
+    else {
+      this.code = $event.code;
+    }
+
+    // let incomingCode = $event;
+    
+    // let delay = Math.floor(Math.random() * 1000);
+    // let index = 0;
+    // let maxChunk = 100;
+
+    // this.code = '';
+
+    // let interval = setInterval(()=>{
+    //   setTimeout((
+    //   )=>{
+    //     if((index + maxChunk) >= incomingCode.length)
+    //     {
+    //       maxChunk = incomingCode.length;
+    //     }
+
+    //     this.code = `${this.code}${incomingCode.substring(index, maxChunk)}`;
+    //     index += maxChunk;
+    //     if(index >= incomingCode.length)
+    //     {
+    //       clearInterval(interval);
+    //     }
+    //     delay = Math.floor(Math.random() * 1000);
+    //   }, delay);
+    // }, delay);
   }
 }

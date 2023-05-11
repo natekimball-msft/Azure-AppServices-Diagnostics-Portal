@@ -1,0 +1,8 @@
+[
+    {"key": "Write a hello world detector", "value": "Write a hello world detector"},
+    {"key": "Add a sample critical insight to detector", "value": "Add a sample critical insight to the detector"},
+    {"key": "Add a sample table to detector", "value": "Add a sample table to the detector"},
+    {"key": "Detector with a sample kusto query", "value": "Write a crashes detector with a kusto query : TableName | take 10"},
+    {"key": "Fix null ref exception in detector", "value": "fix null reference exceptions in the detector"},
+    {"key": "Summary of the detector", "value": "Write a summary of this detector. no code please"}
+]

@@ -63,9 +63,6 @@
       <div class="chatui-message-validation-warning" *ngIf="showValidationWarning">
         {{validationWarningMessage}}
       </div>
-      <div class="chatui-content-disclaimer" *ngIf="showContentDisclaimer">
-        {{contentDisclaimerMessage}}
-      </div>
       <div class="chatui-textarea-wrapper">
         <textarea [(ngModel)]="chatInputTextInternal" tabindex="0" class="chatui-textarea" rows="1" placeholder="Ask a question" (keyup.enter)="triggerChat()" id="chatUIInputBox" [disabled]="chatInputBoxDisabled"></textarea>
         <button (click)="triggerChat()"
@@ -77,6 +74,8 @@
                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
             </svg>
           </button>
+      </div>
+      <div class="chatui-content-disclaimer" *ngIf="showContentDisclaimer" [innerHtml] = "contentDisclaimerMessage">
       </div>
     </div>
 </div>
