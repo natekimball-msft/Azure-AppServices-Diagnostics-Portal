@@ -203,7 +203,7 @@ export class DaasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    let activeInstance = session.ActiveInstances.find(x => x.Name === this.selectedInstance);
+    let activeInstance = session.ActiveInstances.find(x => x.Name.toLowerCase() === this.selectedInstance.toLowerCase());
     if (!activeInstance) {
       return;
     }
@@ -404,7 +404,7 @@ export class DaasComponent implements OnInit, OnDestroy {
   }
 
   submitDiagnosticServerSession(session: Session): Observable<Array<SessionResponse>> {
-    session.SessionId = moment().utc().format('YYMMDD_HHmmssSSSS');
+    session.SessionId = moment.utc().format('YYMMDD_HHmmssSSSS');
     let tasks = this.instancesToDiagnose.map(instance => {
       return this.submitSessionOnInstance(instance, session)
     });

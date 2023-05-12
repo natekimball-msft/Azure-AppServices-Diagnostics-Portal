@@ -5,12 +5,12 @@ import { ChatMessage } from '../models/chatbot-models';
 @Injectable({
   providedIn: 'root'
 })
-export class ChatGPTContextService {
+export class ChatUIContextService {
 
   constructor() {
   }
 
-  public messages: ChatMessage[] = [];
+  public messageStore = {};
   public chatInputBoxDisabled: boolean = false;
   public userPhotoSource: any = "";
   public userNameInitial: string = "";
