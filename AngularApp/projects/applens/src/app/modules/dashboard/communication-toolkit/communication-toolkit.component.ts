@@ -1,6 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { SpinnerSize } from 'office-ui-fabric-react';
 import { delay } from 'rxjs-compat/operator/delay';
+import { ApplensOpenAIChatService } from '../../../shared/services/applens-openai-chat.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AdalService } from 'adal-angular4';
+import { TelemetryService, ChatUIContextService, TelemetryEventNames } from 'diagnostic-data';
+import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
+import { ResourceService } from '../../../shared/services/resource.service';
+import { UserSettingService } from '../services/user-setting.service';
+import { UserChatGPTSetting } from '../../../shared/models/user-setting';
 
 @Component({
   selector: 'communication-toolkit',
@@ -10,7 +18,34 @@ import { delay } from 'rxjs-compat/operator/delay';
 
 export class CommunicationToolkitComponent implements OnInit {
 
+  
+  userPhotoSource: string = '';
+  userNameInitial: string = '';
+  chatHeader: string = `<h1 class='chatui-header-text'>AppLens <img src="/assets/img/handshakelogo.png" class='chatui-center-logo'/> ChatGPT</h1>`;
 
+  
+  // Variables to be passed down to the OpenAI Chat component
+  chatComponentIdentifier: string = "AppLensChatGPT";
+  showContentDisclaimer: boolean = true;
+  contentDisclaimerMessage: string = "* Please do not send any sensitive data in your queries. Please verify the response before sending to customers.";
+
+  userAlias: string = '';
+  userChatGPTSetting: UserChatGPTSetting;
+  
+  // Variables that can be taken as input
+  dailyMessageQuota: number = 20;
+  messageQuotaWarningThreshold: number = 10;
+  
+  originalResourceProvider: string;
+  currentResourceProvider: string;
+
+  // Component's internal variables
+  isEnabled: boolean = false;
+  isEnabledChecked: boolean = false;
+  displayLoader: boolean = false;
+  chatgptSearchText: string = "";
+
+  modifierDisplayed = false; 
   rcaLoading = false; 
   rcaDisplayed = false; 
   loadingSize = SpinnerSize.large; 
@@ -47,11 +82,44 @@ export class CommunicationToolkitComponent implements OnInit {
     categoryMappingKeys = Array.from(this.categoryMapping.keys()); 
     
   
-  constructor() { 
+  constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
+    private _openAIService: ApplensOpenAIChatService,
+    private _diagnosticApiService: DiagnosticApiService,
+    private _adalService: AdalService,
+    private _userSettingService: UserSettingService,
+    private _resourceService: ResourceService,
+    private _telemetryService: TelemetryService,
+    public _chatUIContextService: ChatUIContextService) { 
     
   }
 
   ngOnInit(): void {
+    this.originalResourceProvider = `${this._resourceService.ArmResource.provider}/${this._resourceService.ArmResource.resourceTypeName}`.toLowerCase();
+    if (this.originalResourceProvider === 'microsoft.web/sites') {
+      this.currentResourceProvider = `${this.originalResourceProvider}${this._resourceService.displayName}`;
+    }
+    else {
+      this.currentResourceProvider = this.originalResourceProvider;
+    }
+    this._openAIService.CheckEnabled().subscribe(enabled => {
+      this.isEnabled = this._openAIService.isEnabled;
+      this.isEnabledChecked = true;
+      if (this.isEnabled) {
+        this._telemetryService.logEvent(TelemetryEventNames.ChatGPTLoaded, { "resourceProvider": this.currentResourceProvider, ts: new Date().getTime().toString()});
+      }
+    });
+    const alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
+    const userId = alias.replace('@microsoft.com', '');
+    this.userAlias = userId;
+    this._diagnosticApiService.getUserPhoto(userId).subscribe(image => {
+      this._chatUIContextService.userPhotoSource = image;
+    });
+
+    if (this._adalService.userInfo.profile) {
+      const familyName: string = this._adalService.userInfo.profile.family_name;
+      const givenName: string = this._adalService.userInfo.profile.given_name;
+      this._chatUIContextService.userNameInitial = `${givenName.charAt(0).toLocaleUpperCase()}${familyName.charAt(0).toLocaleUpperCase()}`;
+    }
   }
 
   mainCategoryClicked(rcaTopic : string) : void {
@@ -65,7 +133,7 @@ export class CommunicationToolkitComponent implements OnInit {
     }
 
     else if(rcaTopic == "Modify/Edit Existing RCAs"){
-
+      this.onClickModifier();
       return; 
     }
 
@@ -114,12 +182,13 @@ export class CommunicationToolkitComponent implements OnInit {
   }
 
   otherClicked(): void {
-
     this.otherDisplayed = true; 
-
   }
 
-  modifierClicked(): void {
+  onClickModifier(): void {
+    this.modifierDisplayed = true; 
+    this.isEnabled = true; 
+    this.isEnabledChecked = true; 
 
   }
 

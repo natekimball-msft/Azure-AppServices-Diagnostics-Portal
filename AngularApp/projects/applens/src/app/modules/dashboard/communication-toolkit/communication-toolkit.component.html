@@ -1,6 +1,6 @@
 
 
-<div *ngIf = "!rcaLoading && !rcaDisplayed && !otherDisplayed" class="rca-bot-container">
+<div *ngIf = "!rcaLoading && !rcaDisplayed && !otherDisplayed &&!modifierDisplayed" class="rca-bot-container">
     <div class="rca-box-row-container rca-header-container">
         <h1 class="rca-header-text">EasyRCA!</h1>
     </div>
@@ -78,3 +78,37 @@
     
    
 </div>
+
+<div *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !subcategoriesDisplayed && !otherDisplayed">
+    <openai-chat
+      [userId]="userAlias"
+      [persistChat]="true"
+      [fetchChat]="loadUserChat"
+      [saveChat]="saveUserChat"
+      [chatAlignment]="'center'"
+      [chatIdentifier]="chatComponentIdentifier"
+      [chatContextLength]="10"
+      [chatQuerySamplesFileUri]="'assets/chatConfigs/applensChatGPT.json'"
+      [showFeedbackOptions]="true"
+      [showContentDisclaimer]="true"
+      [contentDisclaimerMessage]="contentDisclaimerMessage"
+      [quotaEnforced]="true"
+      [dailyMessageQuota]="20"
+      [messageQuotaWarningThreshold]="10"
+      [chatHeader]="chatHeader"
+      [systemPhotoSource]="'/assets/img/openailogo.svg'"
+    >
+    </openai-chat>
+  </div>
+  
+  <div *ngIf="isEnabledChecked && !isEnabled">
+    <div class="chatgpt-bot-container">
+      ChatGPT is currently disabled in AppLens. Please check back later.
+    </div>
+  </div>
+  
+  <div *ngIf="!isEnabledChecked">
+    <div class="chatgpt-bot-container">
+      Checking ...
+    </div>
+  </div>
