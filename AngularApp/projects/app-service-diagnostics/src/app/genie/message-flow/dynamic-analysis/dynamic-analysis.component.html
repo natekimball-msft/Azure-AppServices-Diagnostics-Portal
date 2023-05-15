@@ -1,6 +1,7 @@
 <div class="detector-summary-container" [class.with-full-report]="false" >
-   <generic-analysis [analysisId]="'searchResultsAnalysis'" [resourceId]="resourceId" [targetedScore]="targetedScore" [searchTerm]="keyword" [searchMode]="searchMode" (onComplete)="updateStatus($event)"></generic-analysis>
-   <openai-genie *ngIf="showDeepSearchSolution" [searchPrompt]="deepSearchPrompt"></openai-genie>
+   <generic-analysis [analysisId]="'searchResultsAnalysis'" [webSearchEnabled]="webSearchEnabled" [resourceId]="resourceId" [targetedScore]="targetedScore" [searchTerm]="keyword" [searchMode]="searchMode" (onComplete)="updateStatus($event)"></generic-analysis>
+   <!-- TODO ajsharm - check if we can move the openai-genie component into the generic-analysis itself-->
+   <openai-genie *ngIf="deepSearchEnabled && showDeepSearchSolution" [searchPrompt]="deepSearchPrompt" [onCallFailure]="onDeepSearchFailure"></openai-genie>
   <div *ngIf="noSearchResult === true">
       <div tabindex="0" class="message-sent-by-system-genie" style="margin-bottom:10px">
       <span>Sorry we are not able to find any result based on your questions. Can you rephrase your last message?</span>

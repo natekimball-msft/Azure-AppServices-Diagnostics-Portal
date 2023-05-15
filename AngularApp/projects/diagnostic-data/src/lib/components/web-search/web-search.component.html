@@ -10,7 +10,7 @@
             </button>
         </div>
     </div>
-    <span *ngIf="showPreLoadingError" style="margin-top:10px;">{{preLoadingErrorMessage}}</span>
+    <span *ngIf="showPreLoadingError && !withinGenie" style="margin-top:10px;">{{preLoadingErrorMessage}}</span>
     <span *ngIf="showPreLoader" style="margin-top:10px;">
         <i class="fa fa-circle-o-notch fa-spin spin-icon" aria-hidden="true"></i>
         <span style="margin-left:5px">Fetching results from web...</span>

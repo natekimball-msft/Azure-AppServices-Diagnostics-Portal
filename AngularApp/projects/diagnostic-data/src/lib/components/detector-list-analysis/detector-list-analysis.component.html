@@ -253,7 +253,7 @@
     <div *ngIf="!isDynamicAnalysis && isSearchEmbedded" style="margin-left:30px;">
       <detector-search [detector]="analysisId" [diagnosticData]="searchDiagnosticData"></detector-search>
     </div>
-    <div *ngIf="(isDynamicAnalysis || withinGenie) && ((!showPreLoader && getPendingDetectorCount() === 0) || showWebSearch)"
+    <div *ngIf="(webSearchEnabled) && (isDynamicAnalysis || withinGenie) && ((!showPreLoader && getPendingDetectorCount() === 0) || showWebSearch)"
       style="margin-left:80px;margin-top:20px;" [ngStyle]="{'margin-left': (withinGenie? '0px': '80px')}">
       <web-search [searchTerm]="searchTerm" [searchId]="searchId" [isChildComponent]="true" [searchMode]="searchMode">
       </web-search>

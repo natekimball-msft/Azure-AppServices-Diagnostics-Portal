@@ -38,8 +38,18 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
     ratingEventProperties: { [name: string]: string };
     content: any[];
     analysisListSubject: ReplaySubject<any> = new ReplaySubject<any>(1);
+    deepSearchEnabled: boolean = true;
+    waitTimeBeforeDeepSearch: number = 20000; // 20 seconds
     showDeepSearchSolution: boolean = false;
     deepSearchPrompt: string = "";
+    detectorInsightsReturned: boolean = false;
+    webSearchEnabled: boolean = false;
+
+    onDeepSearchFailure = () => {
+        this.deepSearchEnabled = false;
+        this.deepSearchPrompt = "";
+        this.webSearchEnabled = true;
+    }
 
     ngOnInit() {
         this.searchMode = SearchAnalysisMode.Genie;
@@ -50,6 +60,13 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
             'DetectorId': "id",
             'Url': window.location.href
         };
+
+        setTimeout(() => {
+            if (!this.detectorInsightsReturned && !this.showDeepSearchSolution) {
+                this.deepSearchPrompt = `System Prompt: Please do not send any links in your response. Do not ask the user any more details about the issue.\n UserQuery: ${this.keyword}`;
+                this.showDeepSearchSolution = true;
+            }
+        }, this.waitTimeBeforeDeepSearch);
 
         this.analysisListSubject.subscribe((dataOutput) => {
             let nextKey = "";
@@ -68,18 +85,22 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
                     next_key: nextKey,
                 }
             };
+            this.detectorInsightsReturned = true;
 
-            if (dataOutput.status && dataOutput.data && dataOutput.data.issueDetectedViewModels && dataOutput.data.issueDetectedViewModels.length > 0) {
-                let numInsights = dataOutput.data.issueDetectedViewModels.length;
-                numInsights = numInsights > 3 ? 3 : numInsights;
-                let maxLengthEach = Math.floor(400/numInsights);
-                let insights = dataOutput.data.issueDetectedViewModels.slice(0, numInsights).map((insight) => { return insight.insightDescription.substring(0, maxLengthEach);}).join("\n");
-                this.showDeepSearchSolution = true;
-                this.deepSearchPrompt = `UserQuery: ${this.keyword}\n Diagnostic Tool Findings:\n ${insights}`;
-            }
-            else {
-                this.showDeepSearchSolution = false;
-                this.deepSearchPrompt = "";
+            if (!this.showDeepSearchSolution) {
+                if (dataOutput.status && dataOutput.data && dataOutput.data.issueDetectedViewModels && dataOutput.data.issueDetectedViewModels.length > 0) {
+                    let numInsights = dataOutput.data.issueDetectedViewModels.length;
+                    numInsights = numInsights > 3 ? 3 : numInsights;
+                    let maxLengthEach = Math.floor(400/numInsights);
+                    let insights = dataOutput.data.issueDetectedViewModels.slice(0, numInsights).map((insight) => { return insight.insightDescription.substring(0, maxLengthEach);}).join("\n");
+                    this.showDeepSearchSolution = true;
+                    // TODO ajsharm: refactor this code to parametrize these
+                    this.deepSearchPrompt = `System Prompt: Please do not send any links in your response. Do not ask the user any more details about the issue.\n UserQuery: ${this.keyword}\n Diagnostic Tool Findings:\n ${insights}`;
+                }
+                else {
+                    this.deepSearchPrompt = `System Prompt: Please do not send any links in your response. Do not ask the user any more details about the issue.\n UserQuery: ${this.keyword}`;
+                    this.showDeepSearchSolution = true;
+                }
             }
 
             this.onComplete.emit(statusValue);

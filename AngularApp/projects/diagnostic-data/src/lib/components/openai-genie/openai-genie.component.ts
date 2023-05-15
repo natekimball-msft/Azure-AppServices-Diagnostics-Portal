@@ -1,21 +1,9 @@
-import { Component, Inject, Input, OnInit, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Component, Inject, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagnostic-data-config';
 import { TelemetryService } from '../../services/telemetry/telemetry.service';
-import { map, catchError, delay, retryWhen, take } from 'rxjs/operators';
-import { v4 as uuid } from 'uuid';
-import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 import { DataRenderBaseComponent } from '../data-render-base/data-render-base.component';
-import { ActivatedRoute, Router, Params } from '@angular/router';
 import { OpenAIArmService } from '../../services/openai-arm.service';
-import { of, Observable, combineLatest } from 'rxjs';
-import { ISubscription } from "rxjs/Subscription";
-import { WebSearchConfiguration } from '../../models/search';
 import { GenericResourceService } from '../../services/generic-resource-service';
-import { AvailableDocumentTypes, Query } from '../../models/documents-search-models';
-import { GenericSupportTopicService } from '../../services/generic-support-topic.service';
-import { DocumentSearchConfiguration } from '../../models/documents-search-config';
-import { GenericDocumentsSearchService } from '../../services/generic-documents-search.service';
-import { SearchAnalysisMode } from '../../models/search-mode';
 
 @Component({
     selector: 'openai-genie',
@@ -35,6 +23,7 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
     enabledPesIds: string[] = ["14748"];
     isDisabled: boolean = false;
     @Input() searchPrompt: string = "";
+    @Input() onCallFailure: () => {};
     @Output() onComplete: EventEmitter<any> = new EventEmitter<any>();
     
     constructor(@Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig, public telemetryService: TelemetryService,
@@ -51,6 +40,7 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
                 }
                 else {
                     this.isDisabled = true;
+                    this.onCallFailure();
                 }
             });
         }
@@ -59,13 +49,13 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
     handleRequestFailure() {
         this.errorMessage = "An error occurred while fetching the solution. Click on the button to try again.";
         this.showErrorMessage = true;
+        this.onCallFailure();
     }
 
     triggerSearch() {
         this.fetchingDeepSearchSolution = true;
         this._openAIArmService.getDeepSearchAnswer(this.searchPrompt).subscribe(result => {
-            // do something to display this result
-            if (result && result.length > 0) {
+            if (result && result.length > 0 && !result.includes("We could not find any information about that")) {
                 this.deepSearchSolution = result;
                 this.showDeepSearchSolution = true;
             }

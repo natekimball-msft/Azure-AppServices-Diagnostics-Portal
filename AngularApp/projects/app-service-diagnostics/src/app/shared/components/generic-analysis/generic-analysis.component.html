@@ -15,7 +15,7 @@
 </div>
 
 <detector-list-analysis #detectorListAnalysis detectorParmName="detectorName" [resourceId]="resourceId"
-  [targetedScore]="targetedScore" [analysisId]="analysisId" [searchTerm]="searchTerm" [searchMode]="searchMode"
+  [targetedScore]="targetedScore" [analysisId]="analysisId" [searchTerm]="searchTerm" [searchMode]="searchMode" [webSearchEnabled]="webSearchEnabled"
   (onComplete)="updateLoadingStatus($event)" (updateDowntimeZoomBehavior) = "onUpdateDowntimeZoomBehavior($event)"></detector-list-analysis>
 
 <div *ngIf="searchMode !== SearchAnalysisMode.Genie && detectorListAnalysis.inDrillDownMode">

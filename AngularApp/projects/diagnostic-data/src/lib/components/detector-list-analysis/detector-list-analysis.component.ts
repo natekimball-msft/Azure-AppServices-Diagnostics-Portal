@@ -73,6 +73,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     downtimeResetTimer: any = null;
     @Input() searchTerm: string = "";
     @Input() keystoneSolutionView: boolean = false;
+    @Input() webSearchEnabled: boolean = true;
     analysisName: string = "";
     detectorViewModels: any[];
     detectorId: string;

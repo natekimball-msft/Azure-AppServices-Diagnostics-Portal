@@ -44,9 +44,10 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
 
     searchTermDisplay: string = '';
     showSearchTermPractices: boolean = false;
+    withinGenie: boolean = false;
     showPreLoader: boolean = false;
     showPreLoadingError: boolean = false;
-    preLoadingErrorMessage: string = "An error occurred while fetching web results from the web. We will be fixing this soon. Please try again later."
+    preLoadingErrorMessage: string = "An error occurred while fetching results from the web. We will be fixing this soon. Please try again later."
     subscription: ISubscription;
     
     headerStatement: string = '';
@@ -66,7 +67,8 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
             this.getSapProductId();
             this.refresh();
         });
-        this.headerStatement = this.searchMode == SearchAnalysisMode.Genie? "Recommended Documents": "Here are some documents from the web that might help you";
+        this.withinGenie = (this.searchMode == SearchAnalysisMode.Genie);
+        this.headerStatement = this.withinGenie? "Recommended Documents": "Here are some documents from the web that might help you";
         this.subscription = subscription;
     }
 
@@ -75,7 +77,8 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
     }
     
     ngOnInit() {
-        if(!this.isChildComponent || this.searchMode == SearchAnalysisMode.Genie)
+        this.withinGenie = (this.searchMode == SearchAnalysisMode.Genie);
+        if(!this.isChildComponent || this.withinGenie)
         {
             this.refresh();
         }
