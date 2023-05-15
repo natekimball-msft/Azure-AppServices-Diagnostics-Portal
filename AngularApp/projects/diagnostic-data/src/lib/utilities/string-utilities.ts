@@ -108,4 +108,20 @@ export class StringUtilities {
         input = StringUtilities.ReplaceNewlines(input);
         return input.replace(searchRegExp, replacement);
     }
+
+    public static shuffleArray<T>(array: T[]): T[] {
+
+        // Loop through the array using forEach
+        array.forEach((_, index) => {
+
+            // Generate a random index between 0 and index
+            const randomIndex = Math.floor(Math.random() * (index + 1));
+
+            // Swap the current element with the randomly selected one
+            [array[index], array[randomIndex]] = [array[randomIndex], array[index]];
+        });
+        
+        return array;
+    }
+
 }

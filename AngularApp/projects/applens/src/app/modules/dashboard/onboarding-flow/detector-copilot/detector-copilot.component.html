@@ -1,32 +1,51 @@
 <div>
   <fab-panel [isOpen]="openPanel" [type]="panelType" [customWidth]="panelWidth" [isHiddenOnDismiss]="true"
     [hasCloseButton]="true" [closeButtonAriaLabel]="'close'" [isBlocking]="false" (onDismiss)="dismissedHandler()"
-    [headerText]="'Detector CoPilot'" [isLightDismiss]="true" (onLightDismissClick)="dismissedHandler()">
+    [headerText]="'Detector Copilot (Preview)'" [isLightDismiss]="true" (onLightDismissClick)="dismissedHandler()">
 
-    <fab-command-bar [attr.id]="'copiliotOptions'" [contentStyle]="'solid gray;font-weight:12px'"
+    <fab-command-bar [attr.id]="'copiliotOptions'" [contentStyle]="'solid gray;font-size:12px'"
       [contentClass]="'fab-command-bar-class'">
       <items>
 
-        <!--Shekhar : Need to implement this-->
-        <fab-command-bar-item key="clearchat" text="Clear chat" [iconProps]="{ iconName: 'clear' }"
-          data-track-type="run">
+        <fab-command-bar-item key="clearchat" text="Clear Chat" [iconProps]="{ iconName: 'EraseTool' }"
+          [disabled]="messageInProgress" (click)="showClearChatDialog(true)">
         </fab-command-bar-item>
-        <fab-command-bar-item key="settings" text="Settings" [iconProps]="{ iconName: 'settings' }"
-          data-track-type="run">
+        <fab-command-bar-item key="stopcalls" text="Stop" [iconProps]="{ iconName: 'stop' }" data-track-type="run"
+          [disabled]="!messageInProgress" (click)="cancelOpenAICall()">
+        </fab-command-bar-item>
+        <fab-command-bar-item key="prevcode" text="Previous Code" [iconProps]="{ iconName: 'reply' }"
+          data-track-type="run" [disabled]="messageInProgress || codeHistoryNavigator <= 0"
+          (click)="navigateCodeHistory(true)">
+        </fab-command-bar-item>
+        <fab-command-bar-item key="nextcode" text="Next Code" [iconProps]="{ iconName: 'ReplyMirrored' }"
+          data-track-type="run" [disabled]="messageInProgress || codeHistoryNavigator >= codeHistory.length - 1"
+          (click)="navigateCodeHistory(false)">
         </fab-command-bar-item>
 
       </items>
     </fab-command-bar>
 
     <div style="height:80vh;">
-      <openai-chat [customInitialPrompt]="copilotPrompt" [userId]="userAlias" [persistChat]="false"
-        [chatAlignment]="'left'" [chatIdentifier]="chatComponentIdentifier" [chatContextLength]="4"
+
+      <fab-dialog [hidden]="clearChatConfirmationHidden" (onDismiss)="showClearChatDialog(false)">
+        <fab-dialog-content [title]="'Are you sure?'">
+          <div style="font-size: 13px;">
+            Just Confirming. After all, I am a bot and "suppose to" obey all your commands <i class="fa fa-smile-o"
+              aria-hidden="true"></i>
+          </div>
+          <div class="mt-4" style="margin-top:10px">
+            <fab-primary-button text="Clear Chat" (onClick)="clearChat()" [contentClass]="'mr-3'"></fab-primary-button>
+            <fab-default-button text="Cancel" (onClick)="showClearChatDialog(false)"></fab-default-button>
+          </div>
+        </fab-dialog-content>
+      </fab-dialog>
+
+      <openai-chat [chatAlignment]="'left'" [chatIdentifier]="chatComponentIdentifier" [chatContextLength]="4"
         [chatModel]="chatModel" [chatQuerySamplesFileUri]="'assets/chatConfigs/detectorcopilot.json'"
-        [showFeedbackOptions]="true" [showContentDisclaimer]="true"
-        [contentDisclaimerMessage]="contentDisclaimerMessage" [quotaEnforced]="true" [dailyMessageQuota]="20"
-        [messageQuotaWarningThreshold]="10" [chatHeader]="chatHeader" [responseTokenSize]="200"
-        [systemPhotoSource]="'/assets/img/openailogo.svg'" [preprocessUserMessage]="onUserMessageSend"
-        [postProcessSystemMessage]="onSystemMessageReceived" [postPrepareChatContext]="onPrepareChatContext">
+        [contentDisclaimerMessage]="contentDisclaimerMessage" [quotaEnforced]="true" [chatHeader]="chatHeader"
+        [systemPhotoSource]="'/assets/img/bot.png'" [responseTokenSize]="responseTokenSize"
+        [preprocessUserMessage]="onUserMessageSend" [postProcessSystemMessage]="onSystemMessageReceived"
+        [postPrepareChatContext]="onPrepareChatContext" [stopMessageGeneration]="stopMessageGeneration">
       </openai-chat>
     </div>
 

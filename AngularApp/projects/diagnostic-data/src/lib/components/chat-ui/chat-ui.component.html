@@ -19,7 +19,7 @@
         {{topErrorBarMessage}}
       </div>
       <div class="chatui-message-box-{{message.messageSource}}" [ngClass]="{'chatui-message-box': chatAlignment=='center', 'chatui-message-box-left-aligned': chatAlignment=='left'}" *ngFor="let message of messages">
-        <div [ngClass]="{'chatui-message-content': chatAlignment=='center', 'chatui-message-content-left-aligned': chatAlignment=='left'}">
+        <div class="chatui-message-content">
           <ng-container *ngIf="message.messageSource=='system'">
             <div class="chatui-message-icon">
               <img *ngIf="systemPhotoSource !== '';else systemInitial" [src]="systemPhotoSource" alt="System Profile Photo" class="avatar">
@@ -36,7 +36,7 @@
               <p class="blinking-cursor">...</p>
             </div>
           </ng-container>
-          <ng-container *ngIf="message.status==2 || message.status==3">
+          <ng-container *ngIf="message.status==2 || message.status==3 || message.status==4">
             <div class="chatui-message-{{message.renderingType}}" [ngClass]="{'chatui-message': chatAlignment=='center', 'chatui-message-left-aligned': chatAlignment=='left'}">
               <div class="chat-message-timestamp">{{message.messageDisplayDate}}</div>
               <div style="white-space:pre-wrap">

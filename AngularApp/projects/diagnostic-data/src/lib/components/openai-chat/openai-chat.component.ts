@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   // Models 
@@ -22,7 +22,7 @@ import {
 import { v4 as uuid } from 'uuid';
 import { HttpClient } from '@angular/common/http';
 import { KeyValuePair } from '../../models/common-models';
-import { Observable, of } from 'rxjs';
+import { Observable, Subscription, of } from 'rxjs';
 import { retry } from 'rxjs-compat/operator/retry';
 
 @Component({
@@ -31,17 +31,12 @@ import { retry } from 'rxjs-compat/operator/retry';
   styleUrls: ['./openai-chat.component.scss']
 })
 
-export class OpenAIChatComponent implements OnInit {
+export class OpenAIChatComponent implements OnInit, OnChanges {
   @ViewChild('chatUIComponent') chatUIComponentRef: ChatUIComponent;
 
   @Input() customInitialPrompt: string = '';
-  @Input() userId: string = '';
-  @Input() userNameInitial: string = '';
-  @Input() userPhotoSource: string = '';
-  @Input() systemNameInitial: string = 'AI';
-  @Input() systemPhotoSource: string = '/assets/img/openailogo.svg';
-  @Input() persistChat: boolean = false;
   @Input() chatIdentifier: string = '';
+  @Input() persistChat: boolean = false;
   @Input() chatHeader: string = '';
   @Input() chatContextLength: number = 2;
   @Input() chatQuerySamplesFileUri: string = ''; //e.g. "assets/chatConfigs/chatQuerySamples.json"
@@ -50,6 +45,9 @@ export class OpenAIChatComponent implements OnInit {
   @Input() chatAlignment: ChatAlignment = ChatAlignment.Center;
   @Input() chatModel: ChatModel = ChatModel.GPT3;
   @Input() responseTokenSize: ResponseTokensSize = ResponseTokensSize.Small;
+  @Input() stopMessageGeneration: boolean = false;
+  @Input() systemInitial: string = "AI";
+  @Input() systemPhotoSource: string = '/assets/img/openailogo.svg';
 
   // Callback methods for pre and post processing messages
   @Input() preprocessUserMessage: (message: ChatMessage) => ChatMessage = function (message: ChatMessage) {
@@ -90,6 +88,12 @@ export class OpenAIChatComponent implements OnInit {
   openaiChatSearchText: string = "";
   chatQuerySamples: KeyValuePair[] = [];
 
+  // This is the limit on the number of recursive calls made to open AI
+  openAIApiCallLimit = 10;
+  currentApiCallCount = 0;
+
+  private openAIAPICallSubscription: Subscription;
+
   ngOnInit() {
     this._openAIService.CheckEnabled().subscribe(enabled => {
       this.isEnabled = this._openAIService.isEnabled;
@@ -110,12 +114,19 @@ export class OpenAIChatComponent implements OnInit {
     this.loadChatFromStore(); // Works only if persistChat is true
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+
+    if (changes['stopMessageGeneration'] != undefined && this.stopMessageGeneration) {
+      this.onStopMessageGeneration('Message cancelled by user');
+    }
+  }
+
   loadChatFromStore() {
     if (this.persistChat && this.fetchChat) {
       this.fetchChat(this.chatIdentifier).subscribe((chatMessages: ChatMessage[]) => {
         this._chatContextService.messageStore[this.chatIdentifier] = chatMessages;
         this.chatUIComponentRef.scrollToBottom(true);
-        this._telemetryService.logEvent("OpenAIChatLoadedFromStore", { userId: this.userId, ts: new Date().getTime().toString() });
+        this._telemetryService.logEvent("OpenAIChatLoadedFromStore", { userId: this._chatContextService.userId, ts: new Date().getTime().toString() });
 
         this.checkQuota();
       });
@@ -143,10 +154,10 @@ export class OpenAIChatComponent implements OnInit {
     }
 
     if (feedbackType == 'like') {
-      this._telemetryService.logEvent("OpenAIChatUserFeedbackLike", { chatIdentifier: this.chatIdentifier, userId: this.userId, messageId: messageId, messageText: msgObj.displayMessage, ts: new Date().getTime().toString() });
+      this._telemetryService.logEvent("OpenAIChatUserFeedbackLike", { chatIdentifier: this.chatIdentifier, userId: this._chatContextService.userId, messageId: messageId, messageText: msgObj.displayMessage, ts: new Date().getTime().toString() });
     }
     else {
-      this._telemetryService.logEvent("OpenAIChatUserFeedbackDislike", { chatIdentifier: this.chatIdentifier, userId: this.userId, messageId: messageId, messageText: msgObj.displayMessage, ts: new Date().getTime().toString() });
+      this._telemetryService.logEvent("OpenAIChatUserFeedbackDislike", { chatIdentifier: this.chatIdentifier, userId: this._chatContextService.userId, messageId: messageId, messageText: msgObj.displayMessage, ts: new Date().getTime().toString() });
     }
     this.saveChatToStore();
   }
@@ -160,7 +171,7 @@ export class OpenAIChatComponent implements OnInit {
         let messageDailyCount = this._chatContextService.messageStore[this.chatIdentifier]
           .filter((m: ChatMessage) => m.messageSource == MessageSource.User && TimeUtilities.checkSameDay(m.timestamp)).length;
         if (messageDailyCount > this.dailyMessageQuota) {
-          this._telemetryService.logEvent("OpenAIChatMessageQuotaExceeded", { userId: this.userId, messageCount: messageDailyCount.toString(), quotaLimit: this.dailyMessageQuota.toString(), ts: new Date().getTime().toString() });
+          this._telemetryService.logEvent("OpenAIChatMessageQuotaExceeded", { userId: this._chatContextService.userId, messageCount: messageDailyCount.toString(), quotaLimit: this.dailyMessageQuota.toString(), ts: new Date().getTime().toString() });
           this._chatContextService.chatInputBoxDisabled = true;
           this.showMessageQuotaError = true;
           this.messageQuotaErrorMessage = `You have exhausted your daily quota of ${this.dailyMessageQuota} messages. We are working on increasing the quota capacity.`
@@ -178,7 +189,7 @@ export class OpenAIChatComponent implements OnInit {
       return true;
     }
     catch (e) {
-      this._telemetryService.logException(e, "OpenAIChatCheckQuota", { chatIdentifier: this.chatIdentifier, userId: this.userId, quotaLimit: this.dailyMessageQuota.toString(), ts: new Date().getTime().toString() });
+      this._telemetryService.logException(e, "OpenAIChatCheckQuota", { chatIdentifier: this.chatIdentifier, userId: this._chatContextService.userId, quotaLimit: this.dailyMessageQuota.toString(), ts: new Date().getTime().toString() });
       return true;
     }
   }
@@ -201,14 +212,24 @@ export class OpenAIChatComponent implements OnInit {
   /**Chat Message Request section */
   fetchOpenAIResult(searchQuery: any, messageObj: ChatMessage, retry: boolean = true, trimnewline: boolean = false) {
 
+    if (this.currentApiCallCount >= this.openAIApiCallLimit) {
+      this.onStopMessageGeneration(`Message cancelled by system. This message exceeded the recursive completion api call limit of ${this.openAIApiCallLimit}`);
+      return;
+    }
+
+    this.currentApiCallCount++;
+
+    if (this.stopMessageGeneration || messageObj.status == MessageStatus.Cancelled)
+      return;
+
     this.resetChatRequestError();
     this._chatContextService.chatInputBoxDisabled = true;
+
+    let openAIAPICall: Observable<ChatResponse> = new Observable();
 
     try {
 
       messageObj.status = messageObj.status == MessageStatus.Created ? MessageStatus.Waiting : messageObj.status;
-
-      let openAIAPICall: Observable<ChatResponse>;
 
       if (this.chatModel == ChatModel.GPT3) {
         let openAIQueryModel = CreateTextCompletionModel(searchQuery, TextModels.Default, this.responseTokenSize);
@@ -219,9 +240,16 @@ export class OpenAIChatComponent implements OnInit {
         openAIAPICall = this._openAIService.getChatCompletion(chatCompletionQueryModel, this.customInitialPrompt);
       }
 
-      openAIAPICall.subscribe((response: ChatResponse) => {
+      this.openAIAPICallSubscription = openAIAPICall.subscribe((response: ChatResponse) => {
 
-        let trimmedText = trimnewline ? StringUtilities.TrimBoth(response.text) : StringUtilities.TrimEnd(response.text);
+        if (messageObj.status == MessageStatus.Cancelled) {
+          return;
+        }
+
+        let trimmedText = this.chatModel == ChatModel.GPT3 ? 
+        (trimnewline ? StringUtilities.TrimBoth(response.text) : StringUtilities.TrimEnd(response.text)) : 
+        response.text;
+
         messageObj.message = messageObj.message + trimmedText;
         messageObj.status = response.truncated === true ? MessageStatus.InProgress : MessageStatus.Finished;
 
@@ -232,7 +260,6 @@ export class OpenAIChatComponent implements OnInit {
           messageObj = this.postProcessSystemMessage(messageObj);
         }
 
-        // Check if the response is truncated
         if (response.truncated) {
           //Do not trim newline for the next query
           this.fetchOpenAIResult(this.prepareChatContext(), messageObj, retry, trimnewline = false);
@@ -241,18 +268,15 @@ export class OpenAIChatComponent implements OnInit {
 
         else {
 
-          messageObj.timestamp = new Date().getTime();
-          messageObj.messageDisplayDate = TimeUtilities.displayMessageDate(new Date());
-
-          this.openaiChatSearchText = "";
-          this._chatContextService.chatInputBoxDisabled = false;
-          this.chatUIComponentRef.scrollToBottom();
-          this.chatUIComponentRef.focusChatInput();
+          this.markMessageCompleted(messageObj);
+          this.reenableChatBox();
 
           if (this.persistChat) {
             this.saveChatToStore();
           }
         }
+
+        console.log(`MakeAPICall: Finish: Message : ${messageObj.id}`);
       },
         (err) => {
           if (retry) {
@@ -260,6 +284,8 @@ export class OpenAIChatComponent implements OnInit {
           }
           this.handleFailure(err, messageObj);
         });
+
+      console.log(`fetchOpenAIResult: Finish: Message : ${messageObj.id}`);
     }
     catch (error) {
       this.handleFailure(error, messageObj);
@@ -275,13 +301,9 @@ export class OpenAIChatComponent implements OnInit {
       this._telemetryService.logEvent("OpenAIChatRequestError", { ...err, ts: new Date().getTime().toString() });
       this.displayChatRequestError("Me and AppLens are on a talking freeze it seems. Lets try again later.");
     }
-    messageObj.status = MessageStatus.Finished;
-    messageObj.timestamp = new Date().getTime();
-    messageObj.messageDisplayDate = TimeUtilities.displayMessageDate(new Date());
-    this.openaiChatSearchText = "";
-    this._chatContextService.chatInputBoxDisabled = false;
-    this.chatUIComponentRef.scrollToBottom();
-    this.chatUIComponentRef.focusChatInput();
+
+    this.markMessageCompleted(messageObj);
+    this.reenableChatBox();
   }
 
   prepareChatContext() {
@@ -341,9 +363,47 @@ export class OpenAIChatComponent implements OnInit {
         userFeedback: "none",
         renderingType: MessageRenderingType.Text
       };
+
       this._chatContextService.messageStore[this.chatIdentifier].push(chatMessage);
       this.chatUIComponentRef.scrollToBottom();
       this.fetchOpenAIResult(this.prepareChatContext(), chatMessage);
     }
+  }
+
+  onStopMessageGeneration = (cancellationReason: string) => {
+
+    let lastChatMessage: ChatMessage = this._chatContextService.messageStore[this.chatIdentifier].at(-1);
+
+    if (lastChatMessage != undefined && lastChatMessage.messageSource == MessageSource.System) {
+
+      if (this.openAIAPICallSubscription != undefined)
+        this.openAIAPICallSubscription.unsubscribe();
+
+      if (lastChatMessage.status != MessageStatus.Cancelled) {
+        lastChatMessage.displayMessage = `${lastChatMessage.displayMessage}\n\n<span style="color:#890000">${cancellationReason}</span>`;
+        this.markMessageCompleted(lastChatMessage, MessageStatus.Cancelled);
+        if (this.postProcessSystemMessage != undefined) {
+          console.log('message cancelled. Calling post process');
+          console.log(lastChatMessage);
+          lastChatMessage = this.postProcessSystemMessage(lastChatMessage);
+        }
+
+        this.reenableChatBox();
+      }
+    }
+  }
+
+  private markMessageCompleted(messageObj: ChatMessage, status: MessageStatus = MessageStatus.Finished) {
+    messageObj.status = status;
+    messageObj.timestamp = new Date().getTime();
+    messageObj.messageDisplayDate = TimeUtilities.displayMessageDate(new Date());
+  }
+
+  private reenableChatBox = () => {
+    this.openaiChatSearchText = "";
+    this.currentApiCallCount = 0;
+    this._chatContextService.chatInputBoxDisabled = false;
+    this.chatUIComponentRef.scrollToBottom();
+    this.chatUIComponentRef.focusChatInput();
   }
 }  

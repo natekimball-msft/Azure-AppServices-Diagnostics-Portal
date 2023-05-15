@@ -57,7 +57,7 @@ export class ApplensOpenAIChatService {
 
     queryModel.metadata["azureServiceName"] = this.productName;
     
-    return this._backendApi.post(this.chatCompletionApiPath, queryModel).pipe(map((res: any) => {
+    return this._backendApi.post(this.chatCompletionApiPath, queryModel, null, true, true).pipe(map((res: any) => {
 
       let chatResponse: ChatResponse = {
         text: res?.choices[0].message.content,

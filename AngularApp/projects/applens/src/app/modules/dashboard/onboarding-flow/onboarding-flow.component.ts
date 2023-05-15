@@ -1,14 +1,13 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, QueryResponseService
-} from 'diagnostic-data';
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, QueryResponseService} from 'diagnostic-data';
 import * as moment from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
 import {
   forkJoin
   , Observable, of
 } from 'rxjs';
-import { flatMap, map } from 'rxjs/operators'
+import { concatMap, first, flatMap, map } from 'rxjs/operators'
 import { ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { Package } from '../../../shared/models/package';
 import { GithubApiService } from '../../../shared/services/github-api.service';
@@ -93,6 +92,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   reference: object = {};
   configuration: object = {};
   resourceId: string;
+  azureServiceType: string;
   queryResponse: QueryResponse<DetectorResponse>;
   workflowQueryResponse: QueryResponse<workflowNodeResult>;
   errorState: any;
@@ -150,7 +150,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   refreshGistListButtonIcon: any = { iconName: 'Refresh' };
   gistsDropdownOptions: IDropdownOption[] = [];
   gistVersionOptions: IDropdownOption[] = [];
-  gistUpdateTitle
+  gistUpdateTitle: string = '';
   internalExternalText: string = "";
   internalViewText: string = "Internal view";
   externalViewText: string = "Customer view";
@@ -616,6 +616,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         this.internalExternalText = this.externalViewText;
       }
     });
+
+    this.azureServiceType = this.resourceService.searchSuffix;
   }
 
   getSystemInvokerBranchList() {
@@ -774,7 +776,6 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
       });
     });
-
   }
 
   internalExternalToggle() {
@@ -2384,41 +2385,45 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this.createWorkflow.uploadFlowData(text);
   }
 
-  onCodeSuggestionFromCopilot($event) {
-    console.log($event);
+  //#region Copilot Methods
 
-    if($event.append)
-    {
-      this.code = `${this.code}${$event.code}`;
+  onCodeSuggestionFromCopilot($event) {
+
+    if (!$event.append) {
+      this.code = '';
+    }
+
+    if ($event.source.toLowerCase() == 'openai') {
+      this.triggerCodeCopyFromCopilot($event.code);
     }
     else {
-      this.code = $event.code;
+      this.code = `${this.code}${$event.code}`;
+    }
+  }
+
+  triggerCodeCopyFromCopilot(codeSuggestionFromCopilot: string, index: number = 0) {
+
+    let minChunkSize: number = 50;
+    if (index >= codeSuggestionFromCopilot.length) {
+      return;
     }
 
-    // let incomingCode = $event;
-    
-    // let delay = Math.floor(Math.random() * 1000);
-    // let index = 0;
-    // let maxChunk = 100;
+    let chunkSize = Math.floor(Math.random() * (codeSuggestionFromCopilot.length - index)) + 1;
 
-    // this.code = '';
+    if (chunkSize < minChunkSize) {
+      chunkSize = minChunkSize;
+    }
 
-    // let interval = setInterval(()=>{
-    //   setTimeout((
-    //   )=>{
-    //     if((index + maxChunk) >= incomingCode.length)
-    //     {
-    //       maxChunk = incomingCode.length;
-    //     }
+    let upperIndex = index + chunkSize >= codeSuggestionFromCopilot.length ? codeSuggestionFromCopilot.length : index + chunkSize;
+    this.code = `${this.code}${codeSuggestionFromCopilot.substring(index, upperIndex)}`;
 
-    //     this.code = `${this.code}${incomingCode.substring(index, maxChunk)}`;
-    //     index += maxChunk;
-    //     if(index >= incomingCode.length)
-    //     {
-    //       clearInterval(interval);
-    //     }
-    //     delay = Math.floor(Math.random() * 1000);
-    //   }, delay);
-    // }, delay);
+    index += chunkSize;
+    const delayTime = codeSuggestionFromCopilot.length <= 2 * minChunkSize ? 300 : 200;
+    setTimeout(() => {
+      this.triggerCodeCopyFromCopilot(codeSuggestionFromCopilot, index);
+    }, delayTime);
   }
+
+  //#endregion
+
 }

@@ -28,6 +28,7 @@ export enum MessageStatus {
     Waiting = 1,
     InProgress = 2,
     Finished = 3,
+    Cancelled = 4
 }
 
 export enum MessageSource {

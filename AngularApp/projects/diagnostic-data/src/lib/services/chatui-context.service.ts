@@ -14,4 +14,12 @@ export class ChatUIContextService {
   public chatInputBoxDisabled: boolean = false;
   public userPhotoSource: any = "";
   public userNameInitial: string = "";
+  public userId: string = "";
+
+  public clearChat = (chatIdentifier: string): void => {
+    if (chatIdentifier == undefined || chatIdentifier == '' || this.messageStore[chatIdentifier] == undefined)
+      return;
+
+      this.messageStore[chatIdentifier] = [];
+  }
 }

@@ -69,7 +69,9 @@ export class ApplensHeaderComponent implements OnInit {
     }
 
     this._diagnosticApiService.getUserPhoto(userId).subscribe(image => {
-      this.userPhotoSource = image;
+      // Shekhar : TODO : uncomment this line and remove your photo
+      //this.userPhotoSource = image;
+      this.userPhotoSource = 'https://avatars.githubusercontent.com/u/11183841?v=4';
     });
 
     if (this._activatedRoute.snapshot.queryParams["searchTerm"]) {
