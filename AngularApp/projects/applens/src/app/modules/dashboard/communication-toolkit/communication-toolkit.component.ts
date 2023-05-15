@@ -21,11 +21,11 @@ export class CommunicationToolkitComponent implements OnInit {
   
   userPhotoSource: string = '';
   userNameInitial: string = '';
-  chatHeader: string = `<h1 class='chatui-header-text'>AppLens <img src="/assets/img/handshakelogo.png" class='chatui-center-logo'/> ChatGPT</h1>`;
+  chatHeader: string = `<h1 class='chatui-header-text'>EasyRCA!</h1>`;
 
   
   // Variables to be passed down to the OpenAI Chat component
-  chatComponentIdentifier: string = "AppLensChatGPT";
+  chatComponentIdentifier: string = "EasyRCAChatGPT";
   showContentDisclaimer: boolean = true;
   contentDisclaimerMessage: string = "* Please do not send any sensitive data in your queries. Please verify the response before sending to customers.";
 
@@ -38,6 +38,9 @@ export class CommunicationToolkitComponent implements OnInit {
   
   originalResourceProvider: string;
   currentResourceProvider: string;
+  customInitialPrompt: string = "You are an AI assistant that helps customer support engineers write their RCA's for Microsoft Azure Team. RCA's stand for Root Cause Analysis. \n\nA good RCA follows the below rules:\nThe tone is convincing and apologetic, respectful towards the customer. It is informational and thorough without revealing any private and internal information. The RCA is concise. The RCA starts with explaining the issue, providing the timestamp and duration of the issue. It then describes how the issue was mitigated and resolved, and provides resolution steps and future best practices to prevent this issue from occurring in the future. The RCA ends with apologizing for the inconvenience and stating that Microsoft Azure Team is always happy to help the customer. \n\n Here is the first example of a well-written RCA: <html><head><p>The Microsoft Azure Team has investigated the issue reported and we have identified it was due to an issue within the Azure App Service storage subsystem.</p> <p>The file shares in Azure App Services are served by a collection of file servers, which mount durable cloud-based storage volumes. This design allows storage volumes to move between file servers when/if the file servers should go through a scheduled maintenance or any unplanned issues that would affect the fileserver. In order to reduce costs for customers, each file server hosts the file shares for multiple sites. In the multi-tenant production environments, these file servers may host file shares of different customers. For availability purposes we have implemented a read-only (R/O) replica of the site content for Instances to fall back on should the primary read/write (RW) volume becomes unavailable or severely impacted by latency.</p> <p>During the time of the issue, there were unplanned hardware failures which impacted the RW file server which your application was using. This caused your application to failover to use the RO replica until the platform performed an automated repair operation on the affected RW FileServer, after which you app was switched back to use its RW volume.</p> <p>The issue was resolved on 2023-02-22 04:45 UTC.</p> <p>We are continuously taking steps to improve the Azure Web App service and our processes to ensure such incidents do not occur in the future, and in this case that includes (but is not limited to):</p> <ul> <b><li>Improve storage resiliency to reduce impact during these VM impacting events</li></b> </ul> <p>We apologize for any inconvenience.</p> <p>Regards,<br>The Microsoft Azure Team<br><a href=\"https://privacy.microsoft.com/en-us/privacystatement\" target=\"_blank\">Privacy Statement</a></p> </html> \n\nHere is another example of a well-written RCA: <html><head><p>The Microsoft Azure Team has investigated an issue you encountered in which your app was not allocated a new instance when Health Check Feature was reporting errors. The issue was resolved on 2023-02-22 04:45 UTC.</p> <p>Engineers have investigated and found that in addition to instance replacement limit per app service plan, Health Check Feature cannot replace instances after a certain threshold is reached at a scale unit level (in a region). Unfortunately, the scale unit where your application is running reached that instance replacement threshold limit by Health Check Feature.</p><p>We are continuously taking steps to improve the Azure Web App service and our processes to ensure such incidents do not occur in the future, and in this case it includes (but is not limited to):</p> <ul> <b><li>Exploring options to increase this limit per scale unit.</li></b> <b><li>Improving the Health Check Feature instance replacement logic.</li></b><b><li>Improving documentation.</li></b></ul> <p>We apologize for any inconvenience.</p> <p>Regards,<br>The Microsoft Azure Team<br><a href=\"https://privacy.microsoft.com/en-us/privacystatement\" target=\"_blank\">Privacy Statement</a></p> </body> </html>\n\n Always end with a hyperlink to the Privacy Statement and make sure the RCA is in html format";
+  //rule : always end the rca's with privacy statement link is: 
+  //always write rca's in markdown 
 
   // Component's internal variables
   isEnabled: boolean = false;
@@ -54,7 +57,7 @@ export class CommunicationToolkitComponent implements OnInit {
   subcategoriesDisplayed = false; 
   otherDisplayed = false; 
   otherDisplayText = "We do not currently offer RCA templates for other issues at this time, but are looking to expand to offer these in the future. \nPlease\
-  add a description of the issue you would like us to create a template for, and will accommodate this for the future. "; 
+  add a description of the issue you would like us to create a template for and/or any feedback that you have and we will take this into consideration for the future. "; 
 
   categoryMapping : Map<string, any> = new Map([
     ["File Server Issues", ["High CPU", "Noisy Neighbor / Automorphism failed to scale out FEs", "Noisy Neighbor / Single Site Stress Test", "Noisy Neighbor / Single Site Under Attack", "Unplanned Hardware", "File Server Upgrade"] ],

@@ -44,6 +44,8 @@
     </div>
 </div>
 
+
+
 <div *ngIf = "rcaLoading" class="rca-bot-container loading-spinner">
     <!-- <i class="fa fa-spinner fa-spin loader-icon"></i> -->
     <!-- <span style="display: block;" class="loader-text" *ngIf="loaderMessage != null">{{loaderMessage}}</span> -->
@@ -83,12 +85,10 @@
     <openai-chat
       [userId]="userAlias"
       [persistChat]="true"
-      [fetchChat]="loadUserChat"
-      [saveChat]="saveUserChat"
       [chatAlignment]="'center'"
       [chatIdentifier]="chatComponentIdentifier"
       [chatContextLength]="10"
-      [chatQuerySamplesFileUri]="'assets/chatConfigs/applensChatGPT.json'"
+      [chatQuerySamplesFileUri]="'assets/chatConfigs/easyRCAChatGPT.json'"
       [showFeedbackOptions]="true"
       [showContentDisclaimer]="true"
       [contentDisclaimerMessage]="contentDisclaimerMessage"
@@ -97,6 +97,7 @@
       [messageQuotaWarningThreshold]="10"
       [chatHeader]="chatHeader"
       [systemPhotoSource]="'/assets/img/openailogo.svg'"
+      [customInitialPrompt]="customInitialPrompt"
     >
     </openai-chat>
   </div>
