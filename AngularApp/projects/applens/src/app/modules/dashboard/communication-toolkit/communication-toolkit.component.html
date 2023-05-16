@@ -1,23 +1,25 @@
 
-
-<div *ngIf = "!rcaLoading && !rcaDisplayed && !otherDisplayed &&!modifierDisplayed" class="rca-bot-container">
+<div *ngIf = "!rcaLoading && !rcaDisplayed && !otherDisplayed &&!modifierDisplayed" class="rca-bot-container ">
     <div class="rca-box-row-container rca-header-container">
         <h1 class="rca-header-text">EasyRCA!</h1>
+        <!-- <div class = "rca-subtitle-text">{{mainCategoryPageText}}</div> -->
     </div>
+    
     <div *ngIf = "!subcategoriesDisplayed" class="rca-box-row-container rca-samples-container">
         
         <div class="rca-box-row">
             <ng-container *ngFor="let cat of [].constructor(6); let i = index">
-              <div class="rca-box" *ngIf = "i<=2 && ( i < categoryMapping.size) "  
-              (click) = "mainCategoryClicked(categoryMappingKeys[i])" [innerHTML] = "categoryMappingKeys[i]"></div>
+
+            <div class="rca-box2 rca-title-text" *ngIf = "i<=2 && ( i < categoryMapping.size) "  
+              (click) = "mainCategoryClicked(categoryMappingKeys[i])">{{categoryMappingKeys[i]}}</div>
               <div class="empty-box" *ngIf = "i<=2 && ( i >= categoryMapping.size) "  
                 [innerHTML] = ""></div>
             </ng-container>
         </div>
         <div class="rca-box-row">
             <ng-container *ngFor="let cat of [].constructor(6); let i = index">
-                <div class="rca-box" *ngIf = "(i>=3 && i<=5) && ( i < categoryMapping.size) "  
-                    (click) = "mainCategoryClicked(categoryMappingKeys[i])" [innerHTML] = "categoryMappingKeys[i]"></div>
+                <div class="rca-box2 rca-title-text" *ngIf = "(i>=3 && i<=5) && ( i < categoryMapping.size) "  
+                    (click) = "mainCategoryClicked(categoryMappingKeys[i])">{{categoryMappingKeys[i]}}</div>
                 <div class="empty-box" *ngIf = "(i>=3 && i<=5) && ( i >= categoryMapping.size) "  
                     [innerHTML] = ""></div>
             </ng-container>
@@ -27,55 +29,50 @@
         
         <div class="rca-box-row">
             <ng-container *ngFor="let cat of [].constructor(6); let i = index">
-              <div class="rca-box" *ngIf = "i<=2 && ( i < categoryMapping.get(currentSelectedRCATopic).length )"  
-              (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])" [innerHTML] = "categoryMapping.get(currentSelectedRCATopic)[i]"></div>
+              <div class="rca-box2 rca-title-text" *ngIf = "i<=2 && ( i < categoryMapping.get(currentSelectedRCATopic).length )"  
+              (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])">{{categoryMapping.get(currentSelectedRCATopic)[i]}}</div>
               <div class="empty-box" *ngIf = "i<=2 && ( i >= categoryMapping.get(currentSelectedRCATopic).length )"  
              [innerHTML] = ""></div>
             </ng-container>
         </div>
         <div class="rca-box-row">
             <ng-container *ngFor="let cat of [].constructor(6);let i = index">
-              <div class="rca-box" *ngIf = "(i>=3 && i<=5) && ( i < categoryMapping.get(currentSelectedRCATopic).length) " 
-                (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])" [innerHTML] = "categoryMapping.get(currentSelectedRCATopic)[i]"></div>
+              <div class="rca-box2 rca-title-text" *ngIf = "(i>=3 && i<=5) && ( i < categoryMapping.get(currentSelectedRCATopic).length) " 
+                (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])">{{categoryMapping.get(currentSelectedRCATopic)[i]}}</div>
                 <div class="empty-box" *ngIf = "(i>=3 && i<=5) && ( i >= categoryMapping.get(currentSelectedRCATopic).length )" 
                     [innerHTML] = ""></div>
             </ng-container>
         </div>
+        <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Back</div></button>
     </div>
 </div>
 
 
-
+<!-- display loading when RCA is loading -->
 <div *ngIf = "rcaLoading" class="rca-bot-container loading-spinner">
-    <!-- <i class="fa fa-spinner fa-spin loader-icon"></i> -->
-    <!-- <span style="display: block;" class="loader-text" *ngIf="loaderMessage != null">{{loaderMessage}}</span> -->
-    <!-- <span style="display: block;" class="loader-text">Our premium plan loads faster...</span> -->
     <fab-spinner [size] = "loadingSize" [label] = "'Our premium plan loads faster...'" ></fab-spinner>
 </div>
+
+<!-- display the RCA -->
 <div *ngIf = "!rcaLoading && rcaDisplayed && !subcategoriesDisplayed && !otherDisplayed" class = "rca-bot-container rca-template-box-header">
-    <!-- <h1 class="rca-header-text">Applens <img src="/assets/img/handshakelogo.png" class="chatgpt-handshake-logo"/> RCA</h1> -->
     <div class="rca-box-row-container rca-header-container">
         <h1 class="rca-header-text">EasyRCA!</h1>
-        <div class = "rca-body-container rca-subtitle-text">The RCA template for {{currentSelectedRCATopic}} is below:
+        <div class = "rca-body-container rca-subtitle-text">The RCA template for <b>{{currentSelectedRCATopic}}</b> is below:
         </div>
-        <div class = "rca-body-container rca-body-text rca-result-box" [innerHTML] = "currentSelectedRCA"></div>
-        <!-- <div class = "input-box"></div> [innerHTML] = "currentSelectedRCA"></div> -->
+        <div class = "rca-body-container rca-body-text rca-result-box" [innerHTML] = "currentSelectedRCA">
+        </div>
     </div>
-    
 </div>
-<!-- <div *ngIf = "!rcaLoading && rcaDisplayed" class = "rca-template-box rca-bot-container"  [innerHTML] = "currentSelectedRCA">
-</div> -->
+
 <!-- displaying "other" mode when clicked  -->
 <div *ngIf = "!rcaLoading && !rcaDisplayed && !subcategoriesDisplayed && otherDisplayed" class = "rca-bot-container rca-template-box-header">
     <div class="rca-box-row-container rca-header-container">
         <h1 class="rca-header-text">EasyRCA!</h1>
         <div class = "rca-body-container rca-subtitle-text" >{{otherDisplayText}} 
             <textarea class = "input-box"></textarea>
-            <!-- <div class = "input-box" contenteditable="true">{{currentSelectedRCA}}</div> -->
+            <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Back</div></button>
         </div>
-        
-        <!-- <button type = "button"></button> -->
-        
+       
     </div>
     
    

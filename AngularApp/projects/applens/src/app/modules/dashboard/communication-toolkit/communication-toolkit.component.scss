@@ -14,7 +14,6 @@
 // </div>
 // </div>
 
-
 .rca-bot-container{
     height: 100%;
     display: flex;
@@ -40,7 +39,7 @@
 
   .rca-header-text{
     font-weight: 600;
-    font-size: 2.75rem;
+    font-size: 3rem;
     line-height: 2.75rem;
     text-align: center;
     gap: 0.5rem;
@@ -76,6 +75,24 @@
 
   }
 
+  .rca-title-text{
+    display: flex;
+    align-items: center;
+    text-align: center;
+    font-size: 1.65rem;
+    //line-height: 23px;
+    line-height:2.75rem;
+    //margin: 5px 3px;
+    font-weight: 450;
+    color: var(--bodyText);
+    gap: 0.5rem;
+    margin-top:4rem; 
+    margin-bottom: 4rem;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: Söhne,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
+  }
+
   .rca-body-container{
     width: 75%;
     margin: auto; 
@@ -96,7 +113,7 @@
     width: 100%;
     margin: auto;
     float: left;
-    padding: 10px 10px;
+    padding: 25px 10px 0px 10px;
   }
 
   .rca-box{
@@ -110,6 +127,62 @@
     border-radius: 0.375rem;
   }
 
+  .btn{
+    //border: 0.5px solid;
+    //border-color: black; 
+    background-color: var(--bodyBackground);
+    position: relative;
+    //display: flex;
+    margin:auto;
+    float:right; 
+    //padding: 25px 10px 0px 10px; 
+    //right: 15px;
+    //top: 150px; 
+  }
+
+  .btn:hover{
+   
+    background-color: var( --tileHomepageHoverBackground);
+    cursor: pointer;
+  }
+
+  .btn:focus{
+    //border:1px solid black; 
+    outline: 1px solid black;
+    box-shadow: none;
+  }
+
+  .btn-text{
+    color:  rgb(37, 108, 207);
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+  }
+  
+  .rca-box2{
+    background: var(--bodyBackground);
+    border: 1px solid black;
+    //border: 0px solid black;
+    box-sizing: border-box;
+    // box-shadow: 4px 10px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+    height: 86px;
+    margin: 5px 5px;
+    display: inline;
+    flex: 1;
+    //background-color: rgba(247,247,248);
+    background-color:rgba(244, 243, 243, 0.752);
+    padding: 1.75rem;
+    //border-radius: 0.375rem;
+  }
+
+  .rca-box2:hover {
+    background-color: rgba(211, 209, 209, 0.752);
+    cursor: pointer;
+    box-shadow: rgba(50,50,50,0.5) 0px 2px 2px;
+  }
+
+
   .empty-box{
     border: 0px solid black;
     height: 86px;
@@ -120,38 +193,11 @@
     padding: 1.75rem;
     border-radius: 0.375rem;
   }
-
-
-  .loader-block{
-    z-index: 100;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    position: absolute;
-    text-align: center;
-}
-
-.loader-icon{
-  font-size: 10em;top: 36vh;position: relative;color: #0a0a0a;
-}
-
-.loader-text{
-  font-size: 2em;position: relative;color: black;
-}
   
 .loading-spinner {
   margin-top: 250px;
   font-size: 100px;
 }
-
-
-.loader-text{
-  font-size: 1.5rem;
-  margin-top: 250px;
-  font-size: 48px;
-  margin-left: 250px;color: black;
-}
-
 
 .rca-template-box-header{
 
@@ -200,4 +246,49 @@
   width: 85px;
   margin-top: 10px;
 
+}
+
+.card-container {
+  background: var(--bodyBackground);
+  border: 1px solid var(--inputBorder);
+  box-sizing: border-box;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  
+
+  height: 86px;
+  margin: 5px 5px;
+  display: inline;
+  flex: 1;
+  background-color: rgba(247,247,248);
+  padding: 1.75rem;
+
+
+}
+
+.card-title{
+  font-size: 13px;
+  line-height: 15px;
+  color: var(--cardViewTitle);
+  margin: 3px;
+}
+.card-description {
+  font-size: 13px;
+  line-height: 15px;
+  margin: 3px;
+  color: var(--bodyText);
+}
+
+.card-message{
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  line-height: 23px;
+  margin: 5px 3px;
+  font-weight: 600;
+  color: var(--bodyText);
+}
+
+.card-icon {
+  margin-right: 7px
 }

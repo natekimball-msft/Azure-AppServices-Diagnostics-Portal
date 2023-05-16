@@ -21,7 +21,7 @@ export class CommunicationToolkitComponent implements OnInit {
   
   userPhotoSource: string = '';
   userNameInitial: string = '';
-  chatHeader: string = `<h1 class='chatui-header-text'>EasyRCA!</h1>`;
+  chatHeader: string = `<h1 class='chatui-header-text'><b>SUPER</b>EasyRCA!</h1>`;
 
   
   // Variables to be passed down to the OpenAI Chat component
@@ -56,16 +56,27 @@ export class CommunicationToolkitComponent implements OnInit {
   currentSelectedRCA : string = ""; 
   subcategoriesDisplayed = false; 
   otherDisplayed = false; 
+
+  // previousState : Map<string, any> = new Map([
+
+  // ]); 
+  // currentState : Map<string, any> = new Map([
+
+  // ]); 
+
   otherDisplayText = "We do not currently offer RCA templates for other issues at this time, but are looking to expand to offer these in the future. \nPlease\
   add a description of the issue you would like us to create a template for and/or any feedback that you have and we will take this into consideration for the future. "; 
+
+  mainCategoryPageText = "This toolkit is the one-stop-shop to easily find ready-to-go RCA templates for your ICMs! \n \
+  You can get started by clicking on one of the categories below:";
 
   categoryMapping : Map<string, any> = new Map([
     ["File Server Issues", ["High CPU", "Noisy Neighbor / Automorphism failed to scale out FEs", "Noisy Neighbor / Single Site Stress Test", "Noisy Neighbor / Single Site Under Attack", "Unplanned Hardware", "File Server Upgrade"] ],
     ["Customer Code Issues", ["App Issue, Slow", "App issue, deadlock at .Result", "App issue, too big zip file for RUN_FROM_PACKAGE"]],
     ["Platform Issues", ["Storage Volume Caused Downtime"]],
     ["Modify/Edit Existing RCAs", []],
-    ["Other", []],
-    ["Health Check Issues", []]
+    ["Health Check Issues", []],
+    ["Other", []]
   ]);
   
   rcaMapping : Map<string, string> = new Map([
@@ -79,6 +90,7 @@ export class CommunicationToolkitComponent implements OnInit {
       [ "App issue, too big zip file for RUN_FROM_PACKAGE", "<html><head><p>The Microsoft Azure Team has investigated the issue you reported on the 503 errors your app is experiencing. This issue was found to be related to the Run From Package feature your app was using. Upon investigation, engineers discovered that your ZIP file was too large (1.2GB) to load to workers. Since downloading the ZIP file took too long, the startup sequence timed out and ended up with 503 status code. </p> <p>One solution would be that you deploy your code with a different deployment method (e.g. Azure DevOps) instead of Run From Package. Another solution would be to separate your project into multiple subprojects and deploy them to different apps.</p><p>We are continuously taking steps to improve the Azure Web App service and our processes to ensure such incidents do not occur in the future, and in this case it includes (but is not limited to):</p> <ul> <b><li> Improving the error logs as well as diagnostic tools for this type of error to allow to easily find the problem</li></b> <b><li>Improving the Health Check Feature instance replacement logic.</li></b><b><li>Adding more test cases to cover such cases.</li></b></ul> <p>We apologize for any inconvenience.</p> <p>Regards,<br>The Microsoft Azure Team<br><a href=\"https://privacy.microsoft.com/en-us/privacystatement\" target=\"_blank\">Privacy Statement</a></p> </body> </html>"],
       ["Storage Volume Caused Downtime", "<html><head><p>The Microsoft Azure Team has investigated the issue reported regarding the HTTP 500 level errors that your app experienced.</p> <p>On 04/06/2023, App Service rolled out a configuration change to our scale units in East US and North Central US. The config change was part of our platform upgrade and was performed to enhanced reliability and security on our scale units.<br>Unfortunately on a subset of our scale units, this change impacted the ability of the front ends to access the storage subsystem. As a result, your app might have experienced read/write access failures to files.Unfortunately on a subset of our scale units, this change impacted the ability of the front ends to access the storage subsystem. As a result, your app might have experienced read/write access failures to files.</p> <p>The issue was automatically detected and the upgrade was immediately paused. To mitigate the issue, engineers  reverted the config change on all the impacted scale units. Additionally, we have have setup verification to ensure that all the impacted apps are mitigated.</p> <p>We are continuously taking steps to improve the Azure Web App service and our processes to ensure such incidents do not occur in the future, and in this case that includes (but is not limited to):</p> <ul> <b><li>Enhanced monitoring and notification of instability in the storage subsystem</li></b> <b><li>Enhanced testing to ensure any potential issues with config change roll our are identified early</li></b> </ul> <p>We apologize for any inconvenience.</p> <p>Regards,<br>The Microsoft Azure Team<br><a href=\"https://privacy.microsoft.com/en-us/privacystatement\" target=\"_blank\">Privacy Statement</a></p> </body> </html>"],
       ["Health Check Issues", "<html><head><p>The Microsoft Azure Team has investigated an issue you encountered in which your app was not allocated a new instance when Health Check Feature was reporting errors. The issue was resolved on 2023-02-22 04:45 UTC.</p> <p>Engineers have investigated and found that in addition to instance replacement limit per app service plan, Health Check Feature cannot replace instances after a certain threshold is reached at a scale unit level (in a region). Unfortunately, the scale unit where your application is running reached that instance replacement threshold limit by Health Check Feature.</p><p>We are continuously taking steps to improve the Azure Web App service and our processes to ensure such incidents do not occur in the future, and in this case it includes (but is not limited to):</p> <ul> <b><li>Exploring options to increase this limit per scale unit.</li></b> <b><li>Improving the Health Check Feature instance replacement logic.</li></b><b><li>Improving documentation.</li></b></ul> <p>We apologize for any inconvenience.</p> <p>Regards,<br>The Microsoft Azure Team<br><a href=\"https://privacy.microsoft.com/en-us/privacystatement\" target=\"_blank\">Privacy Statement</a></p> </body> </html>"],
+      ["File Server Upgrade", "<html><head><p>The Microsoft Azure Team has investigated the issue you reported where you experienced HTTP 500 errors. This issue was found to be related to the platform upgrade we executed.</p> <p>Upon further investigation, engineers discovered that it was caused by the file servers being upgraded which were hosting your app's contents. There are two file servers for your ASE and they were upgraded starting from 2020-09-07 09:26 UTC and 2020-09-07 10:30 UTC. Since one of them needs to mount the volume of your folder, the volume moved twice during the time range. Unfortunately this is our current limitation.</p><p>In order to avoid any future downtime caused by upgrades, we would suggest to consider creating another app in a new app service plan in a different region, deploying the same code to it, and setting up either Traffic Manager or Azure Front Door.</p><p>We are continuously taking steps to improve the Microsoft Azure App Service and our platform maintenance processes. However, as a PaaS, security releases will always be evaluated and may be fast tracked based on the level of critically. The below article may help if you would like to evaluate the features of different offerings that would allow you more control.</p><p><a href = \"https://docs.microsoft.com/en-us/azure/app-service-web/choose-web-site-cloud-service-vm\" target=\"_blank\">https://docs.microsoft.com/en-us/azure/app-service-web/choose-web-site-cloud-service-vm</a></p><p>We apologize for any inconvenience.</p> <p>Regards,<br>The Microsoft Azure Team<br><a href=\"https://privacy.microsoft.com/en-us/privacystatement\" target=\"_blank\">Privacy Statement</a></p> </body> </html>"],
       ["Other", ""]
         ]);
 
@@ -93,7 +105,7 @@ export class CommunicationToolkitComponent implements OnInit {
     private _resourceService: ResourceService,
     private _telemetryService: TelemetryService,
     public _chatUIContextService: ChatUIContextService) { 
-    
+      
   }
 
   ngOnInit(): void {
@@ -136,7 +148,7 @@ export class CommunicationToolkitComponent implements OnInit {
     }
 
     else if(rcaTopic == "Modify/Edit Existing RCAs"){
-      this.onClickModifier();
+      this.modifierClicked();
       return; 
     }
 
@@ -152,7 +164,7 @@ export class CommunicationToolkitComponent implements OnInit {
       setTimeout(() => {
         this.showRCA()
         
-     }, 3000);
+     }, 1000);
     }
     
   }
@@ -171,7 +183,7 @@ export class CommunicationToolkitComponent implements OnInit {
     setTimeout(() => {
       this.showRCA()
       
-   }, 3000);
+   }, 1000);
 
   }
   
@@ -184,11 +196,34 @@ export class CommunicationToolkitComponent implements OnInit {
     this.rcaDisplayed = true; 
   }
 
+
+  backButtonClicked(): void{
+    //change states of variables 
+    //to return to homepage
+
+    debugger; 
+    
+    this.displayLoader =  false;
+    
+    this.modifierDisplayed = false; 
+    this.rcaLoading = false; 
+    this.rcaDisplayed = false; 
+    
+    this.currentSelectedRCATopic  = ""; 
+    this.currentSelectedRCA = ""; 
+    this.subcategoriesDisplayed = false; 
+    this.otherDisplayed = false; 
+  
+
+    
+    
+  }
+
   otherClicked(): void {
     this.otherDisplayed = true; 
   }
 
-  onClickModifier(): void {
+  modifierClicked(): void {
     this.modifierDisplayed = true; 
     this.isEnabled = true; 
     this.isEnabledChecked = true; 
