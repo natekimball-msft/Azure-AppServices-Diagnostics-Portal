@@ -41,14 +41,15 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
     deepSearchEnabled: boolean = true;
     waitTimeBeforeDeepSearch: number = 20000; // 20 seconds
     showDeepSearchSolution: boolean = false;
-    deepSearchPrompt: string = "";
+    diagnosticToolFindings: string = "";
     detectorInsightsReturned: boolean = false;
     webSearchEnabled: boolean = false;
 
     onDeepSearchFailure = () => {
         this.deepSearchEnabled = false;
-        this.deepSearchPrompt = "";
+        this.diagnosticToolFindings = "";
         this.webSearchEnabled = true;
+        this.enableSearchBox();
     }
 
     ngOnInit() {
@@ -62,11 +63,16 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
         };
 
         setTimeout(() => {
-            if (!this.detectorInsightsReturned && !this.showDeepSearchSolution) {
-                this.deepSearchPrompt = `System Prompt: Please do not send any links in your response. Do not ask the user any more details about the issue.\n UserQuery: ${this.keyword}`;
+            if (!this.detectorInsightsReturned && !this.showDeepSearchSolution && !this.noSearchResult) {
+                this.diagnosticToolFindings = "";
                 this.showDeepSearchSolution = true;
             }
         }, this.waitTimeBeforeDeepSearch);
+
+        setTimeout(() => {
+            this.onViewUpdate.emit();
+        }, 100);
+        this.viewUpdated = true;
 
         this.analysisListSubject.subscribe((dataOutput) => {
             let nextKey = "";
@@ -88,27 +94,34 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
             this.detectorInsightsReturned = true;
 
             if (!this.showDeepSearchSolution) {
-                if (dataOutput.status && dataOutput.data && dataOutput.data.issueDetectedViewModels && dataOutput.data.issueDetectedViewModels.length > 0) {
-                    let numInsights = dataOutput.data.issueDetectedViewModels.length;
-                    numInsights = numInsights > 3 ? 3 : numInsights;
-                    let maxLengthEach = Math.floor(400/numInsights);
-                    let insights = dataOutput.data.issueDetectedViewModels.slice(0, numInsights).map((insight) => { return insight.insightDescription.substring(0, maxLengthEach);}).join("\n");
-                    this.showDeepSearchSolution = true;
-                    // TODO ajsharm: refactor this code to parametrize these
-                    this.deepSearchPrompt = `System Prompt: Please do not send any links in your response. Do not ask the user any more details about the issue.\n UserQuery: ${this.keyword}\n Diagnostic Tool Findings:\n ${insights}`;
+                try {
+                    if (!this.noSearchResult && dataOutput.status && dataOutput.data && dataOutput.data.issueDetectedViewModels && dataOutput.data.issueDetectedViewModels.length > 0) {
+                        let numInsights = dataOutput.data.issueDetectedViewModels.length;
+                        numInsights = numInsights > 3 ? 3 : numInsights;
+                        let maxLengthEach = Math.floor(600/numInsights);
+                        let insights = dataOutput.data.issueDetectedViewModels.slice(0, numInsights).map((insight) => { return insight.insightDescription? insight.insightTitle + "\n" + insight.insightDescription.substring(0, maxLengthEach): insight.insightTitle;}).join("\n");
+                        this.showDeepSearchSolution = true;
+                        this.diagnosticToolFindings = insights;
+                    }
+                    else {
+                        this.diagnosticToolFindings = "";
+                        this.showDeepSearchSolution = true;
+                    }
+                    this.enableSearchBox();
                 }
-                else {
-                    this.deepSearchPrompt = `System Prompt: Please do not send any links in your response. Do not ask the user any more details about the issue.\n UserQuery: ${this.keyword}`;
-                    this.showDeepSearchSolution = true;
+                catch (error) {
+                    //This is not a breaking error
+                    this.onDeepSearchFailure();
                 }
             }
 
             this.onComplete.emit(statusValue);
-            setTimeout(() => {
-                this.onViewUpdate.emit();
-            }, 100);
-            this.viewUpdated = true;
+            this.enableSearchBox();
         });
+    }
+
+    enableSearchBox(){
+        (<HTMLTextAreaElement>document.getElementById("genieChatBox")).disabled = false;
     }
 
     ngAfterViewInit() {

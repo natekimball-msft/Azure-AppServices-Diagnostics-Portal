@@ -548,6 +548,10 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
                         });
 
                     }
+                    else {
+                        let dataOutput = {};
+                        this.onComplete.emit(dataOutput);
+                    }
                 },
                     (err) => {
                         this.showPreLoader = false;

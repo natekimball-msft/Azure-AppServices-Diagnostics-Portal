@@ -30,8 +30,8 @@ export class OpenAIArmService {
     }
   }
 
-  runOpenAIDetector(questionString: string, useStack: boolean = true, useDeepSearch: boolean = false): Observable<any> {
-    const query = this.constructQueryBody(questionString, useStack, useDeepSearch);
+  runOpenAIDetector(questionString: string, useStack: boolean = true, useDeepSearch: boolean = false, diagnosticToolFindings: string = ""): Observable<any> {
+    const query = this.constructQueryBody(questionString, useStack, useDeepSearch, diagnosticToolFindings);
     let queryParams = `&text=${encodeURIComponent(query)}`;
     return this._diagnosticService.getDetector("OpenAIDetectorId-1ce0e6a6-210d-43c8-9d90-0ab0dd171828", this._detectorControlService.startTimeString, this._detectorControlService.endTimeString, true, false, queryParams, null).pipe(
       map((response: DetectorResponse) => {
@@ -41,7 +41,7 @@ export class OpenAIArmService {
     );
   }
 
-  constructQueryBody(questionString: string, useStack: boolean, useDeepSearch: boolean = false) : any {
+  constructQueryBody(questionString: string, useStack: boolean, useDeepSearch: boolean = false, diagnosticToolFindings: string = "") : any {
     let resourceType = this._resourceService.searchSuffix;
     //Decide the stack type to use with query
     var stackTypeSuffix = this._resourceService["appStack"] ? ` ${this._resourceService["appStack"]}` : "";
@@ -59,7 +59,8 @@ export class OpenAIArmService {
       query: encodeURIComponent(questionString),
       resourceType: resourceType,
       stackInfo: stackTypeSuffix,
-      useDeepSearch: useDeepSearch
+      useDeepSearch: useDeepSearch,
+      ...(diagnosticToolFindings && diagnosticToolFindings.length > 0 && {diagnosticToolFindings: diagnosticToolFindings})
     });
     return query;
   }
@@ -68,10 +69,10 @@ export class OpenAIArmService {
     return this.runOpenAIDetector(questionString, true);
   }
 
-  public getDeepSearchAnswer(questionString: string): Observable<any> {
+  public getDeepSearchAnswer(questionString: string, diagnosticToolFindings: string): Observable<any> {
     if (questionString.length > this.maxLengthAllowed) {
       questionString = questionString.substring(0, this.maxLengthAllowed-2);
     }
-    return this.runOpenAIDetector(questionString, true, true);
+    return this.runOpenAIDetector(questionString, true, true, diagnosticToolFindings);
   }
 }

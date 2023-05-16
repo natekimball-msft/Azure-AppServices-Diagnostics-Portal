@@ -11,8 +11,6 @@ import { GenericResourceService } from '../../services/generic-resource-service'
     styleUrls: ['./openai-genie.component.scss']
 })
 
-// TODO:ajsharm - Make the links in solution click open in new tab
-
 export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnInit {
     isPublic: boolean = false;
     deepSearchSolution: string = "";
@@ -22,7 +20,8 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
     errorMessage: string = "";
     enabledPesIds: string[] = ["14748"];
     isDisabled: boolean = false;
-    @Input() searchPrompt: string = "";
+    @Input() userQuery: string = "";
+    @Input() diagnosticToolFindings: string = "";
     @Input() onCallFailure: () => {};
     @Output() onComplete: EventEmitter<any> = new EventEmitter<any>();
     
@@ -33,7 +32,7 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
     }
 
     ngOnInit() {
-        if (this.searchPrompt && this.searchPrompt.length > 0) {
+        if (this.userQuery && this.userQuery.length > 0) {
             this._resourceService.getPesId().subscribe(pesId => {
                 if (this.enabledPesIds.includes(pesId)) {
                     this.triggerSearch();
@@ -54,8 +53,8 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
 
     triggerSearch() {
         this.fetchingDeepSearchSolution = true;
-        this._openAIArmService.getDeepSearchAnswer(this.searchPrompt).subscribe(result => {
-            if (result && result.length > 0 && !result.includes("We could not find any information about that")) {
+        this._openAIArmService.getDeepSearchAnswer(this.userQuery, this.diagnosticToolFindings).subscribe(result => {
+            if (result && result.length > 0 && !result.includes("We could not find any information about that") && !result.includes("An error occurred.")) {
                 this.deepSearchSolution = result;
                 this.showDeepSearchSolution = true;
             }
