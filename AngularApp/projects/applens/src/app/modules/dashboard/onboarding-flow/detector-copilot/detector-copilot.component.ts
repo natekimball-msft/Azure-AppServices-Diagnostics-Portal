@@ -195,13 +195,19 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
     let lastMessage: ChatMessage = this._chatContextService.messageStore[this.chatComponentIdentifier].at(-1);
     if (lastMessage.messageSource == MessageSource.System && lastMessage.status == MessageStatus.InProgress) {
       let lastLine = lastMessage.message.split('\n').slice(-1);
+      let messageContainsCode = this.isMessageContainsCode(lastMessage.message);
       let linesOfCode = this.codeUsedInPrompt && this.codeUsedInPrompt != '' ? this.codeUsedInPrompt.split("\n").length : 0;
-      if (linesOfCode <= this.maxLinesLimitForCodeUpdate) {
-        chatContext.push({
-          "role": "User",
-          "content": `Finish the above message. Make sure you start the new message with characters right after where the above message ended at '${lastLine}'. Only tell me the remaining message and not the enitre message again. No code explanation needed.`
-        });
+
+      var artificialUserMsg = `Finish the above message. Make sure you start the new message with characters right after where the above message ended at '${lastLine}'. Only tell me the remaining message and not the enitre message again.`;
+
+      if ((messageContainsCode && linesOfCode <= this.maxLinesLimitForCodeUpdate)) {
+       artificialUserMsg = `${artificialUserMsg}.  No code explanation needed.`;
       }
+      
+      chatContext.push({
+        "role": "User",
+        "content": artificialUserMsg
+      });
     }
 
     return chatContext;
