@@ -36,16 +36,6 @@ namespace DiagPortalTest
             return url;
         }
 
-        //protected override void Run()
-        //{
-        //    string url = GetCaseSubmissionUrl(_testConfig.ResourceUri, _caseSubmissionItem.CaseSubject);
-        //    _driver.Navigate().GoToUrl(url);
-        //    Thread.Sleep(1000 * 30);
-        //    var currentIFrame = GetIframeElement(0);
-        //    _driver.SwitchTo().Frame(currentIFrame);
-        //    Assert.IsTrue(CheckIfDetectorPresent(30), "Case Submission Analysis Displayed");
-        //}
-
         public void Run()
         {
             string url = GetCaseSubmissionUrl(_testConfig.ResourceUri, _caseSubmissionItem.CaseSubject);
