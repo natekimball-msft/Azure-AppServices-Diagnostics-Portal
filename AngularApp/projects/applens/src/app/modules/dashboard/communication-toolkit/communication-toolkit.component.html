@@ -6,44 +6,48 @@
     </div>
     
     <div *ngIf = "!subcategoriesDisplayed" class="rca-box-row-container rca-samples-container">
-        
+        <div class = "rca-box-row rca-subtitle-text">
+            {{mainCategoryPageText}}
+        </div>
         <div class="rca-box-row">
             <ng-container *ngFor="let cat of [].constructor(6); let i = index">
 
-            <div class="rca-box2 rca-title-text" *ngIf = "i<=2 && ( i < categoryMapping.size) "  
-              (click) = "mainCategoryClicked(categoryMappingKeys[i])">{{categoryMappingKeys[i]}}</div>
+            <div class="rca-box rca-title-text" *ngIf = "i<=2 && ( i < categoryMapping.size) "  
+              (click) = "mainCategoryClicked(categoryMappingKeys[i])" [innerHTML] = "categoryMappingKeys[i]"></div>
               <div class="empty-box" *ngIf = "i<=2 && ( i >= categoryMapping.size) "  
                 [innerHTML] = ""></div>
             </ng-container>
         </div>
         <div class="rca-box-row">
             <ng-container *ngFor="let cat of [].constructor(6); let i = index">
-                <div class="rca-box2 rca-title-text" *ngIf = "(i>=3 && i<=5) && ( i < categoryMapping.size) "  
-                    (click) = "mainCategoryClicked(categoryMappingKeys[i])">{{categoryMappingKeys[i]}}</div>
+                <div class="rca-box rca-title-text" *ngIf = "(i>=3 && i<=5) && ( i < categoryMapping.size) "  
+                    (click) = "mainCategoryClicked(categoryMappingKeys[i])" [innerHTML] = "categoryMappingKeys[i]"></div>
                 <div class="empty-box" *ngIf = "(i>=3 && i<=5) && ( i >= categoryMapping.size) "  
                     [innerHTML] = ""></div>
             </ng-container>
         </div>
     </div>
     <div *ngIf = "subcategoriesDisplayed" class="rca-box-row-container rca-samples-container">
-        
+        <div class = "rca-box-row rca-subtitle-text">
+            {{mainCategoryPageText}}
+        </div>
         <div class="rca-box-row">
             <ng-container *ngFor="let cat of [].constructor(6); let i = index">
-              <div class="rca-box2 rca-title-text" *ngIf = "i<=2 && ( i < categoryMapping.get(currentSelectedRCATopic).length )"  
-              (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])">{{categoryMapping.get(currentSelectedRCATopic)[i]}}</div>
+              <div class="rca-box rca-title-text" *ngIf = "i<=2 && ( i < categoryMapping.get(currentSelectedRCATopic).length )"  
+              (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])" [innerHTML] = "categoryMapping.get(currentSelectedRCATopic)[i]"></div>
               <div class="empty-box" *ngIf = "i<=2 && ( i >= categoryMapping.get(currentSelectedRCATopic).length )"  
              [innerHTML] = ""></div>
             </ng-container>
         </div>
         <div class="rca-box-row">
             <ng-container *ngFor="let cat of [].constructor(6);let i = index">
-              <div class="rca-box2 rca-title-text" *ngIf = "(i>=3 && i<=5) && ( i < categoryMapping.get(currentSelectedRCATopic).length) " 
-                (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])">{{categoryMapping.get(currentSelectedRCATopic)[i]}}</div>
+              <div class="rca-box rca-title-text" *ngIf = "(i>=3 && i<=5) && ( i < categoryMapping.get(currentSelectedRCATopic).length) " 
+                (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])" [innerHTML] = "categoryMapping.get(currentSelectedRCATopic)[i]"></div>
                 <div class="empty-box" *ngIf = "(i>=3 && i<=5) && ( i >= categoryMapping.get(currentSelectedRCATopic).length )" 
                     [innerHTML] = ""></div>
             </ng-container>
         </div>
-        <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Back</div></button>
+        <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
     </div>
 </div>
 
@@ -59,7 +63,15 @@
         <h1 class="rca-header-text">EasyRCA!</h1>
         <div class = "rca-body-container rca-subtitle-text">The RCA template for <b>{{currentSelectedRCATopic}}</b> is below:
         </div>
-        <div class = "rca-body-container rca-body-text rca-result-box" [innerHTML] = "currentSelectedRCA">
+        <div class = "rca-body-container">
+            <div class=" rca-body-text rca-result-box" [innerHTML] = "currentSelectedRCA">
+            </div>
+            <button type = "button" class="right-aligned-btn btn-text" (click) = "copyClicked()">
+                <span class="fa fa-copy"></span>
+                {{copyButtonMessage}}
+            </button>
+            <button type="button" class="right-aligned-btn" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
+            <button type="button" class="right-aligned-btn" (click) = "modifierClicked()"><div class = "btn-text">Edit with ChatGPT!</div></button>
         </div>
     </div>
 </div>
@@ -68,9 +80,12 @@
 <div *ngIf = "!rcaLoading && !rcaDisplayed && !subcategoriesDisplayed && otherDisplayed" class = "rca-bot-container rca-template-box-header">
     <div class="rca-box-row-container rca-header-container">
         <h1 class="rca-header-text">EasyRCA!</h1>
-        <div class = "rca-body-container rca-subtitle-text" >{{otherDisplayText}} 
-            <textarea class = "input-box"></textarea>
-            <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Back</div></button>
+        <div class = "rca-body-container rca-subtitle-text" >{{otherDisplayText}}
+            <form>
+                <textarea class = "input-box">Please enter your feedback...</textarea>
+                <button type="submit" class = "btn btn-text">Submit</button>
+            </form> 
+            <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
         </div>
        
     </div>
@@ -97,7 +112,9 @@
       [customInitialPrompt]="customInitialPrompt"
     >
     </openai-chat>
+    <button type="button" class="right-aligned-btn" style = "top:715px" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
   </div>
+  
   
   <div *ngIf="isEnabledChecked && !isEnabled">
     <div class="chatgpt-bot-container">

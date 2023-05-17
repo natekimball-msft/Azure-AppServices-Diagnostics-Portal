@@ -9,6 +9,7 @@ import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.se
 import { ResourceService } from '../../../shared/services/resource.service';
 import { UserSettingService } from '../services/user-setting.service';
 import { UserChatGPTSetting } from '../../../shared/models/user-setting';
+import { ClipboardService } from 'projects/diagnostic-data/src/lib/services/clipboard.service';
 
 @Component({
   selector: 'communication-toolkit',
@@ -27,7 +28,7 @@ export class CommunicationToolkitComponent implements OnInit {
   // Variables to be passed down to the OpenAI Chat component
   chatComponentIdentifier: string = "EasyRCAChatGPT";
   showContentDisclaimer: boolean = true;
-  contentDisclaimerMessage: string = "* Please do not send any sensitive data in your queries. Please verify the response before sending to customers.";
+  contentDisclaimerMessage: string = "* Please do not send any sensitive data in your queries. Please VERIFY the given RCA before sending to customers...I'm still learning :)";
 
   userAlias: string = '';
   userChatGPTSetting: UserChatGPTSetting;
@@ -57,6 +58,8 @@ export class CommunicationToolkitComponent implements OnInit {
   subcategoriesDisplayed = false; 
   otherDisplayed = false; 
 
+  copyButtonMessage : string = "Copy"; 
+
   // previousState : Map<string, any> = new Map([
 
   // ]); 
@@ -74,8 +77,8 @@ export class CommunicationToolkitComponent implements OnInit {
     ["File Server Issues", ["High CPU", "Noisy Neighbor / Automorphism failed to scale out FEs", "Noisy Neighbor / Single Site Stress Test", "Noisy Neighbor / Single Site Under Attack", "Unplanned Hardware", "File Server Upgrade"] ],
     ["Customer Code Issues", ["App Issue, Slow", "App issue, deadlock at .Result", "App issue, too big zip file for RUN_FROM_PACKAGE"]],
     ["Platform Issues", ["Storage Volume Caused Downtime"]],
-    ["Modify/Edit Existing RCAs", []],
     ["Health Check Issues", []],
+    ["Build/Edit an RCA with <b>ChatGPT!</b>", []],
     ["Other", []]
   ]);
   
@@ -104,8 +107,9 @@ export class CommunicationToolkitComponent implements OnInit {
     private _userSettingService: UserSettingService,
     private _resourceService: ResourceService,
     private _telemetryService: TelemetryService,
-    public _chatUIContextService: ChatUIContextService) { 
-      
+    public _chatUIContextService: ChatUIContextService,
+    private _clipboard: ClipboardService) { 
+
   }
 
   ngOnInit(): void {
@@ -147,7 +151,7 @@ export class CommunicationToolkitComponent implements OnInit {
       return; 
     }
 
-    else if(rcaTopic == "Modify/Edit Existing RCAs"){
+    else if(rcaTopic == "Build/Edit an RCA with <b>ChatGPT!</b>"){
       this.modifierClicked();
       return; 
     }
@@ -224,9 +228,25 @@ export class CommunicationToolkitComponent implements OnInit {
   }
 
   modifierClicked(): void {
+    debugger; 
+
+    this.rcaDisplayed = false; 
+    this.rcaLoading = false; 
+    this.otherDisplayed = false; 
+    this.subcategoriesDisplayed = false; 
+
     this.modifierDisplayed = true; 
     this.isEnabled = true; 
     this.isEnabledChecked = true; 
+
+  }
+
+  copyClicked(): void{
+    this._clipboard.copyAsHtml(this.currentSelectedRCA);
+    this.copyButtonMessage = "Copied!"; 
+    setTimeout(() => {
+     this.copyButtonMessage = "Copy";  
+    }, 2000);
 
   }
 
