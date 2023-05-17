@@ -133,8 +133,8 @@ export class OpenAIChatComponent implements OnInit {
     else {
       if (!this._chatContextService.messageStore.hasOwnProperty(this.chatIdentifier)) {
         this._chatContextService.messageStore[this.chatIdentifier] = [];
-        this.populateCustomFirstMessage();
       }
+      this.populateCustomFirstMessage();
     }
   }
 
