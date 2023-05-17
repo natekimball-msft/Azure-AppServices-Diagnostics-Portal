@@ -30,6 +30,7 @@ export class OpenAIChatComponent implements OnInit {
   @ViewChild('chatUIComponent') chatUIComponentRef: ChatUIComponent;
 
   @Input() customInitialPrompt: string = '';
+  @Input() customFirstMessage: string = '';
   @Input() userId: string = '';
   @Input() userNameInitial: string = '';
   @Input() userPhotoSource: string = '';
@@ -100,6 +101,23 @@ export class OpenAIChatComponent implements OnInit {
 
     this.loadChatFromStore(); // Works only if persistChat is true
   }
+  
+  populateCustomFirstMessage() {
+      if (this.customFirstMessage && this.customFirstMessage.length > 0){
+        let message = {
+            id: uuid(),
+            displayMessage: this.customFirstMessage,
+            message: this.customFirstMessage,
+            messageSource: MessageSource.User,
+            timestamp: new Date().getTime(),
+            messageDisplayDate: TimeUtilities.displayMessageDate(new Date()),
+            status: MessageStatus.Finished,
+            userFeedback: "none",
+            renderingType: MessageRenderingType.Text
+        };
+        this.onUserSendMessage(message);
+      }
+  }
 
   loadChatFromStore() {
     if (this.persistChat && this.fetchChat) {
@@ -109,11 +127,13 @@ export class OpenAIChatComponent implements OnInit {
         this._telemetryService.logEvent("OpenAIChatLoadedFromStore", { userId: this.userId, ts: new Date().getTime().toString() });
 
         this.checkQuota();
+        this.populateCustomFirstMessage();
       });
     }
     else {
       if (!this._chatContextService.messageStore.hasOwnProperty(this.chatIdentifier)) {
         this._chatContextService.messageStore[this.chatIdentifier] = [];
+        this.populateCustomFirstMessage();
       }
     }
   }
