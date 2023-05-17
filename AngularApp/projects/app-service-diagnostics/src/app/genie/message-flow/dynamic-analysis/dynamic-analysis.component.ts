@@ -44,11 +44,13 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
     diagnosticToolFindings: string = "";
     detectorInsightsReturned: boolean = false;
     webSearchEnabled: boolean = false;
+    statusValue: any;
 
     onDeepSearchFailure = () => {
         this.deepSearchEnabled = false;
         this.diagnosticToolFindings = "";
         this.webSearchEnabled = true;
+        this.onComplete.emit(this.statusValue);
         this.enableSearchBox();
     }
 
@@ -84,7 +86,7 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
                 nextKey = "feedback";
             }
 
-            let statusValue = {
+            this.statusValue = {
                 status: dataOutput && dataOutput.status ? dataOutput.status : false,
                 data: {
                     hasResult: !this.noSearchResult,
@@ -98,7 +100,7 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
                     if (!this.noSearchResult && dataOutput.status && dataOutput.data && dataOutput.data.issueDetectedViewModels && dataOutput.data.issueDetectedViewModels.length > 0) {
                         let numInsights = dataOutput.data.issueDetectedViewModels.length;
                         numInsights = numInsights > 3 ? 3 : numInsights;
-                        let maxLengthEach = Math.floor(600/numInsights);
+                        let maxLengthEach = Math.floor(900/numInsights);
                         let insights = dataOutput.data.issueDetectedViewModels.slice(0, numInsights).map((insight) => { return insight.insightDescription? insight.insightTitle + "\n" + insight.insightDescription.substring(0, maxLengthEach): insight.insightTitle;}).join("\n");
                         this.showDeepSearchSolution = true;
                         this.diagnosticToolFindings = insights;
@@ -114,10 +116,13 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
                     this.onDeepSearchFailure();
                 }
             }
-
-            this.onComplete.emit(statusValue);
-            this.enableSearchBox();
         });
+    }
+
+    deepSearchCompleted(event)
+    {
+        this.onComplete.emit(this.statusValue);
+        this.enableSearchBox();
     }
 
     enableSearchBox(){

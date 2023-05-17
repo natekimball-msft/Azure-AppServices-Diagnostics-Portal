@@ -20,6 +20,7 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
     errorMessage: string = "";
     enabledPesIds: string[] = ["14748"];
     isDisabled: boolean = false;
+    timeoutForDisplayingResults: number = 2000; // 2 seconds
     @Input() userQuery: string = "";
     @Input() diagnosticToolFindings: string = "";
     @Input() onCallFailure: () => {};
@@ -31,38 +32,57 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
         this.isPublic = config && config.isPublic;
     }
 
+    handleFailure() {
+        this.isDisabled = true;
+        this.deepSearchSolution = "";
+        this.showDeepSearchSolution = false;
+        this.fetchingDeepSearchSolution = false;
+        this.onCallFailure();
+    }
+
     ngOnInit() {
+        this.isDisabled = true;
         if (this.userQuery && this.userQuery.length > 0) {
             this._resourceService.getPesId().subscribe(pesId => {
                 if (this.enabledPesIds.includes(pesId)) {
                     this.triggerSearch();
                 }
                 else {
-                    this.isDisabled = true;
-                    this.onCallFailure();
+                    this.handleFailure();
                 }
             });
         }
+        else {
+            this.handleFailure();
+        }
     }
 
+    /*
+    // Keeping request failure scenario dormant for now
     handleRequestFailure() {
         this.errorMessage = "An error occurred while fetching the solution. Click on the button to try again.";
         this.showErrorMessage = true;
         this.onCallFailure();
-    }
+    }*/
 
     triggerSearch() {
-        this.fetchingDeepSearchSolution = true;
         this._openAIArmService.getDeepSearchAnswer(this.userQuery, this.diagnosticToolFindings).subscribe(result => {
             if (result && result.length > 0 && !result.includes("We could not find any information about that") && !result.includes("An error occurred.")) {
-                this.deepSearchSolution = result;
-                this.showDeepSearchSolution = true;
+                this.fetchingDeepSearchSolution = true;
+                setTimeout(() => {
+                    this.isDisabled = false;
+                    this.deepSearchSolution = result;
+                    this.showDeepSearchSolution = true;
+                    this.fetchingDeepSearchSolution = false;
+                    this.onComplete.emit();
+                }, this.timeoutForDisplayingResults);
             }
-            this.fetchingDeepSearchSolution = false;
+            else {
+                this.handleFailure();
+            }
         },
         (err) => {
-            this.fetchingDeepSearchSolution = false;
-            this.handleRequestFailure();
+            this.handleFailure();
         });
     }
 }  
