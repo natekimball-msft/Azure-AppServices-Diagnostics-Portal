@@ -41,8 +41,8 @@ export class OpenAIChatComponent implements OnInit {
   @Input() chatHeader: string = '';
   @Input() chatContextLength: number = 2;
   @Input() chatQuerySamplesFileUri: string = ''; //e.g. "assets/chatConfigs/chatQuerySamples.json"
-  @Input() fetchChat: Function = (chatIdentifier: string): Observable<ChatMessage[]> => { return of([]); }
-  @Input() saveChat: Function = (chatIdentifier: string, chat: ChatMessage[]): Observable<any> => { return of({}); }
+  @Input() fetchChat: Function;
+  @Input() saveChat: Function;
   @Input() chatAlignment: ChatAlignment = ChatAlignment.Center;
 
   // Callback methods for pre and post processing messages
@@ -133,8 +133,8 @@ export class OpenAIChatComponent implements OnInit {
     else {
       if (!this._chatContextService.messageStore.hasOwnProperty(this.chatIdentifier)) {
         this._chatContextService.messageStore[this.chatIdentifier] = [];
-        this.populateCustomFirstMessage();
       }
+      this.populateCustomFirstMessage();
     }
   }
 
@@ -318,7 +318,8 @@ export class OpenAIChatComponent implements OnInit {
         renderingType: MessageRenderingType.Text
       };
       this._chatContextService.messageStore[this.chatIdentifier].push(chatMessage);
-      this.chatUIComponentRef.scrollToBottom();
+      //Add a little timeout here to wait for the child component to initialize well
+      setTimeout(() => {this.chatUIComponentRef.scrollToBottom();}, 200);
       this.fetchOpenAIResult(this.prepareChatContext(), chatMessage);
     }
   }
