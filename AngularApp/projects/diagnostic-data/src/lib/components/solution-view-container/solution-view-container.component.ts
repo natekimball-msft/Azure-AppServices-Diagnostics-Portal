@@ -20,6 +20,7 @@ export class SolutionViewContainerComponent implements OnInit {
     @Input() askReasonNotHelpful: boolean = false;
     @Input() metadataForLogging: any = {};
     @Input() showThanksMessage: boolean = false;
+    @Input() customSolutionTitleImageSrc: string = "";
 
     @Output() showThanksMessageChange = new EventEmitter<any>();
     

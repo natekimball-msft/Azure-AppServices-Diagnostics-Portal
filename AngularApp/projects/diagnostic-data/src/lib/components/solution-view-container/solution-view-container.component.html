@@ -1,6 +1,6 @@
 <div class="solution-view-container">
   <div class="solution-container-title">
-    <img [src]="solutionTitleImageSrc">
+    <img [src]="customSolutionTitleImageSrc && customSolutionTitleImageSrc.length>0? customSolutionTitleImageSrc: solutionTitleImageSrc">
     <span class="solution-title">{{solutionTitle}}</span>
     <span *ngIf="isRecommended" class="solution-title-label">Recommended</span></div>
   <ng-content></ng-content>

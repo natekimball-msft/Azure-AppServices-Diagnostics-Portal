@@ -21,6 +21,7 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
     enabledPesIds: string[] = ["14748"];
     isDisabled: boolean = false;
     timeoutForDisplayingResults: number = 2000; // 2 seconds
+    solutionTitleImgSrc: string = "assets/img/ai_powered_diagnotics_icon.svg";
     @Input() userQuery: string = "";
     @Input() diagnosticToolFindings: string = "";
     @Input() onCallFailure: () => {};
