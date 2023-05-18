@@ -40,8 +40,10 @@
             <div class="chatui-message-{{message.renderingType}}" [ngClass]="{'chatui-message': chatAlignment=='center', 'chatui-message-left-aligned': chatAlignment=='left'}">
               <div class="chat-message-timestamp">{{message.messageDisplayDate}}</div>
               <div style="white-space:pre-wrap">
-                <p [ngClass]="{'blinking-cursor': message.status==2}" [innerText]="message.displayMessage">
-                </p>
+                <!-- <p [ngClass]="{'blinking-cursor': message.status==2}" [innerText]="message.displayMessage">
+                </p> -->
+                <markdown [data] = "message.displayMessage">
+                </markdown>
               </div>
               <ng-container *ngIf="showFeedbackOptions && message.messageSource=='system'">
                 <div class="chatui-feedback-icons">

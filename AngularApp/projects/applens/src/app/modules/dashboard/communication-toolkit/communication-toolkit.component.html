@@ -1,12 +1,12 @@
 
 <div *ngIf = "!rcaLoading && !rcaDisplayed && !otherDisplayed &&!modifierDisplayed" class="rca-bot-container ">
     <div class="rca-box-row-container rca-header-container">
-        <h1 class="rca-header-text">EasyRCA!</h1>
+        <h1 class="rca-header-text">TalkEasy!</h1>
         <!-- <div class = "rca-subtitle-text">{{mainCategoryPageText}}</div> -->
     </div>
     
     <div *ngIf = "!subcategoriesDisplayed" class="rca-box-row-container rca-samples-container">
-        <div class = "rca-box-row rca-subtitle-text">
+        <div class = "rca-subtitle-text">
             {{mainCategoryPageText}}
         </div>
         <div class="rca-box-row">
@@ -28,7 +28,7 @@
         </div>
     </div>
     <div *ngIf = "subcategoriesDisplayed" class="rca-box-row-container rca-samples-container">
-        <div class = "rca-box-row rca-subtitle-text">
+        <div class = "rca-subtitle-text">
             {{mainCategoryPageText}}
         </div>
         <div class="rca-box-row">
@@ -47,8 +47,14 @@
                     [innerHTML] = ""></div>
             </ng-container>
         </div>
-        <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
-    </div>
+        <div class="rca-box-row">
+            <ng-container *ngFor="let cat of [].constructor(9);let i = index">
+              <div class="rca-box rca-title-text" *ngIf = "(i>=6 && i<=8) && ( i < categoryMapping.get(currentSelectedRCATopic).length) " 
+                (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])" [innerHTML] = "categoryMapping.get(currentSelectedRCATopic)[i]"></div>
+            </ng-container>
+            <button type="button" class="btn" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
+        </div>
+    </div>    
 </div>
 
 
@@ -66,12 +72,12 @@
         <div class = "rca-body-container">
             <div class=" rca-body-text rca-result-box" [innerHTML] = "currentSelectedRCA">
             </div>
-            <button type = "button" class="right-aligned-btn btn-text" (click) = "copyClicked()">
+            <button type = "button" class="btn btn-text" (click) = "copyClicked()">
                 <span class="fa fa-copy"></span>
                 {{copyButtonMessage}}
             </button>
-            <button type="button" class="right-aligned-btn" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
-            <button type="button" class="right-aligned-btn" (click) = "modifierClicked()"><div class = "btn-text">Edit with ChatGPT!</div></button>
+            <button type="button" class="btn" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
+            <button type="button" class="btn" (click) = "modifierClicked()"><div class = "btn-text">Edit with ChatGPT!</div></button>
         </div>
     </div>
 </div>
@@ -83,8 +89,8 @@
         <div class = "rca-body-container rca-subtitle-text" >{{otherDisplayText}}
             <form>
                 <textarea class = "input-box">Please enter your feedback...</textarea>
-                <button type="submit" class = "btn btn-text">Submit</button>
             </form> 
+            <button type="submit" class = "btn btn-text">Submit</button>
             <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
         </div>
        
@@ -96,10 +102,10 @@
 <div *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !subcategoriesDisplayed && !otherDisplayed">
     <openai-chat
       [userId]="userAlias"
-      [persistChat]="true"
+      [persistChat]="false"
       [chatAlignment]="'center'"
       [chatIdentifier]="chatComponentIdentifier"
-      [chatContextLength]="10"
+      [chatContextLength]="4"
       [chatQuerySamplesFileUri]="'assets/chatConfigs/easyRCAChatGPT.json'"
       [showFeedbackOptions]="true"
       [showContentDisclaimer]="true"
@@ -110,10 +116,12 @@
       [chatHeader]="chatHeader"
       [systemPhotoSource]="'/assets/img/openailogo.svg'"
       [customInitialPrompt]="customInitialPrompt"
+      [customFirstMessage] = "customFirstMessageEdit"
     >
     </openai-chat>
-    <button type="button" class="right-aligned-btn" style = "top:715px" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
   </div>
+  <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !subcategoriesDisplayed && !otherDisplayed" type="button" class="btn" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
+
   
   
   <div *ngIf="isEnabledChecked && !isEnabled">
