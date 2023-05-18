@@ -34,6 +34,7 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
     @Input() searchResults: any[] = [];
     @Input() numArticlesExpanded : number = 5;
     @Output() searchResultsChange: EventEmitter<any[]> = new EventEmitter<any[]>();
+    @Output() onComplete: EventEmitter<any> = new EventEmitter<any>();
     pesId : string = "";
     sapProductId: string = "";
 
@@ -82,11 +83,17 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
         {
             this.refresh();
         }
+        else {
+            this.onComplete.emit();
+        }
     }
 
     refresh() {
         if (this.searchTerm && this.searchTerm.length > 1) {
             setTimeout(()=> {this.triggerSearch();}, 500);
+        }
+        else {
+            this.onComplete.emit();
         }
     }
 
@@ -180,16 +187,24 @@ export class WebSearchComponent extends DataRenderBaseComponent implements OnIni
             searchTaskPrefs = this.getBingSearchTask(this.webSearchConfig.PreferredSites);
         }
         else {
-            searchTaskPrefs = of(null);
+            searchTaskPrefs = of(null); 
         }
 
         this.showPreLoader = true;
         combineLatest([searchTask, searchTaskPrefs]).subscribe(resultPair => {
-            let results = this.mergeResults(resultPair);
-            this.displayResults(results);
+            try {
+                let results = this.mergeResults(resultPair);
+                this.displayResults(results);
+                setTimeout(()=> {this.onComplete.emit();}, 500);
+            }
+            catch (e) {
+                this.showPreLoadingError = true;
+                this.onComplete.emit();
+            }
         },
         (err) => {
             this.showPreLoadingError = true;
+            this.onComplete.emit();
         });
     }
 

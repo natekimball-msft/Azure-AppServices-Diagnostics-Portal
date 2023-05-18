@@ -67,6 +67,7 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     @Input() resourceId: string = "";
     @Input() targetedScore: number = 0.5;
     @Output() onComplete = new EventEmitter<any>();
+    @Output() onWebSearchCompletion = new EventEmitter<any>();
     @Output() updateDowntimeZoomBehavior = new EventEmitter<any>();
     allowUpdateDowntimeZoomBehaviorEvent: boolean = false;
     timeWhenAnalysisStarted: Moment;
@@ -288,6 +289,10 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
             }
         });
         return additionalQueryString;
+    }
+
+    webSearchCompleted(event){
+        this.onWebSearchCompletion.emit();
     }
 
     analysisContainsDowntime(): Observable<boolean> {

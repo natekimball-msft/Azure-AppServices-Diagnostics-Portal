@@ -20,7 +20,6 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
     errorMessage: string = "";
     enabledPesIds: string[] = ["14748"];
     isDisabled: boolean = false;
-    timeoutForDisplayingResults: number = 2000; // 2 seconds
     solutionTitleImgSrc: string = "assets/img/ai_powered_diagnotics_icon.svg";
     @Input() userQuery: string = "";
     @Input() diagnosticToolFindings: string = "";
@@ -42,7 +41,6 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
     }
 
     ngOnInit() {
-        this.isDisabled = true;
         if (this.userQuery && this.userQuery.length > 0) {
             this._resourceService.getPesId().subscribe(pesId => {
                 if (this.enabledPesIds.includes(pesId)) {
@@ -67,16 +65,14 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
     }*/
 
     triggerSearch() {
+        this.fetchingDeepSearchSolution = true;
         this._openAIArmService.getDeepSearchAnswer(this.userQuery, this.diagnosticToolFindings).subscribe(result => {
             if (result && result.length > 0 && !result.includes("We could not find any information about that") && !result.includes("An error occurred.")) {
-                this.fetchingDeepSearchSolution = true;
-                setTimeout(() => {
-                    this.isDisabled = false;
-                    this.deepSearchSolution = result;
-                    this.showDeepSearchSolution = true;
-                    this.fetchingDeepSearchSolution = false;
-                    this.onComplete.emit();
-                }, this.timeoutForDisplayingResults);
+                this.isDisabled = false;
+                this.deepSearchSolution = result;
+                this.showDeepSearchSolution = true;
+                this.fetchingDeepSearchSolution = false;
+                this.onComplete.emit();
             }
             else {
                 this.handleFailure();

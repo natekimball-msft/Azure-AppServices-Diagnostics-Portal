@@ -27,6 +27,7 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
     detectorName: string = "";
     @Input() showSearchBar: boolean = undefined;
     @Output() onComplete = new EventEmitter<any>();
+    @Output() onWebSearchComplete = new EventEmitter<any>();
 
     SearchAnalysisMode = SearchAnalysisMode;
     displayDetectorContainer: boolean = true;
@@ -104,6 +105,10 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
 
     updateLoadingStatus(dataOutput) {
         this.onComplete.emit(dataOutput);
+    }
+
+    updateWebSearchStatus(event){
+        this.onWebSearchComplete.emit();
     }
 
     triggerSearch() {

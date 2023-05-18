@@ -24,8 +24,8 @@
     </fab-callout>
   </div>
   <div class="chatui-feedback-icons" *ngIf="showLikeDislike">
-    <i class="fa fa-thumbs-up chatui-feedback-icon" tabindex="0" [ngClass]="{'chatui-feedback-icon-selected': likeDislikeStatus=='like'}" (click)="likeDislikeClicked('like')"></i>
-    <i class="fa fa-thumbs-down chatui-feedback-icon" tabindex="0" [ngClass]="{'chatui-feedback-icon-selected': likeDislikeStatus=='dislike'}" (click)="likeDislikeClicked('dislike')"></i>
+    <i class="fa fa-thumbs-up chatui-feedback-icon" tabindex="0" [ngClass]="{'chatui-feedback-icon-selected': likeDislikeStatus=='like'}" (click)="likeDislikeClicked('like')" (keyup.enter)="likeDislikeClicked('like')"></i>
+    <i class="fa fa-thumbs-down chatui-feedback-icon" tabindex="0" [ngClass]="{'chatui-feedback-icon-selected': likeDislikeStatus=='dislike'}" (click)="likeDislikeClicked('dislike')" (keyup.enter)="likeDislikeClicked('dislike')"></i>
   </div>
 <div *ngIf="showThanksMessage" class="solution-feedback-message">
   Thanks for the feedback!

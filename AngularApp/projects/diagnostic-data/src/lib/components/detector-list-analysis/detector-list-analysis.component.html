@@ -255,7 +255,7 @@
     </div>
     <div *ngIf="(webSearchEnabled) && (isDynamicAnalysis || withinGenie) && ((!showPreLoader && getPendingDetectorCount() === 0) || showWebSearch)"
       style="margin-left:80px;margin-top:20px;" [ngStyle]="{'margin-left': (withinGenie? '0px': '80px')}">
-      <web-search [searchTerm]="searchTerm" [searchId]="searchId" [isChildComponent]="true" [searchMode]="searchMode">
+      <web-search [searchTerm]="searchTerm" [searchId]="searchId" [isChildComponent]="true" [searchMode]="searchMode" (onComplete)="webSearchCompleted($event)">
       </web-search>
     </div>
 

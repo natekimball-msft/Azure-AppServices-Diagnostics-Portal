@@ -39,20 +39,15 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
     content: any[];
     analysisListSubject: ReplaySubject<any> = new ReplaySubject<any>(1);
     deepSearchEnabled: boolean = true;
+    deepSearchCompleted: boolean = false;
     waitTimeBeforeDeepSearch: number = 20000; // 20 seconds
     showDeepSearchSolution: boolean = false;
     diagnosticToolFindings: string = "";
     detectorInsightsReturned: boolean = false;
     webSearchEnabled: boolean = false;
+    webSearchCompleted: boolean = false;
+    detectorAnalysisCompleted: boolean = false;
     statusValue: any;
-
-    onDeepSearchFailure = () => {
-        this.deepSearchEnabled = false;
-        this.diagnosticToolFindings = "";
-        this.webSearchEnabled = true;
-        this.onComplete.emit(this.statusValue);
-        this.enableSearchBox();
-    }
 
     ngOnInit() {
         this.searchMode = SearchAnalysisMode.Genie;
@@ -74,9 +69,9 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
         setTimeout(() => {
             this.onViewUpdate.emit();
         }, 100);
-        this.viewUpdated = true;
 
         this.analysisListSubject.subscribe((dataOutput) => {
+            this.detectorAnalysisCompleted = true;
             let nextKey = "";
             if ((dataOutput == undefined || dataOutput.data == undefined || dataOutput.data.detectors == undefined || dataOutput.data.detectors.length === 0) && (this.content == undefined || this.content.length == 0)) {
                 this.noSearchResult = true;
@@ -95,6 +90,10 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
             };
             this.detectorInsightsReturned = true;
 
+            setTimeout(() => {
+                this.onViewUpdate.emit();
+            }, 100);
+
             if (!this.showDeepSearchSolution) {
                 try {
                     if (!this.noSearchResult && dataOutput.status && dataOutput.data && dataOutput.data.issueDetectedViewModels && dataOutput.data.issueDetectedViewModels.length > 0) {
@@ -109,20 +108,44 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
                         this.diagnosticToolFindings = "";
                         this.showDeepSearchSolution = true;
                     }
-                    this.enableSearchBox();
                 }
                 catch (error) {
                     //This is not a breaking error
-                    this.onDeepSearchFailure();
+                    this.handleDeepSearchFailure();
                 }
             }
+
+            this.checkCompletionStatus();
         });
     }
 
-    deepSearchCompleted(event)
+    checkCompletionStatus() {
+        if (this.detectorAnalysisCompleted && (!this.webSearchEnabled || (this.webSearchEnabled && this.webSearchCompleted)) && ((!this.deepSearchEnabled) || (this.deepSearchEnabled && this.deepSearchCompleted))) {
+            setTimeout(() => {
+                this.onViewUpdate.emit({data: "view-loaded"});
+            }, 100);
+            this.viewUpdated = true;
+            this.onComplete.emit(this.statusValue);
+        }
+    }
+
+    handleDeepSearchComplete(event)
     {
-        this.onComplete.emit(this.statusValue);
-        this.enableSearchBox();
+        this.deepSearchCompleted = true;
+        this.checkCompletionStatus();
+    }
+
+    handleWebSearchComplete(event){
+        this.webSearchCompleted = true;
+        this.checkCompletionStatus();
+    }
+
+    handleDeepSearchFailure = () => {
+        this.deepSearchEnabled = false;
+        this.deepSearchCompleted = true;
+        this.diagnosticToolFindings = "";
+        this.webSearchEnabled = true;
+        this.checkCompletionStatus();
     }
 
     enableSearchBox(){
