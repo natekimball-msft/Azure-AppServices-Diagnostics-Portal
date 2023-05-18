@@ -1,5 +1,5 @@
 <div class="detector-summary-container" [class.with-full-report]="false" >
-   <generic-analysis [analysisId]="'searchResultsAnalysis'" [webSearchEnabled]="webSearchEnabled" [resourceId]="resourceId" [targetedScore]="targetedScore" [searchTerm]="keyword" [searchMode]="searchMode" (onComplete)="updateStatus($event)" (onWebSearchComplete)="handleWebSearchComplete($event)"></generic-analysis>
+   <generic-analysis #genericAnalysis [analysisId]="'searchResultsAnalysis'" [webSearchEnabled]="webSearchEnabled" [resourceId]="resourceId" [targetedScore]="targetedScore" [searchTerm]="keyword" [searchMode]="searchMode" (onComplete)="updateStatus($event)" (onWebSearchComplete)="handleWebSearchComplete($event)"></generic-analysis>
    <openai-genie *ngIf="deepSearchEnabled && showDeepSearchSolution" [userQuery]="keyword" [diagnosticToolFindings]="diagnosticToolFindings" [onCallFailure]="handleDeepSearchFailure" (onComplete)="handleDeepSearchComplete($event)"></openai-genie>
   <div *ngIf="noSearchResult === true && !showDeepSearchSolution && !webSearchEnabled">
       <div tabindex="0" class="message-sent-by-system-genie" style="margin-bottom:10px">

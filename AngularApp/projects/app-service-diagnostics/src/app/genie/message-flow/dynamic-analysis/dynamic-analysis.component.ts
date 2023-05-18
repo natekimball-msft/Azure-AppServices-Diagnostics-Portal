@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, Injector, OnInit, Output, Input } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Injector, OnInit, Output, Input, ViewChild } from '@angular/core';
 import { Message, TextMessage, ButtonListMessage } from '../../models/message';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IChatMessageComponent } from '../../interfaces/ichatmessagecomponent';
@@ -9,6 +9,7 @@ import { LoggingV2Service } from '../../../shared-v2/services/logging-v2.service
 import { TelemetryService, TelemetryEventNames } from 'diagnostic-data';
 import { v4 as uuid } from 'uuid';
 import { ReplaySubject } from 'rxjs';
+import { GenericAnalysisComponent } from '../../../shared/components/generic-analysis/generic-analysis.component';
 
 @Component({
     selector: 'dynamic-analysis',
@@ -16,6 +17,8 @@ import { ReplaySubject } from 'rxjs';
     styleUrls: ['./dynamic-analysis.component.scss']
 })
 export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMessageComponent {
+
+    @ViewChild('genericAnalysis', { static: true }) genericAnalysis: GenericAnalysisComponent;
 
     @Input() keyword: string = "";
     @Input() resourceId: string = "";
@@ -40,7 +43,7 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
     analysisListSubject: ReplaySubject<any> = new ReplaySubject<any>(1);
     deepSearchEnabled: boolean = true;
     deepSearchCompleted: boolean = false;
-    waitTimeBeforeDeepSearch: number = 20000; // 20 seconds
+    waitTimeBeforeDeepSearch: number = 20000; // Maximum wait 20 seconds before we force call deep search
     showDeepSearchSolution: boolean = false;
     diagnosticToolFindings: string = "";
     detectorInsightsReturned: boolean = false;
@@ -60,8 +63,9 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
         };
 
         setTimeout(() => {
-            if (!this.detectorInsightsReturned && !this.showDeepSearchSolution && !this.noSearchResult) {
-                this.diagnosticToolFindings = "";
+            if (!this.detectorInsightsReturned && !this.showDeepSearchSolution) {
+                let issueDetectedViewModels = this.genericAnalysis ? this.genericAnalysis.getIssuesDetected(): [];
+                this.diagnosticToolFindings = this.extractDiagnosticInsights(issueDetectedViewModels);
                 this.showDeepSearchSolution = true;
             }
         }, this.waitTimeBeforeDeepSearch);
@@ -96,18 +100,8 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
 
             if (!this.showDeepSearchSolution) {
                 try {
-                    if (!this.noSearchResult && dataOutput.status && dataOutput.data && dataOutput.data.issueDetectedViewModels && dataOutput.data.issueDetectedViewModels.length > 0) {
-                        let numInsights = dataOutput.data.issueDetectedViewModels.length;
-                        numInsights = numInsights > 3 ? 3 : numInsights;
-                        let maxLengthEach = Math.floor(900/numInsights);
-                        let insights = dataOutput.data.issueDetectedViewModels.slice(0, numInsights).map((insight) => { return insight.insightDescription? insight.insightTitle + "\n" + insight.insightDescription.substring(0, maxLengthEach): insight.insightTitle;}).join("\n");
-                        this.showDeepSearchSolution = true;
-                        this.diagnosticToolFindings = insights;
-                    }
-                    else {
-                        this.diagnosticToolFindings = "";
-                        this.showDeepSearchSolution = true;
-                    }
+                    this.diagnosticToolFindings = dataOutput.status && dataOutput.data ? this.extractDiagnosticInsights(dataOutput.data.issueDetectedViewModels): "";
+                    this.showDeepSearchSolution = true;
                 }
                 catch (error) {
                     //This is not a breaking error
@@ -117,6 +111,19 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
 
             this.checkCompletionStatus();
         });
+    }
+
+    extractDiagnosticInsights(issueDetectedViewModels: any[]): string {
+        if (issueDetectedViewModels && issueDetectedViewModels.length > 0) {
+            let numInsights = issueDetectedViewModels.length;
+            // Take maximum 4 insights
+            numInsights = numInsights > 4 ? 4 : numInsights;
+            let maxLengthEach = Math.floor(1000/numInsights);
+            return issueDetectedViewModels.slice(0, numInsights).map((insight) => { return insight.insightDescription? insight.insightTitle + "\n" + insight.insightDescription.substring(0, maxLengthEach): insight.insightTitle;}).join("\n");
+        }
+        else {
+            return "";
+        }
     }
 
     checkCompletionStatus() {

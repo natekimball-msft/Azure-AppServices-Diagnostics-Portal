@@ -40,6 +40,15 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
     supportTopicId: string = '';
     cxpChatUrl: string = '';
 
+    public getIssuesDetected() {
+        if (this.detectorListAnalysis) {
+            this.detectorListAnalysis.getIssuesDetected();
+        }
+        else {
+            return [];
+        }
+    }
+
     constructor(private _activatedRouteLocal: ActivatedRoute, private _diagnosticServiceLocal: DiagnosticService, _resourceService: ResourceService, _authServiceInstance: AuthService, public _telemetryService: TelemetryService,
         _navigator: FeatureNavigationService, private _routerLocal: Router, private _supportTopicService: GenericSupportTopicService, private _cxpChatService: CXPChatService,
         @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig) {

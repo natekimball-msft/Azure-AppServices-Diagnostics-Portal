@@ -131,6 +131,10 @@ export class DetectorListAnalysisComponent extends DataRenderBaseComponent imple
     expandIssuedAnalysisChecks: boolean = false;
     allDetectors: DetectorMetaData[] = [];
 
+    public getIssuesDetected() {
+        return this.issueDetectedViewModels;
+    }
+
 
     constructor(public _activatedRoute: ActivatedRoute, private _router: Router,
         private _diagnosticService: DiagnosticService, private _detectorControl: DetectorControlService,
