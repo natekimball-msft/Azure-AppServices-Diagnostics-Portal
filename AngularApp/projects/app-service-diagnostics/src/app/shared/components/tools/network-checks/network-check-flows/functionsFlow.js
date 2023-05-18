@@ -19,8 +19,10 @@ export var functionsFlow = {
         var isKuduAccessiblePromise = null;
         if (siteInfo.kind.includes("container")) {
             isKuduAccessiblePromise = false;
+        } else if (siteInfo.kind.includes("linux")) {
+            isKuduAccessiblePromise = true; // Kudu not necessary for Network Validation on Linux
         } else {
-            isKuduAccessiblePromise = true //checkKuduAvailabilityAsync(diagProvider, flowMgr);
+            isKuduAccessiblePromise = checkKuduAvailabilityAsync(diagProvider, flowMgr);
         }
         var dnsServers = null;
         var vnetConfigChecker = new VnetIntegrationConfigChecker(siteInfo, diagProvider);
