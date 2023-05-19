@@ -36,7 +36,7 @@
 
   .rca-subtitle-text{
     font-weight: 400;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     line-height: 2.75rem;
     text-align: center;
     gap: 0.5rem;
@@ -60,18 +60,20 @@
   }
 
   .rca-title-text{
-    display: flex;
+    display:flex;
     align-items: center;
     text-align: center;
-    font-size: 1.65rem;
+    font-size: 1.5rem;
+
+    //white-space: nowrap; 
     //line-height: 23px;
     line-height:2.75rem;
     //margin: 5px 3px;
     font-weight: 450;
     color: var(--bodyText);
-    gap: 0.5rem;
-    margin-top:4rem; 
-    margin-bottom: 4rem;
+    gap: 0rem;
+    margin-top:0rem; 
+    margin-bottom: 0rem;
     margin-left: auto;
     margin-right: auto;
     font-family: Söhne,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;

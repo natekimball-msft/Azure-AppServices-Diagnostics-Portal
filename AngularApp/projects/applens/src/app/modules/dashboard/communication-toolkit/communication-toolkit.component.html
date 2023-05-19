@@ -140,12 +140,11 @@
       [customInitialPrompt]="customInitialPrompt"
       [customFirstMessage] = "customFirstMessageEdit"
     >
-    <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
     </openai-chat>
+    <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "margin-top: 88vh; margin-left:10%" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
+
   </div>
 
-  
-  
   <div *ngIf="isEnabledChecked && !isEnabled">
     <div class="chatgpt-bot-container">
       ChatGPT is currently disabled in AppLens. Please check back later.
