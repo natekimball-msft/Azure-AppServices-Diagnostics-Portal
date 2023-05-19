@@ -448,6 +448,7 @@ export class MainComponent implements OnInit {
     if(!!this.errorMessage) {
       return;
     }
+    
     this._userSettingService.updateDefaultServiceType(this.selectedResourceType.id);
     let resourceUri = '';
     if (!(this.caseNumber == "internal") && this.caseNumberNeededForUser && (this.selectedResourceType && this.caseNumberNeededForRP)) {
@@ -617,6 +618,16 @@ export class MainComponent implements OnInit {
 
   updateResourceName(e: { event: Event, newValue?: string }) {
     this.resourceName = e.newValue.toString();
+    if(this.isNoResource) {
+      if(!Guid.isGuid(this.resourceName.trim())) {
+        this.errorMessage = 'Invalid subscription id.';
+      }
+      else {
+        if(this.errorMessage === 'Invalid subscription id.') {
+          this.errorMessage = '';
+        }
+      }
+    }
     this.hasResourceCaseNumberEnforced();
   }
 
