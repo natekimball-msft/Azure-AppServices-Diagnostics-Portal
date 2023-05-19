@@ -64,9 +64,21 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
         this.onCallFailure();
     }*/
 
+    extractTextFromHTML(s) {
+        var span = document.createElement('span');
+        span.innerHTML = s;
+        return span.textContent || span.innerText;
+    }
+
+    cleanDiagnosticInsights(diagnosticInsights){
+        return this.extractTextFromHTML(diagnosticInsights);
+        //If needed in future we could do the below replacement of characters as well
+        //.replace(/[\W_\-%\.]+/g," ");
+    }
+
     triggerSearch() {
         this.fetchingDeepSearchSolution = true;
-        this._openAIArmService.getDeepSearchAnswer(this.userQuery, this.diagnosticToolFindings).subscribe(result => {
+        this._openAIArmService.getDeepSearchAnswer(this.userQuery, this.cleanDiagnosticInsights(this.diagnosticToolFindings)).subscribe(result => {
             if (result && result.length > 0 && !result.includes("We could not find any information about that") && !result.includes("An error occurred.")) {
                 this.isDisabled = false;
                 this.deepSearchSolution = result;
