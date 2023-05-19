@@ -445,7 +445,7 @@ export class MainComponent implements OnInit {
   }
 
   onSubmit() {
-    if(!!this.errorMessage && this.errorMessage != 'Invalid subscription id.') {
+    if(!!this.errorMessage) {
       return;
     }
     
@@ -618,6 +618,16 @@ export class MainComponent implements OnInit {
 
   updateResourceName(e: { event: Event, newValue?: string }) {
     this.resourceName = e.newValue.toString();
+    if(this.isNoResource) {
+      if(!Guid.isGuid(this.resourceName.trim())) {
+        this.errorMessage = 'Invalid subscription id.';
+      }
+      else {
+        if(this.errorMessage === 'Invalid subscription id.') {
+          this.errorMessage = '';
+        }
+      }
+    }
     this.hasResourceCaseNumberEnforced();
   }
 
