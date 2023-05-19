@@ -10,6 +10,7 @@ import { TelemetryService, TelemetryEventNames } from 'diagnostic-data';
 import { v4 as uuid } from 'uuid';
 import { ReplaySubject } from 'rxjs';
 import { GenericAnalysisComponent } from '../../../shared/components/generic-analysis/generic-analysis.component';
+import { HealthStatus } from 'diagnostic-data';
 
 @Component({
     selector: 'dynamic-analysis',
@@ -114,12 +115,14 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
     }
 
     extractDiagnosticInsights(issueDetectedViewModels: any[]): string {
-        if (issueDetectedViewModels && issueDetectedViewModels.length > 0) {
-            let numInsights = issueDetectedViewModels.length;
+        let onlyCriticalInsights = issueDetectedViewModels.filter(x => x.model.status == HealthStatus.Critical);
+        let insightsToUse = onlyCriticalInsights && (onlyCriticalInsights.length > 0)? onlyCriticalInsights: issueDetectedViewModels;
+        if (insightsToUse && insightsToUse.length > 0) {
+            let numInsights = insightsToUse.length;
             // Take maximum 4 insights
             numInsights = numInsights > 4 ? 4 : numInsights;
             let maxLengthEach = Math.floor(1000/numInsights);
-            return issueDetectedViewModels.slice(0, numInsights).map((insight) => { return insight.insightDescription? insight.insightTitle + "\n" + insight.insightDescription.substring(0, maxLengthEach): insight.insightTitle;}).join("\n");
+            return insightsToUse.slice(0, numInsights).map((insight) => { return insight.insightDescription? insight.insightTitle + "\n" + insight.insightDescription.substring(0, maxLengthEach): insight.insightTitle;}).join("\n");
         }
         else {
             return "";

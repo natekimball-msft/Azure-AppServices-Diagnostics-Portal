@@ -42,7 +42,7 @@ export class GenericAnalysisComponent extends GenericDetectorComponent implement
 
     public getIssuesDetected() {
         if (this.detectorListAnalysis) {
-            this.detectorListAnalysis.getIssuesDetected();
+            return this.detectorListAnalysis.getIssuesDetected();
         }
         else {
             return [];
