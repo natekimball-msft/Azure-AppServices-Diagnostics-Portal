@@ -445,9 +445,10 @@ export class MainComponent implements OnInit {
   }
 
   onSubmit() {
-    if(!!this.errorMessage) {
+    if(!!this.errorMessage && this.errorMessage != 'Invalid subscription id.') {
       return;
     }
+    
     this._userSettingService.updateDefaultServiceType(this.selectedResourceType.id);
     let resourceUri = '';
     if (!(this.caseNumber == "internal") && this.caseNumberNeededForUser && (this.selectedResourceType && this.caseNumberNeededForRP)) {
