@@ -365,8 +365,8 @@
         text="Update Detector References" [iconProps]="{iconName: 'BackToWindow'}"
         (click)="showUpdateDetectorReferencesDialog()">
       </fab-command-bar-item>
-      <fab-command-bar-item text="Detector Copilot (Preview)" [iconProps]="{ iconName: 'robot' }"
-        (click)="showDetectorCopilot = true"></fab-command-bar-item>
+      <fab-command-bar-item *ngIf="copilotEnabled" text="Detector Copilot (Preview)" [iconProps]="{ iconName: 'robot' }"
+        (click)="showCopilotPanel()"></fab-command-bar-item>
       <far-items>
         <fab-command-bar-item *ngIf="detectorGraduation" key="brachSelectorPill" text="custom text">
           <render>
@@ -486,10 +486,25 @@
     <create-workflow [id]="id" [Branch]="Branch"></create-workflow>
   </div>
 
-  <detector-copilot [openPanel]="showDetectorCopilot" [detectorCode]="code" [detectorDevelopMode]="mode"
-    [azureServiceType]="azureServiceType" [detectorAuthor]="userId"
-    (onCodeSuggestion)="onCodeSuggestionFromCopilot($event)"
-    (onPanelClose)="showDetectorCopilot = false;"></detector-copilot>
+  <detector-copilot [openPanel]="showDetectorCopilotPanel" [detectorCode]="code" [detectorDevelopMode]="mode"
+      [azureServiceType]="azureServiceType" [detectorAuthor]="userId"
+      (onCodeSuggestion)="onCodeSuggestionFromCopilot($event)"
+      (onPanelClose)="hideCopilotPanel()"></detector-copilot>
+
+  <!-- <fab-coachmark *ngIf="showCoachmark==true" [attr.id]="'fab-coachmark'" [target]="downloadReportId"
+      (onAnimationOpenEnd)="showingTeachingBubble()" [positioningContainerProps]="coachmarkPositioningContainerProps"
+      delayBeforeCoachmarkAnimation="3000" ariaAlertText="A coachmark has appeared" ariaDescribedBy="coachmark-desc1"
+      ariaLabelledBy="coachmark-label1" ariaDescribedByText="Press enter or alt + C to open the coachmark notification"
+      ariaLabelledByText="Coachmark notification">
+      <fab-teachingbubble *ngIf="showTeachingBubble==true" headline="Download Resiliency Score report here!"
+        (onDismiss)="coachMarkViewed()" [target]="downloadReportId" [hasCloseIcon]="true"
+        [calloutProps]="teachingBubbleCalloutProps" closeButtonAriaLabel="Close" hasCondensedHeadline="true"
+        ariaDescribedBy="downloadreport-description1" ariaLabelledBy="downloadreport-label1">
+        Click here to download a report to check how well this Web App scores against our recommended resiliency best
+        practices.
+      </fab-teachingbubble>
+    </fab-coachmark> -->
+
 
 </div>
 <ng-template #redirectBlock>

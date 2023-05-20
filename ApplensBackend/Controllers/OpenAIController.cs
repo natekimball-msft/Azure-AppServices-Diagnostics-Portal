@@ -13,6 +13,7 @@ using Azure.AI.OpenAI;
 using System.Collections.Generic;
 using System.Linq;
 using AppLensV3.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace AppLensV3.Controllers
 {
@@ -23,10 +24,13 @@ namespace AppLensV3.Controllers
     {
         private IOpenAIService _openAIService;
         private ILogger<OpenAIController> _logger;
-        public OpenAIController(IOpenAIService openAIService, ILogger<OpenAIController> logger)
+        private readonly IConfiguration _configuration;
+
+        public OpenAIController(IOpenAIService openAIService, ILogger<OpenAIController> logger, IConfiguration config)
         {
             _logger = logger;
             _openAIService = openAIService;
+            _configuration = config;
         }
 
         [HttpGet("enabled")]
@@ -51,7 +55,7 @@ namespace AppLensV3.Controllers
             try
             {
                 // Check if client has requested cache to be disabled
-                bool cachingEnabled = bool.TryParse(GetHeaderOrDefault(Request.Headers, HeaderConstants.OpenAICacheHeader, true.ToString()), out var cacheHeader)? cacheHeader: true;
+                bool cachingEnabled = bool.TryParse(GetHeaderOrDefault(Request.Headers, HeaderConstants.OpenAICacheHeader, true.ToString()), out var cacheHeader) ? cacheHeader : true;
                 var response = await _openAIService.RunTextCompletion(completionModel, cachingEnabled);
                 if (response.IsSuccessStatusCode)
                 {
@@ -75,7 +79,7 @@ namespace AppLensV3.Controllers
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.ToString());
                 return StatusCode(500, "An error occurred while processing the text completion request.");
@@ -90,7 +94,7 @@ namespace AppLensV3.Controllers
                 return StatusCode(422, "Chat Completion Feature is currently disabled.");
             }
 
-            if(chatPayload == null)
+            if (chatPayload == null)
             {
                 return BadRequest("Request body cannot be null or empty");
             }
@@ -118,6 +122,30 @@ namespace AppLensV3.Controllers
             {
                 _logger.LogError($"OpenAIChatCompletionError: {ex}");
                 return StatusCode(500, "An error occurred while processing the chat completion request.");
+            }
+        }
+
+        [HttpGet("detectorcopilot/enabled")]
+        public async Task<IActionResult> IsDetectorCopilotEnabled()
+        {
+            try
+            {
+                if (!bool.TryParse(_configuration["DetectorCopilot:Enabled"], out bool isCopilotEnabled))
+                {
+                    isCopilotEnabled = false;
+                }
+
+                var userAlias = Utilities.GetUserIdFromToken(Request.Headers.Authorization).Split(new char[] { '@' }).FirstOrDefault();
+                var allowedUsers = _configuration["DetectorCopilot:AllowedUserAliases"].Trim()
+                    .Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                isCopilotEnabled &= allowedUsers.Length == 0 || allowedUsers.Any(p => p.Trim().ToLower().Equals(userAlias));
+
+                return Ok(isCopilotEnabled);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"IsDetectorCopilotEnabled() Failed. Exception : {ex}");
+                return Ok(false);
             }
         }
 

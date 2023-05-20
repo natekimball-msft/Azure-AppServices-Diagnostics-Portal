@@ -1,10 +1,11 @@
-import { Component, OnInit, OnChanges, Input, Output, EventEmitter, SimpleChanges, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnChanges, Input, Output, EventEmitter, SimpleChanges, OnDestroy, ViewContainerRef, ViewChild, ElementRef } from '@angular/core';
 import { PanelType } from 'office-ui-fabric-react';
 import { ChatMessage, ChatModel, ChatUIContextService, CreateChatCompletionModel, CreateTextCompletionModel, MessageSource, MessageStatus, ResponseTokensSize, StringUtilities, TextModels } from 'diagnostic-data';
 import { DevelopMode } from '../onboarding-flow.component';
 import { Observable } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
 import { ApplensOpenAIChatService } from 'projects/applens/src/app/shared/services/applens-openai-chat.service';
+import { Console } from 'console';
 
 @Component({
   selector: 'detector-copilot',
@@ -32,6 +33,7 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
   stopMessageGeneration: boolean = false;
   messageInProgress: boolean = false;
   clearChatConfirmationHidden: boolean = true;
+  copilotExitConfirmationHidden: boolean = true;
   codeHistory: string[] = [];
   codeHistoryNavigator: number = -1;
 
@@ -44,7 +46,7 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
   private codeProgressMsgIndex: number = 0;
   private codeCompleteMsgIndex: number = 0;
 
-  constructor(private _chatContextService: ChatUIContextService, private openAIService: ApplensOpenAIChatService) {
+  constructor(public _chatContextService: ChatUIContextService, private openAIService: ApplensOpenAIChatService) {
   }
 
   ngOnInit(): void {
@@ -53,25 +55,32 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+
     if (this.detectorDevelopMode == DevelopMode.Create && this.detectorTemplate == undefined) {
       this.detectorTemplate = this.detectorCode;
     }
-
-    if (this.codeHistory.length == 0 && this.detectorCode && this.detectorCode != '') {
-      this.codeHistory.push(this.detectorCode);
-      this.codeHistoryNavigator = 0;
-      console.log(this.detectorAuthor);
-      console.log(this.azureServiceType);
-    }
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
+    console.log('Child : ngOnDestroy : Begin');
     this.dismissedHandler();
+    console.log('Child: ngOnDestroy : handler dismissed');
+    console.log('Child : ngOnDestroy : end');
   }
 
-  dismissedHandler(): void {
-    this.openPanel = false;
-    this.onPanelClose.emit();
+  dismissedHandler() {
+    console.log('Child : dismis handler : Begin');
+    if (this.messageInProgress == true) {
+      console.log('Child : dismis handler : show confirmation');
+      this.showExitConfirmationDialog(true);
+    }
+    else {
+
+      console.log('Child : dismis handler : emitting event');
+      this.onPanelClose.emit();
+    }
+
+    console.log('Child : dismis handler : end');
   }
 
   //#region Chat Callback Methods
@@ -84,6 +93,10 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
 
     messageObj.message = this.formatUserMessage(messageObj);
     this.messageInProgress = true;
+
+    // Save the current code in the history if there were changes
+    this.updateCodeHistory(`<code>\n${this.detectorCode}\n</code>`);
+
     return messageObj;
   }
 
@@ -117,7 +130,6 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
         source: 'openai'
       });
     }
-
 
     var displayMsg = messageObj.message;
 
@@ -160,7 +172,7 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
           }
 
           this.codeCompleteMsgIndex = (this.codeCompleteMsgIndex + 1) % this.codeCompleteMessages.length;
-          this.updateCodeHistory(messageObj);
+          this.updateCodeHistory(messageObj.message);
         }
 
         this.messageInProgress = false;
@@ -173,7 +185,7 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
 
         if (isMessageContainsCode) {
 
-          this.updateCodeHistory(messageObj);
+          this.updateCodeHistory(messageObj.message);
         }
 
         // open-ai component is already either assigning or appending  cancellation message to the existing message string. 
@@ -201,9 +213,9 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
       var artificialUserMsg = `Finish the above message. Make sure you start the new message with characters right after where the above message ended at '${lastLine}'. Only tell me the remaining message and not the enitre message again.`;
 
       if ((messageContainsCode && linesOfCode <= this.maxLinesLimitForCodeUpdate)) {
-       artificialUserMsg = `${artificialUserMsg}.  No code explanation needed.`;
+        artificialUserMsg = `${artificialUserMsg}.  No code explanation needed.`;
       }
-      
+
       chatContext.push({
         "role": "User",
         "content": artificialUserMsg
@@ -234,6 +246,9 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
     if ((moveLeft && this.codeHistoryNavigator <= 0) || (!moveLeft && this.codeHistoryNavigator >= this.codeHistory.length - 1))
       return;
 
+    // Save the current code in the history if there were changes
+    this.updateCodeHistory(`<code>\n${this.detectorCode}\n</code>`);
+
     moveLeft ? this.codeHistoryNavigator-- : this.codeHistoryNavigator++;
 
     this.onCodeSuggestion.emit({
@@ -241,6 +256,18 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
       append: false,
       source: 'historynavigator'
     });
+  }
+
+  private updateCodeHistory = (messageString: string) => {
+
+    if (this.isMessageContainsCode(messageString)) {
+      let codeToAdd = this.extractCode(messageString);
+      let codeExistsInHistoryIndex = this.codeHistory.findIndex(p => p == codeToAdd);
+      if (this.codeHistory.length == 0 || codeExistsInHistoryIndex == -1) {
+        this.codeHistory.push(codeToAdd);
+        this.codeHistoryNavigator = this.codeHistory.length - 1;
+      }
+    }
   }
 
   //#endregion
@@ -255,6 +282,21 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
     setTimeout(() => {
       this.stopMessageGeneration = false;
     }, 1000);
+  }
+
+  //#endregion
+
+  //#region Copilot Exit Methods
+
+  showExitConfirmationDialog = (show: boolean = true) => {
+    this.copilotExitConfirmationHidden = !show;
+  }
+
+  exitCopilot = () => {
+    this.cancelOpenAICall();
+    this.messageInProgress = false;
+    this.copilotExitConfirmationHidden = true;
+    this.dismissedHandler();
   }
 
   //#endregion
@@ -304,24 +346,14 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
     return message;
   }
 
-  private updateCodeHistory = (messageObj: ChatMessage) => {
-
-    if (this.isMessageContainsCode(messageObj.message) && (messageObj.status == MessageStatus.Finished || messageObj.status == MessageStatus.Cancelled)) {
-      let codeToAdd = this.extractCode(messageObj.message);
-      if (this.codeHistory.length == 0 || codeToAdd != this.codeHistory[this.codeHistory.length - 1]) {
-        this.codeHistory.push(codeToAdd);
-        this.codeHistoryNavigator = this.codeHistory.length - 1;
-      }
-    }
-  }
-
   private prepareChatHeader = () => {
     this.chatHeader = `
     <h1 class='copilot-header chatui-header-text'>
-      <i data-icon-name="robot" aria-hidden="true" class="ms-Icon root-89 css-229 ms-Button-icon"></i>
+      <!--<i data-icon-name="robot" aria-hidden="true" class="ms-Icon root-89 css-229 ms-Button-icon"></i>-->
+      <img  class='copilot-header-img' src="/assets/img/bot_sparkle_icon.svg" alt = ''>
       Detector Copilot (Preview)
-      <img class='copilot-header-img' src='/assets/img/rocket.png' alt=''>
-      <img class = 'copilot-header-img' src='/assets/img/rocket.png' alt=''">
+      <img class='copilot-header-img-secondary' src='/assets/img/rocket.png' alt=''>
+      <img class='copilot-header-img-secondary' src='/assets/img/rocket.png' alt=''">
     </h1>`;
   }
 

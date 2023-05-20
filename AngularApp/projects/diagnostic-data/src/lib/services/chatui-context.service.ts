@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, ReplaySubject } from 'rxjs';
 import { ChatMessage } from '../models/chatbot-models';
+import { PanelType } from 'office-ui-fabric-react';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,11 @@ export class ChatUIContextService {
   public userPhotoSource: any = "";
   public userNameInitial: string = "";
   public userId: string = "";
+  
+  // Shekhar
+  //public openPanel: boolean;
+  //public panelType: PanelType = PanelType.custom;
+  //public panelWidth: string = "750px";
 
   public clearChat = (chatIdentifier: string): void => {
     if (chatIdentifier == undefined || chatIdentifier == '' || this.messageStore[chatIdentifier] == undefined)

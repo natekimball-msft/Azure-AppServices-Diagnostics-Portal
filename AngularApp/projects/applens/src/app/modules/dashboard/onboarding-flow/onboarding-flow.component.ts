@@ -1,14 +1,15 @@
 import { AdalService } from 'adal-angular4';
 import {
-  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, QueryResponseService} from 'diagnostic-data';
+  CompilationProperties, DetectorControlService, DetectorResponse, HealthStatus, QueryResponse, CompilationTraceOutputDetails, LocationSpan, Position, GenericThemeService, StringUtilities, QueryResponseService, ChatUIContextService
+} from 'diagnostic-data';
 import * as moment from 'moment';
 import { NgxSmartModalService } from 'ngx-smart-modal';
 import {
   forkJoin
   , Observable, of
 } from 'rxjs';
-import { concatMap, first, flatMap, map } from 'rxjs/operators'
-import { ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { flatMap, map } from 'rxjs/operators'
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Package } from '../../../shared/models/package';
 import { GithubApiService } from '../../../shared/services/github-api.service';
 import { DetectorGistApiService } from '../../../shared/services/detectorgist-template-api.service';
@@ -63,7 +64,7 @@ export enum DevelopMode {
   templateUrl: './onboarding-flow.component.html',
   styleUrls: ['./onboarding-flow.component.scss']
 })
-export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
+export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateComponent {
 
   @ViewChild(CreateWorkflowComponent) createWorkflow: CreateWorkflowComponent;
 
@@ -183,7 +184,12 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   charWarningMessage: string = '';
   detectorLoaded: boolean = false;
   workflowPackage: Package;
-  showDetectorCopilot: boolean = false;
+
+  // copilot variables
+  copilotEnabled: boolean = true;
+  showDetectorCopilotPanel: boolean = false;
+  showDetectorCopilotCoachMark: boolean = false;
+  showDetectorCopilotTeachingBubble: boolean = false;
 
   runButtonStyle: any = {
     root: { cursor: "default" }
@@ -336,7 +342,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute,
     private _applensCommandBarService: ApplensCommandBarService, private _router: Router, private _themeService: GenericThemeService, private _applensGlobal: ApplensGlobal,
     private matDialog: MatDialog, private _queryResponseService: QueryResponseService, private _userSettingService: UserSettingService,
-    private _workflowService: WorkflowService) {
+    private _workflowService: WorkflowService, public _chatContextService : ChatUIContextService) {
     this.lightOptions = {
       theme: 'vs',
       language: 'csharp',
@@ -618,6 +624,27 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     });
 
     this.azureServiceType = this.resourceService.searchSuffix;
+    this._diagnosticApi.get<boolean>('api/openai/detectorcopilot/enabled').subscribe(res => {
+
+      this.copilotEnabled = res &&
+        isSystemInvoker == false &&
+        this.gistMode == false &&
+        this.isWorkflowDetector == false;
+
+      // try {
+      //   if (this.copilotEnabled) {
+      //     if (localStorage.getItem("showDetectorCopilotCoachMark") != undefined) {
+      //       this.showDetectorCopilotCoachMark = localStorage.getItem("showDetectorCopilotCoachMark") === "true";
+      //     }
+      //     else {
+      //       this.showDetectorCopilotCoachMark = true;
+      //     }
+      //   }
+      // }
+      // catch (error) {
+      //   this.showDetectorCopilotCoachMark = false;
+      // }
+    });
   }
 
   getSystemInvokerBranchList() {
@@ -936,20 +963,13 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     window.open(this.commitHistoryLink);
   }
 
-
-
-
   showUpdateDetectorReferencesDialog() {
     this.detectorReferencesDialogHidden = false;
   }
 
-
   dismissDetectorRefDialog() {
     this.detectorReferencesDialogHidden = true;
   }
-
-
-
 
   updateGistVersionOptions(event: string) {
     this.loadingGistVersions = true;
@@ -1086,6 +1106,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   }
 
   showGistDialog() {
+    this.hideCopilotPanel();
     this.gistsDropdownOptions = [];
     this.gists = Object.keys(this.configuration['dependencies']);
     this.gists.forEach(g => {
@@ -1202,13 +1223,6 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this.ngxSmartModalService.getModal('packageModal').open();
   }
 
-  /*downloadCode(){
-    var a = document.getElementById("a");
-    var file = new Blob([this.id.toLowerCase()], {type: type});
-    a.href = URL.createObjectURL(file);
-    a.download = name;
-  }*/
-
   saveProgress() {
     localStorage.setItem(`${this.id.toLowerCase()}_code`, this.code);
   }
@@ -1297,6 +1311,8 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     } else {
       this.runDetectorCompilation();
     }
+
+    this.hideCopilotPanel();
   }
 
   runWorkflowCompilation() {
@@ -1935,6 +1951,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   }
 
   saveDetectorCode() {
+    this.hideCopilotPanel();
     this.updatePublishingPackageIfWorkflow();
 
     this.saveTempId = this.getIdFromCodeString();
@@ -2358,7 +2375,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         'branchInput': null,
       },
       queryParamsHandling: 'merge'
-    })
+    });
   }
 
   updatePRTitle(e: { event: Event, newValue?: string }) {
@@ -2422,6 +2439,16 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     setTimeout(() => {
       this.triggerCodeCopyFromCopilot(codeSuggestionFromCopilot, index);
     }, delayTime);
+  }
+
+  hideCopilotPanel() {
+    this.showDetectorCopilotPanel = false;
+    //this._chatContextService.openPanel = false;
+  }
+
+  showCopilotPanel() {
+    this.showDetectorCopilotPanel = true;
+    //this._chatContextService.openPanel = true;
   }
 
   //#endregion

@@ -27,6 +27,14 @@
 
     <div style="height:80vh;">
 
+      <openai-chat [chatAlignment]="'left'" [chatIdentifier]="chatComponentIdentifier" [chatContextLength]="4"
+        [chatModel]="chatModel" [chatQuerySamplesFileUri]="'assets/chatConfigs/detectorcopilot.json'"
+        [contentDisclaimerMessage]="contentDisclaimerMessage" [quotaEnforced]="true" [chatHeader]="chatHeader"
+        [systemPhotoSource]="'/assets/img/bot_sparkle_icon.svg'" [responseTokenSize]="responseTokenSize"
+        [preprocessUserMessage]="onUserMessageSend" [postProcessSystemMessage]="onSystemMessageReceived"
+        [postPrepareChatContext]="onPrepareChatContext" [stopMessageGeneration]="stopMessageGeneration">
+      </openai-chat>
+
       <fab-dialog [hidden]="clearChatConfirmationHidden" (onDismiss)="showClearChatDialog(false)">
         <fab-dialog-content [title]="'Are you sure?'">
           <div style="font-size: 13px;">
@@ -40,13 +48,18 @@
         </fab-dialog-content>
       </fab-dialog>
 
-      <openai-chat [chatAlignment]="'left'" [chatIdentifier]="chatComponentIdentifier" [chatContextLength]="4"
-        [chatModel]="chatModel" [chatQuerySamplesFileUri]="'assets/chatConfigs/detectorcopilot.json'"
-        [contentDisclaimerMessage]="contentDisclaimerMessage" [quotaEnforced]="true" [chatHeader]="chatHeader"
-        [systemPhotoSource]="'/assets/img/bot.png'" [responseTokenSize]="responseTokenSize"
-        [preprocessUserMessage]="onUserMessageSend" [postProcessSystemMessage]="onSystemMessageReceived"
-        [postPrepareChatContext]="onPrepareChatContext" [stopMessageGeneration]="stopMessageGeneration">
-      </openai-chat>
+      <fab-dialog [hidden]="copilotExitConfirmationHidden" (onDismiss)="showExitConfirmationDialog(false)">
+        <fab-dialog-content [title]="'Are you sure?'">
+          <div style="font-size: 13px;">
+            Are you sure you want to exit? I'm in the midst of something epic!
+          </div>
+          <div class="mt-4" style="margin-top:10px">
+            <fab-primary-button text="Exit" (onClick)="exitCopilot()" [contentClass]="'mr-3'"></fab-primary-button>
+            <fab-default-button text="Cancel" (onClick)="showExitConfirmationDialog(false)"></fab-default-button>
+          </div>
+        </fab-dialog-content>
+      </fab-dialog>
+
     </div>
 
   </fab-panel>
