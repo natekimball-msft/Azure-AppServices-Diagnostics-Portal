@@ -1,34 +1,22 @@
-import { Component, OnInit, OnChanges, Input, Output, EventEmitter, SimpleChanges, OnDestroy, ViewContainerRef, ViewChild, ElementRef } from '@angular/core';
-import { PanelType } from 'office-ui-fabric-react';
-import { ChatMessage, ChatModel, ChatUIContextService, CreateChatCompletionModel, CreateTextCompletionModel, MessageSource, MessageStatus, ResponseTokensSize, StringUtilities, TextModels } from 'diagnostic-data';
-import { DevelopMode } from '../onboarding-flow.component';
+import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { ChatMessage, ChatModel, ChatUIContextService, MessageSource, MessageStatus, ResponseTokensSize, StringUtilities } from 'diagnostic-data';
 import { Observable } from 'rxjs';
-import { concatMap } from 'rxjs/operators';
-import { ApplensOpenAIChatService } from 'projects/applens/src/app/shared/services/applens-openai-chat.service';
-import { Console } from 'console';
+import { DetectorCopilotService } from '../../services/detector-copilot.service';
 
 @Component({
   selector: 'detector-copilot',
   templateUrl: './detector-copilot.component.html',
   styleUrls: ['./detector-copilot.component.scss']
 })
-export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
+export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
-  @Input() openPanel: boolean = false;
-  @Input() detectorCode: string = '';
-  @Input() detectorDevelopMode: DevelopMode;
-  @Input() azureServiceType: string;
-  @Input() detectorAuthor: string;
-  @Output() onPanelClose = new EventEmitter();
-  @Output() onCodeSuggestion = new EventEmitter<{ code: string, append: boolean, source: string }>();
+  @Input() onCloseClickedEvent: Observable<boolean>;
 
   chatComponentIdentifier: string = "detectorcopilot";
   contentDisclaimerMessage: string = "I am a little biased towards writing code. If you dont want to generate code, just specify <b>'no code'</b> with your messages. *Also, no sensitive data please :)";
   chatHeader: string = '';
   chatModel: ChatModel = ChatModel.GPT4;
   responseTokenSize: ResponseTokensSize = ResponseTokensSize.Small;
-  panelType: PanelType = PanelType.custom;
-  panelWidth: string = "750px";
   previousMessage: any;
   stopMessageGeneration: boolean = false;
   messageInProgress: boolean = false;
@@ -37,7 +25,7 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
   codeHistory: string[] = [];
   codeHistoryNavigator: number = -1;
 
-  private detectorTemplate: string;
+  private closeEventObservable;
   private codeUsedInPrompt: string;
   private maxLinesLimitForCodeUpdate: number = 100;
 
@@ -46,41 +34,22 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
   private codeProgressMsgIndex: number = 0;
   private codeCompleteMsgIndex: number = 0;
 
-  constructor(public _chatContextService: ChatUIContextService, private openAIService: ApplensOpenAIChatService) {
+  constructor(public _chatContextService: ChatUIContextService, public _copilotService: DetectorCopilotService) {
   }
 
   ngOnInit(): void {
     this.prepareChatHeader();
     this.prepareCodeUpdateMessages();
-  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-
-    if (this.detectorDevelopMode == DevelopMode.Create && this.detectorTemplate == undefined) {
-      this.detectorTemplate = this.detectorCode;
-    }
+    this.closeEventObservable = this.onCloseClickedEvent.subscribe(clicked => {
+      if (clicked) {
+        this.checkMessageStateAndExitCopilot();
+      }
+    })
   }
 
   ngOnDestroy() {
-    console.log('Child : ngOnDestroy : Begin');
-    this.dismissedHandler();
-    console.log('Child: ngOnDestroy : handler dismissed');
-    console.log('Child : ngOnDestroy : end');
-  }
-
-  dismissedHandler() {
-    console.log('Child : dismis handler : Begin');
-    if (this.messageInProgress == true) {
-      console.log('Child : dismis handler : show confirmation');
-      this.showExitConfirmationDialog(true);
-    }
-    else {
-
-      console.log('Child : dismis handler : emitting event');
-      this.onPanelClose.emit();
-    }
-
-    console.log('Child : dismis handler : end');
+    this.closeEventObservable.unsubscribe();
   }
 
   //#region Chat Callback Methods
@@ -95,7 +64,7 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
     this.messageInProgress = true;
 
     // Save the current code in the history if there were changes
-    this.updateCodeHistory(`<code>\n${this.detectorCode}\n</code>`);
+    this.updateCodeHistory(`<code>\n${this._copilotService.detectorCode}\n</code>`);
 
     return messageObj;
   }
@@ -124,7 +93,7 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
     if (isMessageContainsCode && deltaMessage != '') {
 
       // indicate the monaco-editor to start updating the code
-      this.onCodeSuggestion.emit({
+      this._copilotService.onCodeSuggestion.next({
         code: this.extractCode(deltaMessage),
         append: append,
         source: 'openai'
@@ -247,11 +216,11 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
       return;
 
     // Save the current code in the history if there were changes
-    this.updateCodeHistory(`<code>\n${this.detectorCode}\n</code>`);
+    this.updateCodeHistory(`<code>\n${this._copilotService.detectorCode}\n</code>`);
 
     moveLeft ? this.codeHistoryNavigator-- : this.codeHistoryNavigator++;
 
-    this.onCodeSuggestion.emit({
+    this._copilotService.onCodeSuggestion.next({
       code: this.codeHistory[this.codeHistoryNavigator],
       append: false,
       source: 'historynavigator'
@@ -292,11 +261,24 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
     this.copilotExitConfirmationHidden = !show;
   }
 
-  exitCopilot = () => {
-    this.cancelOpenAICall();
+  exitCopilot = (cancelOpenAICall: boolean = true) => {
+
+    if (cancelOpenAICall) {
+      this.cancelOpenAICall();
+    }
+
     this.messageInProgress = false;
     this.copilotExitConfirmationHidden = true;
-    this.dismissedHandler();
+    this._copilotService.hideCopilotPanel();
+  }
+
+  checkMessageStateAndExitCopilot() {
+    if (this.messageInProgress == true) {
+      this.showExitConfirmationDialog(true);
+    }
+    else {
+      this.exitCopilot(false);
+    }
   }
 
   //#endregion
@@ -319,20 +301,23 @@ export class DetectorCopilotComponent implements OnInit, OnChanges, OnDestroy {
 
   private formatUserMessage(chatMessageObj: ChatMessage): string {
 
-    this.codeUsedInPrompt = this.detectorCode && this.detectorCode != '' && this.detectorCode != this.detectorTemplate ? this.detectorCode : '';
+    this.codeUsedInPrompt = this._copilotService.detectorCode &&
+      this._copilotService.detectorCode != '' &&
+      this._copilotService.detectorCode != this._copilotService.detectorTemplate ?
+      this._copilotService.detectorCode : '';
 
     let message = this.codeUsedInPrompt != '' ?
-      `Here is the initial detector code : \n <code>\n${this.detectorCode}\n</code>\n` : '';
+      `Here is the initial detector code : \n <code>\n${this._copilotService.detectorCode}\n</code>\n` : '';
 
     message = `${message}Action assistant need to take : ${chatMessageObj.message}\n`;
 
     if (this.codeUsedInPrompt == '') {
       // The user is writing code for first time. Pass in the service name and author
-      message = `${message}This Azure service name is ${this.azureServiceType} and author is ${this.detectorAuthor}\n`;
+      message = `${message}This Azure service name is ${this._copilotService.azureServiceType} and author is ${this._copilotService.detectorAuthor}\n`;
     }
 
 
-    let linesCountInCode = this.codeUsedInPrompt != '' ? this.detectorCode.split("\n").length : 0;
+    let linesCountInCode = this.codeUsedInPrompt != '' ? this._copilotService.detectorCode.split("\n").length : 0;
     let rules = `1. If you are responding with code, No need to write any explanation before or after the code. Just respond with the updated code.
     2. Enclose the code in <code> tags`;
 

@@ -17,11 +17,6 @@ export class ChatUIContextService {
   public userNameInitial: string = "";
   public userId: string = "";
   
-  // Shekhar
-  //public openPanel: boolean;
-  //public panelType: PanelType = PanelType.custom;
-  //public panelWidth: string = "750px";
-
   public clearChat = (chatIdentifier: string): void => {
     if (chatIdentifier == undefined || chatIdentifier == '' || this.messageStore[chatIdentifier] == undefined)
       return;

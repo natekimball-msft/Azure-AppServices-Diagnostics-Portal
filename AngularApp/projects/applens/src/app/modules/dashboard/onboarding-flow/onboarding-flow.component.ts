@@ -38,6 +38,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { WorkflowRunDialogComponent } from '../workflow/workflow-run-dialog/workflow-run-dialog.component';
 import { UserSettingService } from '../services/user-setting.service';
 import { WorkflowService } from '../workflow/services/workflow.service';
+import { DetectorCopilotService } from '../services/detector-copilot.service';
 
 const codePrefix = `// *****PLEASE DO NOT MODIFY THIS PART*****
 using Diagnostics.DataProviders;
@@ -93,7 +94,6 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   reference: object = {};
   configuration: object = {};
   resourceId: string;
-  azureServiceType: string;
   queryResponse: QueryResponse<DetectorResponse>;
   workflowQueryResponse: QueryResponse<workflowNodeResult>;
   errorState: any;
@@ -190,6 +190,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   showDetectorCopilotPanel: boolean = false;
   showDetectorCopilotCoachMark: boolean = false;
   showDetectorCopilotTeachingBubble: boolean = false;
+  copilotCodeObservable: any;
 
   runButtonStyle: any = {
     root: { cursor: "default" }
@@ -342,7 +343,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
     public ngxSmartModalService: NgxSmartModalService, private _telemetryService: TelemetryService, private _activatedRoute: ActivatedRoute,
     private _applensCommandBarService: ApplensCommandBarService, private _router: Router, private _themeService: GenericThemeService, private _applensGlobal: ApplensGlobal,
     private matDialog: MatDialog, private _queryResponseService: QueryResponseService, private _userSettingService: UserSettingService,
-    private _workflowService: WorkflowService, public _chatContextService : ChatUIContextService) {
+    private _workflowService: WorkflowService, public _chatContextService: ChatUIContextService, public _detectorCopilotService: DetectorCopilotService) {
     this.lightOptions = {
       theme: 'vs',
       language: 'csharp',
@@ -388,6 +389,29 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
     this.emailRecipients = this.userName.replace('@microsoft.com', '');
     this.userId = this.userName.replace('@microsoft.com', '');
     this.publishAccessControlResponse = {};
+    this._detectorCopilotService.detectorAuthor = this.userId;
+  }
+
+  ngOnInit() {
+    this._activatedRoute.params.subscribe((params: Params) => {
+      this.initialized = false;
+      this.startUp();
+    });
+  }
+
+  ngOnDestroy() {
+    clearInterval(this.redirectTimer);
+    this._router.navigate([], {
+      queryParams: {
+        'branchInput': null,
+      },
+      queryParamsHandling: 'merge'
+    });
+
+    this._detectorCopilotService.hideCopilotPanel();
+    if (this.copilotCodeObservable) {
+      this.copilotCodeObservable.unsubscribe();
+    }
   }
 
   canExit(): boolean {
@@ -527,13 +551,6 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   PPEHostname: string;
   redirectTimer: NodeJS.Timer;
 
-  ngOnInit() {
-    this._activatedRoute.params.subscribe((params: Params) => {
-      this.initialized = false;
-      this.startUp();
-    });
-  }
-
   startUp() {
     this._queryResponseService.getQueryResponse().subscribe(qr => {
       this.queryResponse = qr;
@@ -623,14 +640,12 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
       }
     });
 
-    this.azureServiceType = this.resourceService.searchSuffix;
     this._diagnosticApi.get<boolean>('api/openai/detectorcopilot/enabled').subscribe(res => {
 
       this.copilotEnabled = res &&
         isSystemInvoker == false &&
         this.gistMode == false &&
         this.isWorkflowDetector == false;
-
       // try {
       //   if (this.copilotEnabled) {
       //     if (localStorage.getItem("showDetectorCopilotCoachMark") != undefined) {
@@ -1106,7 +1121,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   }
 
   showGistDialog() {
-    this.hideCopilotPanel();
+    this._detectorCopilotService.hideCopilotPanel();
     this.gistsDropdownOptions = [];
     this.gists = Object.keys(this.configuration['dependencies']);
     this.gists.forEach(g => {
@@ -1312,7 +1327,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
       this.runDetectorCompilation();
     }
 
-    this.hideCopilotPanel();
+    this._detectorCopilotService.hideCopilotPanel();
   }
 
   runWorkflowCompilation() {
@@ -1951,7 +1966,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   }
 
   saveDetectorCode() {
-    this.hideCopilotPanel();
+    this._detectorCopilotService.hideCopilotPanel();
     this.updatePublishingPackageIfWorkflow();
 
     this.saveTempId = this.getIdFromCodeString();
@@ -2316,6 +2331,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
       this.lastSavedVersion = this.code;
       this.originalCode = this.code;
       this.codeLoaded = true;
+      this.initalizeCoPilotServiceMembers();
     }, err => {
       if (isGradEdit && this.Branch === this.defaultBranch && this.showBranches.length > 1) {
         this.Branch = this.showBranches.filter(branch => { return branch.key != this.defaultBranch })[0].key;
@@ -2326,6 +2342,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
           this.lastSavedVersion = this.code
           this.originalCode = this.code;
           this.codeLoaded = true;
+          this.initalizeCoPilotServiceMembers();
         });
       }
     });
@@ -2368,16 +2385,6 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
     return this.diagnosticApiService.getDevopsCommitContent(`${this.DevopsConfig.folderPath}/${gistId}/${gistId}.csx`, gistCommitVersion, this.resourceId);
   };
 
-  ngOnDestroy() {
-    clearInterval(this.redirectTimer);
-    this._router.navigate([], {
-      queryParams: {
-        'branchInput': null,
-      },
-      queryParamsHandling: 'merge'
-    });
-  }
-
   updatePRTitle(e: { event: Event, newValue?: string }) {
     this.PRTitle = e.newValue.toString();
   }
@@ -2404,18 +2411,29 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
 
   //#region Copilot Methods
 
-  onCodeSuggestionFromCopilot($event) {
-
-    if (!$event.append) {
-      this.code = '';
+  initalizeCoPilotServiceMembers() {
+    this._detectorCopilotService.azureServiceType = this.resourceService.searchSuffix;
+    this._detectorCopilotService.detectorDevelopMode = this.mode;
+    this._detectorCopilotService.detectorCode = this.code;
+    if (this.mode == DevelopMode.Create) {
+      this._detectorCopilotService.detectorTemplate = this.code;
     }
 
-    if ($event.source.toLowerCase() == 'openai') {
-      this.triggerCodeCopyFromCopilot($event.code);
-    }
-    else {
-      this.code = `${this.code}${$event.code}`;
-    }
+    this.copilotCodeObservable = this._detectorCopilotService.onCodeSuggestion.subscribe(event => {
+      if (event == null || event == undefined)
+        return;
+
+      if (!event.append) {
+        this.code = '';
+      }
+
+      if (event.source && event.source.toLowerCase() == 'openai') {
+        this.triggerCodeCopyFromCopilot(event.code);
+      }
+      else {
+        this.code = `${this.code}${event.code}`;
+      }
+    });
   }
 
   triggerCodeCopyFromCopilot(codeSuggestionFromCopilot: string, index: number = 0) {
@@ -2441,14 +2459,10 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
     }, delayTime);
   }
 
-  hideCopilotPanel() {
-    this.showDetectorCopilotPanel = false;
-    //this._chatContextService.openPanel = false;
-  }
-
-  showCopilotPanel() {
-    this.showDetectorCopilotPanel = true;
-    //this._chatContextService.openPanel = true;
+  // Whenever the detector code changes, we need to keep code copilot service in sync
+  updateCodeEvent(event: any) {
+    this.code = event;
+    this._detectorCopilotService.detectorCode = event;
   }
 
   //#endregion

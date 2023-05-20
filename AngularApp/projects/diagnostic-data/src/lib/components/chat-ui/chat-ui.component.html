@@ -22,12 +22,12 @@
         <div class="chatui-message-content">
           <ng-container *ngIf="message.messageSource=='system'">
             <div class="chatui-message-icon">
-              <img *ngIf="systemPhotoSource !== '';else systemInitial" [src]="systemPhotoSource" alt="System Profile Photo" class="avatar">
+              <img *ngIf="systemPhotoSource !== '';else systemInitial" [src]="systemPhotoSource" alt="System Profile Photo" class="avatar system-avatar">
             </div>
           </ng-container>
           <ng-container *ngIf="message.messageSource=='user'">
             <div class="chatui-message-icon">
-              <img *ngIf="userPhotoSource !== '';else userInitial" [src]="userPhotoSource" alt="User Profile Photo" class="avatar">
+              <img *ngIf="userPhotoSource !== '';else userInitial" [src]="userPhotoSource" alt="User Profile Photo" class="avatar user-avatar">
             </div>
           </ng-container>
           <ng-container *ngIf="message.status==1">

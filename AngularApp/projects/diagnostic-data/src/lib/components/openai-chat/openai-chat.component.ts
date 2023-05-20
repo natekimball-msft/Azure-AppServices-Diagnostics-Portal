@@ -379,7 +379,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
       if (this.openAIAPICallSubscription != undefined)
         this.openAIAPICallSubscription.unsubscribe();
 
-      if (lastChatMessage.status != MessageStatus.Cancelled) {
+      if (lastChatMessage.status != MessageStatus.Cancelled && lastChatMessage.status != MessageStatus.Finished) {
         lastChatMessage.displayMessage = `${lastChatMessage.displayMessage}\n\n<span style="color:#890000">${cancellationReason}</span>`;
         this.markMessageCompleted(lastChatMessage, MessageStatus.Cancelled);
         if (this.postProcessSystemMessage != undefined) {

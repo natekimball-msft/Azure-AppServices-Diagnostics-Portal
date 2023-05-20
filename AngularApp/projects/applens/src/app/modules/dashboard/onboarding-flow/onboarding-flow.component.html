@@ -366,7 +366,7 @@
         (click)="showUpdateDetectorReferencesDialog()">
       </fab-command-bar-item>
       <fab-command-bar-item *ngIf="copilotEnabled" text="Detector Copilot (Preview)" [iconProps]="{ iconName: 'robot' }"
-        (click)="showCopilotPanel()"></fab-command-bar-item>
+        (click)="_detectorCopilotService.showCopilotPanel()"></fab-command-bar-item>
       <far-items>
         <fab-command-bar-item *ngIf="detectorGraduation" key="brachSelectorPill" text="custom text">
           <render>
@@ -432,7 +432,7 @@
           <split-area size="85">
 
             <ngx-monaco-editor (onInit)="onInit($event)" style="height:calc(98%)" [options]="editorOptions"
-              [(ngModel)]="code">
+              [ngModel]="code" (ngModelChange)="updateCodeEvent($event)">
             </ngx-monaco-editor>
 
           </split-area>
@@ -485,12 +485,6 @@
   <div *ngIf="isWorkflowDetector" class="onboarding-container">
     <create-workflow [id]="id" [Branch]="Branch"></create-workflow>
   </div>
-
-  <detector-copilot [openPanel]="showDetectorCopilotPanel" [detectorCode]="code" [detectorDevelopMode]="mode"
-      [azureServiceType]="azureServiceType" [detectorAuthor]="userId"
-      (onCodeSuggestion)="onCodeSuggestionFromCopilot($event)"
-      (onPanelClose)="hideCopilotPanel()"></detector-copilot>
-
   <!-- <fab-coachmark *ngIf="showCoachmark==true" [attr.id]="'fab-coachmark'" [target]="downloadReportId"
       (onAnimationOpenEnd)="showingTeachingBubble()" [positioningContainerProps]="coachmarkPositioningContainerProps"
       delayBeforeCoachmarkAnimation="3000" ariaAlertText="A coachmark has appeared" ariaDescribedBy="coachmark-desc1"
