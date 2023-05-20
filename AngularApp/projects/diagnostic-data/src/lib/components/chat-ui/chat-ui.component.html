@@ -63,9 +63,10 @@
       <div class="chatui-message-validation-warning" *ngIf="showValidationWarning">
         {{validationWarningMessage}}
       </div>
-      <div class="chatui-textarea-wrapper">
-        <!-- <textarea [(ngModel)]="chatInputTextInternal" tabindex="0" class="chatui-textarea" placeholder="Ask a question" (keyup.enter)="triggerChat()" id="chatUIInputBox" [disabled]="chatInputBoxDisabled"></textarea>
-        <button [disabled]="chatInputBoxDisabled" (click)="triggerChat()"
+
+      <div *ngIf="showSearchBox" class="chatui-textarea-wrapper">
+        <textarea [(ngModel)]="chatInputTextInternal" tabindex="0" class="chatui-textarea" rows="1" placeholder="Ask a question" (keyup.enter)="triggerChat()" id="chatUIInputBox" [disabled]="chatInputBoxDisabled"></textarea>
+        <button (click)="triggerChat()"
             class="chatui-textarea-button"><svg
                 stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
                 stroke-linejoin="round" class="h-4 w-4 mr-1" height="1em" width="1em"
@@ -73,11 +74,11 @@
                 <line x1="22" y1="2" x2="11" y2="13"></line>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
             </svg>
-          </button> -->
+          </button>
 
-          <div class="grow-wrap">
+          <!--<div class="grow-wrap">
             <textarea name="text" id="text" onInput="this.parentNode.dataset.replicatedValue = this.value"></textarea>
-          </div>
+          </div>-->
 
       </div>
       <div class="chatui-content-disclaimer" *ngIf="showContentDisclaimer" [innerHtml] = "contentDisclaimerMessage">

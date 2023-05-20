@@ -35,13 +35,14 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
   @ViewChild('chatUIComponent') chatUIComponentRef: ChatUIComponent;
 
   @Input() customInitialPrompt: string = '';
+  @Input() customFirstMessage: string = '';
   @Input() chatIdentifier: string = '';
   @Input() persistChat: boolean = false;
   @Input() chatHeader: string = '';
   @Input() chatContextLength: number = 2;
   @Input() chatQuerySamplesFileUri: string = ''; //e.g. "assets/chatConfigs/chatQuerySamples.json"
-  @Input() fetchChat: Function = (chatIdentifier: string): Observable<ChatMessage[]> => { return of([]); }
-  @Input() saveChat: Function = (chatIdentifier: string, chat: ChatMessage[]): Observable<any> => { return of({}); }
+  @Input() fetchChat: Function;
+  @Input() saveChat: Function;
   @Input() chatAlignment: ChatAlignment = ChatAlignment.Center;
   @Input() chatModel: ChatModel = ChatModel.GPT3;
   @Input() responseTokenSize: ResponseTokensSize = ResponseTokensSize.Small;
@@ -113,6 +114,23 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
 
     this.loadChatFromStore(); // Works only if persistChat is true
   }
+  
+  populateCustomFirstMessage() {
+      if (this.customFirstMessage && this.customFirstMessage.length > 0){
+        let message = {
+            id: uuid(),
+            displayMessage: this.customFirstMessage,
+            message: this.customFirstMessage,
+            messageSource: MessageSource.User,
+            timestamp: new Date().getTime(),
+            messageDisplayDate: TimeUtilities.displayMessageDate(new Date()),
+            status: MessageStatus.Finished,
+            userFeedback: "none",
+            renderingType: MessageRenderingType.Text
+        };
+        this.onUserSendMessage(message);
+      }
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
 
@@ -129,12 +147,14 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
         this._telemetryService.logEvent("OpenAIChatLoadedFromStore", { userId: this._chatContextService.userId, ts: new Date().getTime().toString() });
 
         this.checkQuota();
+        this.populateCustomFirstMessage();
       });
     }
     else {
       if (!this._chatContextService.messageStore.hasOwnProperty(this.chatIdentifier)) {
         this._chatContextService.messageStore[this.chatIdentifier] = [];
       }
+      this.populateCustomFirstMessage();
     }
   }
 
@@ -365,7 +385,8 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
       };
 
       this._chatContextService.messageStore[this.chatIdentifier].push(chatMessage);
-      this.chatUIComponentRef.scrollToBottom();
+      //Add a little timeout here to wait for the child component to initialize well
+      setTimeout(() => {this.chatUIComponentRef.scrollToBottom();}, 200);
       this.fetchOpenAIResult(this.prepareChatContext(), chatMessage);
     }
   }
