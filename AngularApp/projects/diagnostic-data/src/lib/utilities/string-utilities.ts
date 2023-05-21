@@ -35,6 +35,19 @@ export class StringUtilities {
         return this.TrimStart(this.TrimEnd(target, trimSubstring), trimSubstring);
     }
 
+    static ReplaceNewlines(input: string): string {
+        const regex = new RegExp(/(?:\r\n|\r|\n)/, 'g');
+        return input.replace(regex, '\n');
+    }
+
+    static Equals(input1: string, input2: string, ignoreCarriageReturn: boolean = true): boolean {
+        if (ignoreCarriageReturn) {
+            return this.ReplaceNewlines(input1) == this.ReplaceNewlines(input2);
+        }
+
+        return input1 == input2;
+    }
+
     /* * 
     * KMP algorithm for searching string index
     * https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm
@@ -97,11 +110,6 @@ export class StringUtilities {
         return input.replace(regex, '\\$&');
     }
 
-    private static ReplaceNewlines(input: string): string {
-        const regex = new RegExp(/(?:\r\n|\r|\n)/, 'g');
-        return input.replace(regex, '\n');
-    }
-
     public static ReplaceAll(input: string, target: string, replacement: string): string {
         var cleanedRegex = StringUtilities.ReplaceNewlines(StringUtilities.EscapeRegExp(target));
         const searchRegExp = new RegExp(cleanedRegex, 'g');
@@ -120,7 +128,7 @@ export class StringUtilities {
             // Swap the current element with the randomly selected one
             [array[index], array[randomIndex]] = [array[randomIndex], array[index]];
         });
-        
+
         return array;
     }
 

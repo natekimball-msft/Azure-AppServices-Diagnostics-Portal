@@ -113,7 +113,6 @@ export class DashboardComponent implements OnDestroy {
   crossSubJustification: string = '';
   defaultResourceTypes = defaultResourceTypes;
   isPPE: boolean = false;
-  closeCopilotPanelEvent: Subject<boolean> = new Subject<boolean>();
 
   constructor(public resourceService: ResourceService, private startupService: StartupService, private _detectorControlService: DetectorControlService,
     private _router: Router, private _activatedRoute: ActivatedRoute, private _navigator: FeatureNavigationService,
@@ -203,8 +202,6 @@ export class DashboardComponent implements OnDestroy {
     this._diagnosticApiService.getDetectorDevelopmentEnv().subscribe(env => {
       this.isPPE = env === "PPE";
     });
-
-    this.closeCopilotPanelEvent = new Subject<boolean>();
   }
 
   resetDialogSuccessStatus() {
@@ -415,8 +412,7 @@ export class DashboardComponent implements OnDestroy {
           'width': 'calc(100% - 17px)'
         }
       }
-      else
-      {
+      else {
         // restore the old size
         this.getContainerStyle();
       }
@@ -519,7 +515,7 @@ export class DashboardComponent implements OnDestroy {
   }
 
   getContainerStyle() {
-    
+
     this.dashboardContainerStyle =
     {
       'left': '250px',
@@ -548,7 +544,7 @@ export class DashboardComponent implements OnDestroy {
   }
 
   dismissCopilotPanel = () => {
-    this.closeCopilotPanelEvent.next(true);
+    this._detectorCopilotService.onCloseCopilotPanelEvent.next({ showConfirmation: true, resetCopilot: false });
   }
 }
 

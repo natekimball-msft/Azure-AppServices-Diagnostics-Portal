@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { ChatMessage, ChatModel, ChatUIContextService, MessageSource, MessageStatus, ResponseTokensSize, StringUtilities } from 'diagnostic-data';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { DetectorCopilotService } from '../../services/detector-copilot.service';
 
 @Component({
@@ -10,22 +10,18 @@ import { DetectorCopilotService } from '../../services/detector-copilot.service'
 })
 export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
-  @Input() onCloseClickedEvent: Observable<boolean>;
-
-  chatComponentIdentifier: string = "detectorcopilot";
   contentDisclaimerMessage: string = "I am a little biased towards writing code. If you dont want to generate code, just specify <b>'no code'</b> with your messages. *Also, no sensitive data please :)";
   chatHeader: string = '';
   chatModel: ChatModel = ChatModel.GPT4;
   responseTokenSize: ResponseTokensSize = ResponseTokensSize.Small;
   previousMessage: any;
   stopMessageGeneration: boolean = false;
-  messageInProgress: boolean = false;
   clearChatConfirmationHidden: boolean = true;
   copilotExitConfirmationHidden: boolean = true;
   codeHistory: string[] = [];
   codeHistoryNavigator: number = -1;
 
-  private closeEventObservable;
+  private closeEventObservable: Subscription;
   private codeUsedInPrompt: string;
   private maxLinesLimitForCodeUpdate: number = 100;
 
@@ -38,12 +34,18 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+
     this.prepareChatHeader();
     this.prepareCodeUpdateMessages();
 
-    this.closeEventObservable = this.onCloseClickedEvent.subscribe(clicked => {
-      if (clicked) {
-        this.checkMessageStateAndExitCopilot();
+    this.closeEventObservable = this._copilotService.onCloseCopilotPanelEvent.subscribe(event => {
+      if (event) {
+        this.checkMessageStateAndExitCopilot(event.showConfirmation);
+        setTimeout(() => {
+          if (event.resetCopilot) {
+            this._copilotService.reset();
+          }
+        }, 2000);
       }
     })
   }
@@ -61,10 +63,10 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
     }
 
     messageObj.message = this.formatUserMessage(messageObj);
-    this.messageInProgress = true;
+    this._copilotService.operationInProgress = true;
 
     // Save the current code in the history if there were changes
-    this.updateCodeHistory(`<code>\n${this._copilotService.detectorCode}\n</code>`);
+    this._copilotService.updateCodeHistory(`<code>\n${this._copilotService.detectorCode}\n</code>`);
 
     return messageObj;
   }
@@ -88,13 +90,13 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
     }
 
     // messageObj.message will always contain concatenated message so far. So for partial code, it will contain code tags
-    let isMessageContainsCode: boolean = this.isMessageContainsCode(messageObj.message);
+    let isMessageContainsCode: boolean = this._copilotService.isMessageContainsCode(messageObj.message);
 
     if (isMessageContainsCode && deltaMessage != '') {
 
       // indicate the monaco-editor to start updating the code
       this._copilotService.onCodeSuggestion.next({
-        code: this.extractCode(deltaMessage),
+        code: this._copilotService.extractCode(deltaMessage),
         append: append,
         source: 'openai'
       });
@@ -117,7 +119,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
           }
         }
 
-        this.messageInProgress = true;
+        this._copilotService.operationInProgress = true;
         this.previousMessage = {
           id: messageObj.id,
           status: messageObj.status,
@@ -141,10 +143,10 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
           }
 
           this.codeCompleteMsgIndex = (this.codeCompleteMsgIndex + 1) % this.codeCompleteMessages.length;
-          this.updateCodeHistory(messageObj.message);
+          this._copilotService.updateCodeHistory(messageObj.message);
         }
 
-        this.messageInProgress = false;
+        this._copilotService.operationInProgress = false;
         this.previousMessage = undefined;
         this.responseTokenSize = ResponseTokensSize.Small;
 
@@ -154,12 +156,12 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
         if (isMessageContainsCode) {
 
-          this.updateCodeHistory(messageObj.message);
+          this._copilotService.updateCodeHistory(messageObj.message);
         }
 
         // open-ai component is already either assigning or appending  cancellation message to the existing message string. 
         displayMsg = messageObj.displayMessage;
-        this.messageInProgress = false;
+        this._copilotService.operationInProgress = false;
         this.previousMessage = undefined;
         this.responseTokenSize = ResponseTokensSize.Small;
 
@@ -173,10 +175,10 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
   onPrepareChatContext = (chatContext: any): any => {
 
-    let lastMessage: ChatMessage = this._chatContextService.messageStore[this.chatComponentIdentifier].at(-1);
+    let lastMessage: ChatMessage = this._chatContextService.messageStore[this._copilotService.chatComponentIdentifier].at(-1);
     if (lastMessage.messageSource == MessageSource.System && lastMessage.status == MessageStatus.InProgress) {
       let lastLine = lastMessage.message.split('\n').slice(-1);
-      let messageContainsCode = this.isMessageContainsCode(lastMessage.message);
+      let messageContainsCode = this._copilotService.isMessageContainsCode(lastMessage.message);
       let linesOfCode = this.codeUsedInPrompt && this.codeUsedInPrompt != '' ? this.codeUsedInPrompt.split("\n").length : 0;
 
       var artificialUserMsg = `Finish the above message. Make sure you start the new message with characters right after where the above message ended at '${lastLine}'. Only tell me the remaining message and not the enitre message again.`;
@@ -199,7 +201,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   //#region Settings : Clear Chat Methods
 
   clearChat = () => {
-    this._chatContextService.clearChat(this.chatComponentIdentifier);
+    this._chatContextService.clearChat(this._copilotService.chatComponentIdentifier);
     this.clearChatConfirmationHidden = true;
   }
 
@@ -210,35 +212,6 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
   //#region Settings : Previous and Next Code Options
 
-  navigateCodeHistory = (moveLeft: boolean): void => {
-
-    if ((moveLeft && this.codeHistoryNavigator <= 0) || (!moveLeft && this.codeHistoryNavigator >= this.codeHistory.length - 1))
-      return;
-
-    // Save the current code in the history if there were changes
-    this.updateCodeHistory(`<code>\n${this._copilotService.detectorCode}\n</code>`);
-
-    moveLeft ? this.codeHistoryNavigator-- : this.codeHistoryNavigator++;
-
-    this._copilotService.onCodeSuggestion.next({
-      code: this.codeHistory[this.codeHistoryNavigator],
-      append: false,
-      source: 'historynavigator'
-    });
-  }
-
-  private updateCodeHistory = (messageString: string) => {
-
-    if (this.isMessageContainsCode(messageString)) {
-      let codeToAdd = this.extractCode(messageString);
-      let codeExistsInHistoryIndex = this.codeHistory.findIndex(p => p == codeToAdd);
-      if (this.codeHistory.length == 0 || codeExistsInHistoryIndex == -1) {
-        this.codeHistory.push(codeToAdd);
-        this.codeHistoryNavigator = this.codeHistory.length - 1;
-      }
-    }
-  }
-
   //#endregion
 
   //#region Settings : Stop Option
@@ -246,7 +219,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   cancelOpenAICall = () => {
 
     this.stopMessageGeneration = true;
-    this.messageInProgress = false;
+    this._copilotService.operationInProgress = false;
 
     setTimeout(() => {
       this.stopMessageGeneration = false;
@@ -267,14 +240,17 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
       this.cancelOpenAICall();
     }
 
-    this.messageInProgress = false;
+    this._copilotService.operationInProgress = false;
     this.copilotExitConfirmationHidden = true;
     this._copilotService.hideCopilotPanel();
   }
 
-  checkMessageStateAndExitCopilot() {
-    if (this.messageInProgress == true) {
-      this.showExitConfirmationDialog(true);
+  checkMessageStateAndExitCopilot(showConfirmation: boolean = true) {
+    if (this._copilotService.operationInProgress == true) {
+      if (showConfirmation)
+        this.showExitConfirmationDialog(true);
+      else
+        this.exitCopilot(true);
     }
     else {
       this.exitCopilot(false);
@@ -285,39 +261,24 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
   //#region Helper Methods
 
-  private isMessageContainsCode(message: string): boolean {
-    return message && message != '' && (message.toLowerCase().indexOf('<code>') >= 0);
-  }
-
-  private extractCode(message: string): string {
-    let stringsToRemove = ['<code>', '</code>', '<CODE>', '</CODE>'];
-    let outputMessage = message;
-    stringsToRemove.forEach(p => {
-      outputMessage = StringUtilities.ReplaceAll(outputMessage, p, '');
-    });
-
-    return StringUtilities.TrimBoth(outputMessage);
-  }
-
   private formatUserMessage(chatMessageObj: ChatMessage): string {
 
     this.codeUsedInPrompt = this._copilotService.detectorCode &&
       this._copilotService.detectorCode != '' &&
-      this._copilotService.detectorCode != this._copilotService.detectorTemplate ?
+      !StringUtilities.Equals(this._copilotService.detectorCode, this._copilotService.detectorTemplate) ?
       this._copilotService.detectorCode : '';
 
     let message = this.codeUsedInPrompt != '' ?
-      `Here is the initial detector code : \n <code>\n${this._copilotService.detectorCode}\n</code>\n` : '';
+      `Here is the initial detector code : \n <code>\n${this.codeUsedInPrompt}\n</code>\n` : '';
 
-    message = `${message}Action assistant need to take : ${chatMessageObj.message}\n`;
+    message = `${message}Action you need to take : ${chatMessageObj.message}\n`;
 
     if (this.codeUsedInPrompt == '') {
       // The user is writing code for first time. Pass in the service name and author
       message = `${message}This Azure service name is ${this._copilotService.azureServiceType} and author is ${this._copilotService.detectorAuthor}\n`;
     }
 
-
-    let linesCountInCode = this.codeUsedInPrompt != '' ? this._copilotService.detectorCode.split("\n").length : 0;
+    let linesCountInCode = this.codeUsedInPrompt != '' ? this.codeUsedInPrompt.split("\n").length : 0;
     let rules = `1. If you are responding with code, No need to write any explanation before or after the code. Just respond with the updated code.
     2. Enclose the code in <code> tags`;
 
@@ -327,7 +288,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
       3. The output should be rendered in markdown`;
     }
 
-    message = `${message}Rules assistant have to follow :\n ${rules}`;
+    message = `${message}Rules you have to follow :\n ${rules}`;
     return message;
   }
 

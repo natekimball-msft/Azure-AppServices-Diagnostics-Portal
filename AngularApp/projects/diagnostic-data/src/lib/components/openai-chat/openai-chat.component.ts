@@ -295,8 +295,6 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
             this.saveChatToStore();
           }
         }
-
-        console.log(`MakeAPICall: Finish: Message : ${messageObj.id}`);
       },
         (err) => {
           if (retry) {
@@ -304,8 +302,6 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
           }
           this.handleFailure(err, messageObj);
         });
-
-      console.log(`fetchOpenAIResult: Finish: Message : ${messageObj.id}`);
     }
     catch (error) {
       this.handleFailure(error, messageObj);
@@ -404,8 +400,6 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
         lastChatMessage.displayMessage = `${lastChatMessage.displayMessage}\n\n<span style="color:#890000">${cancellationReason}</span>`;
         this.markMessageCompleted(lastChatMessage, MessageStatus.Cancelled);
         if (this.postProcessSystemMessage != undefined) {
-          console.log('message cancelled. Calling post process');
-          console.log(lastChatMessage);
           lastChatMessage = this.postProcessSystemMessage(lastChatMessage);
         }
 

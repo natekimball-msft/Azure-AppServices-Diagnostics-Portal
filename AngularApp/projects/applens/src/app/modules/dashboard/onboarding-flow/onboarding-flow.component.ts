@@ -408,7 +408,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
       queryParamsHandling: 'merge'
     });
 
-    this._detectorCopilotService.hideCopilotPanel();
+    this._detectorCopilotService.onCloseCopilotPanelEvent.next({ showConfirmation: false, resetCopilot: true });
     if (this.copilotCodeObservable) {
       this.copilotCodeObservable.unsubscribe();
     }
@@ -417,7 +417,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   canExit(): boolean {
     if (this.detectorDeleted)
       return true;
-    else if (!!this.lastSavedVersion && this.code != this.lastSavedVersion) {
+    else if (!!this.lastSavedVersion && !StringUtilities.Equals(this.code, this.lastSavedVersion)) {
       if (confirm("Are you sure you want to leave? You have some unsaved changes.")) {
         return true;
       }
@@ -425,9 +425,16 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
         return false;
       }
     }
-    else {
-      return true;
+    else if (this._detectorCopilotService.operationInProgress) {
+      if (confirm("Are you sure you want to leave? Looks like Copilot operation is in progress.")) {
+        return true;
+      }
+      else {
+        return false;
+      }
     }
+    else
+      return true;
   }
 
   updateDataSources(event: string) {
@@ -2414,13 +2421,13 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   initalizeCoPilotServiceMembers() {
     this._detectorCopilotService.azureServiceType = this.resourceService.searchSuffix;
     this._detectorCopilotService.detectorDevelopMode = this.mode;
-    this._detectorCopilotService.detectorCode = this.code;
+    this._detectorCopilotService.detectorCode = StringUtilities.ReplaceNewlines(this.code);
     if (this.mode == DevelopMode.Create) {
-      this._detectorCopilotService.detectorTemplate = this.code;
+      this._detectorCopilotService.detectorTemplate = StringUtilities.ReplaceNewlines(this.code);
     }
 
     this.copilotCodeObservable = this._detectorCopilotService.onCodeSuggestion.subscribe(event => {
-      if (event == null || event == undefined)
+      if (event == null || event == undefined || event.code == null || event.code == undefined)
         return;
 
       if (!event.append) {

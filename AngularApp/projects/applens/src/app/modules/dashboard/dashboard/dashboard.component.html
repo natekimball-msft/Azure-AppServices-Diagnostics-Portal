@@ -88,6 +88,6 @@
 <fab-panel *ngIf="!stillLoading" [isOpen]="_detectorCopilotService.openPanel" [type]="_detectorCopilotService.panelType" [customWidth]="_detectorCopilotService.panelWidth" [isHiddenOnDismiss]="true"
 [hasCloseButton]="true" [closeButtonAriaLabel]="'close'" [isBlocking]="false" (onDismiss)="dismissCopilotPanel()"
 [headerText]="'Detector Copilot (Preview)'" [isLightDismiss]="false" (onLightDismissClick)="dismissCopilotPanel()">
-<detector-copilot [onCloseClickedEvent] = "closeCopilotPanelEvent.asObservable()"></detector-copilot>
+<detector-copilot></detector-copilot>
 </fab-panel>
 
