@@ -136,7 +136,7 @@ namespace AppLensV3.Services
                     catch (Exception ex)
                     {
                         // No big deal if save to cache fails, log and succeed the request
-                        logger.LogWarning($"Failed to save OpenAI response to Redis Cache: {ex.ToString()}");
+                        logger.LogWarning($"Failed to save OpenAI response to Redis Cache: {ex}");
                     }
                 }
                 return response;
@@ -212,7 +212,6 @@ namespace AppLensV3.Services
 
         private async Task<ChatCompletionsOptions> PrepareChatCompletionOptions(List<ChatMessage> chatMessages, ChatMetaData metadata)
         {
-            // default model tuning. Shekhar - Think about adding this to config.
             var chatCompletionsOptions = new ChatCompletionsOptions()
             {
                 Temperature = 0.3F,
@@ -229,7 +228,6 @@ namespace AppLensV3.Services
                 JObject jObject = JObject.Parse(chatTemplateContent);
                 string systemPrompt = (jObject["systemPrompt"] ?? string.Empty).ToString();
                 chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.System, systemPrompt));
-                // Shekhar : Need to test if examples are not present
                 JArray fewShotExamples = (jObject["fewShotExamples"] ?? new JObject()).ToObject<JArray>();
 
                 foreach (var element in fewShotExamples)

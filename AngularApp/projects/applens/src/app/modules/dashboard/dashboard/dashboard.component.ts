@@ -161,11 +161,8 @@ export class DashboardComponent implements OnDestroy {
       this._chatContextService.userId = this.userId;
       this._diagnosticService.getUserPhoto(this.userId).subscribe(image => {
 
-        // Shekhar : TODO : Uncomment the below lines and remove your photo
-        //this.userPhotoSource = image;
-        //this._chatContextService.userPhotoSource = this.userPhotoSource;
-        this.userPhotoSource = 'https://avatars.githubusercontent.com/u/11183841?v=4';
-        this._chatContextService.userPhotoSource = 'https://avatars.githubusercontent.com/u/11183841?v=4';
+        this.userPhotoSource = image;
+        this._chatContextService.userPhotoSource = this.userPhotoSource;
       });
 
       this._diagnosticService.getUserInfo(this.userId).subscribe((userInfo: UserInfo) => {
