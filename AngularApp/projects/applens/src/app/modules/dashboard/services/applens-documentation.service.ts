@@ -19,16 +19,13 @@ export class ApplensDocumentationService {
         let docsResource = '';
         let isStaging = false;
 
-        // Shekhar : Revert this file before PR
-        // remove the return statement and uncomment below
-        return of(new DocumentationRepoSettings('AppLensDocumentation', 'DocumentationStagingBranch', 'AppServiceDiagnostics', false));
-        // return forkJoin([repoRootObservable, stagingBranchObservable, resourceObservable, isStagingObservable]).pipe(map(repoSettings => {
-        //     docsRepoRoot = repoSettings[0];
-        //     docStagingBranch = repoSettings[1];
-        //     docsResource = repoSettings[2];
-        //     isStaging = repoSettings[3];
+        return forkJoin([repoRootObservable, stagingBranchObservable, resourceObservable, isStagingObservable]).pipe(map(repoSettings => {
+            docsRepoRoot = repoSettings[0];
+            docStagingBranch = repoSettings[1];
+            docsResource = repoSettings[2];
+            isStaging = repoSettings[3];
 
-        //     return new DocumentationRepoSettings(docsRepoRoot, docStagingBranch, docsResource, isStaging);
-        // }));
+            return new DocumentationRepoSettings(docsRepoRoot, docStagingBranch, docsResource, isStaging);
+        }));
     }
 }
