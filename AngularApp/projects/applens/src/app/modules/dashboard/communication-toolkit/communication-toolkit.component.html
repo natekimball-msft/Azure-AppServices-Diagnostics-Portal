@@ -110,9 +110,9 @@
         <h1 class="rca-header-text">EasyRCA!</h1>
         <div class = "rca-body-container rca-subtitle-text" >{{otherDisplayText}}
             <form>
-                <textarea class = "input-box">Please enter your feedback...</textarea>
+                <textarea textAreaTemplate class = "input-box" placeholder="Please enter your feedback..." ng-model="text"></textarea>
             </form> 
-            <button type="submit" class = "btn btn-text" (click)="submitClicked()">{{submitButtonMessage}}</button>
+            <button type="submit" class = "btn btn-text" (click)="submitClicked(textAreaTemplate.text)">{{submitButtonMessage}}</button>
             <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
         </div>
        

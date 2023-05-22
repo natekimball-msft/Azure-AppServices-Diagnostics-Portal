@@ -255,12 +255,14 @@ export class CommunicationToolkitComponent implements OnInit {
 
   }
 
-  submitClicked(): void {
+  submitClicked(message : string): void {
 
     this.submitButtonMessage = "Submitted!"; 
     setTimeout(() => {
      this.submitButtonMessage = "Submit";  
     }, 2000);
+
+    this._telemetryService.logEvent("CommunicationToolkitFeedback", { feedback: message, userId: this.OpenAICHATComponentRef.userId, timestamp: new Date().getTime().toString() });
 
   }
 
@@ -271,14 +273,17 @@ export class CommunicationToolkitComponent implements OnInit {
      this.copyButtonMessage = "Copy";  
     }, 2000);
 
+    this._telemetryService.logEvent("PrecannedRCACopied", { rcaCopied: this.currentSelectedRCA, userId: this.OpenAICHATComponentRef.userId, timestamp: new Date().getTime().toString() });
+
   }
 
   copyChatGPTClicked(){
     debugger; 
     var id = this.OpenAICHATComponentRef.chatIdentifier;
     var length = this.OpenAICHATComponentRef._chatContextService.messageStore[id].length; 
-    this._clipboard.copyAsHtml(this.OpenAICHATComponentRef._chatContextService.messageStore[id][length-1].displayMessage);
-
+    var message = this.OpenAICHATComponentRef._chatContextService.messageStore[id][length-1].displayMessage;
+    this._clipboard.copyAsHtml(message);
+    this._telemetryService.logEvent("ChatGPTRCACopied", { rcaCopied: message, userId: this.OpenAICHATComponentRef.userId, timestamp: new Date().getTime().toString() });
   }
 
   clearChatClicked(){
