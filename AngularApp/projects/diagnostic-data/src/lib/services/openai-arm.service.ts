@@ -37,7 +37,14 @@ export class OpenAIArmService {
       map((response: DetectorResponse) => {
         return this.processDetectorResponse(response);
       }),
-      catchError((err) => {throw err;})
+      catchError((err) => {
+        if (err && err.status == "404" && useDeepSearch) {
+          return this.runOpenAIDetector(questionString, useStack, false, "");
+        }
+        else {
+          throw err;
+        }
+      })
     );
   }
 

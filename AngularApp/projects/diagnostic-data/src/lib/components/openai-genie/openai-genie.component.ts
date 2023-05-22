@@ -78,7 +78,7 @@ export class OpenAIGenieComponent extends DataRenderBaseComponent implements OnI
 
     triggerSearch() {
         this.fetchingDeepSearchSolution = true;
-        this._openAIArmService.getDeepSearchAnswer(this.userQuery, this.cleanDiagnosticInsights(this.diagnosticToolFindings)).subscribe(result => {
+        this._openAIArmService.getDeepSearchAnswer(`User query regarding ${this._resourceService.searchSuffix}: ${this.userQuery}`, this.cleanDiagnosticInsights(this.diagnosticToolFindings)).subscribe(result => {
             if (result && result.length > 0 && !result.includes("We could not find any information about that") && !result.includes("An error occurred.")) {
                 this.isDisabled = false;
                 this.deepSearchSolution = result;
