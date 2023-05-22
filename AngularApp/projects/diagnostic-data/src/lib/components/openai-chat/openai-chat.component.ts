@@ -70,7 +70,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
 
   constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
     private _openAIService: GenericOpenAIChatService,
-    private _chatContextService: ChatUIContextService,
+    public _chatContextService: ChatUIContextService,
     private _telemetryService: TelemetryService,
     private http: HttpClient) {
   }
