@@ -188,8 +188,6 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   // copilot variables
   copilotEnabled: boolean = true;
   showDetectorCopilotPanel: boolean = false;
-  showDetectorCopilotCoachMark: boolean = false;
-  showDetectorCopilotTeachingBubble: boolean = false;
   copilotCodeObservable: any;
 
   runButtonStyle: any = {
@@ -653,19 +651,6 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
         isSystemInvoker == false &&
         this.gistMode == false &&
         this.isWorkflowDetector == false;
-      // try {
-      //   if (this.copilotEnabled) {
-      //     if (localStorage.getItem("showDetectorCopilotCoachMark") != undefined) {
-      //       this.showDetectorCopilotCoachMark = localStorage.getItem("showDetectorCopilotCoachMark") === "true";
-      //     }
-      //     else {
-      //       this.showDetectorCopilotCoachMark = true;
-      //     }
-      //   }
-      // }
-      // catch (error) {
-      //   this.showDetectorCopilotCoachMark = false;
-      // }
     });
   }
 

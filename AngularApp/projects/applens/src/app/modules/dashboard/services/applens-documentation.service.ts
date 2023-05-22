@@ -19,6 +19,8 @@ export class ApplensDocumentationService {
         let docsResource = '';
         let isStaging = false;
 
+        // Shekhar : Revert this file before PR
+        // remove the return statement and uncomment below
         return of(new DocumentationRepoSettings('AppLensDocumentation', 'DocumentationStagingBranch', 'AppServiceDiagnostics', false));
         // return forkJoin([repoRootObservable, stagingBranchObservable, resourceObservable, isStagingObservable]).pipe(map(repoSettings => {
         //     docsRepoRoot = repoSettings[0];

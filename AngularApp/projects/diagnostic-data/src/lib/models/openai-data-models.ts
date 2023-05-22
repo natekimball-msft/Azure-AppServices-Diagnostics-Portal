@@ -74,8 +74,8 @@ export function CreateTextCompletionModel(text: string, model: TextModels = Text
     };
 }
 
-// used for GPT3 or above
-export function CreateChatCompletionModel(chatMessages: any[], chatIdentifier: string, chatModel: ChatModel = ChatModel.GPT3, responseSize: ResponseTokensSize = ResponseTokensSize.Small): ChatCompletionModel {
+// used for GPT4
+export function CreateChatCompletionModel(chatMessages: any[], chatIdentifier: string, chatModel: ChatModel = ChatModel.GPT4, responseSize: ResponseTokensSize = ResponseTokensSize.Small): ChatCompletionModel {
     return {
         metadata : {
             "chatIdentifier": chatIdentifier,

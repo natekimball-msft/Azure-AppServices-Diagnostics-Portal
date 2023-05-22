@@ -210,10 +210,6 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   }
   //#endregion
 
-  //#region Settings : Previous and Next Code Options
-
-  //#endregion
-
   //#region Settings : Stop Option
 
   cancelOpenAICall = () => {
