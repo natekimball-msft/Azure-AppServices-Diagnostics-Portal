@@ -100,7 +100,12 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
       this.isEnabled = this._openAIService.isEnabled;
       if (this.isEnabled) {
         if (this.chatQuerySamplesFileUri && this.chatQuerySamplesFileUri.length > 0) {
-          this.http.get<any>(this.chatQuerySamplesFileUri).subscribe((data: KeyValuePair[]) => { this.chatQuerySamples = data; this.isEnabledChecked = true; },
+          this.http.get<any>(this.chatQuerySamplesFileUri).subscribe((res) => {
+            if (res && res.samples) {
+              this.chatQuerySamples = res.samples;
+            }
+            this.isEnabledChecked = true;
+          },
             (err) => {
               this._telemetryService.logEvent("OpenAIChatQuerySamplesFileLoadError", { "chatQuerySamplesFileUri": this.chatQuerySamplesFileUri, ts: new Date().getTime().toString() });
             });
@@ -114,22 +119,22 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
 
     this.loadChatFromStore(); // Works only if persistChat is true
   }
-  
+
   populateCustomFirstMessage() {
-      if (this.customFirstMessage && this.customFirstMessage.length > 0){
-        let message = {
-            id: uuid(),
-            displayMessage: this.customFirstMessage,
-            message: this.customFirstMessage,
-            messageSource: MessageSource.User,
-            timestamp: new Date().getTime(),
-            messageDisplayDate: TimeUtilities.displayMessageDate(new Date()),
-            status: MessageStatus.Finished,
-            userFeedback: "none",
-            renderingType: MessageRenderingType.Text
-        };
-        this.onUserSendMessage(message);
-      }
+    if (this.customFirstMessage && this.customFirstMessage.length > 0) {
+      let message = {
+        id: uuid(),
+        displayMessage: this.customFirstMessage,
+        message: this.customFirstMessage,
+        messageSource: MessageSource.User,
+        timestamp: new Date().getTime(),
+        messageDisplayDate: TimeUtilities.displayMessageDate(new Date()),
+        status: MessageStatus.Finished,
+        userFeedback: "none",
+        renderingType: MessageRenderingType.Text
+      };
+      this.onUserSendMessage(message);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -266,9 +271,9 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
           return;
         }
 
-        let trimmedText = this.chatModel == ChatModel.GPT3 ? 
-        (trimnewline ? StringUtilities.TrimBoth(response.text) : StringUtilities.TrimEnd(response.text)) : 
-        response.text;
+        let trimmedText = this.chatModel == ChatModel.GPT3 ?
+          (trimnewline ? StringUtilities.TrimBoth(response.text) : StringUtilities.TrimEnd(response.text)) :
+          response.text;
 
         messageObj.message = messageObj.message + trimmedText;
         messageObj.status = response.truncated === true ? MessageStatus.InProgress : MessageStatus.Finished;
@@ -382,7 +387,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
 
       this._chatContextService.messageStore[this.chatIdentifier].push(chatMessage);
       //Add a little timeout here to wait for the child component to initialize well
-      setTimeout(() => {this.chatUIComponentRef.scrollToBottom();}, 200);
+      setTimeout(() => { this.chatUIComponentRef.scrollToBottom(); }, 200);
       this.fetchOpenAIResult(this.prepareChatContext(), chatMessage);
     }
   }

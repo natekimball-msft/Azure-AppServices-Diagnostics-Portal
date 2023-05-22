@@ -187,7 +187,6 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
 
   // copilot variables
   copilotEnabled: boolean = true;
-  showDetectorCopilotPanel: boolean = false;
   copilotCodeObservable: any;
 
   runButtonStyle: any = {
@@ -2404,7 +2403,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   //#region Copilot Methods
 
   initalizeCoPilotServiceMembers() {
-    this._detectorCopilotService.azureServiceType = this.resourceService.searchSuffix;
+    this._detectorCopilotService.azureServiceType = this.resourceService.displayName;
     this._detectorCopilotService.detectorDevelopMode = this.mode;
     this._detectorCopilotService.detectorCode = StringUtilities.ReplaceNewlines(this.code);
     if (this.mode == DevelopMode.Create) {

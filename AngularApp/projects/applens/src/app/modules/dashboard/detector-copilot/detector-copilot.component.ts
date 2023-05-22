@@ -1,7 +1,8 @@
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ChatMessage, ChatModel, ChatUIContextService, MessageSource, MessageStatus, ResponseTokensSize, StringUtilities } from 'diagnostic-data';
-import { Observable, Subscription } from 'rxjs';
-import { DetectorCopilotService } from '../../services/detector-copilot.service';
+import { Subscription } from 'rxjs';
+import { DetectorCopilotService } from '../services/detector-copilot.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'detector-copilot',
@@ -18,8 +19,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   stopMessageGeneration: boolean = false;
   clearChatConfirmationHidden: boolean = true;
   copilotExitConfirmationHidden: boolean = true;
-  codeHistory: string[] = [];
-  codeHistoryNavigator: number = -1;
+  configFile: string = 'assets/chatConfigs/detectorcopilot.json';
 
   private closeEventObservable: Subscription;
   private codeUsedInPrompt: string;
@@ -30,7 +30,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   private codeProgressMsgIndex: number = 0;
   private codeCompleteMsgIndex: number = 0;
 
-  constructor(public _chatContextService: ChatUIContextService, public _copilotService: DetectorCopilotService) {
+  constructor(public _chatContextService: ChatUIContextService, public _copilotService: DetectorCopilotService, private http: HttpClient) {
   }
 
   ngOnInit(): void {
@@ -301,44 +301,16 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
   private prepareCodeUpdateMessages = () => {
 
-    this.codeCompleteMessages = [
-      "The code update is complete! We're all clear for takeoff! ✈️🚀",
-      "Code update is finished! Time to sit back, relax and let the awesomeness wash over you! 🏖️🌊",
-      "Good news! The code update is finished and we're good to go! 🎉🎊",
-      "The code update is done and dusted! Get ready for some serious awesomeness! 💥🤩",
-      "Stop everything! The code update is complete and it's looking amazing! 🛑😍",
-      "It's official! The code update is finished and ready to rock and roll! 🤘🎸",
-      "Brace yourselves, the code update is done and it's a thing of beauty! 💎🤯",
-      "Code update complete! Let's celebrate with some virtual high-fives all around! 🙌🎉",
-      "The code update is good to go! Let's make some magic happen! ✨🎩",
-      "Good news! The code update is complete and ready to blow your minds! 🤯💥",
-      "The code update is finished and ready to rumble! Let's make some magic happen! 🎉🎊✨",
-      "Hold on to your hats! The code update is complete and it's mind-blowing! 🧢💥🤯",
-      "It's official! The code update is complete and it's better than sliced bread! 🍞👌🤩",
-      "The code update is done and it's hotter than a summer day! ☀️🔥😎",
-      "Code update complete! Get ready for some serious high-fives and fist bumps! 🙌👊"
-    ];
+    this.http.get<any>(this.configFile).subscribe(res => {
+      this.codeProgressMessages = res && res.codeProgressMessages && res.codeProgressMessages.length > 0 ?
+        res.codeProgressMessages : ['Please wait while I am updating your code'];
 
-    this.codeProgressMessages = [
-      "Its time to update the code! 🚀 Brace yourselves for the awesomeness...",
-      "Hold on tight! 🤠 Code update is in progress and it's gonna be epic...",
-      "Buckle up, folks! 🎢 The code is getting a major upgrade and it's gonna be a wild ride...",
-      "Attention! 📢 The code is being updated and it's gonna blow your mind...",
-      "Get ready for the next level! 🎮 The code is updating and it's gonna be game-changing...",
-      "It's time to level up! 🔝 The code is updating and it's gonna take things to the next level...",
-      "Code update in progress... 💻 Brace yourselves for the awesomeness that's coming your way...",
-      "Ready or not, here it comes! 🤪 The code is updating and it's gonna be a wild ride...",
-      "Hold on to your hats! 🎩 The code is getting a major upgrade and it's gonna be mind-blowing...",
-      "Here we go! 🏎️ The code is updating and it's gonna be a fast and furious ride...",
-      "The code is getting smarter ... 👨‍💻 , but not as smart as you 😎",
-      "The code is under construction!🚧 Brace yourselves, there is a storm coming 🤪 ...",
-      "It's party time!🎉 The code is getting an update and it's gonna be a celebration...",
-      "The code is heating up! 🔥 Brace yourselves for the fire that's about to be unleashed 🤪...",
-      " The code is shining bright!🌟 Get ready to be dazzled by the awesomeness..."
-    ];
+      this.codeCompleteMessages = res && res.codeCompleteMessages && res.codeCompleteMessages.length > 0 ?
+        res.codeCompleteMessages : ['code update completed'];
 
-    this.codeProgressMessages = StringUtilities.shuffleArray<string>(this.codeProgressMessages);
-    this.codeCompleteMessages = StringUtilities.shuffleArray<string>(this.codeCompleteMessages);
+      this.codeProgressMessages = StringUtilities.shuffleArray<string>(this.codeProgressMessages);
+      this.codeCompleteMessages = StringUtilities.shuffleArray<string>(this.codeCompleteMessages);
+    });
   }
 
   //#endregion
