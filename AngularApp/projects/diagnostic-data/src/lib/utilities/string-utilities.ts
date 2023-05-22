@@ -84,6 +84,77 @@ export class StringUtilities {
         return -1;
     }
 
+    public static ReplaceAll(input: string, target: string, replacement: string): string {
+        var cleanedRegex = StringUtilities.ReplaceNewlines(StringUtilities.EscapeRegExp(target));
+        const searchRegExp = new RegExp(cleanedRegex, 'g');
+        input = StringUtilities.ReplaceNewlines(input);
+        return input.replace(searchRegExp, replacement);
+    }
+
+    public static shuffleArray<T>(array: T[]): T[] {
+
+        // Loop through the array using forEach
+        array.forEach((_, index) => {
+
+            // Generate a random index between 0 and index
+            const randomIndex = Math.floor(Math.random() * (index + 1));
+
+            // Swap the current element with the randomly selected one
+            [array[index], array[randomIndex]] = [array[randomIndex], array[index]];
+        });
+
+        return array;
+    }
+    
+    public static mergeOverlappingStrings(s1: string, s2: string): string {  
+        const overlapLength = this.overlappedStringLength(s1, s2);  
+        console.log(`Overlapped Length : ${overlapLength}`);
+        return s1 + s2.substring(overlapLength);  
+    }  
+
+    // KMP to find overlapped string length between two strings
+    public static overlappedStringLength(s1: string, s2: string): number {  
+        // Trim s1 so it isn't longer than s2  
+        if (s1.length > s2.length) s1 = s1.substring(s1.length - s2.length);  
+      
+        const T: number[] = this.computeBackTrackTable(s2); // O(n)  
+      
+        let m = 0;  
+        let i = 0;  
+        while (m + i < s1.length) {  
+            if (s2[i] === s1[m + i]) {  
+                i += 1;  
+            } else {  
+                m += i - T[i];  
+                if (i > 0) i = T[i];  
+            }  
+        }  
+      
+        return i; // <-- changed the return here to return characters matched  
+    }  
+      
+    private static computeBackTrackTable(s: string): number[] {  
+        const T: number[] = new Array(s.length);  
+        let cnd = 0;  
+        T[0] = -1;  
+        T[1] = 0;  
+        let pos = 2;  
+        while (pos < s.length) {  
+            if (s[pos - 1] === s[cnd]) {  
+                T[pos] = cnd + 1;  
+                pos += 1;  
+                cnd += 1;  
+            } else if (cnd > 0) {  
+                cnd = T[cnd];  
+            } else {  
+                T[pos] = 0;  
+                pos += 1;  
+            }  
+        }  
+      
+        return T;  
+    }
+
     //Helper function for KMP algorithm
     private static BuildPatternTable(word: string): number[] {
         const patternTable = [0];
@@ -109,27 +180,4 @@ export class StringUtilities {
         const regex = new RegExp(/[.*+?^${}()|[\]\\]/, 'g');
         return input.replace(regex, '\\$&');
     }
-
-    public static ReplaceAll(input: string, target: string, replacement: string): string {
-        var cleanedRegex = StringUtilities.ReplaceNewlines(StringUtilities.EscapeRegExp(target));
-        const searchRegExp = new RegExp(cleanedRegex, 'g');
-        input = StringUtilities.ReplaceNewlines(input);
-        return input.replace(searchRegExp, replacement);
-    }
-
-    public static shuffleArray<T>(array: T[]): T[] {
-
-        // Loop through the array using forEach
-        array.forEach((_, index) => {
-
-            // Generate a random index between 0 and index
-            const randomIndex = Math.floor(Math.random() * (index + 1));
-
-            // Swap the current element with the randomly selected one
-            [array[index], array[randomIndex]] = [array[randomIndex], array[index]];
-        });
-
-        return array;
-    }
-
 }

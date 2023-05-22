@@ -181,11 +181,11 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
       let messageContainsCode = this._copilotService.isMessageContainsCode(lastMessage.message);
       let linesOfCode = this.codeUsedInPrompt && this.codeUsedInPrompt != '' ? this.codeUsedInPrompt.split("\n").length : 0;
 
-      var artificialUserMsg = `Finish the above message. Make sure you start the new message with characters right after where the above message ended at '${lastLine}'. Only tell me the remaining message and not the enitre message again.`;
+      var artificialUserMsg = `Finish the above message fully. Make sure you start the new message with characters right after where the above message ended at '${lastLine}'. Only tell me the remaining message and not the previous message again.`;
 
-      if ((messageContainsCode && linesOfCode <= this.maxLinesLimitForCodeUpdate)) {
-        artificialUserMsg = `${artificialUserMsg}.  No code explanation needed.`;
-      }
+      // if ((messageContainsCode && linesOfCode <= this.maxLinesLimitForCodeUpdate)) {
+      //   artificialUserMsg = `${artificialUserMsg}.  No code explanation needed.`;
+      // }
 
       chatContext.push({
         "role": "User",

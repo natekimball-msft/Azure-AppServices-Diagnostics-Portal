@@ -11,7 +11,7 @@ export class DetectorCopilotService {
 
   public openPanel: boolean;
   public panelType: PanelType = PanelType.custom;
-  public panelWidth: string = "750px";
+  public panelWidth: string = "720px";
   public detectorCode: string;
   public detectorTemplate: string;
   public detectorDevelopMode: DevelopMode;

@@ -275,11 +275,11 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
           (trimnewline ? StringUtilities.TrimBoth(response.text) : StringUtilities.TrimEnd(response.text)) :
           response.text;
 
-        messageObj.message = messageObj.message + trimmedText;
+        messageObj.message = StringUtilities.mergeOverlappingStrings(messageObj.message, trimmedText);
         messageObj.status = response.truncated === true ? MessageStatus.InProgress : MessageStatus.Finished;
 
         if (this.postProcessSystemMessage == undefined) {
-          messageObj.displayMessage = messageObj.displayMessage + trimmedText;
+          messageObj.displayMessage = StringUtilities.mergeOverlappingStrings(messageObj.displayMessage, trimmedText);
         }
         else {
           messageObj = this.postProcessSystemMessage(messageObj);
