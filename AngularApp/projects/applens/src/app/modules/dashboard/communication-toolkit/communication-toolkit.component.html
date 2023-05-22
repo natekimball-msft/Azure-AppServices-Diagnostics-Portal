@@ -10,6 +10,12 @@
             {{mainCategoryPageText}}
         </div>
         <div class="rca-box-row">
+            <ng-container>
+                <div class="rca-box rca-title-text"  
+                    (click) = "mainCategoryClicked(categories[categories.length-1])" [innerHTML] = "categories[categories.length-1]"></div>
+            </ng-container>
+        </div>
+        <div class="rca-box-row">
             <ng-container *ngFor="let cat of [].constructor(12); let i = index">
 
             <div class="rca-box rca-title-text" *ngIf = "i<=2 && ( i < categories.length) "  
@@ -40,12 +46,6 @@
                     (click) = "mainCategoryClicked(categories[i])" [innerHTML] = "categories[i]"></div>
                 <div class="empty-box" *ngIf = "(i>=9 && i<=11) && ( i >= categories.length) "  
                     [innerHTML] = ""></div>
-            </ng-container>
-        </div>
-        <div class="rca-box-row">
-            <ng-container *ngFor="let cat of [].constructor(15); let i = index">
-                <div class="rca-box rca-title-text" *ngIf = "(i>=12 && i<=14) && ( i < categories.length) "  
-                    (click) = "mainCategoryClicked(categories[i])" [innerHTML] = "categories[i]"></div>
             </ng-container>
         </div>
     </div>
@@ -112,7 +112,7 @@
             <form>
                 <textarea class = "input-box">Please enter your feedback...</textarea>
             </form> 
-            <button type="submit" class = "btn btn-text">Submit</button>
+            <button type="submit" class = "btn btn-text" (click)="submitClicked()">{{submitButtonMessage}}</button>
             <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
         </div>
        
@@ -122,7 +122,7 @@
 </div>
 
 <div *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed">
-    <openai-chat
+    <openai-chat #chatbot
       [userId]="userAlias"
       [persistChat]="false"
       [chatAlignment]="'center'"
@@ -141,9 +141,11 @@
       [customFirstMessage] = "customFirstMessageEdit"
     >
     </openai-chat>
-    <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "margin-top: 88vh; margin-left:10%" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
+    <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:0%; bottom: 40px; padding: 1px;" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
+    <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:4%; bottom: 40px; padding: 1px;" (click) = "clearChatClicked()"><div class = "btn-text">Clear Chat</div></button>
+    <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:10%; bottom: 40px; padding: 1px;" (click) = "copyChatGPTClicked()"><div class = "btn-text">Copy</div></button>
 
-  </div>
+</div>
 
   <div *ngIf="isEnabledChecked && !isEnabled">
     <div class="chatgpt-bot-container">
