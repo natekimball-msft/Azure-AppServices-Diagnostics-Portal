@@ -2410,6 +2410,9 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
     if (this.mode == DevelopMode.Create) {
       this._detectorCopilotService.detectorTemplate = StringUtilities.ReplaceNewlines(this.code);
     }
+    else {
+      this._detectorCopilotService.detectorTemplate = '';
+    }
 
     this.copilotCodeObservable = this._detectorCopilotService.onCodeSuggestion.subscribe(event => {
       if (event == null || event == undefined || event.code == null || event.code == undefined)
