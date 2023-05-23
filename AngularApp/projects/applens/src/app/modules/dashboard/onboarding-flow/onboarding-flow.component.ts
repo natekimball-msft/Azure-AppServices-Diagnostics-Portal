@@ -862,7 +862,8 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
           if (this.codeCompletionEnabled && this.languageServerUrl && this.languageServerUrl.length > 0) {
             if (this.code.indexOf(codePrefix) < 0) {
               this.code = this.addCodePrefix(this.code);
-              this.lastSavedVersion = this.code
+              this.lastSavedVersion = this.code;
+              this.initalizeCoPilotServiceMembers();
             }
             let fileName = uuid();
             let editorModel = monaco.editor.createModel(this.code, 'csharp', monaco.Uri.parse(`file:///workspace/${fileName}.cs`));
