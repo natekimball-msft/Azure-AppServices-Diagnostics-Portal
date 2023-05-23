@@ -11,7 +11,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
-  contentDisclaimerMessage: string = "I am a little biased towards writing code. If you dont want to generate code, just specify <b>'no code'</b> with your messages. *Also, no sensitive data please :)";
+  contentDisclaimerMessage: string = "I'm biased towards coding; mention 'no code' for other help and avoid sensitive data :)";
   chatHeader: string = '';
   chatModel: ChatModel = ChatModel.GPT4;
   responseTokenSize: ResponseTokensSize = ResponseTokensSize.Small;

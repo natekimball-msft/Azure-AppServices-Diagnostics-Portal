@@ -139,9 +139,9 @@
 
 .chatui-content-disclaimer {
   font-weight: 400;
-  color: #740505;
+  color: rgb(112, 112, 112);
   position: absolute;
-  bottom: 0px;
+  bottom: 5px;
 }
 
 .chatui-textarea {
@@ -173,7 +173,7 @@
   height: 70vh;
   border: 1px solid #f6f6f6;
   border-bottom: 0px;
-  padding: 7px;
+  padding: 15px;
 }
 
 .chatui-message-icon {
@@ -277,14 +277,14 @@
 }
 
 .chatui-message-box-user {
-  border: 1px solid rgba(247, 247, 248);
+  border: 1px solid #ebebed;
   border-radius: 10px;
 }
 
 .chatui-message-box-system {
   background-color: rgba(247, 247, 248);
   border-radius: 10px;
-  border: 1px solid #ebebeb;
+  border: 1px solid #e7e7e7;
 }
 
 .chatui-message {
