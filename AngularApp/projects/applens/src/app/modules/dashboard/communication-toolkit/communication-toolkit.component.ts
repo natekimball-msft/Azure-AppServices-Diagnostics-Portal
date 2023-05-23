@@ -246,7 +246,7 @@ export class CommunicationToolkitComponent implements OnInit {
     //this.subcategoriesDisplayed = false; 
 
     if(this.currentSelectedRCA != ""){
-      this.customFirstMessageEdit = "\nModify the below RCA to make it more customer-friendly and fix grammar issues:\n " + this.currentSelectedRCA; 
+      this.customFirstMessageEdit = "\nModify the below RCA to make it more customer-friendly:\n " + this.currentSelectedRCA; 
     }
 
     this.modifierDisplayed = true; 
@@ -256,6 +256,7 @@ export class CommunicationToolkitComponent implements OnInit {
   }
 
   submitClicked(message : string): void {
+    debugger; 
 
     this.submitButtonMessage = "Submitted!"; 
     setTimeout(() => {

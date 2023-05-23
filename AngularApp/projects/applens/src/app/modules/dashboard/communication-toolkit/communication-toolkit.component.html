@@ -1,7 +1,7 @@
 
 <div *ngIf = "!rcaLoading && !rcaDisplayed && !otherDisplayed &&!modifierDisplayed" class="rca-bot-container ">
     <div class="rca-box-row-container rca-header-container">
-        <h1 class="rca-header-text">TalkEasy!</h1>
+        <h1 class="rca-header-text">EasyRCA!</h1>
         <!-- <div class = "rca-subtitle-text">{{mainCategoryPageText}}</div> -->
     </div>
     
@@ -110,9 +110,9 @@
         <h1 class="rca-header-text">EasyRCA!</h1>
         <div class = "rca-body-container rca-subtitle-text" >{{otherDisplayText}}
             <form>
-                <textarea textAreaTemplate class = "input-box" placeholder="Please enter your feedback..." ng-model="text"></textarea>
+                <textarea #textAreaTemplate class = "input-box" placeholder="Please enter your feedback..." ng-model="text"></textarea>
             </form> 
-            <button type="submit" class = "btn btn-text" (click)="submitClicked(textAreaTemplate.text)">{{submitButtonMessage}}</button>
+            <button type="submit" class = "btn btn-text" (click)="submitClicked(textAreaTemplate.value)">{{submitButtonMessage}}</button>
             <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
         </div>
        
@@ -144,7 +144,6 @@
     <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:0%; bottom: 40px; padding: 1px;" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
     <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:4%; bottom: 40px; padding: 1px;" (click) = "clearChatClicked()"><div class = "btn-text">Clear Chat</div></button>
     <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:10%; bottom: 40px; padding: 1px;" (click) = "copyChatGPTClicked()"><div class = "btn-text">Copy</div></button>
-
 </div>
 
   <div *ngIf="isEnabledChecked && !isEnabled">
