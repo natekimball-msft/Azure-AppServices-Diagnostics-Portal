@@ -259,10 +259,16 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
   private formatUserMessage(chatMessageObj: ChatMessage): string {
 
+    console.log(`detector code : ${this._copilotService.detectorCode}`);
+    console.log(`detector template : ${this._copilotService.detectorTemplate}`);
+    console.log(`are they equal: ${StringUtilities.Equals(this._copilotService.detectorCode, this._copilotService.detectorTemplate)}`);
+
     this.codeUsedInPrompt = this._copilotService.detectorCode &&
       this._copilotService.detectorCode != '' &&
       !StringUtilities.Equals(this._copilotService.detectorCode, this._copilotService.detectorTemplate) ?
       this._copilotService.detectorCode : '';
+
+    console.log(`code used in prompt : ${this.codeUsedInPrompt}`);
 
     let message = this.codeUsedInPrompt != '' ?
       `Here is the initial detector code : \n <code>\n${this.codeUsedInPrompt}\n</code>\n` : '';

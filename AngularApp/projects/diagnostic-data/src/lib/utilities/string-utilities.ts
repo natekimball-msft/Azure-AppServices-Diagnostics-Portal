@@ -108,7 +108,7 @@ export class StringUtilities {
     
     public static mergeOverlappingStrings(s1: string, s2: string): string {  
         const overlapLength = this.overlappedStringLength(s1, s2);  
-        console.log(`Overlapped Length : ${overlapLength}`);
+        console.log(`Overlapped Length : ${overlapLength}`)
         return s1 + s2.substring(overlapLength);  
     }  
 
