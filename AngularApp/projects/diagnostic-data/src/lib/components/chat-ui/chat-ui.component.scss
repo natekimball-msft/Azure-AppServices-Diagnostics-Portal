@@ -149,20 +149,29 @@
   height: 100%;
   overflow-y: hidden;
   width: 100%;
-  font-size: 18px;
+  font-size: 15px;
   line-height: 30px;
   resize: none;
   padding-left: 9px;
   padding-right: 1.75rem;
+  border-radius: 17px;
+}
+
+.chatui-textarea:focus {
+  outline: none !important;
+  border: 1px solid #289dc2;
 }
 
 .chatui-textarea-button {
-  position: relative;
-  padding: 0.25rem;
-  border-radius: 0.375rem;
-  color: #8e8ea0;
-  height: 100%;
-  width: 30px;
+  border-radius: 50%;
+  color: white;
+  height: 38px;
+  width: 38px;
+  margin-left: 5px;
+  background-color: #289dc2;
+  border: none;
+  padding: 9px;
+  margin-top: 1px;
 }
 
 .chatui-chat-messages-container {
@@ -299,6 +308,10 @@
   margin: auto;
   margin-left: 10px;
   overflow: auto;
+}
+
+.chatui-message-left-aligned div markdown p {
+  margin: 0;
 }
 
 .blinking-cursor {

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, AfterViewInit } from '@angular/core';
 import { KeyValuePair } from '../../models/common-models';
 import { ChatMessage, ChatAlignment, MessageSource, MessageStatus, MessageRenderingType } from '../../models/chatbot-models';
 import { TelemetryService } from '../../services/telemetry/telemetry.service';
@@ -78,7 +78,7 @@ export class ChatUIComponent implements OnInit {
 
     triggerChat() {
         this.chatInputTextInternal = StringUtilities.TrimEnd(this.chatInputTextInternal);
-        if (this.chatInputTextInternal != undefined && this.chatInputTextInternal != '') {
+        if (!this.chatInputBoxDisabled && this.chatInputTextInternal != undefined && this.chatInputTextInternal != '') {
             this.chatInputBoxDisabled = true;
             let message = {
                 id: uuid(),
