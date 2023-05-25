@@ -188,6 +188,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   // copilot variables
   copilotEnabled: boolean = true;
   copilotCodeObservable: any;
+  copilotServiceMembersInitialized: boolean = false;
 
   runButtonStyle: any = {
     root: { cursor: "default" }
@@ -392,6 +393,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   ngOnInit() {
     this._activatedRoute.params.subscribe((params: Params) => {
       this.initialized = false;
+      this.copilotServiceMembersInitialized = false;
       this.startUp();
     });
   }
@@ -405,9 +407,11 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
       queryParamsHandling: 'merge'
     });
 
-    this._detectorCopilotService.onCloseCopilotPanelEvent.next({ showConfirmation: false, resetCopilot: true });
-    if (this.copilotCodeObservable) {
-      this.copilotCodeObservable.unsubscribe();
+    if (this.copilotServiceMembersInitialized) {
+      this._detectorCopilotService.onCloseCopilotPanelEvent.next({ showConfirmation: false, resetCopilot: true });
+      if (this.copilotCodeObservable) {
+        this.copilotCodeObservable.unsubscribe();
+      }
     }
   }
 
@@ -2429,6 +2433,8 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
         this.code = `${this.code}${event.code}`;
       }
     });
+
+    this.copilotServiceMembersInitialized = true;
   }
 
   triggerCodeCopyFromCopilot(codeSuggestionFromCopilot: string, index: number = 0) {
