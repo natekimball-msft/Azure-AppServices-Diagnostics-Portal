@@ -205,12 +205,12 @@ export class SideNavComponent implements OnInit {
     this._openAIService.CheckEnabled().subscribe(enabled => {
       this.showChatGPT = this._openAIService.isEnabled;
     });
-    this._documentationService.getDocsRepoSettings().subscribe(settings => {
-      this.documentationRepoSettings = settings;
-      this.initializeDetectors();
-    });
+    // this._documentationService.getDocsRepoSettings().subscribe(settings => {
+    //   this.documentationRepoSettings = settings;
+    //   this.initializeDetectors();
+    // });
     this.getCurrentRoutePath();
-
+    this.initializeDetectors();  
     this._router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(event => {
       this.getCurrentRoutePath();
     });
