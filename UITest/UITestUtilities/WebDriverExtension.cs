@@ -4,8 +4,7 @@ using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
-
-namespace DiagPortalTest
+namespace UITestUtilities
 {
     public static class WebDriverExtensions
     {
@@ -53,7 +52,7 @@ namespace DiagPortalTest
             return wait.Until(drv => drv.FindElement(by));
         }
 
-        public static void TakeAndSaveScreenShot(this IWebDriver driver, TestContext testContext, string fileName)
+        public static void TakeAndSaveScreenshot(this IWebDriver driver, TestContext testContext, string fileName)
         {
             var screenShot = (driver as ITakesScreenshot).GetScreenshot();
             string path = $"{Directory.GetCurrentDirectory()}/{fileName}.png";

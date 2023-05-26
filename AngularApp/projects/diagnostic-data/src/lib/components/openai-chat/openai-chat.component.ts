@@ -41,8 +41,8 @@ export class OpenAIChatComponent implements OnInit {
   @Input() chatHeader: string = '';
   @Input() chatContextLength: number = 2;
   @Input() chatQuerySamplesFileUri: string = ''; //e.g. "assets/chatConfigs/chatQuerySamples.json"
-  @Input() fetchChat: Function = null; 
-  @Input() saveChat: Function = null; 
+  @Input() fetchChat: Function;
+  @Input() saveChat: Function;
   @Input() chatAlignment: ChatAlignment = ChatAlignment.Center;
 
   // Callback methods for pre and post processing messages
@@ -101,25 +101,23 @@ export class OpenAIChatComponent implements OnInit {
     debugger; 
     this.loadChatFromStore(); // Works only if persistChat is true
   }
-
+  
   populateCustomFirstMessage() {
-    debugger; 
-    if (this.customFirstMessage && this.customFirstMessage.length > 0){
-      debugger; 
-      let message = {
-          id: uuid(),
-          displayMessage: this.customFirstMessage,
-          message: this.customFirstMessage,
-          messageSource: MessageSource.User,
-          timestamp: new Date().getTime(),
-          messageDisplayDate: TimeUtilities.displayMessageDate(new Date()),
-          status: MessageStatus.Finished,
-          userFeedback: "none",
-          renderingType: MessageRenderingType.Text
-      };
-      this.onUserSendMessage(message);
-    }
-}
+      if (this.customFirstMessage && this.customFirstMessage.length > 0){
+        let message = {
+            id: uuid(),
+            displayMessage: this.customFirstMessage,
+            message: this.customFirstMessage,
+            messageSource: MessageSource.User,
+            timestamp: new Date().getTime(),
+            messageDisplayDate: TimeUtilities.displayMessageDate(new Date()),
+            status: MessageStatus.Finished,
+            userFeedback: "none",
+            renderingType: MessageRenderingType.Text
+        };
+        this.onUserSendMessage(message);
+      }
+  }
 
   loadChatFromStore() {
     debugger; 
@@ -322,9 +320,8 @@ export class OpenAIChatComponent implements OnInit {
         renderingType: MessageRenderingType.Text
       };
       this._chatContextService.messageStore[this.chatIdentifier].push(chatMessage);
-      setTimeout(() =>{
-        this.chatUIComponentRef.scrollToBottom();
-      }, 200); 
+      //Add a little timeout here to wait for the child component to initialize well
+      setTimeout(() => {this.chatUIComponentRef.scrollToBottom();}, 200);
       this.fetchOpenAIResult(this.prepareChatContext(), chatMessage);
     }
   }

@@ -71,11 +71,16 @@ namespace DiagPortalTest
 
         }
 
-        protected override void Run()
+        public override void TestRun()
         {
             NavigateToHomePage();
             TestCategoryOverview();
             TestDetectorInSameCategory();
+        }
+
+        public override void TestFail(int retryCount, Exception exception)
+        {
+            TakeAndSaveScreenshotForRetry(retryCount, "DiagAndSolve");
         }
     }
 }

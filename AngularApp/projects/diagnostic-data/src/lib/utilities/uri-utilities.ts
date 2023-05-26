@@ -68,4 +68,13 @@ export class UriUtilities {
         }
         return originalParams;
     }
+
+    static isNoResourceCall(resourceUri: string): boolean {
+        // Temporary fix for DaaS, it genuinely passes in a resourceUri of "NoResource" in the format /subscriptions/{subscriptionId}/providers/Microsoft.Storage/storageaccounts and the call should be created appropriately.
+        return `${resourceUri}`.toLowerCase().indexOf('/providers/microsoft.storage/storageaccounts') > -1 ? false : `${resourceUri}`.toLowerCase().indexOf('/resourcegroups/') < 0;
+    }
+
+    static isApolloApiCall(resourceUri: string): boolean {
+        return `${resourceUri}`.toLowerCase().indexOf('/microsoft.diagnostics/apollo/') > -1;
+    }
 }

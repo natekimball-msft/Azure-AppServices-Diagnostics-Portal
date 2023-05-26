@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Web;
+using UITestUtilities;
 
 namespace DiagPortalTest
 {
@@ -35,7 +36,7 @@ namespace DiagPortalTest
             return url;
         }
 
-        protected override void Run()
+        public override void TestRun()
         {
             string url = GetCaseSubmissionUrl(_testConfig.ResourceUri, _caseSubmissionItem.CaseSubject);
             _driver.Navigate().GoToUrl(url);
@@ -43,6 +44,11 @@ namespace DiagPortalTest
             var currentIFrame = GetIframeElement(0);
             _driver.SwitchTo().Frame(currentIFrame);
             Assert.IsTrue(CheckIfDetectorPresent(30), "Case Submission Analysis Displayed");
+        }
+
+        public override void TestFail(int retryCount, Exception e)
+        {
+            TakeAndSaveScreenshotForRetry(retryCount, "CaseSubmission");
         }
     }
 }
