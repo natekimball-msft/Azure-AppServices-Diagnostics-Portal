@@ -39,7 +39,7 @@ namespace DiagPortalTest
             {
                 InitSettings();
                 InitBroswerDriver();
-                LogIn(context).Wait();
+                LogIn().Wait();
             };
 
             Action<int, Exception> fail = (retryCount, exception) =>
@@ -98,23 +98,26 @@ namespace DiagPortalTest
 
         //For Local, login will go through Basic Auth(already have MS account logged in as system level)
         //For PROD go though login by form
-        private static async Task LogIn(TestContext context)
+        private static async Task LogIn()
         {
-            if (_isProd)
+            bool isBasicAuthLogIn = false;
+            //Basic auth login for locl
+            NetworkAuthenticationHandler handler = new NetworkAuthenticationHandler()
             {
-                LogInWithForm();
-            }
-            else
-            {
-                await LogInWithBasicAuth();
-            }
-        }
+                UriMatcher = (d) =>
+                {
+                    isBasicAuthLogIn = true;
+                    Console.WriteLine("Login with basic auth");
+                    return string.Equals(d.Host, "msft.sts.microsoft.com", StringComparison.CurrentCultureIgnoreCase);
+                },
+                Credentials = new PasswordCredentials(_email, _password)
+            };
 
-        /// <summary>
-        /// Both baisc auth and form authentiaction for portal, first step of login is entering email, 
-        /// </summary>
-        private static void LogInEnterEmail()
-        {
+            INetwork networkInterceptor = _driver.Manage().Network;
+            networkInterceptor.AddAuthenticationHandler(handler);
+            await networkInterceptor.StartMonitoring();
+
+            //Enter password
             _driver.Navigate().GoToUrl(_portalBaseUrl);
             Thread.Sleep(1000);
             Console.WriteLine("Login Start");
@@ -123,48 +126,25 @@ namespace DiagPortalTest
             Thread.Sleep(1000 * 5);
 
             Console.WriteLine("Enter Email Success");
-        }
-
-        private static void LogInWithForm()
-        {
-            Console.WriteLine($"Login with Form,isProd is {_isProd}");
-            LogInEnterEmail();
-
-            _driver.FindElement(By.Id("FormsAuthentication")).Click();
-            Thread.Sleep(500);
-            _driver.FindElement(By.Id("passwordInput")).SendKeys(_password);
-            _driver.FindElement(By.Id("submitButton")).Click();
-
-            Console.WriteLine("Enter Password Success");
 
 
-            //Click "Yes" button
-            _driver.FindElement(By.Id("idSIButton9")).Click();
-            Console.WriteLine("Login Success");
-        }
-
-        /// <summary>
-        /// Basic Auth login,BiDirectional API only works in Chrome and Edge
-        /// </summary>
-        /// <returns></returns>
-        private static async Task LogInWithBasicAuth()
-        {
-            Console.WriteLine($"Login with Basic Auth,isProd is {_isProd}");
-            NetworkAuthenticationHandler handler = new NetworkAuthenticationHandler()
+            //From log in for PROD, no need if using basic auth
+            if (!isBasicAuthLogIn)
             {
-                UriMatcher = (d) => d.Host.Contains("msft.sts.microsoft.com"),
-                Credentials = new PasswordCredentials(_email, _password)
-            };
+                Console.WriteLine("Login with Form");
+                _driver.FindElement(By.Id("FormsAuthentication")).Click();
+                Thread.Sleep(500);
+                _driver.FindElement(By.Id("passwordInput")).SendKeys(_password);
+                _driver.FindElement(By.Id("submitButton")).Click();
 
-            INetwork networkInterceptor = _driver.Manage().Network;
-            networkInterceptor.AddAuthenticationHandler(handler);
-            await networkInterceptor.StartMonitoring();
-            Console.WriteLine("Start Network Monitoring");
+                Console.WriteLine("Enter Password Success");
 
-            LogInEnterEmail();
 
-            Console.WriteLine("Login Success with basic auth");
+                //Click "Yes" button
+                _driver.FindElement(By.Id("idSIButton9")).Click();
+            }
         }
+
 
 
         [TestInitialize()]
