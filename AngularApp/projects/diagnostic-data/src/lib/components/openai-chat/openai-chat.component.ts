@@ -119,8 +119,7 @@ export class OpenAIChatComponent implements OnInit {
       }
   }
 
-  loadChatFromStore() {
-    debugger; 
+  loadChatFromStore() { 
     if (this.persistChat && this.fetchChat) {
       this.fetchChat(this.chatIdentifier).subscribe((chatMessages: ChatMessage[]) => {
         debugger; 
