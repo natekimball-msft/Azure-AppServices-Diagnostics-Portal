@@ -117,6 +117,15 @@ export class VnetDnsWordings {
             }
         }
 
+        this.linuxCannotCheckWithoutNetworkChecker = {
+            get(what){
+                return new CheckStepView({
+                    title: `Validation Service Temporary Unavailable, cannot validate ${what}`,
+                    level: 3
+                });
+            }
+        }
+
         this.fallbackToAzureDnsConfigured = {
             get(){
                 return new CheckStepView({

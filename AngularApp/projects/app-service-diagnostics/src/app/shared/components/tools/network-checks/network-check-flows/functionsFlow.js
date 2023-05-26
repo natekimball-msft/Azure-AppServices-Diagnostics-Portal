@@ -17,10 +17,8 @@ export var functionsFlow = {
     async func(siteInfo, diagProvider, flowMgr) {
 
         var isKuduAccessiblePromise = null;
-        if (siteInfo.kind.includes("container")) {
-            isKuduAccessiblePromise = false;
-        } else if (siteInfo.kind.includes("linux")) {
-            isKuduAccessiblePromise = true; // Kudu not necessary for Network Validation on Linux
+        if (siteInfo.kind.includes("linux") || siteInfo.kind.includes("container")){
+            isKuduAccessiblePromise = false
         } else {
             isKuduAccessiblePromise = checkKuduAvailabilityAsync(diagProvider, flowMgr);
         }
@@ -45,17 +43,24 @@ export var functionsFlow = {
             dnsServers = [""]; //default Azure DNS
         }
 
-        if (!await isKuduAccessiblePromise) {
-            if (siteInfo.kind.includes("linux") || siteInfo.kind.includes("container")) {
-                flowMgr.addView(new CommonWordings().connectivityCheckUnsupported.get());
-            } else {
-                flowMgr.addView(new VnetDnsWordings().cannotCheckWithoutKudu.get("Functions settings"));
-            }
+        if (siteInfo.kind.includes("container")){
+            flowMgr.addView(new CommonWordings().connectivityCheckUnsupported.get());
             return;
         }
+
+        if (!siteInfo.kind.includes("linux") && !await isKuduAccessiblePromise) {
+            flowMgr.addView(new VnetDnsWordings().cannotCheckWithoutKudu.get("Function App Connectivity"));
+            return;
+        }
+
         var checkBackendAccess = await checkNetworkTroubleshooterApiAsync(diagProvider);
 
         var isBackendAccessible = checkBackendAccess.IsAccessible;
+
+        if (siteInfo.kind.includes("linux") && !isBackendAccessible) {
+            flowMgr.addView(new VnetDnsWordings().linuxCannotCheckWithoutNetworkChecker.get("Function App Connectivity"));
+            return;
+        }
 
         /**
          * Functions specific checks
