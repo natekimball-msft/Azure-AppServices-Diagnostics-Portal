@@ -187,7 +187,8 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
 
   // copilot variables
   copilotEnabled: boolean = true;
-  copilotCodeObservable: any;
+  copilotCodeSuggestionObservable: any;
+  copilotCodeUpdateProgressStateObservable: any;
   copilotServiceMembersInitialized: boolean = false;
 
   runButtonStyle: any = {
@@ -351,7 +352,8 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
       minimap: {
         enabled: false
       },
-      folding: true
+      folding: true,
+      readOnly: false
     };
 
     this.darkOptions = {
@@ -363,7 +365,8 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
       minimap: {
         enabled: false
       },
-      folding: true
+      folding: true,
+      readOnly: false
     };
 
     this.editorOptions = this.lightOptions;
@@ -409,8 +412,12 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
 
     if (this.copilotServiceMembersInitialized) {
 
-      if (this.copilotCodeObservable) {
-        this.copilotCodeObservable.unsubscribe();
+      if (this.copilotCodeSuggestionObservable) {
+        this.copilotCodeSuggestionObservable.unsubscribe();
+      }
+
+      if (this.copilotCodeUpdateProgressStateObservable) {
+        this.copilotCodeUpdateProgressStateObservable.unsubscribe();
       }
 
       this._detectorCopilotService.onCloseCopilotPanelEvent.next({ showConfirmation: false, resetCopilot: true });
@@ -2422,8 +2429,8 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
     }
 
     setTimeout(() => {
-      if (this.copilotCodeObservable == undefined) {
-        this.copilotCodeObservable = this._detectorCopilotService.onCodeSuggestion.subscribe(event => {
+      if (this.copilotCodeSuggestionObservable == undefined) {
+        this.copilotCodeSuggestionObservable = this._detectorCopilotService.onCodeSuggestion.subscribe(event => {
           if (event == null || event == undefined || event.code == null || event.code == undefined)
             return;
 
@@ -2439,6 +2446,17 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
           }
         });
       }
+
+      if (this.copilotCodeUpdateProgressStateObservable == undefined) {
+        this.copilotCodeUpdateProgressStateObservable = this._detectorCopilotService.onCodeOperationProgressState.subscribe(res => {
+          if (res) {
+            this._monacoEditor.updateOptions({ readOnly: res.inProgress });
+          }
+        }, err => {
+          this._monacoEditor.updateOptions({ readOnly: false });
+        });
+      }
+
     }, 2000);
 
     this.copilotServiceMembersInitialized = true;

@@ -70,6 +70,10 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
     // Save the current code in the history if there were changes
     this._copilotService.updateCodeHistory(`<code>\n${this._copilotService.detectorCode}\n</code>`);
 
+    // At this point, we dont know whether user has asked for code or not.
+    // To be safe, we will disable the editor and it will get reenabled as soon as first non code response is received.
+    this._copilotService.onCodeOperationProgressState.next({ inProgress: true });
+
     return messageObj;
   }
 
@@ -102,6 +106,12 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
         append: append,
         source: 'openai'
       });
+
+      let codeUpdateOperationInProgress = messageObj.status == MessageStatus.InProgress ? true : false;
+      this._copilotService.onCodeOperationProgressState.next({ inProgress: codeUpdateOperationInProgress });
+    }
+    else {
+      this._copilotService.onCodeOperationProgressState.next({ inProgress: false });
     }
 
     var displayMsg = messageObj.message;
@@ -239,6 +249,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
     }
 
     this._copilotService.operationInProgress = false;
+    this._copilotService.onCodeOperationProgressState.next({ inProgress: false });
     this.copilotExitConfirmationHidden = true;
     this._copilotService.hideCopilotPanel();
   }

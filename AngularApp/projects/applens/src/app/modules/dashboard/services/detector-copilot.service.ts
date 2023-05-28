@@ -22,11 +22,13 @@ export class DetectorCopilotService {
   public codeHistoryNavigator: number = -1;
   public onCodeSuggestion: BehaviorSubject<{ code: string, append: boolean, source: string }>;
   public onCloseCopilotPanelEvent: BehaviorSubject<{ showConfirmation: boolean, resetCopilot: boolean }>;
+  public onCodeOperationProgressState: BehaviorSubject<{ inProgress: boolean }>;
   public chatComponentIdentifier: string = "detectorcopilot";
 
   constructor(private _chatContextService: ChatUIContextService) {
     this.onCodeSuggestion = new BehaviorSubject<{ code: string, append: boolean, source: string }>(null);
     this.onCloseCopilotPanelEvent = new BehaviorSubject<{ showConfirmation: boolean, resetCopilot: boolean }>(null);
+    this.onCodeOperationProgressState = new BehaviorSubject<{ inProgress: boolean }>(null);
   }
 
   hideCopilotPanel() {
@@ -39,6 +41,7 @@ export class DetectorCopilotService {
 
   reset() {
     this.onCodeSuggestion = new BehaviorSubject<{ code: string, append: boolean, source: string }>(null);
+    this.onCodeOperationProgressState = new BehaviorSubject<{ inProgress: boolean }>(null);
     this.clearCodeHistory();
     this._chatContextService.clearChat(this.chatComponentIdentifier);
   }
