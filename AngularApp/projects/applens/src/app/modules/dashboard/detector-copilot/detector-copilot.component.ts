@@ -51,7 +51,9 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.closeEventObservable.unsubscribe();
+    if (this.closeEventObservable) {
+      this.closeEventObservable.unsubscribe();
+    }
   }
 
   //#region Chat Callback Methods

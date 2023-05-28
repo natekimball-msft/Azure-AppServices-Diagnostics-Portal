@@ -366,7 +366,7 @@
         (click)="showUpdateDetectorReferencesDialog()">
       </fab-command-bar-item>
       <fab-command-bar-item *ngIf="copilotEnabled" text="Detector Copilot (Preview)" [iconProps]="{ iconName: 'robot' }"
-        (click)="_detectorCopilotService.showCopilotPanel()"></fab-command-bar-item>
+        (click)="_detectorCopilotService.showCopilotPanel()" [disabled]="copilotServiceMembersInitialized == false"></fab-command-bar-item>
       <far-items>
         <fab-command-bar-item *ngIf="detectorGraduation" key="brachSelectorPill" text="custom text">
           <render>

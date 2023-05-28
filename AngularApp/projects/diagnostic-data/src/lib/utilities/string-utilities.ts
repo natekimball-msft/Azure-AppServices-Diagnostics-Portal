@@ -107,8 +107,7 @@ export class StringUtilities {
     }
     
     public static mergeOverlappingStrings(s1: string, s2: string): string {  
-        const overlapLength = this.overlappedStringLength(s1, s2);  
-        console.log(`Overlapped Length : ${overlapLength}`);
+        const overlapLength = this.overlappedStringLength(s1, s2);
         return s1 + s2.substring(overlapLength);  
     }  
 
@@ -128,10 +127,10 @@ export class StringUtilities {
                 m += i - T[i];  
                 if (i > 0) i = T[i];  
             }  
-        }  
+        }
       
         return i; // <-- changed the return here to return characters matched  
-    }  
+    }
       
     private static computeBackTrackTable(s: string): number[] {  
         const T: number[] = new Array(s.length);  

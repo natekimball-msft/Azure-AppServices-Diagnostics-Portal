@@ -391,9 +391,9 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   }
 
   ngOnInit() {
+    this.copilotServiceMembersInitialized = false;
     this._activatedRoute.params.subscribe((params: Params) => {
       this.initialized = false;
-      this.copilotServiceMembersInitialized = false;
       this.startUp();
     });
   }
