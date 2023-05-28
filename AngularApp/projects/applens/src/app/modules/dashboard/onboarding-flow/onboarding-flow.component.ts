@@ -408,10 +408,13 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
     });
 
     if (this.copilotServiceMembersInitialized) {
-      this._detectorCopilotService.onCloseCopilotPanelEvent.next({ showConfirmation: false, resetCopilot: true });
+
       if (this.copilotCodeObservable) {
         this.copilotCodeObservable.unsubscribe();
       }
+
+      this._detectorCopilotService.onCloseCopilotPanelEvent.next({ showConfirmation: false, resetCopilot: true });
+
     }
   }
 
@@ -2418,21 +2421,25 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
       this._detectorCopilotService.detectorTemplate = '';
     }
 
-    this.copilotCodeObservable = this._detectorCopilotService.onCodeSuggestion.subscribe(event => {
-      if (event == null || event == undefined || event.code == null || event.code == undefined)
-        return;
+    setTimeout(() => {
+      if (this.copilotCodeObservable == undefined) {
+        this.copilotCodeObservable = this._detectorCopilotService.onCodeSuggestion.subscribe(event => {
+          if (event == null || event == undefined || event.code == null || event.code == undefined)
+            return;
 
-      if (!event.append) {
-        this.code = '';
-      }
+          if (!event.append) {
+            this.code = '';
+          }
 
-      if (event.source && event.source.toLowerCase() == 'openai') {
-        this.triggerCodeCopyFromCopilot(event.code);
+          if (event.source && event.source.toLowerCase() == 'openai') {
+            this.triggerCodeCopyFromCopilot(event.code);
+          }
+          else {
+            this.code = `${this.code}${event.code}`;
+          }
+        });
       }
-      else {
-        this.code = `${this.code}${event.code}`;
-      }
-    });
+    }, 2000);
 
     this.copilotServiceMembersInitialized = true;
   }

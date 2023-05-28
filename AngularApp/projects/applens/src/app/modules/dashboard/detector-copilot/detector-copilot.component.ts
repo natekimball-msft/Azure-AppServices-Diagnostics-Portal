@@ -45,7 +45,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
           if (event.resetCopilot) {
             this._copilotService.reset();
           }
-        }, 2000);
+        }, 1000);
       }
     })
   }
