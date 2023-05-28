@@ -135,7 +135,7 @@
   </div>
 </div>
 <div *ngIf="isCodeInsightsEnabledInProd">
-  <div *ngIf="!loadingSettings && appInsightsValiationError.length == 0"
+  <div *ngIf="!loadingSettings && appInsightsValiationError.length == 0 && isAppInsightsEnabled"
     class="animated fadeIn panel panel-info width-90">
     <div class="banner">
       <div class="banner-child">
@@ -146,7 +146,6 @@
           </div>
           <div *ngIf="!loadingSettings">
             <div *ngIf="!connecting && !error">
-              <div *ngIf="isAppInsightsEnabled">
                 <table *ngIf="hasWriteAccess && !isAppInsightsConnected && canCreateApiKeys">
                   <tbody>
                     <tr>
@@ -170,7 +169,6 @@
                   <div><opt-insights-enablement
                       [optInsightResourceInfo]="optInsightResourceInfoSubject"></opt-insights-enablement></div>
                 </ng-container>
-              </div>
             </div>
           </div>
         </div>
