@@ -93,6 +93,7 @@ export class ChatUIComponent implements OnInit {
             };
 
             this.onSendMessage(message);
+            this.chatInputTextInternal = '';
         }
     }
 
