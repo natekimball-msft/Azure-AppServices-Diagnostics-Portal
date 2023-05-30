@@ -10,8 +10,7 @@ import { XAxisSelection, zoomBehaviors } from '../../models/time-series';
 import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagnostic-data-config';
 import { Inject } from '@angular/core';
 import { FeatureNavigationService } from '../../services/feature-navigation.service';
-import { switchMap } from 'rxjs/operators';
-import { AlertInfo, ConfirmationOption, UserAccessStatus } from 'projects/applens/src/app/shared/models/alerts';
+import { AlertInfo, ConfirmationOption, UserAccessStatus } from 'diagnostic-data';
 import { HealthStatus } from "diagnostic-data";
 
 const moment = momentNs;

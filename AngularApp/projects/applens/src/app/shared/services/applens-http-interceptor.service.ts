@@ -4,7 +4,7 @@ import { Observable, of, pipe } from 'rxjs';
 import { map, catchError, mergeMap } from 'rxjs/operators';
 import { AlertService } from './alert.service';
 import { AdalService } from 'adal-angular4';
-import { AlertInfo, ConfirmationOption, UserAccessStatus } from '../models/alerts';
+import { AlertInfo, ConfirmationOption, UserAccessStatus } from 'diagnostic-data';
 import { HealthStatus } from "diagnostic-data";
 
 @Injectable({

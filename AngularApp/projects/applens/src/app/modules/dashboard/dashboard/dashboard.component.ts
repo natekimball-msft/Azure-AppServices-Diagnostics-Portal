@@ -20,12 +20,12 @@ import { UserInfo } from '../user-detectors/user-detectors.component';
 import { BreadcrumbService } from '../services/breadcrumb.service';
 import { UserSettingService } from '../services/user-setting.service';
 import {AlertService} from '../../../shared/services/alert.service';
-import {AlertInfo, ConfirmationOption} from '../../../shared/models/alerts';
+import {AlertInfo, ConfirmationOption} from 'diagnostic-data';
 import { TelemetryService } from 'diagnostic-data';
 import { TelemetryEventNames } from 'diagnostic-data';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Title } from '@angular/platform-browser';
-import { UserAccessStatus } from "../../../shared/models/alerts";
+import { UserAccessStatus } from "diagnostic-data";
 import { defaultResourceTypes } from '../../../shared/utilities/main-page-menu-options';
 
 @Component({

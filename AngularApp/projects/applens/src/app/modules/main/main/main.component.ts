@@ -15,7 +15,7 @@ import { ResourceDescriptor } from 'diagnostic-data'
 import { applensDocs } from '../../../shared/utilities/applens-docs-constant';
 import { defaultResourceTypes } from '../../../shared/utilities/main-page-menu-options';
 import { DiagnosticApiService } from '../../../shared/services/diagnostic-api.service';
-import { UserAccessStatus } from '../../../shared/models/alerts';
+import { UserAccessStatus } from 'diagnostic-data';
 import { applensDashboards } from '../../../shared/utilities/applens-dashboards-constant';
 import { Guid } from 'projects/diagnostic-data/src/lib/utilities/guid';
 
