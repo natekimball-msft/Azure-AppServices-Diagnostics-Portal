@@ -97,8 +97,7 @@ export class OpenAIChatComponent implements OnInit {
       if (this.isEnabled) {
         this._telemetryService.logEvent("OpenAIChatComponentLoaded", { "chatIdentifier": this.chatIdentifier, ts: new Date().getTime().toString() });
       }
-    });
-    debugger; 
+    }); 
     this.loadChatFromStore(); // Works only if persistChat is true
   }
   
@@ -121,8 +120,7 @@ export class OpenAIChatComponent implements OnInit {
 
   loadChatFromStore() { 
     if (this.persistChat && this.fetchChat) {
-      this.fetchChat(this.chatIdentifier).subscribe((chatMessages: ChatMessage[]) => {
-        debugger; 
+      this.fetchChat(this.chatIdentifier).subscribe((chatMessages: ChatMessage[]) => { 
         this._chatContextService.messageStore[this.chatIdentifier] = chatMessages;
         this.chatUIComponentRef.scrollToBottom(true);
         this._telemetryService.logEvent("OpenAIChatLoadedFromStore", { userId: this.userId, ts: new Date().getTime().toString() });

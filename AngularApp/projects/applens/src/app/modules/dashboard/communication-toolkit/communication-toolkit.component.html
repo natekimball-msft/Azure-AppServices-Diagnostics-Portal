@@ -49,34 +49,6 @@
             </ng-container>
         </div>
     </div>
-    <!-- <div *ngIf = "subcategoriesDisplayed" class="rca-box-row-container rca-samples-container">
-        <div class = "rca-subtitle-text">
-            {{mainCategoryPageText}}
-        </div>
-        <div class="rca-box-row">
-            <ng-container *ngFor="let cat of [].constructor(6); let i = index">
-              <div class="rca-box rca-title-text" *ngIf = "i<=2 && ( i < categoryMapping.get(currentSelectedRCATopic).length )"  
-              (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])" [innerHTML] = "categoryMapping.get(currentSelectedRCATopic)[i]"></div>
-              <div class="empty-box" *ngIf = "i<=2 && ( i >= categoryMapping.get(currentSelectedRCATopic).length )"  
-             [innerHTML] = ""></div>
-            </ng-container>
-        </div>
-        <div class="rca-box-row">
-            <ng-container *ngFor="let cat of [].constructor(6);let i = index">
-              <div class="rca-box rca-title-text" *ngIf = "(i>=3 && i<=5) && ( i < categoryMapping.get(currentSelectedRCATopic).length) " 
-                (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])" [innerHTML] = "categoryMapping.get(currentSelectedRCATopic)[i]"></div>
-                <div class="empty-box" *ngIf = "(i>=3 && i<=5) && ( i >= categoryMapping.get(currentSelectedRCATopic).length )" 
-                    [innerHTML] = ""></div>
-            </ng-container>
-        </div>
-        <div class="rca-box-row">
-            <ng-container *ngFor="let cat of [].constructor(9);let i = index">
-              <div class="rca-box rca-title-text" *ngIf = "(i>=6 && i<=8) && ( i < categoryMapping.get(currentSelectedRCATopic).length) " 
-                (click) = "subCategoryClicked(categoryMapping.get(currentSelectedRCATopic)[i])" [innerHTML] = "categoryMapping.get(currentSelectedRCATopic)[i]"></div>
-            </ng-container>
-            <button type="button" class="btn" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
-        </div>
-    </div>     -->
 </div>
 
 
@@ -124,7 +96,7 @@
 </div>
 
 <div *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed">
-    <openai-chat #chatbot
+    <openai-chat #chatbot 
       [userId]="userAlias"
       [persistChat]="false"
       [chatAlignment]="'center'"
@@ -157,11 +129,6 @@
                 </fab-command-bar-item>
             </items>
         </fab-command-bar>
-        <!-- <div style="margin-left: 12px;margin-top:20px; width:25%">
-            <fab-breadcrumb [items]="commandBarItems" [styles]="commandBarStyles" [tooltipHostProps]="breadcrumbTooltipHostProps"></fab-breadcrumb>
-          </div> -->
-    <!-- </div> -->
-
 
 </div>
 
