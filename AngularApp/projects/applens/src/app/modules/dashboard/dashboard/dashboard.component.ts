@@ -120,7 +120,7 @@ export class DashboardComponent implements OnDestroy {
     this.contentHeight = (window.innerHeight - 50) + 'px';
 
     this.navigateSub = this._navigator.OnDetectorNavigate.subscribe((detector: string) => {
-      if (detector) {_diagnosticApiService
+      if (detector) {
         this._router.navigate([`./detectors/${detector}`], { relativeTo: this._activatedRoute, queryParamsHandling: 'merge' });
       }
     });
@@ -169,7 +169,7 @@ export class DashboardComponent implements OnDestroy {
 
     this._alertService.getAlert().subscribe((alert: AlertInfo) => {
       this.alertInfo = alert;
-      this.displayAlertDialog = alert.userAccessStatus !== UserAccessStatus.ConsentRequired;
+      this.displayAlertDialog = true;
       setTimeout(() => {
         var elem = document.getElementsByClassName('ms-Dialog-title')[0] as HTMLElement;
         if (elem) {
