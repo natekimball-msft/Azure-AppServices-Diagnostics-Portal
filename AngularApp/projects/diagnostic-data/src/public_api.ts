@@ -58,6 +58,7 @@ export * from './lib/models/workflow';
 export * from './lib/models/openai-data-models';
 export * from './lib/models/chatbot-models';
 export * from './lib/models/optinsights';
+export * from './lib/models/alerts';
 
 export * from './lib/components/detector-list-analysis/detector-list-analysis.component'
 

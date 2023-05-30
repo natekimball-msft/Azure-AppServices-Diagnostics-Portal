@@ -10,6 +10,9 @@ import { XAxisSelection, zoomBehaviors } from '../../models/time-series';
 import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagnostic-data-config';
 import { Inject } from '@angular/core';
 import { FeatureNavigationService } from '../../services/feature-navigation.service';
+import { AlertInfo, ConfirmationOption, UserAccessStatus } from 'diagnostic-data';
+import { HealthStatus } from "diagnostic-data";
+
 const moment = momentNs;
 
 const hideTimePickerDetectors: string[] = [
@@ -77,6 +80,11 @@ export class DetectorContainerComponent implements OnInit {
 
   isCategoryOverview: boolean = false;
 
+  private isLegacy: boolean;
+  isUserConsentRequired: boolean = false;  
+  alertDialogStyles = { main: { maxWidth: "70vw!important", minWidth: "40vw!important" } };
+  alertDialogProps = {isBlocking: true};
+  alertInfo: AlertInfo = null;
 
 
   constructor(private _route: ActivatedRoute, private _diagnosticService: DiagnosticService,
@@ -149,10 +157,10 @@ export class DetectorContainerComponent implements OnInit {
     });
   }
 
-  refresh(hardRefresh: boolean) {
+  refresh(hardRefresh: boolean, additionalHeaders?: Map<string, string>) {
     this.error = null;
     this.detectorResponse = null;
-    this.getDetectorResponse(hardRefresh);
+    this.getDetectorResponse(hardRefresh, additionalHeaders);
   }
 
   public get getStartTime(): Moment {
@@ -180,7 +188,7 @@ export class DetectorContainerComponent implements OnInit {
   }
 
   //Need to tweak
-  getDetectorResponse(hardRefresh: boolean) {
+  getDetectorResponse(hardRefresh: boolean, additionalHeaders?: Map<string, string>) {
     let startTime = this.detectorControlService.startTimeString;
     let endTime = this.detectorControlService.endTimeString;
     let invalidateCache = hardRefresh ? hardRefresh : this.detectorControlService.shouldRefresh;
@@ -205,10 +213,14 @@ export class DetectorContainerComponent implements OnInit {
 
       this.workflowLastRefreshed = Date.now().toString();
     } else {
-      this._diagnosticService.getDetector(this.detectorName, startTime, endTime, invalidateCache, this.detectorControlService.isInternalView, additionalQueryString).subscribe((response: DetectorResponse) => {
+      this._diagnosticService.getDetector(this.detectorName, startTime, endTime, invalidateCache, this.detectorControlService.isInternalView, additionalQueryString, null, additionalHeaders).subscribe((response: DetectorResponse) => {
         this.shouldHideTimePicker(response);
         this.detectorResponse = response;
       }, (error: any) => {
+        let errorObj = JSON.parse(error.error);
+        if (error.status == 403 && error.url.includes("api/invoke") && errorObj.Status == UserAccessStatus.ConsentRequired) {
+          this.handleForbidden(errorObj);
+        }       
         this.error = error;
       });
     }
@@ -246,5 +258,40 @@ export class DetectorContainerComponent implements OnInit {
         queryParams: queryParams
       });
     }
+  }
+
+  handleForbidden(errorObj:any) {
+    this.isUserConsentRequired = true;
+    let message = errorObj.DetailText;
+    let userAccessStatus =  errorObj.Status;
+    message = message.trim();
+    if (message) {
+      if (message[message.length - 1] == '.') {
+        message = message.substring(0, message.length - 1);
+      }
+    }
+    this.alertInfo = {
+      header: "Do you accept the risks?",
+      details: `${message}. If you choose to proceed, we will be logging it for audit purposes.`,
+      seekConfirmation: true,
+      confirmationOptions: [{ label: 'Yes, I consent', value: 'yes' }, { label: 'No, I do not consent', value: 'no' }],
+      alertStatus: HealthStatus.Warning,
+      userAccessStatus: userAccessStatus
+    };
+  }
+
+  handleUserResponse(userResponse: ConfirmationOption) {
+    if (userResponse.value === 'yes') {
+      this.isUserConsentRequired = false;
+      let additionalHeaders = new Map<string, string>();
+      additionalHeaders.set("x-ms-diag-consent", "true");
+      this.refresh(true, additionalHeaders );
+    }
+    else if (userResponse.value == 'no') {
+      this.consentDialogCancel();
+    }
+  }
+  consentDialogCancel() {
+    this.isUserConsentRequired = false;
   }
 }
