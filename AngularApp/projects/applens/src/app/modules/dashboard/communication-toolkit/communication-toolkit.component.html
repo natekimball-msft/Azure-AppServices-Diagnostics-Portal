@@ -98,8 +98,10 @@
                 <span class="fa fa-copy"></span>
                 {{copyButtonMessage}}
             </button>
-            <button type="button" class="btn" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
+            <button type="button" class="btn" (click) = "backButtonClicked()"><div class = "btn-text">Back</div></button>
             <button type="button" class="btn" (click) = "modifierClicked()"><div class = "btn-text">Edit with ChatGPT!</div></button>
+
+            
         </div>
     </div>
 </div>
@@ -113,7 +115,7 @@
                 <textarea #textAreaTemplate class = "input-box" placeholder="Please enter your feedback..." ng-model="text"></textarea>
             </form> 
             <button type="submit" class = "btn btn-text" (click)="submitClicked(textAreaTemplate.value)">{{submitButtonMessage}}</button>
-            <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
+            <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Back</div></button>
         </div>
        
     </div>
@@ -141,9 +143,26 @@
       [customFirstMessage] = "customFirstMessageEdit"
     >
     </openai-chat>
-    <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:0%; bottom: 40px; padding: 1px;" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
+    <!-- <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:0%; bottom: 40px; padding: 1px;" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
     <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:4%; bottom: 40px; padding: 1px;" (click) = "clearChatClicked()"><div class = "btn-text">Clear Chat</div></button>
-    <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:10%; bottom: 40px; padding: 1px;" (click) = "copyChatGPTClicked()"><div class = "btn-text">Copy</div></button>
+    <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:10%; bottom: 40px; padding: 1px;" (click) = "copyChatGPTClicked()"><div class = "btn-text">Copy</div></button> -->
+    <!-- <div class = "btn-text" style = "width:22.5%"> -->
+        <fab-command-bar tabindex="0"  [contentStyle]="'width:22.5%;margin-left:-3px;'" [contentClass]="'fab-command-bar-class'">
+            <items>
+                <fab-command-bar-item *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" [buttonStyles] = "commandBarStyle" key = "back" text="Back" (click)="backButtonClicked()">
+                </fab-command-bar-item>
+                <fab-command-bar-item *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed"  [buttonStyles] = "commandBarStyle" key = "clearchat" text="Clear Chat" (click)="clearChatClicked()">
+                </fab-command-bar-item>
+                <fab-command-bar-item *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed"  [buttonStyles] = "commandBarStyle" key = "copy" text="Copy" (click)="copyChatGPTClicked()">
+                </fab-command-bar-item>
+            </items>
+        </fab-command-bar>
+        <!-- <div style="margin-left: 12px;margin-top:20px; width:25%">
+            <fab-breadcrumb [items]="commandBarItems" [styles]="commandBarStyles" [tooltipHostProps]="breadcrumbTooltipHostProps"></fab-breadcrumb>
+          </div> -->
+    <!-- </div> -->
+
+
 </div>
 
   <div *ngIf="isEnabledChecked && !isEnabled">

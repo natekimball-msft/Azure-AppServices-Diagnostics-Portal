@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { SpinnerSize } from 'office-ui-fabric-react';
+import { IBreadcrumbItem, IBreadcrumbProps, SpinnerSize } from 'office-ui-fabric-react';
 import { delay } from 'rxjs-compat/operator/delay';
 import { ApplensOpenAIChatService } from '../../../shared/services/applens-openai-chat.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -63,15 +63,16 @@ export class CommunicationToolkitComponent implements OnInit {
   mainCategoriesDisplayed = true; 
 
   copyButtonMessage : string = "Copy"; 
-  submitButtonMessage : string = "Submit"; 
-  //clearChatValue : boolean = false; 
-
-  // previousState : Map<string, any> = new Map([
-
-  // ]); 
-  // currentState : Map<string, any> = new Map([
-
-  // ]); 
+  submitButtonMessage : string = "Submit";
+  
+  commandBarStyle: any = {
+    root: {
+      fontSize : "14px",
+      textDecoration: 'underline',
+      color:  "rgb(37, 108, 207)",
+      textDecorationColor: "rgb(48, 41, 40)"
+    }
+  }
 
   otherDisplayText = "We do not currently offer RCA templates for other issues at this time, but are looking to expand to offer these in the future. \nPlease\
   add a description of the issue you would like us to create a template for and/or any feedback that you have and we will take this into consideration for the future. "; 
