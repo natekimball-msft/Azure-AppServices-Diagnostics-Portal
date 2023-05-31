@@ -984,6 +984,10 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
   showUpdateDetectorReferencesDialog() {
     this.detectorReferencesDialogHidden = false;
+    this._telemetryService.logEvent(TelemetryEventNames.SuperGistUpdateDetectorReferencesButtonClicked, {
+      ResourceID: this.resourceId,
+      ID: this.id,
+    });
   }
 
 
