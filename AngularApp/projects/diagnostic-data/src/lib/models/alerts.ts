@@ -1,4 +1,4 @@
-import { HealthStatus } from "diagnostic-data";
+import { HealthStatus } from "../models/detector";
 
 export interface AlertInfo {
     header: string;
