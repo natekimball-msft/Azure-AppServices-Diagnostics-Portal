@@ -10,8 +10,8 @@ import { XAxisSelection, zoomBehaviors } from '../../models/time-series';
 import { DIAGNOSTIC_DATA_CONFIG, DiagnosticDataConfig } from '../../config/diagnostic-data-config';
 import { Inject } from '@angular/core';
 import { FeatureNavigationService } from '../../services/feature-navigation.service';
-import { AlertInfo, ConfirmationOption, UserAccessStatus } from 'diagnostic-data';
-import { HealthStatus } from "diagnostic-data";
+import { AlertInfo, ConfirmationOption, UserAccessStatus } from '../../models/alerts';
+import { HealthStatus } from "../../models/detector";
 
 const moment = momentNs;
 
