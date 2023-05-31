@@ -1,5 +1,6 @@
 import { DetectorResponse } from '../models/detector';
 import { IDropdownOption } from 'office-ui-fabric-react/lib/components/Dropdown';
+import { TimeUtilities } from '../utilities/time-utilities';
 
 export class Form {
     formId: number;
@@ -112,39 +113,15 @@ export interface ListItem {
 }
 
 export class DateTimePicker extends FormInput {
-    defaultSelectedDateTime : Date;
-    restrictToDate : Date;
+    restrictToDate : moment.Moment;
     showDatePickerOnly : boolean;
-
-    private _dateComponent: Date;
-    public get dateComponent(): Date {
-        return this._dateComponent;
-    }
-    public set dateComponent(value: Date) {
-        this._dateComponent = value;
-        this.mergeDateTime();
-    }
-
-    private _timeComponent: string = "00:00";
-    public get timeComponent(): string {
-        return this._timeComponent;
-    }
-    public set timeComponent(value: string) {
-        var values = value.split(":");
-        if ((values.length > 1 && +values[0] <= 24 && +values[1] <= 59)) {
-            this._timeComponent = value;
-            this.mergeDateTime();
-        }
-    }
-
-    public mergeDateTime() {
-        this.inputValue = `${this.dateComponent.toLocaleDateString()} ${this.timeComponent}`;
-    }  
+    selectedMoment: moment.Moment;
 
     constructor(internalId: string, id: number, inputType: InputType, label: string,
-        defaultSelectedDateTime: Date, restrictToDate: Date, showDatePickerOnly: boolean, isVisible: boolean = true, isRequired: boolean = false, tooltip: string = "", tooltipIcon: string = "") {
+        defaultSelectedDateTime: moment.Moment, restrictToDate: moment.Moment, showDatePickerOnly: boolean, isVisible: boolean = true, isRequired: boolean = false, tooltip: string = "", tooltipIcon: string = "") {
         super(internalId, id, inputType, label, isRequired, tooltip, tooltipIcon, isVisible);
-        this.defaultSelectedDateTime = defaultSelectedDateTime;
+        this.selectedMoment = defaultSelectedDateTime.clone();
+        this.inputValue = this.selectedMoment.clone().format(TimeUtilities.fullStringFormat);
         this.restrictToDate = restrictToDate;
         this.showDatePickerOnly = showDatePickerOnly;
     }

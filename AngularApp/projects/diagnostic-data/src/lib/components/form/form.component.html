@@ -61,26 +61,21 @@
       </div>
 
       <div *ngIf="isDateTimePicker(formInput.inputType)" class="form-group row">
-        <div class="col-sm-8">
+        <div class="col-sm-8" style="display: flex; align-items: center;">
           <label class="col-sm-4 col-md-2 col-form-label" [class.required]="formInput.isRequired" [for]="formInput.internalId"> {{formInput.inputLabel}}
             <fab-tooltip-host  *ngIf="formInput.tooltip != ''" [content]="formInput.tooltip" [directionalHint]="directionalHint">
               <span class="fa form-tooltip" [ngClass]="formInput.tooltipIcon"></span>
             </fab-tooltip-host>
           </label>
-          <div style="display: flex;" class="col-sm-8 col-md-6">
-            <fab-date-picker [minDate]="formInput.restrictToDate" [maxDate]="datePickerMaxDate"
-              placeholder="Select a date..." ariaLabel="Select a date" allowTextInput="true"
-              showMonthPickerAsOverlay="true" (onSelectDate)="setDate($event, formInput)" [formatDate]="formatDate"
-              [value]="formInput.dateComponent" [parseDateFromString]="parseDateFromString" [contentStyle]="'width:130px'">
-            </fab-date-picker>
-            <fab-masked-text-field *ngIf= "!formInput.showDatePickerOnly" [contentClass]="'col-md-4'" maxLength="6" [(value)]="formInput.timeComponent"
-              [iconProps]="{iconName: 'Clock'}" [mask]="'99:99'" [maskChar]="'-'" [validateOnFocusOut]="true"
-              [getErrorMessage]="getErrorMessageOnTextField" [ariaLabel]="'endTime'" [styles]="maskTextFieldStyles">
-            </fab-masked-text-field>
-            <div class="date-picker-label" style="padding-left: 5px;"> (UTC)</div>
+          <div class="col-sm-8 col-md-6" style="display: flex; align-items: center;">
+            <date-time-picker [moment]="formInput.selectedMoment" [minMoment]="formInput.restrictToDate" (momentChange)="onChangeSelectedMoment($event, formInput)"
+              [required]="formInput.isRequired" [showDatePickerOnly]="formInput.showDatePickerOnly"> 
+            </date-time-picker>
+            <div class="date-picker-label" style="height: fit-content; padding-left: 5px;">(UTC)</div>
           </div>
         </div>
       </div>
+
 
     </ng-template>
     <!-- Display form buttons -->
