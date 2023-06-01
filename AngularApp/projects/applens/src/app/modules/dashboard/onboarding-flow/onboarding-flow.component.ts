@@ -1524,7 +1524,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
                   var curMessage = element.exception.Message.split(": ");
                   this.detailedCompilationTraces.push({
                     severity: HealthStatus.Critical,
-                    message: "<a href=" + curMessage[1] + " target=_blank>" + element.exception.Message + " </a>",
+                    message: curMessage[0] + ": <a href=" + curMessage[1] + " target=_blank>" + curMessage[1] + " </a>",
                     location: {
                       start: {
                         linePos: 0,
