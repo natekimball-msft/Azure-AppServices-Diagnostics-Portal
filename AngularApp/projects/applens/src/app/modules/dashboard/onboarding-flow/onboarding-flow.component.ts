@@ -1515,20 +1515,39 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
                   element.exception.Message + "\r\n" +
                   element.exception.StackTraceString);
 
-                this.detailedCompilationTraces.push({
-                  severity: HealthStatus.Critical,
-                  message: `${element.timeStamp}: ${element.message}: ${element.exception.ClassName}: ${element.exception.Message}: ${element.exception.StackTraceString}`,
-                  location: {
-                    start: {
-                      linePos: 0,
-                      colPos: 0
-                    },
-                    end: {
-                      linePos: 0,
-                      colPos: 0
+                if (element.exception.ClassName == 'Diagnostics.DataProviders.AllowedResourceException' && element.exception.Message.includes("Visit")) {
+                  var curMessage = element.exception.Message.split(": ");
+                  this.detailedCompilationTraces.push({
+                    severity: HealthStatus.Critical,
+                    message: "<a href=" + curMessage[1] + " target=_blank>" + element.exception.Message + " </a>",
+                    location: {
+                      start: {
+                        linePos: 0,
+                        colPos: 0
+                      },
+                      end: {
+                        linePos: 0,
+                        colPos: 0
+                      }
                     }
-                  }
-                });
+                  });
+                }
+                else {
+                  this.detailedCompilationTraces.push({
+                    severity: HealthStatus.Critical,
+                    message: `${element.timeStamp}: ${element.message}: ${element.exception.ClassName}: ${element.exception.Message}: ${element.exception.StackTraceString}`,
+                    location: {
+                      start: {
+                        linePos: 0,
+                        colPos: 0
+                      },
+                      end: {
+                        linePos: 0,
+                        colPos: 0
+                      }
+                    }
+                  });
+                }
               }
               else {
                 this.buildOutput.push(element.timeStamp + ": " + element.message);
