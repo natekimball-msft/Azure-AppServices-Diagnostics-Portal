@@ -439,7 +439,7 @@
           <split-area size="15">
             <div class="compilation-output-container">
               <div *ngIf="!showDetailedCompilationTraces">
-                <div *ngFor="let item of buildOutput" class="compilation-output" [innerHtml]="item.message"></div>
+                <div *ngFor="let item of buildOutput" class="compilation-output">{{item}}</div>
               </div>
               <div *ngIf="showDetailedCompilationTraces" class="compilation-detailed-output-container">
                 <div class="compilation-detailed-output-rowEntry" *ngFor="let item of detailedCompilationTraces"
