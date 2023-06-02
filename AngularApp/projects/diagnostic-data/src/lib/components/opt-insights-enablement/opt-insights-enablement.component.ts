@@ -1,14 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CodeOptimizationType, OptInsightsResource, OptInsightsTimeContext } from '../../models/optinsights';
+import { CodeOptimizationType, CodeOptimizationsLogEvent, CodeOptimizationsRequest, OptInsightsResource, OptInsightsTimeContext } from '../../models/optinsights';
 import { OptInsightsGenericService } from '../../services/optinsights.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { DetectorControlService } from '../../services/detector-control.service';
 import { PortalActionGenericService } from '../../services/portal-action.service';
 import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 import { ActivatedRoute } from '@angular/router';
-import { DemoSubscriptions } from '../../../lib/models/betaSubscriptions';
 import * as moment from 'moment';
-
 
 @Component({
   selector: 'opt-insights-enablement',
@@ -33,6 +31,8 @@ export class OptInsightsEnablementComponent implements OnInit {
   appInsightsResourceUri: string = "";
   type: CodeOptimizationType = CodeOptimizationType.All;
   isBetaSubscription: boolean = false;
+  codeOptimizationsRequest: CodeOptimizationsRequest;
+  detectorId: string = "";
 
 
 
@@ -45,8 +45,19 @@ export class OptInsightsEnablementComponent implements OnInit {
         this.type = optInsightResourceInfo.type;
       }
       if (optInsightResourceInfo.resourceUri !== null && optInsightResourceInfo.appId !== null) {
+        this.detectorId = this._route.parent.snapshot.params['detector'];
         this.appInsightsResourceUri = optInsightResourceInfo.resourceUri;
-        this._optInsightsService.getInfoForOptInsights(optInsightResourceInfo.resourceUri, optInsightResourceInfo.appId, this._route.parent.snapshot.params['site'], this._detectorControlService.startTime, this._detectorControlService.endTime, false).subscribe(res => {
+        this.codeOptimizationsRequest = { 
+          appInsightsResourceId: optInsightResourceInfo.resourceUri,
+          appId: optInsightResourceInfo.appId,
+          site: this._route.parent.snapshot.params['site'],
+          startTime: this._detectorControlService.startTime,
+          endTime: this._detectorControlService.endTime,
+          invalidateCache: false,
+          //type: CodeOptimizationType.Blocking
+          type: this.detectorId === 'webappcpu' ? CodeOptimizationType.CPU : this.detectorId === 'Memoryusage' ? CodeOptimizationType.Memory : this.detectorId === 'perfAnalysis' ? CodeOptimizationType.Blocking : CodeOptimizationType.All
+        }
+        this._optInsightsService.getInfoForOptInsights(this.codeOptimizationsRequest).subscribe(res => {
           if (res) {
             this.table = res;
             if (this.table.length > 0) {
@@ -71,8 +82,8 @@ export class OptInsightsEnablementComponent implements OnInit {
   }
 
   public openOptInsightsBladewithTimeRange() {
-    const currentMoment = moment.utc();
-    var durationMs = currentMoment.diff(this._detectorControlService.startTime, 'milliseconds');
+    //const currentMoment = moment.utc();
+    var durationMs = this._detectorControlService.endTime.diff(this._detectorControlService.startTime, 'milliseconds');
     let optInsightsResource: OptInsightsResource = this.parseOptInsightsResource(this.appInsightsResourceUri, 0, 'microsoft.insights/components', false);
     let optInsightsTimeContext: OptInsightsTimeContext = { durationMs: durationMs, endTime: this._detectorControlService.endTime.toISOString(), createdTime: this._detectorControlService.startTime.toISOString(), isInitialTime: false, grain: 1, useDashboardTimeRange: false };
     this.portalActionService.openOptInsightsBladewithTimeRange(optInsightsResource, optInsightsTimeContext);
@@ -81,7 +92,6 @@ export class OptInsightsEnablementComponent implements OnInit {
 
 
   parseOptInsightsResource(resourceUri: string, linkedApplicationType: number, resourceType: string, isAzureFirst: boolean): OptInsightsResource {
-
     var output: OptInsightsResource = {
       SubscriptionId: '',
       ResourceGroup: '',
