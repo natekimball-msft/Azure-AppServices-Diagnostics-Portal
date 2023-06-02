@@ -42,7 +42,6 @@ export class VnetDnsConfigChecker {
     async isDnsServerReachableAsync(server, useNetworkTroubleshooterBackend = false) {
         if (this.diagProvider.isIp(server)) {
             var result = null;
-            // possible to add a conditional here, or possibly just TCPPing to Network Validation Service
             if (useNetworkTroubleshooterBackend)
             {
                 result = await this.diagProvider.tcpPingNetworkTroubleshooterAsync(server, 53);
