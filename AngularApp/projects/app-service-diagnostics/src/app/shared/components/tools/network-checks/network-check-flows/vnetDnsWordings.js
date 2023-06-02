@@ -111,7 +111,7 @@ export class VnetDnsWordings {
         this.cannotCheckWithoutKudu = {
             get(what){
                 return new CheckStepView({
-                    title: `Cannot validate ${what} without kudu access`,
+                    title: `Backend unavailable. Cannot validate ${what} without backend access`,
                     level: 3
                 });
             }

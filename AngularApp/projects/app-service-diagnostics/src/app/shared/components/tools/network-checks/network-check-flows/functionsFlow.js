@@ -17,11 +17,17 @@ export var functionsFlow = {
     async func(siteInfo, diagProvider, flowMgr) {
 
         var isKuduAccessiblePromise = null;
+        var useNetworkTroubleshooterBackend = false;
         if (siteInfo.kind.includes("linux") || siteInfo.kind.includes("container")){
             isKuduAccessiblePromise = false
+            useNetworkTroubleshooterBackend = true;
         } else {
             isKuduAccessiblePromise = checkKuduAvailabilityAsync(diagProvider, flowMgr);
         }
+
+        var checkBackendAccess = await checkNetworkTroubleshooterApiAsync(diagProvider);
+        var isBackendAccessible = checkBackendAccess.IsAccessible;
+        
         var dnsServers = null;
         var vnetConfigChecker = new VnetIntegrationConfigChecker(siteInfo, diagProvider);
         var vnetIntegrationType = await vnetConfigChecker.getVnetIntegrationTypeAsync();
@@ -33,7 +39,7 @@ export var functionsFlow = {
             // Don't run the network config check if the app is not VNet joined
             if (isVnetIntegrationHealthy) {
                 var dnsSettings = [];
-                await checkDnsSettingV2Async(siteInfo, diagProvider, flowMgr, isKuduAccessiblePromise, dnsSettings);
+                await checkDnsSettingV2Async(siteInfo, diagProvider, flowMgr, isKuduAccessiblePromise, dnsSettings, useNetworkTroubleshooterBackend && isBackendAccessible);
                 checkAppSettingsAsync(siteInfo, diagProvider, flowMgr);
                 dnsServers = dnsSettings;
             } else {
@@ -49,13 +55,11 @@ export var functionsFlow = {
         }
 
         if (!siteInfo.kind.includes("linux") && !await isKuduAccessiblePromise) {
+            // Linux Sites do not require Kudu to be accessible.
             flowMgr.addView(new VnetDnsWordings().cannotCheckWithoutKudu.get("Function App Connectivity"));
             return;
         }
 
-        var checkBackendAccess = await checkNetworkTroubleshooterApiAsync(diagProvider);
-
-        var isBackendAccessible = checkBackendAccess.IsAccessible;
 
         if (siteInfo.kind.includes("linux") && !isBackendAccessible) {
             flowMgr.addView(new VnetDnsWordings().linuxCannotCheckWithoutNetworkChecker.get("Function App Connectivity"));
