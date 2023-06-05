@@ -7,7 +7,6 @@
   </workflow-view>
 </div>
 
-<div *ngIf="isUserConsentRequired">
   <fab-dialog [hidden]="!isUserConsentRequired"  [styles]="alertDialogStyles" [modalProps]="alertDialogProps" [forceFocusInsideTrap]="true"  (onDismiss)="consentDialogCancel()" >
     <fab-dialog-content [title]="alertInfo.header" tabindex="1">  
          <p> This detector has access to customer sensitive data.  
@@ -24,4 +23,3 @@
       </div>
     </fab-dialog-footer>
   </fab-dialog>
-</div>
