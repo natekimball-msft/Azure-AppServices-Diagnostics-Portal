@@ -7,7 +7,6 @@ import { TelemetryEventNames } from '../../services/telemetry/telemetry.common';
 import { MessageBarType } from 'office-ui-fabric-react';
 import { BehaviorSubject } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
-import { DemoSubscriptions } from '../../../lib/models/betaSubscriptions';
 
 const maxApiKeysPerAiResource: number = 10;
 
@@ -37,13 +36,13 @@ export class AppInsightsEnablementComponent implements OnInit {
   appSettingsHaveInstrumentationKey: boolean = false;
   hasWriteAccess: boolean = false;
   isEnabledInProd: boolean = true;
-  isCodeInsightsEnabledInProd: boolean = true;
   messageBarType = MessageBarType.info;
   canCreateApiKeys: boolean = false;
   appInsightsValiationError: string = "";
   test1: string = "Value1";
   test2: string = "Value2";
   optInsightResourceInfoSubject = new BehaviorSubject<{ resourceUri: string, appId: string }>({ resourceUri: "", appId: "" });
+  isCodeInsightsEnabledInProd: boolean = true;
   codeOptimizationEnabled = false;
   detectorId: string = "";
 

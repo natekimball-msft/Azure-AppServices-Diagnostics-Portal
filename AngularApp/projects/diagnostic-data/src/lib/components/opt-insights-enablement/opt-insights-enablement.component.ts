@@ -50,7 +50,7 @@ export class OptInsightsEnablementComponent implements OnInit {
         this.codeOptimizationsRequest = { 
           appInsightsResourceId: optInsightResourceInfo.resourceUri,
           appId: optInsightResourceInfo.appId,
-          site: this._route.parent.snapshot.params['site'],
+          site: this._route.parent.snapshot.parent.params['resourcename'],
           startTime: this._detectorControlService.startTime,
           endTime: this._detectorControlService.endTime,
           invalidateCache: false,
