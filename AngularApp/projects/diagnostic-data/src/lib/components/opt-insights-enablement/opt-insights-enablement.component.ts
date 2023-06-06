@@ -32,11 +32,10 @@ export class OptInsightsEnablementComponent implements OnInit {
   type: CodeOptimizationType = CodeOptimizationType.All;
   isBetaSubscription: boolean = false;
   codeOptimizationsRequest: CodeOptimizationsRequest;
-  detectorId: string = "";
-
 
 
   @Input() optInsightResourceInfo: Observable<{ resourceUri: string, appId: string, type?: CodeOptimizationType }>;
+  @Input() detectorId: string = "";
 
   ngOnInit(): void {
     this.loading = true;
@@ -45,7 +44,6 @@ export class OptInsightsEnablementComponent implements OnInit {
         this.type = optInsightResourceInfo.type;
       }
       if (optInsightResourceInfo.resourceUri !== null && optInsightResourceInfo.appId !== null) {
-        this.detectorId = this._route.parent.snapshot.params['detector'];
         this.appInsightsResourceUri = optInsightResourceInfo.resourceUri;
         this.codeOptimizationsRequest = { 
           appInsightsResourceId: optInsightResourceInfo.resourceUri,

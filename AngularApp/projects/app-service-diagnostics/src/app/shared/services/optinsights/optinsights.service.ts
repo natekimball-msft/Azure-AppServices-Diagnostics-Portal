@@ -208,16 +208,8 @@ export class OptInsightsService {
       return result
         .sort((a, b) => (Number(b.impact.replace("%", ""))) - (Number(a.impact.replace("%", ""))))
         .slice(0, top);
-      //.map(insight => insight);
     }
   }
-
-  // formatOpiString(str: string, contract: AggregatedInsightsContract): string {
-  //   for (const key of Object.keys(contract)) {
-  //     str = str.replace(`{${key}}`, contract[key]);
-  //   }
-  //   return str;
-  // }
 
   getInfoForOptInsights(codeOptimizationsRequest: CodeOptimizationsRequest): Observable<any[] | null> {
     this.appInsightsResourceUri = codeOptimizationsRequest.appInsightsResourceId;
@@ -230,6 +222,18 @@ export class OptInsightsService {
         }), mergeMap(accessToken => {
           if (accessToken === null || codeOptimizationsRequest.appInsightsResourceId === null || codeOptimizationsRequest.appId === null) return of(null);
           return this.getAggregatedInsightsbyTimeRange(accessToken, codeOptimizationsRequest);
+        }), mergeMap(aggregatedInsights => {
+          if (this.optInsightsResponse.length <= 1) {
+            return this.optInsightsResponse;
+          }
+          else {
+            if (codeOptimizationsRequest.type != undefined) {
+              return of(this.getTopTypeByImpact(this.optInsightsResponse, codeOptimizationsRequest.type, 3));
+            }
+            else {
+              return of(this.getTopTypeByImpact(this.optInsightsResponse, CodeOptimizationType.All, 3));
+            }
+          }
         }));
       })));
   }

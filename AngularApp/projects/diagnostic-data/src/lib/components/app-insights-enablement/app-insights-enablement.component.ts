@@ -44,13 +44,12 @@ export class AppInsightsEnablementComponent implements OnInit {
   optInsightResourceInfoSubject = new BehaviorSubject<{ resourceUri: string, appId: string }>({ resourceUri: "", appId: "" });
   isCodeInsightsEnabledInProd: boolean = true;
   codeOptimizationEnabled = false;
-  detectorId: string = "";
 
-  @Input()
-  resourceId: string = "";
+  @Input() resourceId: string = "";
+  @Input() detectorId: string = "";
 
   ngOnInit() {
-    this.detectorId = this._route.snapshot.params['detector'] != undefined ? this._route.snapshot.params['detector'] : this._route.snapshot.parent.params['category'];
+    this.detectorId = this.detectorId ? this.detectorId : this._route.snapshot.parent.params['category'];
     // Only displaying Code Optimizations if called from the following detectors
     this.codeOptimizationEnabled = this.detectorId === 'webappcpu' || this.detectorId === 'Memoryusage' || this.detectorId === 'perfAnalysis' || this.detectorId === 'AvailabilityAndPerformanceWindows';
     if (this.isEnabledInProd) {
