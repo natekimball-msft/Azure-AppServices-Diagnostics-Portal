@@ -58,9 +58,11 @@ export class OptInsightsEnablementComponent implements OnInit {
         this._optInsightsService.getInfoForOptInsights(this.codeOptimizationsRequest).subscribe(res => {
           if (res) {
             this.table = res;
-            if (this.table.length > 0) {
-                this._optInsightsService.logOptInsightsEvent(optInsightResourceInfo.resourceUri, TelemetryEventNames.AICodeOptimizerInsightsReceived);
-            }
+            let codeOptimizationsLogEvent: CodeOptimizationsLogEvent = {
+              resourceUri: optInsightResourceInfo.resourceUri,
+              telemetryEvent: TelemetryEventNames.AICodeOptimizerInsightsReceived
+            };
+            this._optInsightsService.logOptInsightsEvent(codeOptimizationsLogEvent);
           }
           this.loading = false;
         }, error => {
@@ -83,9 +85,8 @@ export class OptInsightsEnablementComponent implements OnInit {
     //const currentMoment = moment.utc();
     var durationMs = this._detectorControlService.endTime.diff(this._detectorControlService.startTime, 'milliseconds');
     let optInsightsResource: OptInsightsResource = this.parseOptInsightsResource(this.appInsightsResourceUri, 0, 'microsoft.insights/components', false);
-    let optInsightsTimeContext: OptInsightsTimeContext = { durationMs: durationMs, endTime: this._detectorControlService.endTime.toISOString(), createdTime: this._detectorControlService.startTime.toISOString(), isInitialTime: false, grain: 1, useDashboardTimeRange: false };
-    this.portalActionService.openOptInsightsBladewithTimeRange(optInsightsResource, optInsightsTimeContext);
-    this._optInsightsService.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerOpenOptInsightsBladewithTimeRange);
+    let optInsightsTimeContext: OptInsightsTimeContext = { durationMs: durationMs, endTime: this._detectorControlService.endTime.toISOString(), createdTime: this._detectorControlService.startTime.toISOString(), isInitialTime: false, grain: 1, useDashboardTimeRange: false};
+    this.portalActionService.openOptInsightsBladewithTimeRange(optInsightsResource, optInsightsTimeContext, this._route.parent.snapshot.parent.params['resourcename']);
   }
 
 
@@ -123,4 +124,3 @@ export class OptInsightsEnablementComponent implements OnInit {
     return output;
   }
 }
-

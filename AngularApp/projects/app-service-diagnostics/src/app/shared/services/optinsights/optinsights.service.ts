@@ -112,25 +112,32 @@ export class OptInsightsService {
     });
     const request = this.http.get(query, { headers: headers }).pipe(
       retry(2),
-      map((aggregatedInsights: any) => {
-        this.optInsightsResponse = this.parseRowsIntoTable(aggregatedInsights);
-        this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsAggregatedInsightsbyTimeRangeSuccessful, "", aggregatedInsights.length);
-        if (this.optInsightsResponse.length <= 1) {
-          return this.optInsightsResponse;
-        }
-        else {
-          if (type != undefined) {
-            return this.getTopTypeByImpact(this.optInsightsResponse, type, 3);
-          }
-          else {
-            return this.getTopTypeByImpact(this.optInsightsResponse, CodeOptimizationType.All, 3);
-          }
-        }
-      }, (error: any) => {
-        this.error = error;
-        this.logOptInsightsEvent(this.appInsightsResourceUri, TelemetryEventNames.AICodeOptimizerInsightsAggregatedInsightsbyTimeRangeFailure, error);
-      }));
-    return this._cache.get(query, request, invalidateCache);
+      mergeMap((aggregatedInsights: any) => {
+        return this.getOPIResources(false).pipe(map((oPIResources: any) => { 
+          return { aggregatedInsights, oPIResources } 
+        }));
+      }),
+      map((response) => {        
+          this.optInsightsResponse = this.parseRowsIntoTable(response.aggregatedInsights, response.oPIResources);
+          let codeOptimizationsLogEvent: CodeOptimizationsLogEvent = {
+            resourceUri: this.appInsightsResourceUri,
+            telemetryEvent: TelemetryEventNames.AICodeOptimizerInsightsAggregatedInsightsbyTimeRangeSuccessful,
+            totalInsights: response.aggregatedInsights.length
+          };
+          this.logOptInsightsEvent(codeOptimizationsLogEvent);
+        }),
+        catchError(error => {
+          let codeOptimizationsLogEvent: CodeOptimizationsLogEvent = {
+            resourceUri: this.appInsightsResourceUri,
+            telemetryEvent: TelemetryEventNames.AICodeOptimizerInsightsAggregatedInsightsbyTimeRangeFailure,
+            error: error
+          };
+          this.logOptInsightsEvent(codeOptimizationsLogEvent);
+          return throwError(error);          
+      }),
+        
+        );
+    return this._cache.get(query, request, codeOptimizationsRequest.invalidateCache);
   }
 
   getOPIResources(invalidateCache: boolean): Observable<any[]> {
