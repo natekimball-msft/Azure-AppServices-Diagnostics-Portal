@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CodeOptimizationsLogEvent, CodeOptimizationsRequest } from 'diagnostic-data';
+import { CodeOptimizationsLogEvent, CodeOptimizationsRequest } from '../../lib/models/optinsights';
 import { Observable, of } from 'rxjs';
 
 
