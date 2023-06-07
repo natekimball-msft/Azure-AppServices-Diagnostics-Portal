@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using AppLensV3.Models;
 using Azure;
@@ -27,6 +28,8 @@ namespace AppLensV3.Services
 
         Task<dynamic> RunChatCompletion(List<ChatMessage> chatMessages, ChatMetaData metadata);
 
+        Task StreamChatCompletion(List<ChatMessage> chatMessages, ChatMetaData metadata, Func<ChatStreamResponse, Task> onMessageStreamAsyncCallback, CancellationToken cancellationToken = default);
+
         bool IsEnabled();
     }
 
@@ -42,10 +45,17 @@ namespace AppLensV3.Services
         {
             return null;
         }
+
+        public Task StreamChatCompletion(List<ChatMessage> chatMessages, ChatMetaData metadata, Func<ChatStreamResponse, Task> onMessageStreamAsyncCallback, CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
     }
 
     public class OpenAIService : IOpenAIService
     {
+        private const int MaxTokensAllowed = 800;
+        private const int MaxTokensAllowedForStreaming = 3000;
         private readonly string openAIEndpoint;
         private readonly string openAIGPT3APIUrl;
         private readonly string openAIGPT4Model;
@@ -57,7 +67,7 @@ namespace AppLensV3.Services
         private IConfiguration configuration;
         private static OpenAIClient openAIClient;
         private Dictionary<string, Task<string>> chatTemplateFileCache;
-        private const int MaxTokensAllowed = 800;
+        private string chatHubRedisKeyPrefix;
 
         public OpenAIService(IConfiguration config, IOpenAIRedisService redisService, ILogger<OpenAIService> logger)
         {
@@ -72,6 +82,7 @@ namespace AppLensV3.Services
                 openAIGPT3APIUrl = configuration["OpenAIService:GPT3DeploymentAPI"];
                 openAIGPT4Model = configuration["OpenAIService:GPT4DeploymentName"];
                 openAIAPIKey = configuration["OpenAIService:APIKey"];
+                chatHubRedisKeyPrefix = "ChatHub-MessageState-";
 
                 ValidateConfiguration();
                 InitializeHttpClient();
@@ -160,6 +171,49 @@ namespace AppLensV3.Services
                 openAIGPT4Model, chatCompletionsOptions);
 
             return response.Value;
+        }
+
+        /// <inheritdoc/>
+        public async Task StreamChatCompletion(List<ChatMessage> chatMessages, ChatMetaData metadata, Func<ChatStreamResponse, Task>? onMessageStreamAsyncCallback = default, CancellationToken cancellationToken = default)
+        {
+            if (chatMessages == null || chatMessages.Count == 0)
+            {
+                return;
+            }
+
+            string finishReason = string.Empty;
+
+            ChatCompletionsOptions chatCompletionsOptions = await PrepareChatCompletionOptions(chatMessages, metadata);
+            chatCompletionsOptions.MaxTokens = MaxTokensAllowedForStreaming;
+
+            Response<StreamingChatCompletions> response = await openAIClient.GetChatCompletionsStreamingAsync(
+               openAIGPT4Model, chatCompletionsOptions);
+
+            using StreamingChatCompletions streamingChatCompletions = response.Value;
+
+            await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
+            {
+                await foreach (ChatMessage message in choice.GetMessageStreaming(cancellationToken))
+                {
+                    string messageState = await GetFromRedisCache($"{chatHubRedisKeyPrefix}{metadata.MessageId}");
+                    if (messageState != null && messageState.Equals("cancelled", StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new OperationCanceledException("message marked for cancellation in redis cache");
+                    }
+
+                    if (onMessageStreamAsyncCallback != default && message != null)
+                    {
+                        await onMessageStreamAsyncCallback(new ChatStreamResponse(content: message.Content));
+                    }
+                }
+
+                finishReason = choice.FinishReason;
+            }
+
+            if (onMessageStreamAsyncCallback != default)
+            {
+                await onMessageStreamAsyncCallback(new ChatStreamResponse(finishReason: finishReason));
+            }
         }
 
         private void InitializeHttpClient()

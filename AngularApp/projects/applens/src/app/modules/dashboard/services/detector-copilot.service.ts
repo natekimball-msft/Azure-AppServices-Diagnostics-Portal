@@ -81,16 +81,16 @@ export class DetectorCopilotService {
   }
 
   isMessageContainsCode(message: string): boolean {
-    return message && message != '' && (message.toLowerCase().indexOf('<code>') >= 0);
+    return message && message != '' && (message.toLowerCase().startsWith('<$>'));
   }
 
   extractCode(message: string): string {
-    let stringsToRemove = ['<code>', '</code>', '<CODE>', '</CODE>'];
+    let stringsToRemove = ['<$>\n', '<$>'];
     let outputMessage = message;
     stringsToRemove.forEach(p => {
       outputMessage = StringUtilities.ReplaceAll(outputMessage, p, '');
     });
 
-    return StringUtilities.TrimBoth(outputMessage);
+    return outputMessage;
   }
 }

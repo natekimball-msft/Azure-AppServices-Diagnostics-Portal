@@ -32,6 +32,7 @@
 	<PackageReference Include="Microsoft.Azure.Cosmos" Version="3.27.0" />
     <PackageReference Include="Microsoft.Azure.Kusto.Cloud.Platform" Version="10.0.1" />
     <PackageReference Include="Microsoft.Azure.Kusto.Data" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.21.3" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.42.1" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

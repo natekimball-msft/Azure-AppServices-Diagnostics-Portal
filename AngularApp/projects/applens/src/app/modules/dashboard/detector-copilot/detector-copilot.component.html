@@ -4,20 +4,19 @@
     <fab-command-bar-item key="clearchat" text="Clear Chat" [iconProps]="{ iconName: 'EraseTool' }"
       [disabled]="_copilotService.operationInProgress" (click)="showClearChatDialog(true)">
     </fab-command-bar-item>
-    <fab-command-bar-item key="stopcalls" text="Stop" [iconProps]="{ iconName: 'stop' }" data-track-type="run"
+    <fab-command-bar-item key="stopcalls" text="Stop" [iconProps]="{ iconName: 'stop' }"
       [disabled]="!_copilotService.operationInProgress" (click)="cancelOpenAICall()">
     </fab-command-bar-item>
-    <fab-command-bar-item key="prevcode" text="Previous Code" [iconProps]="{ iconName: 'reply' }" data-track-type="run"
+    <fab-command-bar-item key="prevcode" text="Previous Code" [iconProps]="{ iconName: 'reply' }"
       [disabled]="_copilotService.operationInProgress || _copilotService.codeHistoryNavigator <= 0"
       (click)="_copilotService.navigateCodeHistory(true)">
     </fab-command-bar-item>
     <fab-command-bar-item key="nextcode" text="Next Code" [iconProps]="{ iconName: 'ReplyMirrored' }"
-      data-track-type="run"
       [disabled]="_copilotService.operationInProgress || _copilotService.codeHistoryNavigator >= _copilotService.codeHistory.length - 1"
       (click)="_copilotService.navigateCodeHistory(false)">
     </fab-command-bar-item>
     <fab-command-bar-item key="clearcodehistory" text="Clear Code History"
-      [iconProps]="{ iconName: 'RemoveOccurrence' }" data-track-type="run"
+      [iconProps]="{ iconName: 'RemoveOccurrence' }"
       [disabled]="_copilotService.operationInProgress || _copilotService.codeHistory.length <= 0"
       (click)="_copilotService.clearCodeHistory()">
     </fab-command-bar-item>
@@ -28,7 +27,7 @@
 <div style="height:80vh;">
 
   <openai-chat [chatAlignment]="'left'" [chatIdentifier]="_copilotService.chatComponentIdentifier"
-    [chatContextLength]="4" [chatModel]="chatModel" [chatQuerySamplesFileUri]="configFile"
+    [chatContextLength]="4" [chatModel]="chatModel" [chatQuerySamplesFileUri]="configFile" [apiProtocol]="apiProtocol"
     [contentDisclaimerMessage]="contentDisclaimerMessage" [quotaEnforced]="true" [chatHeader]="chatHeader"
     [systemPhotoSource]="'/assets/img/bot_sparkle_icon.svg'" [responseTokenSize]="responseTokenSize"
     [preprocessUserMessage]="onUserMessageSend" [postProcessSystemMessage]="onSystemMessageReceived"
