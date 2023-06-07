@@ -49,6 +49,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
   @Input() stopMessageGeneration: boolean = false;
   @Input() systemInitial: string = "AI";
   @Input() systemPhotoSource: string = '/assets/img/openailogo.svg';
+  @Input() showCopyOption:boolean = false;
 
   // Callback methods for pre and post processing messages
   @Input() preprocessUserMessage: (message: ChatMessage) => ChatMessage = function (message: ChatMessage) {

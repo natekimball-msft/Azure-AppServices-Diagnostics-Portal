@@ -199,7 +199,21 @@ export class SideNavComponent implements OnInit {
         return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `networkTraceAnalysis`.toLowerCase();
       },
       icon: null
-    }];
+    },
+    {
+      label: 'Kusto Copilot for Analytics',
+      id: "",
+      onClick: () => {
+        this.navigateTo("kustogpt");
+      },
+      expanded: false,
+      subItems: null,
+      isSelected: () => {
+        return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `kustogpt`;
+      },
+      icon: null
+    }
+  ];
 
   ngOnInit() {
     this._openAIService.CheckEnabled().subscribe(enabled => {

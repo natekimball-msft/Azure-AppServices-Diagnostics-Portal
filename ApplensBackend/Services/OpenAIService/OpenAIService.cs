@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using AppLensV3.Models;
 using Azure;
 using Azure.AI.OpenAI;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -58,6 +60,12 @@ namespace AppLensV3.Services
         private static OpenAIClient openAIClient;
         private Dictionary<string, Task<string>> chatTemplateFileCache;
         private const int MaxTokensAllowed = 800;
+        private Dictionary<string, AnalyticsKustoTableDetails> analyticsKustoTables = new Dictionary<string, AnalyticsKustoTableDetails>(StringComparer.OrdinalIgnoreCase);
+        private ConcurrentDictionary<string, ChatCompletionCustomHandler> customHandlerForChatCompletion = new ConcurrentDictionary<string, ChatCompletionCustomHandler>(StringComparer.OrdinalIgnoreCase);
+
+        // Delegate gets chatCompletionOptions which will have the corresponding template file and past user messages already loaded.
+        // It also gets the chatMessages and the chatMetaData in case the custom logic needs to prepare its independent set of messages.
+        private delegate Task<Response<ChatCompletions>> ChatCompletionCustomHandler(List<ChatMessage> chatMessages, ChatMetaData metadata, ChatCompletionsOptions chatCompletionsOptions);
 
         public OpenAIService(IConfiguration config, IOpenAIRedisService redisService, ILogger<OpenAIService> logger)
         {
@@ -77,6 +85,9 @@ namespace AppLensV3.Services
                 InitializeHttpClient();
                 InitializeOpenAIClient();
                 InitializeChatTemplateFileCache();
+
+                // Initialize custom handlers for chat completion API. This allows for chaining GPT responses.
+                customHandlerForChatCompletion["analyticskustocopilot"] = HandleAnalyticsKustoCopilot;
             }
         }
 
@@ -156,8 +167,16 @@ namespace AppLensV3.Services
             }
 
             ChatCompletionsOptions chatCompletionsOptions = await PrepareChatCompletionOptions(chatMessages, metadata);
-            Response<ChatCompletions> response = await openAIClient.GetChatCompletionsAsync(
-                openAIGPT4Model, chatCompletionsOptions);
+
+            Response<ChatCompletions> response = null;
+            if (!string.IsNullOrWhiteSpace(metadata.ChatIdentifier) && customHandlerForChatCompletion.TryGetValue(metadata.ChatIdentifier, out ChatCompletionCustomHandler customHandler))
+            {
+                response = await customHandler.Invoke(chatMessages, metadata, chatCompletionsOptions);
+            }
+            else
+            {
+                response = await openAIClient.GetChatCompletionsAsync(openAIGPT4Model, chatCompletionsOptions);
+            }
 
             return response.Value;
         }
@@ -209,6 +228,85 @@ namespace AppLensV3.Services
 
             return await chatTemplateFileCache[templateCacheKey];
         }
+
+        #region Delegate implementation for custom chat completion handlers
+        private async Task<Response<ChatCompletions>> HandleAnalyticsKustoCopilot(List<ChatMessage> chatMessages, ChatMetaData metadata, ChatCompletionsOptions chatCompletionsOptions)
+        {
+            try
+            {
+                ChatCompletionsOptions tempChatCompletionsOptions = new ChatCompletionsOptions();
+                tempChatCompletionsOptions.Temperature = chatCompletionsOptions.Temperature;
+                tempChatCompletionsOptions.MaxTokens = chatCompletionsOptions.MaxTokens;
+                tempChatCompletionsOptions.NucleusSamplingFactor = chatCompletionsOptions.NucleusSamplingFactor;
+                tempChatCompletionsOptions.FrequencyPenalty = chatCompletionsOptions.FrequencyPenalty;
+                tempChatCompletionsOptions.PresencePenalty = chatCompletionsOptions.PresencePenalty;
+                tempChatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.System, chatCompletionsOptions.Messages.First(m => m.Role == ChatRole.System).Content));
+
+                string userQuestion = chatMessages.Last(m => m.Role == ChatRole.User).Content;
+                string chainingQuestion = $"Which table(s) will help answer the following question? If more than one table is found, return a comma seperated list.{Environment.NewLine}{userQuestion}";
+                tempChatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, chainingQuestion));
+
+                Response<ChatCompletions> intermediateResponse = await openAIClient.GetChatCompletionsAsync(openAIGPT4Model, tempChatCompletionsOptions);
+                string tableNamesCSV = intermediateResponse.Value.Choices[0].Message.Content;
+                if (tableNamesCSV.Equals("Sorry, I could not generate the query."))
+                {
+                    // We could not identify the table or the attempted question does not adhere to the rules set for the copilot. Terminate processing and return a response.
+                    return intermediateResponse;
+                }
+
+                tempChatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.Assistant, tableNamesCSV));
+
+                StringBuilder secondQuestion = new StringBuilder();
+                foreach (string tableName in tableNamesCSV.Split(","))
+                {
+                    if (analyticsKustoTables.Count == 0)
+                    {
+                        string configString = await GetChatTemplateContent("analyticskustotableconfig");
+                        JObject jObject = JObject.Parse(configString);
+                        JArray tablesList = (jObject["Tables"] ?? new JObject()).ToObject<JArray>();
+                        foreach (var element in tablesList)
+                        {
+                            if (!string.IsNullOrWhiteSpace((element["TableName"] ?? string.Empty).ToString()) && !string.IsNullOrWhiteSpace((element["SchemaWithNotes"] ?? string.Empty).ToString()))
+                            {
+                                analyticsKustoTables.Add(element["TableName"].ToString().Trim(),
+                                    new AnalyticsKustoTableDetails()
+                                    {
+                                        TableName = element["TableName"].ToString().Trim(),
+                                        Description = (element["Description"] ?? string.Empty).ToString(),
+                                        SchemaWithNotes = (string)element["SchemaWithNotes"]
+                                    }
+                                 );
+                            }
+                        }
+                    }
+
+                    if (analyticsKustoTables.TryGetValue(tableName.Trim(), out AnalyticsKustoTableDetails tableDetails))
+                    {
+                        secondQuestion.AppendLine($"Table:{tableDetails.TableName}");
+                        if (!string.IsNullOrWhiteSpace(tableDetails.Description))
+                        {
+                            secondQuestion.AppendLine($"Description:{tableDetails.Description}");
+                        }
+
+                        secondQuestion.AppendLine($"SchemaWithNotes:{tableDetails.SchemaWithNotes}");
+                        secondQuestion.AppendLine();
+                    }
+                }
+
+                secondQuestion.AppendLine("Using the above details, answer the following question");
+                secondQuestion.AppendLine(userQuestion);
+                tempChatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, secondQuestion.ToString()));
+
+                return await openAIClient.GetChatCompletionsAsync(openAIGPT4Model, tempChatCompletionsOptions);
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error preparing chat completion options : {ex}");
+                throw;
+            }
+        }
+        #endregion
 
         private async Task<ChatCompletionsOptions> PrepareChatCompletionOptions(List<ChatMessage> chatMessages, ChatMetaData metadata)
         {
