@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ChatMessage, ChatModel, ChatUIContextService, MessageSource, MessageStatus, ResponseTokensSize, StringUtilities } from 'diagnostic-data';
+import { APIProtocol, ChatMessage, ChatModel, ChatUIContextService, MessageSource, MessageStatus, ResponseTokensSize, StringUtilities, TelemetryService } from 'diagnostic-data';
 import { Subscription } from 'rxjs';
 import { DetectorCopilotService } from '../services/detector-copilot.service';
 import { HttpClient } from '@angular/common/http';
+import { environment } from 'projects/applens/src/environments/environment';
 
 @Component({
   selector: 'detector-copilot',
@@ -14,6 +15,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   contentDisclaimerMessage: string = "I'm biased towards coding; mention 'no code' for other help and avoid sensitive data :)";
   chatHeader: string = '';
   chatModel: ChatModel = ChatModel.GPT4;
+  apiProtocol: APIProtocol = APIProtocol.WebSocket;
   responseTokenSize: ResponseTokensSize = ResponseTokensSize.Small;
   previousMessage: any;
   stopMessageGeneration: boolean = false;
@@ -30,13 +32,13 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   private codeProgressMsgIndex: number = 0;
   private codeCompleteMsgIndex: number = 0;
 
-  constructor(public _chatContextService: ChatUIContextService, public _copilotService: DetectorCopilotService, private http: HttpClient) {
+  constructor(public _chatContextService: ChatUIContextService, public _copilotService: DetectorCopilotService, private telemetryService: TelemetryService, private http: HttpClient) {
   }
 
   ngOnInit(): void {
-
     this.prepareChatHeader();
     this.prepareCodeUpdateMessages();
+
 
     this.closeEventObservable = this._copilotService.onCloseCopilotPanelEvent.subscribe(event => {
       if (event) {
@@ -44,16 +46,23 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
         setTimeout(() => {
           if (event.resetCopilot) {
             this._copilotService.reset();
+            this.log('OnClose', 'copilot reset complete');
           }
         }, 1000);
       }
-    })
+    });
+
+
+    this.log('OnInit', 'initialization complete');
   }
 
   ngOnDestroy() {
     if (this.closeEventObservable) {
       this.closeEventObservable.unsubscribe();
+      this.log('OnDestroy', 'unsubscribed from closeEventObservable');
     }
+
+    this.log('OnDestroy', 'ondestroy complete');
   }
 
   //#region Chat Callback Methods
@@ -68,7 +77,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
     this._copilotService.operationInProgress = true;
 
     // Save the current code in the history if there were changes
-    this._copilotService.updateCodeHistory(`<code>\n${this._copilotService.detectorCode}\n</code>`);
+    this._copilotService.updateCodeHistory(`<$>\n${this._copilotService.detectorCode}`);
 
     // At this point, we dont know whether user has asked for code or not.
     // To be safe, we will disable the editor and it will get reenabled as soon as first non code response is received.
@@ -95,7 +104,6 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
       append = true;
     }
 
-    // messageObj.message will always contain concatenated message so far. So for partial code, it will contain code tags
     let isMessageContainsCode: boolean = this._copilotService.isMessageContainsCode(messageObj.message);
 
     if (isMessageContainsCode && deltaMessage != '') {
@@ -148,6 +156,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
           if (messageObj.displayMessage != undefined && messageObj.displayMessage != '') {
             //append code complete message to existing message string.
             displayMsg = `${messageObj.displayMessage}\n...\n${this.codeCompleteMessages[this.codeCompleteMsgIndex]}`;
+
           }
           else {
             // message was completed in one go. There is no previous message string. Assign a code complete message.
@@ -161,6 +170,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
         this._copilotService.operationInProgress = false;
         this.previousMessage = undefined;
         this.responseTokenSize = ResponseTokensSize.Small;
+        this.log('OnMessageReceived', `message completed. type : ${isMessageContainsCode ? 'codeupdate' : 'chatresponse'}`);
 
         break;
       }
@@ -176,6 +186,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
         this._copilotService.operationInProgress = false;
         this.previousMessage = undefined;
         this.responseTokenSize = ResponseTokensSize.Small;
+        this.log('OnMessageCancelled', `message cancel completed. type : ${isMessageContainsCode ? 'codeupdate' : 'chatresponse'}`);
 
         break;
       }
@@ -193,11 +204,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
       let messageContainsCode = this._copilotService.isMessageContainsCode(lastMessage.message);
       let linesOfCode = this.codeUsedInPrompt && this.codeUsedInPrompt != '' ? this.codeUsedInPrompt.split("\n").length : 0;
 
-      var artificialUserMsg = `Finish the above message fully. Make sure you start the new message with characters right after where the above message ended at '${lastLine}'. Only tell me the remaining message and not the previous message again.`;
-
-      // if ((messageContainsCode && linesOfCode <= this.maxLinesLimitForCodeUpdate)) {
-      //   artificialUserMsg = `${artificialUserMsg}.  No code explanation needed.`;
-      // }
+      var artificialUserMsg = `Finish the previous message fully and preserve white spaces. Make sure you start the new message with characters right after where the above message ended at '${lastLine}'. Only tell me the remaining message and not the previous message again.`;
 
       chatContext.push({
         "role": "User",
@@ -227,7 +234,6 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   cancelOpenAICall = () => {
 
     this.stopMessageGeneration = true;
-    this._copilotService.operationInProgress = false;
 
     setTimeout(() => {
       this.stopMessageGeneration = false;
@@ -252,6 +258,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
     this._copilotService.onCodeOperationProgressState.next({ inProgress: false });
     this.copilotExitConfirmationHidden = true;
     this._copilotService.hideCopilotPanel();
+    this.log('OnClose', 'copilot panel closed');
   }
 
   checkMessageStateAndExitCopilot(showConfirmation: boolean = true) {
@@ -278,7 +285,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
       this._copilotService.detectorCode : '';
 
     let message = this.codeUsedInPrompt != '' ?
-      `Here is the initial detector code : \n <code>\n${this.codeUsedInPrompt}\n</code>\n` : '';
+      `Here is the initial detector code : \n <$>\n${this.codeUsedInPrompt}\n` : '';
 
     message = `${message}Action you need to take : ${chatMessageObj.message}\n`;
 
@@ -289,7 +296,8 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
     let linesCountInCode = this.codeUsedInPrompt != '' ? this.codeUsedInPrompt.split("\n").length : 0;
     let rules = `1. If you are responding with code, No need to write any explanation before or after the code. Just respond with the updated code.
-    2. Enclose the code in <code> tags`;
+    2. Start the code with '<$>\n' line.
+    3. Dont have extra white spaces at the end of the every lines of code. Make sure the code is properly linted.`;
 
     if (linesCountInCode > this.maxLinesLimitForCodeUpdate) {
       rules = `1. If you are responding with code, Dont respond with the entire code. Only give the code that needs to be added, deleted or updated.
@@ -326,5 +334,16 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
     });
   }
 
+  private log = (event: string, message: string) => {
+
+    let eventStr = `DetectorCopilot-${event}`;
+    let time = new Date().getTime().toString();
+    if (environment.production) {
+      this.telemetryService.logEvent(eventStr, { message: message, ts: time });
+    }
+    else {
+      console.log(`event: ${eventStr}, message: ${message}, ts: ${time}`);
+    }
+  }
   //#endregion
 }

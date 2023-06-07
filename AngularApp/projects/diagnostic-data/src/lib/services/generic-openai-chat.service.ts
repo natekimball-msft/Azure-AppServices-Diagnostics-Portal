@@ -5,6 +5,7 @@ import { Observable, of } from 'rxjs';
 @Injectable()
 export class GenericOpenAIChatService {
   public isEnabled: boolean = false;
+  public onMessageReceive: Observable<ChatResponse> = null;
 
   public CheckEnabled(): Observable<boolean> {
     return of(false);
@@ -16,5 +17,16 @@ export class GenericOpenAIChatService {
 
   public getChatCompletion(queryModel: ChatCompletionModel, customPrompt: string = ''): Observable<ChatResponse> {
     return null;
+  }
+
+  public sendChatMessage(queryModel: ChatCompletionModel, customPrompt: string = ''): Observable<{ sent: boolean, failureReason: string }> {
+    return null;
+  };
+
+  public cancelChatMessage(messageId: string) {
+  }
+
+  public establishSignalRConnection(): Observable<boolean> {
+    return Observable.of(false);
   }
 }

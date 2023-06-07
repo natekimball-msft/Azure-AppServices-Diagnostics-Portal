@@ -45,3 +45,8 @@ export enum ChatModel {
     GPT3 = "gpt3",
     GPT4 = "gpt4"
 }
+
+export enum APIProtocol {
+    Rest = "rest",
+    WebSocket = "websocket"
+}

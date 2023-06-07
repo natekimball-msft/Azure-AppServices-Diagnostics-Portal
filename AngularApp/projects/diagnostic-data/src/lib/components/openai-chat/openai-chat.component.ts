@@ -16,14 +16,14 @@ import {
   ChatModel,
   CreateChatCompletionModel,
   ResponseTokensSize,
-  TextModels
+  TextModels,
+  APIProtocol
 
 } from "../../../public_api";
 import { v4 as uuid } from 'uuid';
 import { HttpClient } from '@angular/common/http';
 import { KeyValuePair } from '../../models/common-models';
-import { Observable, Subscription, of } from 'rxjs';
-import { retry } from 'rxjs-compat/operator/retry';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'openai-chat',
@@ -50,6 +50,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
   @Input() systemInitial: string = "AI";
   @Input() systemPhotoSource: string = '/assets/img/openailogo.svg';
   @Input() showCopyOption:boolean = false;
+  @Input() apiProtocol: APIProtocol = APIProtocol.Rest;
 
   // Callback methods for pre and post processing messages
   @Input() preprocessUserMessage: (message: ChatMessage) => ChatMessage = function (message: ChatMessage) {
@@ -100,6 +101,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
     this._openAIService.CheckEnabled().subscribe(enabled => {
       this.isEnabled = this._openAIService.isEnabled;
       if (this.isEnabled) {
+
         if (this.chatQuerySamplesFileUri && this.chatQuerySamplesFileUri.length > 0) {
           this.http.get<any>(this.chatQuerySamplesFileUri).subscribe((res) => {
             if (res && res.samples) {
@@ -111,14 +113,20 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
               this._telemetryService.logEvent("OpenAIChatQuerySamplesFileLoadError", { "chatQuerySamplesFileUri": this.chatQuerySamplesFileUri, ts: new Date().getTime().toString() });
             });
         }
-      }
-      this.isEnabledChecked = true;
-      if (this.isEnabled) {
+
+        if (this.apiProtocol == APIProtocol.WebSocket) {
+          this._openAIService.establishSignalRConnection().subscribe((result: boolean) => {
+            this._chatContextService.chatInputBoxDisabled = !result;
+          });
+        }
+        
         this._telemetryService.logEvent("OpenAIChatComponentLoaded", { "chatIdentifier": this.chatIdentifier, ts: new Date().getTime().toString() });
       }
+      this.isEnabledChecked = true;
     });
 
     this.loadChatFromStore(); // Works only if persistChat is true
+
   }
 
   populateCustomFirstMessage() {
@@ -235,8 +243,8 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
     }, 5000);
   }
 
-  /**Chat Message Request section */
-  fetchOpenAIResult(searchQuery: any, messageObj: ChatMessage, retry: boolean = true, trimnewline: boolean = false) {
+  /**Chat Message Request section using Rest Protocol */
+  fetchOpenAIResultUsingRest(searchQuery: any, messageObj: ChatMessage, retry: boolean = true, trimnewline: boolean = false) {
 
     if (this.currentApiCallCount >= this.openAIApiCallLimit) {
       this.onStopMessageGeneration(`Message cancelled by system. This message exceeded the recursive completion api call limit of ${this.openAIApiCallLimit}`);
@@ -262,7 +270,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
         openAIAPICall = this._openAIService.generateTextCompletion(openAIQueryModel, this.customInitialPrompt, true);
       }
       else {
-        let chatCompletionQueryModel = CreateChatCompletionModel(searchQuery, this.chatIdentifier, this.chatModel, this.responseTokenSize);
+        let chatCompletionQueryModel = CreateChatCompletionModel(searchQuery, messageObj.id, this.chatIdentifier, this.chatModel, this.responseTokenSize);
         openAIAPICall = this._openAIService.getChatCompletion(chatCompletionQueryModel, this.customInitialPrompt);
       }
 
@@ -288,7 +296,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
 
         if (response.truncated) {
           //Do not trim newline for the next query
-          this.fetchOpenAIResult(this.prepareChatContext(), messageObj, retry, trimnewline = false);
+          this.fetchOpenAIResultUsingRest(this.prepareChatContext(), messageObj, retry, trimnewline = false);
           this.chatUIComponentRef.scrollToBottom();
         }
 
@@ -304,7 +312,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
       },
         (err) => {
           if (retry) {
-            this.fetchOpenAIResult(searchQuery, messageObj, retry = false);
+            this.fetchOpenAIResultUsingRest(searchQuery, messageObj, retry = false);
           }
           this.handleFailure(err, messageObj);
         });
@@ -312,6 +320,78 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
     catch (error) {
       this.handleFailure(error, messageObj);
     }
+  }
+
+  fetchOpenAIResultUsingWSS(searchQuery: any, messageObj: ChatMessage) {
+
+    this.resetChatRequestError();
+    this._chatContextService.chatInputBoxDisabled = true;
+    messageObj.status = messageObj.status == MessageStatus.Created ? MessageStatus.Waiting : messageObj.status;
+
+    if (this.openAIAPICallSubscription) {
+      this.openAIAPICallSubscription.unsubscribe();
+    }
+
+    this.openAIAPICallSubscription = this._openAIService.onMessageReceive.subscribe(chatResponse => {
+
+      if (messageObj.status == MessageStatus.Cancelled) {
+        return;
+      }
+
+      if (chatResponse != null && chatResponse != undefined) {
+
+        if (chatResponse.text != undefined && chatResponse.text != '') {
+
+          messageObj.status = MessageStatus.InProgress;
+          messageObj.message = `${messageObj.message}${chatResponse.text}`;
+
+          if (this.postProcessSystemMessage == undefined) {
+            messageObj.displayMessage = `${messageObj.displayMessage}${chatResponse.text}`;
+          }
+          else {
+            messageObj = this.postProcessSystemMessage(messageObj);
+          }
+
+          this.chatUIComponentRef.scrollToBottom();
+        }
+
+        // In streaming, the finish reason would be set when the stream ends. (not for every message chunk)
+        if (chatResponse.finishReason != undefined && chatResponse.finishReason != '') {
+
+          let finalMsgStatus = MessageStatus.Finished;
+
+          if (chatResponse.finishReason === 'length') {
+            // In streaming, the message reached token limit and system cannot continue further
+
+            finalMsgStatus = MessageStatus.Cancelled;
+            this.onStopMessageGeneration('Message cancelled by system. This message exceeded the max token limit.');
+          }
+
+          messageObj.status = finalMsgStatus;
+
+          if (this.postProcessSystemMessage != undefined) {
+            messageObj = this.postProcessSystemMessage(messageObj);
+          }
+
+          this.markMessageCompleted(messageObj, finalMsgStatus);
+          this.reenableChatBox();
+
+          if (this.persistChat) {
+            this.saveChatToStore();
+          }
+        }
+      }
+    }, (err) => {
+      this.onStopMessageGeneration(`Message cancelled by system. An unexpected error occured. ${err}`);
+      this.reenableChatBox();
+      this._openAIService.onMessageReceive = new BehaviorSubject<ChatResponse>(null);
+    });
+
+    let chatCompletionQueryModel = CreateChatCompletionModel(searchQuery, messageObj.id, this.chatIdentifier, this.chatModel, this.responseTokenSize);
+
+    this._openAIService.sendChatMessage(chatCompletionQueryModel, this.customInitialPrompt).subscribe(response => {
+    }, err => {
+    });
   }
 
   handleFailure(err, messageObj) {
@@ -389,7 +469,13 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
       this._chatContextService.messageStore[this.chatIdentifier].push(chatMessage);
       //Add a little timeout here to wait for the child component to initialize well
       setTimeout(() => { this.chatUIComponentRef.scrollToBottom(); }, 200);
-      this.fetchOpenAIResult(this.prepareChatContext(), chatMessage);
+
+      if (this.apiProtocol == APIProtocol.Rest || this.chatModel == ChatModel.GPT3) {
+        this.fetchOpenAIResultUsingRest(this.prepareChatContext(), chatMessage);
+      }
+      else if (this.apiProtocol == APIProtocol.WebSocket) {
+        this.fetchOpenAIResultUsingWSS(this.prepareChatContext(), chatMessage);
+      }
     }
   }
 
@@ -399,8 +485,10 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
 
     if (lastChatMessage != undefined && lastChatMessage.messageSource == MessageSource.System) {
 
-      if (this.openAIAPICallSubscription != undefined)
+
+      if (this.openAIAPICallSubscription != undefined) {
         this.openAIAPICallSubscription.unsubscribe();
+      }
 
       if (lastChatMessage.status != MessageStatus.Cancelled && lastChatMessage.status != MessageStatus.Finished) {
         lastChatMessage.displayMessage = `${lastChatMessage.displayMessage}\n\n<span style="color:#890000">${cancellationReason}</span>`;
@@ -410,6 +498,10 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
         }
 
         this.reenableChatBox();
+      }
+
+      if (this.apiProtocol == APIProtocol.WebSocket) {
+        this._openAIService.cancelChatMessage(lastChatMessage.id);
       }
     }
   }

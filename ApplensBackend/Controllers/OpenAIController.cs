@@ -1,19 +1,18 @@
-﻿using AppLensV3.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using System;
+﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using AppLensV3.Helpers;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Xml;
-using Azure.AI.OpenAI;
-using System.Collections.Generic;
-using System.Linq;
+using AppLensV3.Hubs;
 using AppLensV3.Models;
+using AppLensV3.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace AppLensV3.Controllers
 {
@@ -25,12 +24,14 @@ namespace AppLensV3.Controllers
         private IOpenAIService _openAIService;
         private ILogger<OpenAIController> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IHubContext<OpenAIChatCompletionHub> _hubContext;
 
-        public OpenAIController(IOpenAIService openAIService, ILogger<OpenAIController> logger, IConfiguration config)
+        public OpenAIController(IOpenAIService openAIService, ILogger<OpenAIController> logger, IConfiguration config, IHubContext<OpenAIChatCompletionHub> hubContext)
         {
             _logger = logger;
             _openAIService = openAIService;
             _configuration = config;
+            _hubContext = hubContext;
         }
 
         [HttpGet("enabled")]

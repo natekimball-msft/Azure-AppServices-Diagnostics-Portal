@@ -23,7 +23,8 @@ export interface ChatCompletionModel {
 // This is done to be compatible with both gpt-3 and gpt-4 api responses.
 export interface ChatResponse {
     text: string,
-    truncated: boolean
+    truncated: boolean,
+    finishReason: string
 }
 
 export enum TextModels {
@@ -75,12 +76,13 @@ export function CreateTextCompletionModel(text: string, model: TextModels = Text
 }
 
 // used for GPT4
-export function CreateChatCompletionModel(chatMessages: any[], chatIdentifier: string, chatModel: ChatModel = ChatModel.GPT4, responseSize: ResponseTokensSize = ResponseTokensSize.Small): ChatCompletionModel {
+export function CreateChatCompletionModel(chatMessages: any[], messageId: string, chatIdentifier: string, chatModel: ChatModel = ChatModel.GPT4, responseSize: ResponseTokensSize = ResponseTokensSize.Small): ChatCompletionModel {
     return {
         metadata : {
             "chatIdentifier": chatIdentifier,
             "chatModel": chatModel,
-            "maxTokens": responseSize
+            "maxTokens": responseSize,
+            "messageId": messageId
         },
         messages: chatMessages
     };
