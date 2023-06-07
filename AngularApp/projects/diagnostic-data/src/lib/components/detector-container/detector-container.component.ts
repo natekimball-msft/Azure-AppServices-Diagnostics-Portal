@@ -84,7 +84,14 @@ export class DetectorContainerComponent implements OnInit {
   isUserConsentRequired: boolean = false;  
   alertDialogStyles = { main: { maxWidth: "70vw!important", minWidth: "40vw!important" } };
   alertDialogProps = {isBlocking: true};
-  alertInfo: AlertInfo = null;
+  alertInfo: AlertInfo = {
+    header: "",
+    details: "",
+    seekConfirmation: true,
+    confirmationOptions: [{ label: 'Yes, I consent', value: 'yes' }, { label: 'No, I do not consent', value: 'no' }],
+    alertStatus: HealthStatus.Warning,
+    userAccessStatus: UserAccessStatus.HasAccess
+  };;
 
 
   constructor(private _route: ActivatedRoute, private _diagnosticService: DiagnosticService,
