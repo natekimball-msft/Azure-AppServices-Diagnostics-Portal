@@ -113,6 +113,7 @@ export class DashboardComponent implements OnDestroy {
   crossSubJustification: string = '';
   defaultResourceTypes = defaultResourceTypes;
   isPPE: boolean = false;
+  detectorCopilotEnabled: boolean = false;
 
   constructor(public resourceService: ResourceService, private startupService: StartupService, private _detectorControlService: DetectorControlService,
     private _router: Router, private _activatedRoute: ActivatedRoute, private _navigator: FeatureNavigationService,
@@ -413,6 +414,10 @@ export class DashboardComponent implements OnDestroy {
         // restore the old size
         this.getContainerStyle();
       }
+    });
+
+    this._diagnosticApiService.get<boolean>('api/openai/detectorcopilot/enabled').subscribe(res => {
+      this.detectorCopilotEnabled = res;
     });
   }
 
