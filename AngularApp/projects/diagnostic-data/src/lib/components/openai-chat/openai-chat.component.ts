@@ -118,7 +118,10 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
             this._chatContextService.chatInputBoxDisabled = !result;
           });
         }
-        
+        else {
+          this._chatContextService.chatInputBoxDisabled = false;
+        }
+
         this._telemetryService.logEvent("OpenAIChatComponentLoaded", { "chatIdentifier": this.chatIdentifier, ts: new Date().getTime().toString() });
       }
       this.isEnabledChecked = true;
