@@ -984,6 +984,10 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
 
   showUpdateDetectorReferencesDialog() {
     this.detectorReferencesDialogHidden = false;
+    this._telemetryService.logEvent(TelemetryEventNames.SuperGistUpdateDetectorReferencesButtonClicked, {
+      ResourceID: this.resourceId,
+      ID: this.id,
+    });
   }
 
 
@@ -1757,7 +1761,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
     this.disableRunButton();
     this.disablePublishButton();
     this.modalPublishingButtonDisabled = true;
-    this.modalPublishingButtonText = this.detectorGraduation ? "Sending PR" : "Publishing";
+    this.modalPublishingButtonText = this.detectorGraduation && !this.useAutoMergeText ? "Sending PR" : "Publishing";
     var isOriginalCodeMarkedPublic: boolean = this.IsDetectorMarkedPublic(this.originalCode);
 
     if (this.detectorGraduation) {
@@ -1771,7 +1775,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         this.enableRunButton();
         this.localDevButtonDisabled = false;
         this.enablePublishButton();
-        this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
+        this.modalPublishingButtonText = this.detectorGraduation && !this.useAutoMergeText ? "Create PR" : "Publish";
         this.ngxSmartModalService.getModal('publishModal').close();
         this.detectorName = this.publishingPackage.id;
         this.publishSuccess = true;
@@ -1780,7 +1784,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
         this.enableRunButton();
         this.localDevButtonDisabled = false;
         this.enablePublishButton();
-        this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
+        this.modalPublishingButtonText = this.detectorGraduation && !this.useAutoMergeText ? "Create PR" : "Publish";
         this.ngxSmartModalService.getModal('publishModal').close();
         this.showAlertBox('alert-danger', 'Publishing failed. Please try again after some time.');
         this.publishFailed = true;
@@ -2074,7 +2078,7 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
   }
 
   postPublish() {
-    this.modalPublishingButtonText = this.detectorGraduation ? "Create PR" : "Publish";
+    this.modalPublishingButtonText = this.detectorGraduation && !this.useAutoMergeText ? "Create PR" : "Publish";
     this.getBranchList();
     this.enablePublishButton();
     this.enableRunButton();

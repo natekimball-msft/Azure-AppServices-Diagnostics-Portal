@@ -330,7 +330,8 @@ import { FabDialogModule } from '@angular-react/fabric/lib/components/dialog';
         OpenaiComponent,
         ChatUIComponent,
         OpenAIChatComponent,
-        OpenAIGenieComponent
+        OpenAIGenieComponent,
+        DateTimePickerComponent
     ]
 })
 export class DiagnosticDataModule {
