@@ -26,9 +26,9 @@ namespace AppLensV3.Services
 
     public interface IOpenAIService : IDisposable
     {
-        Task<HttpResponseMessage> RunTextCompletion(CompletionModel requestBody, bool cacheEnabledOnRequest);
+        Task<ChatResponse> RunTextCompletion(CompletionModel requestBody, bool cacheEnabledOnRequest);
 
-        Task<dynamic> RunChatCompletion(List<ChatMessage> chatMessages, ChatMetaData metadata);
+        Task<ChatResponse> RunChatCompletion(List<ChatMessage> chatMessages, ChatMetaData metadata);
 
         Task StreamChatCompletion(List<ChatMessage> chatMessages, ChatMetaData metadata, Func<ChatStreamResponse, Task> onMessageStreamAsyncCallback, CancellationToken cancellationToken = default);
 
@@ -39,11 +39,11 @@ namespace AppLensV3.Services
     {
         public bool IsEnabled() { return false; }
 
-        public async Task<HttpResponseMessage> RunTextCompletion(CompletionModel requestBody, bool cacheEnabledOnRequest) { return null; }
+        public async Task<ChatResponse> RunTextCompletion(CompletionModel requestBody, bool cacheEnabledOnRequest) { return null; }
 
         public void Dispose() { }
 
-        public Task<dynamic> RunChatCompletion(List<ChatMessage> chatMessages, ChatMetaData metadata)
+        public Task<ChatResponse> RunChatCompletion(List<ChatMessage> chatMessages, ChatMetaData metadata)
         {
             return null;
         }
@@ -54,33 +54,17 @@ namespace AppLensV3.Services
         }
     }
 
-    public enum ChatModes
-    {
-        ChatCompletion,
-        StreamChatCompletion
-    }
-
     public class OpenAIChainResponse
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the intermediate response should be used again to call OpenAI or terminate and return the response.
+        /// Gets or sets a value that should be returned back to the client in case of a short circuit is desired, must be null otherwise.
         /// </summary>
-        public bool ShortCircuit { get; set; } = false;
+        public ChatResponse ChatResponseToUseInShortCircuit { get; set; } = null;
 
         /// <summary>
         /// Gets or sets a value indicating the reason why the response should be short circuited. Optional.
         /// </summary>
         public string ShortCircuitReason { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets a value that should be returned back to the client in case of a short circuited processing while using ChatCompletion. Optional.
-        /// </summary>
-        public Response<ChatCompletions> ChatCompletionResponseToUseInShortCircuit { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value that should be returned back to the client in case of a short circuited processing while using StreamCompletion. Optional.
-        /// </summary>
-        public string ChatStreamResponseMessage { get; set; } = null;
 
         /// <summary>
         /// Gets or sets a value that will be used to make a call to OpenAI service as a part of chaining operation.
@@ -109,7 +93,7 @@ namespace AppLensV3.Services
 
         // Delegate gets chatCompletionOptions which will have the corresponding template file and past user messages already loaded.
         // It also gets the chatMessages and the chatMetaData in case the custom logic needs to prepare its independent set of messages.
-        private delegate Task<OpenAIChainResponse> ChatCompletionCustomHandler(List<ChatMessage> chatMessages, ChatMetaData metadata, ChatCompletionsOptions chatCompletionsOptions, ChatModes clientChatMode, ILogger<OpenAIService> logger);
+        private delegate Task<OpenAIChainResponse> ChatCompletionCustomHandler(List<ChatMessage> chatMessages, ChatMetaData metadata, ChatCompletionsOptions chatCompletionsOptions, ILogger<OpenAIService> logger);
 
         public OpenAIService(IConfiguration config, IOpenAIRedisService redisService, ILogger<OpenAIService> logger)
         {
@@ -154,7 +138,7 @@ namespace AppLensV3.Services
             return await redisCache.SetKey(key, value);
         }
 
-        public async Task<HttpResponseMessage> RunTextCompletion(CompletionModel requestBody, bool cacheEnabledOnRequest)
+        public async Task<ChatResponse> RunTextCompletion(CompletionModel requestBody, bool cacheEnabledOnRequest)
         {
             var cacheKey = JsonConvert.SerializeObject(requestBody);
             if (cacheEnabledOnRequest)
@@ -162,41 +146,44 @@ namespace AppLensV3.Services
                 var getFromCache = await GetFromRedisCache(cacheKey);
                 if (!string.IsNullOrEmpty(getFromCache))
                 {
-                    return new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.OK,
-                        Content = new StringContent(getFromCache)
-                    };
+                    return JsonConvert.DeserializeObject<ChatResponse>(getFromCache);
                 }
             }
+
             try
             {
                 var endpoint = $"{openAIEndpoint}{openAIGPT3APIUrl}";
                 var requestMessage = new HttpRequestMessage(HttpMethod.Post, endpoint);
                 requestMessage.Content = new StringContent(JsonConvert.SerializeObject(requestBody.Payload), Encoding.UTF8, "application/json");
                 var response = await httpClient.SendAsync(requestMessage);
-                if (cacheEnabledOnRequest)
+                if (response.IsSuccessStatusCode)
                 {
-                    try
+                    var content = await response.Content.ReadAsStringAsync();
+                    OpenAIAPIResponse openAIApiResponse = JsonConvert.DeserializeObject<OpenAIAPIResponse>(content);
+                    ChatResponse responseToReturn = new ChatResponse(openAIApiResponse);
+                    if (cacheEnabledOnRequest)
                     {
-                        if (response.IsSuccessStatusCode)
+                        try
                         {
-                            var content = await response.Content.ReadAsStringAsync();
-                            if (!string.IsNullOrWhiteSpace(content))
+                            if (!string.IsNullOrWhiteSpace(responseToReturn.Text))
                             {
-                                var saveStatus = await SaveToRedisCache(cacheKey, content);
+                                var saveStatus = await SaveToRedisCache(cacheKey, JsonConvert.SerializeObject(responseToReturn));
                                 logger.LogInformation($"Status of OpenAISaveToRedisCache: {saveStatus}");
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            // No big deal if save to cache fails, log and succeed the request
+                            logger.LogWarning($"Failed to save OpenAI response to Redis Cache: {ex}");
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        // No big deal if save to cache fails, log and succeed the request
-                        logger.LogWarning($"Failed to save OpenAI response to Redis Cache: {ex}");
-                    }
-                }
 
-                return response;
+                    return responseToReturn;
+                }
+                else
+                {
+                    throw new HttpRequestException(message: await response.Content.ReadAsStringAsync(), inner: null, statusCode: response.StatusCode);
+                }
             }
             catch (Exception ex)
             {
@@ -205,7 +192,7 @@ namespace AppLensV3.Services
             }
         }
 
-        public async Task<dynamic> RunChatCompletion(List<ChatMessage> chatMessages, ChatMetaData metadata)
+        public async Task<ChatResponse> RunChatCompletion(List<ChatMessage> chatMessages, ChatMetaData metadata)
         {
             if (chatMessages == null || chatMessages.Count == 0)
             {
@@ -219,19 +206,19 @@ namespace AppLensV3.Services
 
             if (!string.IsNullOrWhiteSpace(metadata.ChatIdentifier) && customHandlerForChatCompletion.TryGetValue(metadata.ChatIdentifier, out ChatCompletionCustomHandler customHandler))
             {
-                chainResponse = await customHandler.Invoke(chatMessages, metadata, chatCompletionsOptions, ChatModes.ChatCompletion, logger);
+                chainResponse = await customHandler.Invoke(chatMessages, metadata, chatCompletionsOptions, logger);
             }
 
-            if (chainResponse?.ShortCircuit == true)
+            if (chainResponse?.ChatResponseToUseInShortCircuit != null)
             {
-                response = chainResponse.ChatCompletionResponseToUseInShortCircuit;
+                return chainResponse.ChatResponseToUseInShortCircuit;
             }
             else
             {
                 response = await openAIClient.GetChatCompletionsAsync(openAIGPT4Model, chainResponse?.ChatCompletionsOptionsToUseInChain ?? chatCompletionsOptions);
             }
 
-            return response.Value;
+            return new ChatResponse(response);
         }
 
         /// <inheritdoc/>
@@ -248,18 +235,18 @@ namespace AppLensV3.Services
             OpenAIChainResponse chainResponse = null;
             if (!string.IsNullOrWhiteSpace(metadata.ChatIdentifier) && customHandlerForChatCompletion.TryGetValue(metadata.ChatIdentifier, out ChatCompletionCustomHandler customHandler))
             {
-                chainResponse = await customHandler.Invoke(chatMessages, metadata, chatCompletionsOptions, ChatModes.StreamChatCompletion, logger);
+                chainResponse = await customHandler.Invoke(chatMessages, metadata, chatCompletionsOptions, logger);
             }
 
             chatCompletionsOptions.MaxTokens = MaxTokensAllowedForStreaming;
 
-            if (chainResponse?.ShortCircuit == true)
+            if (chainResponse?.ChatResponseToUseInShortCircuit != null)
             {
                 if (onMessageStreamAsyncCallback != default)
                 {
-                    if (!string.IsNullOrWhiteSpace(chainResponse.ChatStreamResponseMessage))
+                    if (!string.IsNullOrWhiteSpace(chainResponse.ChatResponseToUseInShortCircuit.Text))
                     {
-                        await onMessageStreamAsyncCallback(new ChatStreamResponse(content: chainResponse.ChatStreamResponseMessage));
+                        await onMessageStreamAsyncCallback(new ChatStreamResponse(content: chainResponse.ChatResponseToUseInShortCircuit.Text));
                     }
 
                     await onMessageStreamAsyncCallback(new ChatStreamResponse(finishReason: "stop"));
@@ -345,7 +332,7 @@ namespace AppLensV3.Services
         }
 
         #region Delegate implementation for custom chat completion handlers
-        private async Task<OpenAIChainResponse> HandleAnalyticsKustoCopilot(List<ChatMessage> chatMessages, ChatMetaData metadata, ChatCompletionsOptions chatCompletionsOptions, ChatModes clientChatMode, ILogger<OpenAIService> logger)
+        private async Task<OpenAIChainResponse> HandleAnalyticsKustoCopilot(List<ChatMessage> chatMessages, ChatMetaData metadata, ChatCompletionsOptions chatCompletionsOptions, ILogger<OpenAIService> logger)
         {
             try
             {
@@ -362,7 +349,19 @@ namespace AppLensV3.Services
                 tempChatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, chainingQuestion));
 
                 Response<ChatCompletions> intermediateResponse = await openAIClient.GetChatCompletionsAsync(openAIGPT4Model, tempChatCompletionsOptions);
-                string tableNamesCSV = intermediateResponse.Value.Choices[0].Message.Content;
+
+                string tableNamesCSV = intermediateResponse?.Value?.Choices?.Count > 0 && !string.IsNullOrWhiteSpace(intermediateResponse.Value.Choices[0]?.Message?.Content) 
+                    ? intermediateResponse.Value.Choices[0].Message.Content : string.Empty;
+
+                if (tableNamesCSV.Equals(string.Empty))
+                {
+                    return new OpenAIChainResponse()
+                    {
+                        ShortCircuitReason = "Unable to identify tables necessary to construct the query",
+                        ChatResponseToUseInShortCircuit = new ChatResponse("Sorry, I could not identify the related tables. Please help me learn, submit the expected query to Applens team."),
+                        ChatCompletionsOptionsToUseInChain = null
+                    };
+                }
 
                 StringBuilder secondQuestion = new StringBuilder();
                 foreach (string tableName in tableNamesCSV.Split(","))
@@ -406,17 +405,10 @@ namespace AppLensV3.Services
                     // We could not identify the table or the attempted question does not adhere to the rules set for the copilot. Terminate processing and return a response.
                     OpenAIChainResponse returnResponse = new OpenAIChainResponse()
                     {
-                        ShortCircuit = true,
                         ShortCircuitReason = "Unable to identify tables necessary to construct the query",
+                        ChatResponseToUseInShortCircuit = new ChatResponse(tableNamesCSV),
+                        ChatCompletionsOptionsToUseInChain = null
                     };
-                    if (clientChatMode == ChatModes.StreamChatCompletion)
-                    {
-                        returnResponse.ChatStreamResponseMessage = intermediateResponse.Value.Choices[0].Message.Content;
-                    }
-                    else
-                    {
-                        returnResponse.ChatCompletionResponseToUseInShortCircuit = intermediateResponse;
-                    }
 
                     return returnResponse;
                 }
@@ -429,7 +421,7 @@ namespace AppLensV3.Services
                 chatCompletionsOptions.Messages.Add(new ChatMessage(ChatRole.User, secondQuestion.ToString()));
                 return new OpenAIChainResponse()
                 {
-                    ShortCircuit = false,
+                    ChatResponseToUseInShortCircuit = null,
                     ChatCompletionsOptionsToUseInChain = chatCompletionsOptions
                 };
             }

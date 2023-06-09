@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Azure.AI.OpenAI;
 using SendGrid.Helpers.Mail;
+using System.Collections.Generic;
 
 namespace AppLensV3.Models
 {
@@ -58,6 +59,12 @@ namespace AppLensV3.Models
         /// </summary>
         public string FinishReason { get; set; } = string.Empty;
 
+        public ChatResponse(string chatResponse)
+        {
+            Text = chatResponse ?? string.Empty;
+            FinishReason = "stop";
+        }
+
         public ChatResponse(string chatResponse, string finishReason)
         {
             Text = chatResponse ?? string.Empty;
@@ -72,5 +79,47 @@ namespace AppLensV3.Models
                 FinishReason = chatCompletionResponse.Value.Choices[0].FinishReason ?? string.Empty;
             }
         }
+
+        public ChatResponse(OpenAIAPIResponse textCompletionResponse)
+        {
+            if (textCompletionResponse?.Choices.Count > 0)
+            {
+                Text = textCompletionResponse.Choices[0].Text ?? string.Empty;
+                FinishReason = textCompletionResponse.Choices[0].Finish_Reason ?? string.Empty;
+            }
+        }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChatResponse"/> class.
+        /// </summary>
+        public ChatResponse()
+        {
+        }
+    }
+
+    public class OpenAIAPIResponse
+    {
+        public string Id { get; set; }
+        public string Object { get; set; }
+        public int Created { get; set; }
+        public string Model { get; set; }
+        public List<OpenAIResponseText> Choices { get;set; }
+        public OpenAIResponseUsage Usage { get; set; }
+    }
+
+    public class OpenAIResponseText
+    {
+        public string Text { get; set; }
+        public int Index { get; set; }
+        public string Logprobs { get; set; }
+        public string Finish_Reason { get; set; }
+    }
+
+    public class OpenAIResponseUsage
+    {
+        public int Prompt_Tokens { get; set; }
+        public int Completion_Tokens { get; set; }
+        public int Total_Tokens { get; set; }
     }
 }
