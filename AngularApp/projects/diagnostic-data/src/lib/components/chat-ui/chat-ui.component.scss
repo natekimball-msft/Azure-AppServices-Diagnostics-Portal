@@ -18,6 +18,14 @@
   padding: 14px;
 }
 
+.chatui-copy-button {
+  opacity: 0.8;
+  padding:10px;
+  cursor:pointer;
+}:hover {
+  opacity: 1;
+}
+
 .fade-in {
   opacity: 0;
   /* make the element invisible */
