@@ -168,7 +168,6 @@ export class ApplensOpenAIChatService {
 
           // Message is completed. Reset the observable
           if (messageJson.FinishReason != '') {
-            console.log(`${(new Date()).toString()} : Message Finish Reason Set : ${messageJson.FinishReason}. Resetting onMessageReceiveObservable`);
             this.resetOnMessageReceiveObservable();
           }
         }

@@ -120,9 +120,13 @@ export class DynamicAnalysisComponent implements OnInit, AfterViewInit, IChatMes
         if (insightsToUse && insightsToUse.length > 0) {
             let numInsights = insightsToUse.length;
             // Take maximum 4 insights
-            numInsights = numInsights > 4 ? 4 : numInsights;
+            numInsights = numInsights > 5 ? 5 : numInsights;
             let maxLengthEach = Math.floor(1000/numInsights);
-            return insightsToUse.slice(0, numInsights).map((insight) => { return insight.insightDescription? insight.insightTitle + "\n" + insight.insightDescription.substring(0, maxLengthEach): insight.insightTitle;}).join("\n");
+            return insightsToUse.slice(0, numInsights).map((insight) => { 
+                return insight.insightDescription && insight.insightDescription.length > 0
+                ? `Diagnostic Check: ${insight.model.metadata.name}\nFinding: ${insight.insightTitle}\nDescription: ${insight.insightDescription.substring(0, maxLengthEach)}`
+                : `Diagnostic Check: ${insight.model.metadata.name}\nFinding: ${insight.insightTitle}`;
+            }).join("\n\n");
         }
         else {
             return "";

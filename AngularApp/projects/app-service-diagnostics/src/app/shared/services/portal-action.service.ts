@@ -9,7 +9,6 @@ import { ArmService } from './arm.service';
 import { AuthService } from '../../startup/services/auth.service';
 import { mergeMap, filter } from 'rxjs/operators';
 import { DetectorType, OptInsightsResource, OptInsightsTimeContext } from 'diagnostic-data';
-import { VersionTestService } from '../../fabric-ui/version-test.service';
 import { Globals } from '../../globals';
 
 @Injectable()
@@ -17,11 +16,9 @@ export class PortalActionService {
     public apiVersion = '2016-08-01';
 
     public currentSite: ResponseMessageEnvelope<Site>;
-    private isLegacy:boolean;
     private resourceId: string;
     constructor(private _windowService: WindowService, private _portalService: PortalService, private _armService: ArmService,
-        private _authService: AuthService,private _versionTestService:VersionTestService, private globals: Globals,) {
-        this._versionTestService.isLegacySub.subscribe(isLegacy => this.isLegacy = isLegacy);
+        private _authService: AuthService, private globals: Globals,) {
         this._authService.getStartupInfo().pipe(
             mergeMap((startUpInfo: StartupInfo) => {
                 this.resourceId = startUpInfo && startUpInfo.resourceId ? startUpInfo.resourceId : "";
@@ -115,10 +112,9 @@ export class PortalActionService {
         this._portalService.updateBladeInfo(bladeInfo, 'updateBlade');
     }
 
-    //Need remove after A/B test
     public openBladeScaleUpBlade() {
         const bladeInfo = {
-            detailBlade: this.isLegacy ? 'scaleup' :'SciFrameBlade',
+            detailBlade: 'SciFrameBlade',
             detailBladeInputs: {}
         };
         this._portalService.postMessage(Verbs.openScaleUpBlade, JSON.stringify(bladeInfo));
@@ -175,7 +171,7 @@ export class PortalActionService {
                     LinkedApplicationType: appInsightsResourceUri.LinkedApplicationType,
                     ResourceId: appInsightsResourceUri.ResourceId,
                     ResourceType: appInsightsResourceUri.ResourceType,
-                    IsAzureFirst: appInsightsResourceUri.IsAzureFirst
+                    IsAzureFirst: appInsightsResourceUri.IsAzureFirst,
                 },
                 OpenedFrom: 'app-service-diagnose-and-solve-problems'
             }
@@ -184,7 +180,7 @@ export class PortalActionService {
         this._portalService.openBlade(bladeInfo, 'troubleshoot');
     }
 
-    public openOptInsightsBladewithTimeRange(appInsightsResourceUri: OptInsightsResource, optInsightsTimeContext: OptInsightsTimeContext) {
+    public openOptInsightsBladewithTimeRange(appInsightsResourceUri: OptInsightsResource, optInsightsTimeContext: OptInsightsTimeContext, SiteName: string) {
         const bladeInfo = {
             detailBlade: 'ServiceProfilerPerflensBlade',
             extension: 'AppInsightsExtension',
@@ -204,8 +200,9 @@ export class PortalActionService {
                     createdTime: optInsightsTimeContext.createdTime,
                     isInitialTime: optInsightsTimeContext.isInitialTime,
                     grain: optInsightsTimeContext.grain,
-                    useDashboardTimeRange: optInsightsTimeContext.useDashboardTimeRange
+                    useDashboardTimeRange: optInsightsTimeContext.useDashboardTimeRange,            
                 },
+                RoleName: SiteName,
                 OpenedFrom: 'app-service-diagnose-and-solve-problems'
             }
         };
