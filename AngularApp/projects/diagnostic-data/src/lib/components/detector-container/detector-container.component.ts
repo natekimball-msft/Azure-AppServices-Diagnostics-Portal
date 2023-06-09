@@ -227,8 +227,10 @@ export class DetectorContainerComponent implements OnInit {
         let errorObj = JSON.parse(error.error);
         if (error.status == 403 && error.url.includes("api/invoke") && errorObj.Status == UserAccessStatus.ConsentRequired) {
           this.handleForbidden(errorObj);
-        }       
-        this.error = error;
+          this.setEmptyDetectorResponse();
+        } else {         
+           this.error = error;
+        }
       });
     }
   }
@@ -300,5 +302,15 @@ export class DetectorContainerComponent implements OnInit {
   }
   consentDialogCancel() {
     this.isUserConsentRequired = false;
+  }
+
+  setEmptyDetectorResponse() {
+    this.detectorResponse = {
+      dataset: [],
+      metadata: null,
+      status: null,
+      dataProvidersMetadata: null,
+      suggestedUtterances: null
+    }
   }
 }
