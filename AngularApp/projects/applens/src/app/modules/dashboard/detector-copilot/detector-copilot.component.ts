@@ -55,7 +55,6 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
       }
     });
 
-
     this.log('OnInit', 'initialization complete');
   }
 
