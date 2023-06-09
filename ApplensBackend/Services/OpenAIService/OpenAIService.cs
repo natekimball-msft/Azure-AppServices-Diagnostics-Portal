@@ -219,7 +219,7 @@ namespace AppLensV3.Services
 
             if (!string.IsNullOrWhiteSpace(metadata.ChatIdentifier) && customHandlerForChatCompletion.TryGetValue(metadata.ChatIdentifier, out ChatCompletionCustomHandler customHandler))
             {
-                chainResponse = await customHandler.Invoke(chatMessages, metadata, chatCompletionsOptions, ChatModes.ChatCompletion);
+                chainResponse = await customHandler.Invoke(chatMessages, metadata, chatCompletionsOptions, ChatModes.ChatCompletion, logger);
             }
 
             if (chainResponse?.ShortCircuit == true)
@@ -248,7 +248,7 @@ namespace AppLensV3.Services
             OpenAIChainResponse chainResponse = null;
             if (!string.IsNullOrWhiteSpace(metadata.ChatIdentifier) && customHandlerForChatCompletion.TryGetValue(metadata.ChatIdentifier, out ChatCompletionCustomHandler customHandler))
             {
-                chainResponse = await customHandler.Invoke(chatMessages, metadata, chatCompletionsOptions, ChatModes.StreamChatCompletion);
+                chainResponse = await customHandler.Invoke(chatMessages, metadata, chatCompletionsOptions, ChatModes.StreamChatCompletion, logger);
             }
 
             chatCompletionsOptions.MaxTokens = MaxTokensAllowedForStreaming;
