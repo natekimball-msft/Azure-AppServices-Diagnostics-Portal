@@ -224,7 +224,13 @@ export class DetectorContainerComponent implements OnInit {
         this.shouldHideTimePicker(response);
         this.detectorResponse = response;
       }, (error: any) => {
-        this.error = error;
+        let errorObj = JSON.parse(error.error);
+        if (error.status == 403 && error.url.includes("api/invoke") && errorObj.Status == UserAccessStatus.ConsentRequired) {
+          this.handleForbidden(errorObj);
+          this.setEmptyDetectorResponse();
+        } else {         
+           this.error = error;
+        }
       });
     }
   }
@@ -260,6 +266,51 @@ export class DetectorContainerComponent implements OnInit {
       this.router.navigate([], {
         queryParams: queryParams
       });
+    }
+  }
+
+  handleForbidden(errorObj:any) {
+    this.isUserConsentRequired = true;
+    let message = errorObj.DetailText;
+    let userAccessStatus =  errorObj.Status;
+    message = message.trim();
+    if (message) {
+      if (message[message.length - 1] == '.') {
+        message = message.substring(0, message.length - 1);
+      }
+    }
+    this.alertInfo = {
+      header: "Do you accept the risks?",
+      details: `${message}. If you choose to proceed, we will be logging it for audit purposes.`,
+      seekConfirmation: true,
+      confirmationOptions: [{ label: 'Yes, I consent', value: 'yes' }, { label: 'No, I do not consent', value: 'no' }],
+      alertStatus: HealthStatus.Warning,
+      userAccessStatus: userAccessStatus
+    };
+  }
+
+  handleUserResponse(userResponse: ConfirmationOption) {
+    if (userResponse.value === 'yes') {
+      this.isUserConsentRequired = false;
+      let additionalHeaders = new Map<string, string>();
+      additionalHeaders.set("x-ms-diag-consent", "true");
+      this.refresh(true, additionalHeaders );
+    }
+    else if (userResponse.value == 'no') {
+      this.consentDialogCancel();
+    }
+  }
+  consentDialogCancel() {
+    this.isUserConsentRequired = false;
+  }
+
+  setEmptyDetectorResponse() {
+    this.detectorResponse = {
+      dataset: [],
+      metadata: null,
+      status: null,
+      dataProvidersMetadata: null,
+      suggestedUtterances: null
     }
   }
 }
