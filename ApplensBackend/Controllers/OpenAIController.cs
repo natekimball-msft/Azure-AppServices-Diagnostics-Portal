@@ -148,6 +148,30 @@ namespace AppLensV3.Controllers
             }
         }
 
+        [HttpGet("kustocopilot/enabled")]
+        public async Task<IActionResult> IsKustoCopilotEnabled()
+        {
+            try
+            {
+                if (!bool.TryParse(_configuration["KustoCopilot:Enabled"], out bool isKustoCopilotEnabled))
+                {
+                    isKustoCopilotEnabled = false;
+                }
+
+                var userAlias = Utilities.GetUserIdFromToken(Request.Headers.Authorization).Split(new char[] { '@' }).FirstOrDefault();
+                var allowedUsers = _configuration["KustoCopilot:AllowedUserAliases"].Trim()
+                    .Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                isKustoCopilotEnabled &= allowedUsers.Length == 0 || allowedUsers.Any(p => p.Trim().ToLower().Equals(userAlias));
+
+                return Ok(isKustoCopilotEnabled);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"IsKustoCopilotEnabled() Failed. Exception : {ex}");
+                return Ok(false);
+            }
+        }
+
         private static string GetHeaderOrDefault(IHeaderDictionary headers, string headerName, string defaultValue = "")
         {
             if (headers == null || headerName == null)
