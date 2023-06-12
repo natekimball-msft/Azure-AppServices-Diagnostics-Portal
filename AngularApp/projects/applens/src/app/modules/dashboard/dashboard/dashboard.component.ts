@@ -113,6 +113,7 @@ export class DashboardComponent implements OnDestroy {
   crossSubJustification: string = '';
   defaultResourceTypes = defaultResourceTypes;
   isPPE:boolean = false;
+  displayResourceAlert: boolean = false;
 
   constructor(public resourceService: ResourceService, private startupService: StartupService,  private _detectorControlService: DetectorControlService,
     private _router: Router, private _activatedRoute: ActivatedRoute, private _navigator: FeatureNavigationService,
@@ -170,7 +171,8 @@ export class DashboardComponent implements OnDestroy {
 
     this._alertService.getAlert().subscribe((alert: AlertInfo) => {
       this.alertInfo = alert;
-      this.displayAlertDialog = true;
+      this.displayAlertDialog =  alert.alertStatus != 6;
+      this.displayResourceAlert = alert.alertStatus == 6;
       setTimeout(() => {
         var elem = document.getElementsByClassName('ms-Dialog-title')[0] as HTMLElement;
         if (elem) {
@@ -292,6 +294,10 @@ export class DashboardComponent implements OnDestroy {
     else {
       this.showGPTComponent = false;
     }
+  }
+
+  resourceAlertDialogCancel() {
+    this.displayResourceAlert = false;
   }
 
   ngOnInit() {

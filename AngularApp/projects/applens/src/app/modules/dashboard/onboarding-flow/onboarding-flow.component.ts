@@ -1520,11 +1520,11 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
                   element.exception.Message + "\r\n" +
                   element.exception.StackTraceString);
 
-                if (element.exception.ClassName == 'Diagnostics.DataProviders.AllowedResourceException' && element.exception.Message.includes("Visit")) {
-                  var curMessage = element.exception.Message.split(": ");
+                if (element.exception.ClassName == 'Diagnostics.DataProviders.AllowedResourceException') {
+                  var url = element.exception.Message;
                   this.detailedCompilationTraces.push({
                     severity: HealthStatus.Critical,
-                    message: curMessage[0] + ": <a href=" + curMessage[1] + " target=_blank>" + curMessage[1] + " </a>",
+                    message: `Visit this website to verify your access to the requested subscription: <a href= ${url} target=_blank> ${url} </a>`,
                     location: {
                       start: {
                         linePos: 0,
