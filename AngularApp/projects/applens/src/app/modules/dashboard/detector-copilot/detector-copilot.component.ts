@@ -257,7 +257,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
     debugInfo += `Browser: ${browserType}${newline}`;
     debugInfo += `Last User Message Id: ${this.lastMessageIdForFeedback}${newline}`;
     debugInfo += `Url: ${url}${newline}`;
-    
+
 
     body = `${body}${newline}${newline}${newline}${debugInfo}`;
     link = `mailto:detectorcopilotfeedb@microsoft.com?subject=${subject}&body=${body}`;
@@ -347,10 +347,10 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   private prepareCodeUpdateMessages = () => {
 
     this.http.get<any>(this.configFile).subscribe(res => {
-      this.codeProgressMessages = res && res.codeProgressMessages && res.codeProgressMessages.length > 0 ?
+      this.codeProgressMessages = res?.codeProgressMessages?.length > 0 ?
         res.codeProgressMessages : ['Please wait while I am updating your code'];
 
-      this.codeCompleteMessages = res && res.codeCompleteMessages && res.codeCompleteMessages.length > 0 ?
+      this.codeCompleteMessages = res?.codeCompleteMessages?.length > 0 ?
         res.codeCompleteMessages : ['code update completed'];
 
       this.codeProgressMessages = StringUtilities.shuffleArray<string>(this.codeProgressMessages);
