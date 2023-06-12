@@ -83,6 +83,9 @@ export class AppLensInterceptorService implements HttpInterceptor {
           // do not raise alert. Let us handle this in the detector container component.
           return next.handle(req);
         }
+        else if (error.status === 403 && errorObj.Status === 10) {
+          this.raiseResourceAlert(error);
+        }
         else if ((error.status === 401 || error.status === 403) && error.url.includes("api/invoke")) {
           if (errorObj.DetailText && errorObj.DetailText.includes("the token is expired")) {
             this._adalService.clearCache();
@@ -106,5 +109,30 @@ export class AppLensInterceptorService implements HttpInterceptor {
 
       return Observable.throw(error);
     }));
+  }
+
+  // pass in alertInfo instead of event so it's reusable
+  raiseResourceAlert(event) {
+    let errormsg = event.error;
+    errormsg = errormsg.replace(/\\"/g, '"');
+    errormsg = errormsg.replace(/\"/g, '"');
+    let errobj = JSON.parse(errormsg);
+    
+    let url = errobj.DetailText;
+    url = url.trim();
+    if (url) {
+      if (url[url.length - 1] == '.') {
+        url = url.substring(0, url.length - 1);
+      }
+    }
+
+    let alertInfo: AlertInfo = {
+      header: "Visit the following website to verify your access to the requested subscription.",
+      details: `<a href= ${url} target=_blank> ${url} </a>`,
+      seekConfirmation: false,
+      confirmationOptions: [{ label: 'Yes, proceed', value: 'yes' }, { label: 'No, take me back', value: 'no' }],
+      alertStatus: HealthStatus.ResourcePermission
+    };
+    this._alertService.sendAlert(alertInfo);
   }
 }

@@ -114,7 +114,8 @@ export class DashboardComponent implements OnDestroy {
   defaultResourceTypes = defaultResourceTypes;
   isPPE: boolean = false;
   detectorCopilotEnabled: boolean = false;
-  constructor(public resourceService: ResourceService, private startupService: StartupService, private _detectorControlService: DetectorControlService,
+  displayResourceAlert: boolean = false;
+  constructor(public resourceService: ResourceService, private startupService: StartupService,  private _detectorControlService: DetectorControlService,
     private _router: Router, private _activatedRoute: ActivatedRoute, private _navigator: FeatureNavigationService,
     private _diagnosticService: ApplensDiagnosticService, private _adalService: AdalService, public _searchService: SearchService, private _diagnosticApiService: DiagnosticApiService, private _observerService: ObserverService, public _applensGlobal: ApplensGlobal, private _startupService: StartupService, private _resourceService: ResourceService, private _breadcrumbService: BreadcrumbService, private _userSettingsService: UserSettingService, private _themeService: GenericThemeService,
     private _alertService: AlertService, private _telemetryService: TelemetryService, private _titleService: Title, private _chatContextService: ChatUIContextService, public _detectorCopilotService: DetectorCopilotService) {
@@ -179,7 +180,8 @@ export class DashboardComponent implements OnDestroy {
 
     this._alertService.getAlert().subscribe((alert: AlertInfo) => {
       this.alertInfo = alert;
-      this.displayAlertDialog = true;
+      this.displayAlertDialog =  alert.alertStatus != 6;
+      this.displayResourceAlert = alert.alertStatus == 6;
       setTimeout(() => {
         var elem = document.getElementsByClassName('ms-Dialog-title')[0] as HTMLElement;
         if (elem) {
@@ -306,6 +308,10 @@ export class DashboardComponent implements OnDestroy {
     else {
       this.showGPTComponent = false;
     }
+  }
+
+  resourceAlertDialogCancel() {
+    this.displayResourceAlert = false;
   }
 
   ngOnInit() {
