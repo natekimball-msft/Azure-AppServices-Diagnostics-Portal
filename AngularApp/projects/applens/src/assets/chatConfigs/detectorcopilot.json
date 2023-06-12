@@ -13,8 +13,8 @@
             "value": "Add a sample table to the detector"
         },
         {
-            "key": "Detector with a sample kusto query",
-            "value": "Write a crashes detector with a kusto query : TableName | take 10"
+            "key": "Write a heartbeat detector with a kusto query",
+            "value": "Write a heartbeat detector that contains a insight and a line chart. The kusto query is RoleInstanceHeartbeat | where PreciseTimeStamp >= datetime(2023-05-10 00:10:00) and PreciseTimeStamp <= datetime(2023-05-11 00:10:00) | summarize count() by bin(PreciseTimeStamp, 5m);"
         },
         {
             "key": "Add logging to my detector",

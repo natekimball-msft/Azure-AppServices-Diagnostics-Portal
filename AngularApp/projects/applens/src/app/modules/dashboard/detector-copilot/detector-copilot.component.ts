@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import { DetectorCopilotService } from '../services/detector-copilot.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'projects/applens/src/environments/environment';
+import { PortalUtils } from '../../../shared/utilities/portal-util';
 
 @Component({
   selector: 'detector-copilot',
@@ -32,6 +33,8 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   private codeProgressMsgIndex: number = 0;
   private codeCompleteMsgIndex: number = 0;
 
+  private lastMessageIdForFeedback: string = '';
+
   constructor(public _chatContextService: ChatUIContextService, public _copilotService: DetectorCopilotService, private telemetryService: TelemetryService, private http: HttpClient) {
   }
 
@@ -51,7 +54,6 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
         }, 1000);
       }
     });
-
 
     this.log('OnInit', 'initialization complete');
   }
@@ -83,6 +85,8 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
     // To be safe, we will disable the editor and it will get reenabled as soon as first non code response is received.
     this._copilotService.onCodeOperationProgressState.next({ inProgress: true });
 
+    this.log('OnMessageSent', `${messageObj.displayMessage}, id: ${messageObj.id}`);
+    this.lastMessageIdForFeedback = messageObj.id;
     return messageObj;
   }
 
@@ -154,12 +158,10 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
         if (isMessageContainsCode) {
 
           if (messageObj.displayMessage != undefined && messageObj.displayMessage != '') {
-            //append code complete message to existing message string.
             displayMsg = `${messageObj.displayMessage}\n...\n${this.codeCompleteMessages[this.codeCompleteMsgIndex]}`;
 
           }
           else {
-            // message was completed in one go. There is no previous message string. Assign a code complete message.
             displayMsg = `${this.codeCompleteMessages[this.codeCompleteMsgIndex]}`;
           }
 
@@ -201,8 +203,6 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
     let lastMessage: ChatMessage = this._chatContextService.messageStore[this._copilotService.chatComponentIdentifier].at(-1);
     if (lastMessage.messageSource == MessageSource.System && lastMessage.status == MessageStatus.InProgress) {
       let lastLine = lastMessage.message.split('\n').slice(-1);
-      let messageContainsCode = this._copilotService.isMessageContainsCode(lastMessage.message);
-      let linesOfCode = this.codeUsedInPrompt && this.codeUsedInPrompt != '' ? this.codeUsedInPrompt.split("\n").length : 0;
 
       var artificialUserMsg = `Finish the previous message fully and preserve white spaces. Make sure you start the new message with characters right after where the above message ended at '${lastLine}'. Only tell me the remaining message and not the previous message again.`;
 
@@ -238,6 +238,30 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.stopMessageGeneration = false;
     }, 1000);
+  }
+
+  //#endregion
+
+  //#region Settings : Feedback option
+
+  sendFeedback = () => {
+
+    let newline = '%0D%0A';
+    const subject = encodeURIComponent(`Detector Copilot Feedback`);
+    let body = encodeURIComponent('Please provide feedback here:');
+    let link = "";
+
+    var browserType = PortalUtils.getBrowserType();
+    var url = window.location.href;
+    let debugInfo = `${newline}============ Debug Info ============${newline}`;
+    debugInfo += `Browser: ${browserType}${newline}`;
+    debugInfo += `Last User Message Id: ${this.lastMessageIdForFeedback}${newline}`;
+    debugInfo += `Url: ${url}${newline}`;
+
+
+    body = `${body}${newline}${newline}${newline}${debugInfo}`;
+    link = `mailto:detectorcopilotfeedb@microsoft.com?subject=${subject}&body=${body}`;
+    window.open(link);
   }
 
   //#endregion
@@ -323,10 +347,10 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   private prepareCodeUpdateMessages = () => {
 
     this.http.get<any>(this.configFile).subscribe(res => {
-      this.codeProgressMessages = res && res.codeProgressMessages && res.codeProgressMessages.length > 0 ?
+      this.codeProgressMessages = res?.codeProgressMessages?.length > 0 ?
         res.codeProgressMessages : ['Please wait while I am updating your code'];
 
-      this.codeCompleteMessages = res && res.codeCompleteMessages && res.codeCompleteMessages.length > 0 ?
+      this.codeCompleteMessages = res?.codeCompleteMessages?.length > 0 ?
         res.codeCompleteMessages : ['code update completed'];
 
       this.codeProgressMessages = StringUtilities.shuffleArray<string>(this.codeProgressMessages);

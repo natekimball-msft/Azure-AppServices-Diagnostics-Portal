@@ -20,6 +20,10 @@
       [disabled]="_copilotService.operationInProgress || _copilotService.codeHistory.length <= 0"
       (click)="_copilotService.clearCodeHistory()">
     </fab-command-bar-item>
+    <fab-command-bar-item key="feedback" text="Feedback"
+      [iconProps]="{ iconName: 'mail' }"
+      (click)="sendFeedback()">
+    </fab-command-bar-item>
 
   </items>
 </fab-command-bar>
