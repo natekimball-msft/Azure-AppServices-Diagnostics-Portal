@@ -1,8 +1,24 @@
 {
     "samples": [
         {
-            "key": "Todo: Get some sample questions from PMs",
-            "value": "Say hello!"
+            "key": "Most popular outbound trigger for Function apps",
+            "value": "What is the most used outbound trigger by Function apps?"
+        },
+        {
+            "key": "Function app usage for node applications, Linux vs Non-Linux",
+            "value": "What is the most used outbound trigger for Function apps?"
+        },
+        {
+            "key": "Unique count of Linux sites",
+            "value": "Give me a unique count of Linux sites."
+        },
+        {
+            "key": "Wordpress distribution by Linux vs Non-Linux",
+            "value": "Is Wordpress deployed more or Linux or Non-Linux?"
+        },
+        {
+            "key": "Supported tables",
+            "value": "List out all the tables you can write a Kusto query with."
         }
     ]
 }
