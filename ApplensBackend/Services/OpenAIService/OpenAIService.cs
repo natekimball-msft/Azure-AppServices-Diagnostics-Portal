@@ -86,7 +86,7 @@ namespace AppLensV3.Services
         private IOpenAIRedisService redisCache;
         private IConfiguration configuration;
         private static OpenAIClient openAIClient;
-        private Dictionary<string, Task<string>> chatTemplateFileCache;
+        private ConcurrentDictionary<string, Task<string>> chatTemplateFileCache;
         private string chatHubRedisKeyPrefix;
         private Dictionary<string, AnalyticsKustoTableDetails> analyticsKustoTables = new Dictionary<string, AnalyticsKustoTableDetails>(StringComparer.OrdinalIgnoreCase);
         private ConcurrentDictionary<string, ChatCompletionCustomHandler> customHandlerForChatCompletion = new ConcurrentDictionary<string, ChatCompletionCustomHandler>(StringComparer.OrdinalIgnoreCase);
@@ -99,7 +99,7 @@ namespace AppLensV3.Services
         {
             configuration = config;
             isOpenAIAPIEnabled = Convert.ToBoolean(configuration["OpenAIService:Enabled"]);
-            chatTemplateFileCache = new Dictionary<string, Task<string>>();
+            chatTemplateFileCache = new ConcurrentDictionary<string, Task<string>>(StringComparer.OrdinalIgnoreCase) ;
             if (isOpenAIAPIEnabled)
             {
                 this.logger = logger;
@@ -321,8 +321,12 @@ namespace AppLensV3.Services
 
         private async Task<string> GetChatTemplateContent(string chatIdentifier)
         {
-            await InitializeChatTemplateFileCache();
-            string templateCacheKey = $"{chatIdentifier ?? string.Empty}.json".ToLower();
+            string templateCacheKey = $"{chatIdentifier ?? string.Empty}.json";
+            if (!chatTemplateFileCache.ContainsKey(templateCacheKey))
+            {
+                await InitializeChatTemplateFileCache();
+            }
+
             if (string.IsNullOrWhiteSpace(chatIdentifier) || !chatTemplateFileCache.TryGetValue(templateCacheKey, out _))
             {
                 templateCacheKey = "_default.json";
