@@ -1,30 +1,23 @@
-import { Component, OnInit, ViewChild, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   // Models 
-  ChatMessage, ChatResponse, MessageStatus, MessageSource, MessageRenderingType, CreateTextCompletionModel,
+  ChatMessage,  MessageStatus,
   // Services
   ChatUIContextService, GenericOpenAIChatService,
   // Telemetry
   TelemetryService,
-  // Components
-  ChatUIComponent,
   // Utilities
-  TimeUtilities,
   ChatAlignment,
-  StringUtilities,
   ChatModel,
-  CreateChatCompletionModel,
   ResponseTokensSize,
-  TextModels,
   APIProtocol
 
 } from "../../../public_api";
-import { v4 as uuid } from 'uuid';
 import { HttpClient } from '@angular/common/http';
 import { KeyValuePair } from '../../models/common-models';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { PortalUtils } from 'projects/applens/src/app/shared/utilities/portal-util';
+import { CustomCommandBarButtons } from '../../models/openai-chat-container-models';
 
 @Component({
   selector: 'openai-chat-container',
@@ -69,6 +62,8 @@ export class OpenAIChatContainerComponent implements OnInit {
   @Input() dailyMessageQuota: number = 20;
   @Input() messageQuotaWarningThreshold: number = 10;
 
+  @Input() customCommandBarButtons:CustomCommandBarButtons[] = [];
+
   constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
     private _chatContextService: ChatUIContextService,
     private _openAIService: GenericOpenAIChatService,
@@ -96,8 +91,6 @@ export class OpenAIChatContainerComponent implements OnInit {
   // This is the limit on the number of recursive calls made to open AI
   openAIApiCallLimit = 10;
   currentApiCallCount = 0;
-
-  private openAIAPICallSubscription: Subscription; 
 
   updateStatusAndPreProcessUserMessage = (message: ChatMessage): ChatMessage => {
     this.chatInProgress = true;
@@ -161,6 +154,10 @@ export class OpenAIChatContainerComponent implements OnInit {
 
   showClearChatDialog = (show: boolean = true) => {
     this.clearChatConfirmationHidden = !show;
+  }
+
+  getCustomButtonIconProps(customButton: CustomCommandBarButtons):any {
+    return { iconName: customButton.iconName };
   }
 
   ngOnInit() {
