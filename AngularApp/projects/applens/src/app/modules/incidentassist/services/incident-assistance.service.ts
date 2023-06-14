@@ -123,7 +123,16 @@ export class IncidentAssistanceService {
       observe: 'response'
     });
     return request;
-  }
+    }
+
+    public validateIncidentRoute(incidentId: string): Observable<any> {
+        let url = `${this.diagnosticApi}api/icm/triggerIncidentRouteValidation/${incidentId}`;
+        let request = this._httpClient.get<HttpResponse<Object>>(url, {
+            headers: this._getHeaders(),
+            observe: 'response'
+        });
+        return request;
+    }
 
   private _getHeaders(): HttpHeaders {
     let headers = new HttpHeaders();
