@@ -11,7 +11,7 @@
       (click)="sendFeedback()">
     </fab-command-bar-item>
     <fab-command-bar-item  *ngFor="let customButton of customCommandBarButtons" key="'custom_' + customButton.displayText" [text]="customButton.displayText"
-      [iconProps]="getCustomButtonIconProps(customButton)" [disabled]="customButton.disabled()"
+      [iconProps]="getCustomButtonIconProps(customButton)" [disabled]="customButton.disabled"
       (click)="customButton.onClick()"></fab-command-bar-item>
   </items>
 </fab-command-bar>
