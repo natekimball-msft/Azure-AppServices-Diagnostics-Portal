@@ -180,7 +180,7 @@ export class DashboardComponent implements OnDestroy {
 
     this._alertService.getAlert().subscribe((alert: AlertInfo) => {
       this.alertInfo = alert;
-      this.displayAlertDialog =  alert.alertStatus != 6;
+      this.displayAlertDialog = alert.alertStatus != 6;
       this.displayResourceAlert = alert.alertStatus == 6;
       setTimeout(() => {
         var elem = document.getElementsByClassName('ms-Dialog-title')[0] as HTMLElement;
@@ -311,7 +311,7 @@ export class DashboardComponent implements OnDestroy {
   }
 
   resourceAlertDialogCancel() {
-    this.displayResourceAlert = false;
+    this.hideResourceAlert = true;
   }
 
   ngOnInit() {
