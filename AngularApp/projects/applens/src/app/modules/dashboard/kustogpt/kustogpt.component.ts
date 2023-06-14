@@ -15,5 +15,18 @@ export class KustoGPTComponent {
   public apiProtocol = APIProtocol.WebSocket;
   public chatModel = ChatModel.GPT4;
   constructor() {
-   }
+    this.prepareChatHeader();
+  }
+
+  chatHeader = 'Kusto Copilot for Analytics - Preview';
+
+  private prepareChatHeader = () => {
+  this.chatHeader = `
+  <h1 class='copilot-header chatui-header-text'>
+    <img  class='copilot-header-img' src="/assets/img/bot_sparkle_icon.svg" alt = ''>
+    ${this.chatHeader}
+    <img class='copilot-header-img-secondary' src='/assets/img/rocket.png' alt=''>
+    <img class='copilot-header-img-secondary' src='/assets/img/rocket.png' alt=''">
+  </h1>`;
+}
 }
