@@ -1519,40 +1519,20 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
                   element.exception.ClassName + ": " +
                   element.exception.Message + "\r\n" +
                   element.exception.StackTraceString);
-
-                if (element.exception.ClassName == 'Diagnostics.DataProviders.AllowedResourceException') {
-                  var url = element.exception.Message;
-                  this.detailedCompilationTraces.push({
-                    severity: HealthStatus.Critical,
-                    message: `Visit this website to verify your access to the requested subscription: <a href= ${url} target=_blank> ${url} </a>`,
-                    location: {
-                      start: {
-                        linePos: 0,
-                        colPos: 0
-                      },
-                      end: {
-                        linePos: 0,
-                        colPos: 0
-                      }
+                this.detailedCompilationTraces.push({
+                  severity: HealthStatus.Critical,
+                  message: `${element.timeStamp}: ${element.message}: ${element.exception.ClassName}: ${element.exception.Message}: ${element.exception.StackTraceString}`,
+                  location: {
+                    start: {
+                      linePos: 0,
+                      colPos: 0
+                    },
+                    end: {
+                      linePos: 0,
+                      colPos: 0
                     }
-                  });
-                }
-                else {
-                  this.detailedCompilationTraces.push({
-                    severity: HealthStatus.Critical,
-                    message: `${element.timeStamp}: ${element.message}: ${element.exception.ClassName}: ${element.exception.Message}: ${element.exception.StackTraceString}`,
-                    location: {
-                      start: {
-                        linePos: 0,
-                        colPos: 0
-                      },
-                      end: {
-                        linePos: 0,
-                        colPos: 0
-                      }
-                    }
-                  });
-                }
+                  }
+                });
               }
               else {
                 this.buildOutput.push(element.timeStamp + ": " + element.message);
@@ -1626,6 +1606,24 @@ export class OnboardingFlowComponent implements OnInit, IDeactivateComponent {
               }
             }
           });
+          let errorObj = JSON.parse(error.error);
+          if (error.status === 403 && errorObj.Status === 10)  {
+            var url = errorObj.DetailText;
+            this.detailedCompilationTraces.push({
+              severity: HealthStatus.Critical,
+              message: `Visit this website to verify your access to the requested subscription: <a href= ${url} target=_blank> ${url} </a>`,
+              location: {
+                start: {
+                  linePos: 0,
+                  colPos: 0
+                },
+                end: {
+                  linePos: 0,
+                  colPos: 0
+                }
+              }
+            });
+          }
           this.markCodeLinesInEditor(this.detailedCompilationTraces);
         }));
     });
