@@ -68,7 +68,7 @@ export class DiagnosticApiService {
   }
 
   public getDetector(version: string, resourceId: string, detector: string, startTime?: string, endTime?: string,
-    body?: any, refresh: boolean = false, internalView: boolean = true, additionalQueryParams?: string):
+    body?: any, refresh: boolean = false, internalView: boolean = true, additionalQueryParams?: string, additionalHeaders?: Map<string, string>):
     Observable<DetectorResponse> {
     let timeParameters = this._getTimeQueryParameters(startTime, endTime);
     let path = `${version}${resourceId}/detectors/${detector}?${timeParameters}`;
@@ -76,7 +76,7 @@ export class DiagnosticApiService {
     if (additionalQueryParams != undefined) {
       path += additionalQueryParams;
     }
-    return this.invoke<DetectorResponse>(path, HttpMethod.POST, body, true, refresh, true, internalView);
+    return this.invoke<DetectorResponse>(path, HttpMethod.POST, body, true, refresh, true, internalView, null, additionalHeaders);
   }
 
   public getWorkflowNode(version: string, resourceId: string, workflowId: string, workflowExecutionId: string, nodeId: string, startTime?: string, endTime?: string,
@@ -392,7 +392,7 @@ export class DiagnosticApiService {
 
     let keyPostfix = internalClient === true ? "-true" : "-false";
     if (useCache) {
-      return this._cacheService.get(this.getCacheKey(method, path + keyPostfix), request, invalidateCache, logData);
+      return this._cacheService.get(this.getCacheKey(method, path + keyPostfix), request, invalidateCache, false, logData);
     }
     else {
       this._telemetryService.logEvent(logData.eventIdentifier, logData.eventPayload);
@@ -409,7 +409,7 @@ export class DiagnosticApiService {
     return this._cacheService.get(path, request, invalidateCache);
   }
 
-  public post<T, S>(path: string, body?: S, additionalHeaders: HttpHeaders = null): Observable<T> {
+  public post<T, S>(path: string, body?: S, additionalHeaders: HttpHeaders = null, invalidateCache: boolean = true, ignoreInFlightCall: boolean = false): Observable<T> {
     const url = `${this.diagnosticApi}${path}`;
     let bodyString: string = '';
     if (body) {
@@ -429,7 +429,7 @@ export class DiagnosticApiService {
       headers: requestHeaders,
     });
 
-    return this._cacheService.get(path, request, true);
+    return this._cacheService.get(path, request, invalidateCache, ignoreInFlightCall);
   }
 
   public hasApplensAccess(): Observable<any> {
@@ -716,5 +716,17 @@ export class DiagnosticApiService {
     return this.post(path, useralias).pipe(map(res => {
       return res;
     }));
+  }
+
+  public validateResourceExistenceInArmCluster(resourceId: string, eventTime: string, targetResourceProvider: string, targetResourceType: string): Observable<any> {
+    let path: string = `userAuthorization/fetchresourcefromarmcluster`;
+    var body =
+    {
+      'ResourceId': resourceId,
+      'EventTime': eventTime,
+      'TargetResourceProvider': targetResourceProvider,
+      'TargetResourceType': targetResourceType
+    };
+    return this.invoke<any>(path, HttpMethod.POST, body, false, false, true, false);
   }
 }

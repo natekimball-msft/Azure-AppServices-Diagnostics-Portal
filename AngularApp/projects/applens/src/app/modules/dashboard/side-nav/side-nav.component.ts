@@ -224,7 +224,6 @@ export class SideNavComponent implements OnInit {
       this.initializeDetectors();
     });
     this.getCurrentRoutePath();
-
     this._router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(event => {
       this.getCurrentRoutePath();
     });

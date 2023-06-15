@@ -13,6 +13,7 @@ export class ConnectAppInsightsComponent extends DataRenderBaseComponent {
 
   isPublic: boolean;
   resourceId: string;
+  detectorId: string = "";
 
   constructor(protected telemetryService: TelemetryService, @Inject(DIAGNOSTIC_DATA_CONFIG) config: DiagnosticDataConfig) {
     super(telemetryService);
@@ -22,6 +23,7 @@ export class ConnectAppInsightsComponent extends DataRenderBaseComponent {
   protected processData(data: DiagnosticData) {
     super.processData(data);
     if (data.table.rows.length > 0) {
+      this.detectorId = this.detectorEventProperties.DetectorId;
       this.resourceId = data.table.rows[0][0];
     }
   }
