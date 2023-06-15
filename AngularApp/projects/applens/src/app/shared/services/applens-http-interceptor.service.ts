@@ -4,7 +4,7 @@ import { Observable, of, pipe } from 'rxjs';
 import { map, catchError, mergeMap } from 'rxjs/operators';
 import { AlertService } from './alert.service';
 import { AdalService } from 'adal-angular4';
-import { AlertInfo, ConfirmationOption, UserAccessStatus } from 'diagnostic-data';
+import { AlertInfo, ConfirmationOption, TelemetryService, UserAccessStatus } from 'diagnostic-data';
 import { HealthStatus } from "diagnostic-data";
 
 @Injectable({
@@ -12,7 +12,7 @@ import { HealthStatus } from "diagnostic-data";
 })
 export class AppLensInterceptorService implements HttpInterceptor {
   tokenRefreshRetry: boolean = true;
-  constructor(private _alertService: AlertService, private _adalService: AdalService) { }
+  constructor(private _alertService: AlertService, private _adalService: AdalService, private _telemetryService:TelemetryService) { }
 
   raiseAlert(event) {
     let errormsg = event.error;
@@ -74,6 +74,7 @@ export class AppLensInterceptorService implements HttpInterceptor {
         }
       }
       catch (e) {
+        this._telemetryService.logException(e);
         // Most liely the error.error object was not a json object. Lets consume the json parsing exception and rethrow the original error.
       }
 
