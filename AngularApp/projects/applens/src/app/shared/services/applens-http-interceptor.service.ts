@@ -74,7 +74,7 @@ export class AppLensInterceptorService implements HttpInterceptor {
         }
       }
       catch (e) {
-        this._telemetryService.logException(e);
+        this._telemetryService.logException(e, "UserAuthorizationCheck", {error: error.error});
         // Most liely the error.error object was not a json object. Lets consume the json parsing exception and rethrow the original error.
       }
 
