@@ -20,7 +20,7 @@ export class AppLensInterceptorService implements HttpInterceptor {
     errormsg = errormsg.replace(/\"/g, '"');
     let errobj = JSON.parse(errormsg);
     let message = errobj.DetailText;
-    let userAccessStatus = JSON.parse(event.error).Status;
+    let userAccessStatus = errobj.Status;
     message = message.trim();
     if (message) {
       if (message[message.length - 1] == '.') {
