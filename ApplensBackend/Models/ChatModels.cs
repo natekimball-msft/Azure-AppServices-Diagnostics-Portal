@@ -78,7 +78,7 @@ namespace AppLensV3.Models
                 Text = chatCompletionResponse.Value.Choices[0].Message?.Content ?? string.Empty;
                 FinishReason = chatCompletionResponse.Value.Choices[0].FinishReason ?? string.Empty;
             }
-        }
+    }
 
         public ChatResponse(OpenAIAPIResponse textCompletionResponse)
         {

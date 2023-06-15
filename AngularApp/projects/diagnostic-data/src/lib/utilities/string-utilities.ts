@@ -179,4 +179,14 @@ export class StringUtilities {
         const regex = new RegExp(/[.*+?^${}()|[\]\\]/, 'g');
         return input.replace(regex, '\\$&');
     }
+
+    public static isValidJSON(strJson:any): boolean {
+        try {
+            const parsed = JSON.parse(strJson)
+            if (parsed && typeof parsed === "object") {
+              return true
+            }
+          } catch { return false }
+          return false
+    }
 }
