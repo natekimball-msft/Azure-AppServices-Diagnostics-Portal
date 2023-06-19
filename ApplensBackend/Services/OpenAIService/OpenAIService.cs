@@ -419,6 +419,7 @@ namespace AppLensV3.Services
 
                 secondQuestion.AppendLine("Using the above details, answer the following question");
                 secondQuestion.AppendLine(userQuestion);
+                secondQuestion.AppendLine($"Note: The current year is {DateTime.UtcNow.Year}");
 
                 int lastUserMessage = chatCompletionsOptions.Messages.Select((message, index) => new { Message = message, Index = index }).LastOrDefault(item => item.Message.Role == ChatRole.User)?.Index ?? -1;
                 chatCompletionsOptions.Messages.RemoveAt(lastUserMessage);
