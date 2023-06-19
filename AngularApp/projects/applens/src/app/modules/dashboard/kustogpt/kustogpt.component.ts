@@ -19,6 +19,7 @@ export class KustoGPTComponent {
   }
 
   chatHeader = 'Kusto Copilot for Analytics - Preview';
+  feedbackEmailAlias = 'applensv2team';
 
   private prepareChatHeader = () => {
   this.chatHeader = `

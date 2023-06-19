@@ -16,7 +16,6 @@ import {
 } from "../../../public_api";
 import { HttpClient } from '@angular/common/http';
 import { KeyValuePair } from '../../models/common-models';
-import { PortalUtils } from 'projects/applens/src/app/shared/utilities/portal-util';
 import { CustomCommandBarButtons } from '../../models/openai-chat-container-models';
 
 @Component({
@@ -62,6 +61,7 @@ export class OpenAIChatContainerComponent implements OnInit {
   @Input() dailyMessageQuota: number = 20;
   @Input() messageQuotaWarningThreshold: number = 10;
 
+  @Input() feedbackEmailAlias:string = 'applensv2team';
   @Input() customCommandBarButtons:CustomCommandBarButtons[] = [];
 
   constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
@@ -86,6 +86,7 @@ export class OpenAIChatContainerComponent implements OnInit {
   chatQuerySamples: KeyValuePair[] = [];
   public chatInProgress:boolean = false;
   private lastMessageIdForFeedback: string = '';
+  private lastMessageForFeedback: string = '';
   clearChatConfirmationHidden: boolean = true;
 
   // This is the limit on the number of recursive calls made to open AI
@@ -95,7 +96,7 @@ export class OpenAIChatContainerComponent implements OnInit {
   updateStatusAndPreProcessUserMessage = (message: ChatMessage): ChatMessage => {
     this.chatInProgress = true;
     this.lastMessageIdForFeedback = message.id;
-
+    this.lastMessageForFeedback = JSON.stringify(message);
     if(this.onUserMessageSend) {
       return this.onUserMessageSend(message);
     }
@@ -133,16 +134,16 @@ export class OpenAIChatContainerComponent implements OnInit {
     let body = encodeURIComponent('Please provide feedback here:');
     let link = "";
 
-    var browserType = PortalUtils.getBrowserType();
     var url = window.location.href;
     let debugInfo = `${newline}============ Debug Info ============${newline}`;
-    debugInfo += `Browser: ${browserType}${newline}`;
+    debugInfo += `Browser UserAgent: ${navigator.userAgent}${newline}`;
     debugInfo += `Last User Message Id: ${this.lastMessageIdForFeedback}${newline}`;
+    debugInfo += `Last User Message: ${this.lastMessageForFeedback}${newline}`;
     debugInfo += `Url: ${url}${newline}`;
 
 
     body = `${body}${newline}${newline}${newline}${debugInfo}`;
-    link = `mailto:applensv2team@microsoft.com?subject=${subject}&body=${body}`;
+    link = `mailto:${this.feedbackEmailAlias}@microsoft.com?subject=${subject}&body=${body}`;
     window.open(link);
   }
 
