@@ -169,6 +169,7 @@ import {OpenAIGenieComponent} from './components/openai-genie/openai-genie.compo
 import {OpenAIChatContainerComponent} from './components/openai-chat-container/openai-chat-container.component';
 
 import { FabDialogModule } from '@angular-react/fabric/lib/components/dialog';
+import { GenericLinkInterceptorService } from './services/generic-link-interceptor.service';
 
 @NgModule({
     imports: [
@@ -368,7 +369,8 @@ export class DiagnosticDataModule {
                 QueryResponseService,
                 OptInsightsGenericService,
                 DemoSubscriptions,
-                ChatUIContextService
+                ChatUIContextService,
+                GenericLinkInterceptorService
             ]
         };
     }
