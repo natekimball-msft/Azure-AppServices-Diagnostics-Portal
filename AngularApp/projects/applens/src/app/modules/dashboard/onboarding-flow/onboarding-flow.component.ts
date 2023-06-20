@@ -2380,7 +2380,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
   private IsDetectorMarkedPublic(codeString: string): boolean {
     if (codeString) {
       var trimmedCode = codeString.toLowerCase().replace(/\s/g, "");
-      return trimmedCode.includes('internalonly=false)') || trimmedCode.includes('internalonly:false)');
+      return trimmedCode.includes('internalonly=false') || trimmedCode.includes('internalonly:false');
     }
 
     return false;
