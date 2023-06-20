@@ -829,6 +829,10 @@ export class DetectorViewComponent implements OnInit {
   updateTimePickerErrorMessage(message: string) {
     this.timePickerErrorStr = message;
   }
+
+  ngOnChanges(){
+    this.ngOnInit();
+  }
 }
 
 @Pipe({
