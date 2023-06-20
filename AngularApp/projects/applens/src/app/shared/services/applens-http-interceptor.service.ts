@@ -6,7 +6,6 @@ import { AlertService } from './alert.service';
 import { AdalService } from 'adal-angular4';
 import { AlertInfo, ConfirmationOption, UserAccessStatus } from 'diagnostic-data';
 import { HealthStatus } from "diagnostic-data";
-import { resource } from 'selenium-webdriver/http';
 
 @Injectable({
   providedIn: 'root'
@@ -42,7 +41,6 @@ export class AppLensInterceptorService implements HttpInterceptor {
     let headers = req.headers;
     let pathQuery = headers.get("x-ms-path-query");
     let resourceId = this.extractResourceIdFromPath(pathQuery);
-    console.log("ResourceId", resourceId);
     let errormsg = event.error;
     errormsg = errormsg.replace(/\\"/g, '"');
     errormsg = errormsg.replace(/\"/g, '"');
