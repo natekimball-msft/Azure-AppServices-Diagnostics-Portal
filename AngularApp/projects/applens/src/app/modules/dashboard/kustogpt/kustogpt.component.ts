@@ -29,10 +29,7 @@ export class KustoGPTComponent {
     <img class='copilot-header-img-secondary' src='/assets/img/rocket.png' alt=''>
     <img class='copilot-header-img-secondary' src='/assets/img/rocket.png' alt=''"> 
     <div class = "copilot-header-secondary" >
-      Queries generated can be executed against <strong>Cluster:</strong>wawsaneus.eastus <strong>Database:</strong>wawsprod
-    </div>
-    <div class = "copilot-header-secondary">
-      For more information, see <a href='https://msazure.visualstudio.com/Antares/_wiki/wikis/Antares.wiki/50081/Getting-started-with-Antares-Analytics-Kusto-data'>Getting started with Antares Analytics Kusto data.</a>
+      Queries generated can be executed against <strong>Cluster:</strong>wawsaneus.eastus <strong>Database:</strong>wawsprod. For more information, see <a href='https://msazure.visualstudio.com/Antares/_wiki/wikis/Antares.wiki/50081/Getting-started-with-Antares-Analytics-Kusto-data'>Getting started with Antares Analytics Kusto data.</a>
     </div>
   </div>  
   `;
