@@ -130,7 +130,7 @@ export class OpenAIChatContainerComponent implements OnInit {
 
   sendFeedback = () => {
     let newline = '%0D%0A';
-    const subject = encodeURIComponent(`${this.chatHeader} Feedback`);
+    const subject = encodeURIComponent(`${this.chatIdentifier} Feedback`);
     let body = encodeURIComponent('Please provide feedback here:');
     let link = "";
 
