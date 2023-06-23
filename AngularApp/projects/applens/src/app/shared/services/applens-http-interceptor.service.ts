@@ -86,6 +86,9 @@ export class AppLensInterceptorService implements HttpInterceptor {
         else if (error.status === 403 && errorObj.Status === 10) {
           this.raiseResourceAlert(error);
         }
+        else if (error.status === 403 && errorObj.Status === 10) {
+          this.raiseResourceAlert(error);
+        }
         else if ((error.status === 401 || error.status === 403) && error.url.includes("api/invoke")) {
           if (errorObj.DetailText && errorObj.DetailText.includes("the token is expired")) {
             this._adalService.clearCache();

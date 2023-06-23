@@ -112,9 +112,10 @@ export class DashboardComponent implements OnDestroy {
   dialogType: DialogType = DialogType.normal;
   crossSubJustification: string = '';
   defaultResourceTypes = defaultResourceTypes;
-  isPPE: boolean = false;
-  detectorCopilotEnabled: boolean = false;
+  isPPE:boolean = false;
   displayResourceAlert: boolean = false;
+  hideResourceAlert: boolean = false;
+
   constructor(public resourceService: ResourceService, private startupService: StartupService,  private _detectorControlService: DetectorControlService,
     private _router: Router, private _activatedRoute: ActivatedRoute, private _navigator: FeatureNavigationService,
     private _diagnosticService: ApplensDiagnosticService, private _adalService: AdalService, public _searchService: SearchService, private _diagnosticApiService: DiagnosticApiService, private _observerService: ObserverService, public _applensGlobal: ApplensGlobal, private _startupService: StartupService, private _resourceService: ResourceService, private _breadcrumbService: BreadcrumbService, private _userSettingsService: UserSettingService, private _themeService: GenericThemeService,
