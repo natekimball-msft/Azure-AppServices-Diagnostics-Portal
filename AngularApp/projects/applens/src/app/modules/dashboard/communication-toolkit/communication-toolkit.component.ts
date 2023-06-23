@@ -50,6 +50,8 @@ export class CommunicationToolkitComponent implements OnInit {
   //rule : always end the rca's with privacy statement link is: 
   //always write rca's in markdown 
 
+  chatQuerySamplesFileURIPath = "assets/chatConfigs/easyRCAChatGPT.json"; 
+
   // Component's internal variables
   isEnabled: boolean = false;
   isEnabledChecked: boolean = false;
