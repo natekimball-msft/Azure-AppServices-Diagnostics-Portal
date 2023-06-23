@@ -1,40 +1,23 @@
 import { Injectable } from '@angular/core';
-import { CategoryService } from './category.service';
-import { DiagnosticService, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
+import { DetectorMetaData, DiagnosticService, TelemetryEventNames, TelemetryService } from 'diagnostic-data';
 import { ActivatedRoute, NavigationExtras, Router } from '@angular/router';
-import { Category } from '../models/category';
+import { FeatureService } from './feature.service';
 
 const isAbsolute = new RegExp('(?:^[a-z][a-z0-9+.-]*:|\/\/)', 'i');
 
-@Injectable()
+@Injectable({
+  providedIn: "root"
+})
 export class LinkInterceptorService {
 
-  private categories: Category[] = [];
-  private detectorCategoryMapping: any[] = [];
-
-  constructor(private _diagnosticService: DiagnosticService, private _categoryService: CategoryService) {
-
-    this._diagnosticService.getDetectors().subscribe(detectors => {
-      this._categoryService.categories.subscribe(categories => {
-        if (categories.length > 0) {
-          this.categories = categories;
-          detectors.forEach(detector => {
-            let categoryId = this.getCategoryId(detector.category);
-            if (categoryId && detector.id) {
-              this.detectorCategoryMapping.push({ detectorId: detector.id, categoryId: categoryId });
-            }
-          });
-        }
-      });
-    });
-  }
+  constructor(private _diagnosticService: DiagnosticService, private _genericFeatureService: FeatureService) {}
 
   interceptLinkClick(e: Event, router: Router, detector: string, telemetryService: TelemetryService, activatedRoute: ActivatedRoute) {
     if (e.target && (e.target as any).tagName === 'A') {
 
-      this.detectorCategoryMapping.forEach(element => {
-        console.log(JSON.stringify(element));
-      })
+      // this.detectorCategoryMapping.forEach(element => {
+      //   console.log(JSON.stringify(element));
+      // })
 
       const el = (e.target as HTMLElement);
       let linkURL = el.getAttribute && el.getAttribute('href');
@@ -63,21 +46,17 @@ export class LinkInterceptorService {
         navigationExtras.relativeTo = activatedRoute;
       }
 
-      linkURL = this.addCategoryIdIfNeeded(linkURL);
+      const metaData = this._diagnosticService.getDetectorById(detector);
+      if(metaData && metaData.category) {
+        linkURL = this.addCategoryIdIfNeeded(linkURL, metaData);
 
-      if (linkURL && (!isAbsolute.test(linkURL) || linkURL.startsWith('./') || linkURL.startsWith('../'))) {
-        e.preventDefault();
-        router.navigate([linkURL], navigationExtras);
-      } else {
-        el.setAttribute('target', '_blank');
+        if (linkURL && (!isAbsolute.test(linkURL) || linkURL.startsWith('./') || linkURL.startsWith('../'))) {
+          e.preventDefault();
+          router.navigate([linkURL], navigationExtras);
+        } else {
+          el.setAttribute('target', '_blank');
+        }
       }
-    }
-  }
-
-  getCategoryId(categoryName: string): string {
-    let category = this.categories.find(x => x.name === categoryName);
-    if (category) {
-      return category.id;
     }
   }
 
@@ -88,7 +67,7 @@ export class LinkInterceptorService {
   // location.
   //
 
-  addCategoryIdIfNeeded(linkURL: string) {
+  addCategoryIdIfNeeded(linkURL: string, detectorMetaData: DetectorMetaData) {
     //
     // Do not modify URLs with relative URL paths
     //
@@ -114,16 +93,14 @@ export class LinkInterceptorService {
         }
 
         if (entityTypeIndex > -1 && entityIdIndex < linkURLArray.length) {
-          let entityId: string = linkURLArray[entityIdIndex];
-          let mapping = this.detectorCategoryMapping.find(x => x.detectorId === entityId);
-          if (mapping && mapping.categoryId) {
-            let matchingCategoryId = mapping.categoryId;
+          let categoryId = this._genericFeatureService.getCategoryIdByNameAndCurrentCategory(detectorMetaData.category);
+          if (!!categoryId && categoryId !== "*") {
 
             //
             // insert /categories/{CategoryId} just before /detectors/{detectorId}
             //
 
-            linkURLArray.splice(entityTypeIndex, 0, 'categories', matchingCategoryId);
+            linkURLArray.splice(entityTypeIndex, 0, 'categories', categoryId);
             return linkURLArray.join('/');
           }
         }

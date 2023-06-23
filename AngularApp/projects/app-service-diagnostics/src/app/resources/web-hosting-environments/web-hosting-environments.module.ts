@@ -13,7 +13,6 @@ import { LoggingV2Service } from '../../shared-v2/services/logging-v2.service';
 import { SupportTopicService } from '../../shared-v2/services/support-topic.service';
 import { CXPChatCallerService } from '../../shared-v2/services/cxp-chat-caller.service';
 import { LinkInterceptorService } from '../../shared-v2/services/link-interceptor.service';
-import { AseLinkInterceptorService } from './services/ase-link-interceptor.service';
 
 const ResourceRoutes = RouterModule.forChild([
   {
@@ -39,7 +38,6 @@ const ResourceRoutes = RouterModule.forChild([
     AseCategoryService,
     { provide: ResourceService, useExisting: WebHostingEnvironmentsService },
     { provide: CategoryService, useClass: AseCategoryService },
-    { provide: LinkInterceptorService, useExisting: AseLinkInterceptorService },
     SupportTopicService,
     ResourceResolver
   ]
