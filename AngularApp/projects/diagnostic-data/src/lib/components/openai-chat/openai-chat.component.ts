@@ -51,6 +51,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
   @Input() systemPhotoSource: string = '/assets/img/openailogo.svg';
   @Input() showCopyOption:boolean = false;
   @Input() apiProtocol: APIProtocol = APIProtocol.Rest;
+  @Input() inputTextLimit: Number = 500;
 
   // Callback methods for pre and post processing messages
   @Input() preprocessUserMessage: (message: ChatMessage) => ChatMessage = function (message: ChatMessage) {
