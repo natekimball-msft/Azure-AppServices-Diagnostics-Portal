@@ -10,7 +10,7 @@ const isAbsolute = new RegExp('(?:^[a-z][a-z0-9+.-]*:|\/\/)', 'i');
 })
 export class LinkInterceptorService {
 
-  constructor(private _diagnosticService: DiagnosticService, private _genericFeatureService: FeatureService) {}
+  constructor(private _diagnosticService: DiagnosticService, private _genericFeatureService: FeatureService) { }
 
   interceptLinkClick(e: Event, router: Router, detector: string, telemetryService: TelemetryService, activatedRoute: ActivatedRoute) {
     if (e.target && (e.target as any).tagName === 'A') {
@@ -46,17 +46,14 @@ export class LinkInterceptorService {
         navigationExtras.relativeTo = activatedRoute;
       }
 
-      const metaData = this._diagnosticService.getDetectorById(detector);
-      if(metaData && metaData.category) {
-        linkURL = this.addCategoryIdIfNeeded(linkURL, metaData);
-
-        if (linkURL && (!isAbsolute.test(linkURL) || linkURL.startsWith('./') || linkURL.startsWith('../'))) {
-          e.preventDefault();
-          router.navigate([linkURL], navigationExtras);
-        } else {
-          el.setAttribute('target', '_blank');
-        }
+      linkURL = this.addCategoryIdIfNeeded(linkURL);
+      if (linkURL && (!isAbsolute.test(linkURL) || linkURL.startsWith('./') || linkURL.startsWith('../'))) {
+        e.preventDefault();
+        router.navigate([linkURL], navigationExtras);
+      } else {
+        el.setAttribute('target', '_blank');
       }
+
     }
   }
 
@@ -67,7 +64,7 @@ export class LinkInterceptorService {
   // location.
   //
 
-  addCategoryIdIfNeeded(linkURL: string, detectorMetaData: DetectorMetaData) {
+  addCategoryIdIfNeeded(linkURL: string) {
     //
     // Do not modify URLs with relative URL paths
     //
@@ -93,15 +90,19 @@ export class LinkInterceptorService {
         }
 
         if (entityTypeIndex > -1 && entityIdIndex < linkURLArray.length) {
-          let categoryId = this._genericFeatureService.getCategoryIdByNameAndCurrentCategory(detectorMetaData.category);
-          if (!!categoryId && categoryId !== "*") {
+          let entityId: string = linkURLArray[entityIdIndex];
+          const metaData: DetectorMetaData = this._diagnosticService.getDetectorById(entityId);
+          if (metaData && metaData.category) {
+            let categoryId = this._genericFeatureService.getCategoryIdByNameAndCurrentCategory(metaData.category);
+            if (!!categoryId && categoryId !== "*") {
 
-            //
-            // insert /categories/{CategoryId} just before /detectors/{detectorId}
-            //
+              //
+              // insert /categories/{CategoryId} just before /detectors/{detectorId}
+              //
 
-            linkURLArray.splice(entityTypeIndex, 0, 'categories', categoryId);
-            return linkURLArray.join('/');
+              linkURLArray.splice(entityTypeIndex, 0, 'categories', categoryId);
+              return linkURLArray.join('/');
+            }
           }
         }
       }
