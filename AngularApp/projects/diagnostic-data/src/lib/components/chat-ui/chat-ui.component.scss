@@ -181,6 +181,11 @@
   margin-top: 1px;
 }
 
+#sendChatButton:disabled,
+#sendChatButton[disabled] {
+  background-color: #b1b1b1;
+}
+
 .chatui-chat-messages-container {
   //position: absolute;
   //top: 3vh;

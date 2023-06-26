@@ -46,6 +46,8 @@ export class ChatUIComponent implements OnInit {
     @Input() showValidationError: boolean = false;
     @Input() validationErrorMessage: string = '';
 
+    @Input() inputTextLimit: number = 500;
+
     chatInputTextInternal: string = '';
 
     public focusChatInput = () => {
@@ -79,7 +81,7 @@ export class ChatUIComponent implements OnInit {
 
     triggerChat() {
         this.chatInputTextInternal = StringUtilities.TrimEnd(this.chatInputTextInternal);
-        if (!this.chatInputBoxDisabled && this.chatInputTextInternal != undefined && this.chatInputTextInternal != '') {
+        if (!this.chatInputBoxDisabled && this.chatInputTextInternal != undefined && this.chatInputTextInternal != '' && this.chatInputTextInternal.length <= this.inputTextLimit) {
             this.chatInputBoxDisabled = true;
             let message = {
                 id: uuid(),
