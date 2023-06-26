@@ -129,11 +129,8 @@ export class DynamicDataComponent implements OnInit {
       instance.compilationPackage = this.compilationPackage;
       instance.isAnalysisView = this.isAnalysisView;
       if(diagnosticData.renderingProperties?.graphOptions?.timeBands != null){
-        console.log(diagnosticData.renderingProperties?.graphOptions?.timeBands);
         var bands = diagnosticData.renderingProperties.graphOptions.timeBands;
-        console.log(bands);
         this.xAxisPlotBands = this.generateXAxisPlotBands(bands);
-        console.log(instance.xAxisPlotBands);
       }
       instance.xAxisPlotBands = this.xAxisPlotBands;
       instance.zoomBehavior = this.zoomBehavior;
