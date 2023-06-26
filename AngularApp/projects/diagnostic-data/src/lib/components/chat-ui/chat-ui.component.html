@@ -38,7 +38,7 @@
           </ng-container>
           <ng-container *ngIf="message.status==2 || message.status==3 || message.status==4">
             <div class="chatui-message-{{message.renderingType}}" [ngClass]="{'chatui-message': chatAlignment=='center', 'chatui-message-left-aligned': chatAlignment=='left'}">
-              <div class="chat-message-timestamp">{{message.messageDisplayDate}}</div>
+              <div class="chat-message-timestamp"><span *ngIf="showCopyOption" class="chatui-copy-button" (click)="copySystemMessageToClipboard(message.displayMessage)"><i class="fa fa-lg fa-files-o"></i></span>{{message.messageDisplayDate}}</div>
               <div style="white-space:pre-wrap">
                 <markdown [ngClass]="{'blinking-cursor': message.status==2}" [data]="message.displayMessage">
                   

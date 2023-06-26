@@ -49,6 +49,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
   @Input() stopMessageGeneration: boolean = false;
   @Input() systemInitial: string = "AI";
   @Input() systemPhotoSource: string = '/assets/img/openailogo.svg';
+  @Input() showCopyOption:boolean = false;
   @Input() apiProtocol: APIProtocol = APIProtocol.Rest;
 
   // Callback methods for pre and post processing messages
