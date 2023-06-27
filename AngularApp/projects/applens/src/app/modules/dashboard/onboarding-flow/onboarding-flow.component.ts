@@ -1603,6 +1603,24 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
               }
             }
           });
+          let errorObj = JSON.parse(error.error);
+          if (error.status === 403 && errorObj.Status === 10)  {
+            var url = errorObj.DetailText;
+            this.detailedCompilationTraces.push({
+              severity: HealthStatus.Critical,
+              message: `Visit this website to verify your access to the requested subscription: <a href= ${url} target=_blank> ${url} </a>`,
+              location: {
+                start: {
+                  linePos: 0,
+                  colPos: 0
+                },
+                end: {
+                  linePos: 0,
+                  colPos: 0
+                }
+              }
+            });
+          }
           this.markCodeLinesInEditor(this.detailedCompilationTraces);
         }));
     });
