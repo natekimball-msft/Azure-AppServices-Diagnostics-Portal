@@ -18,7 +18,7 @@ export class KustoGPTComponent {
     this.prepareChatHeader();
   }
 
-  chatHeader = 'Kusto Copilot for Analytics - Preview';
+  chatHeader = 'Kusto query generator for Analytics - Preview';
   feedbackEmailAlias = 'applensv2team';
 
   private prepareChatHeader = () => {
