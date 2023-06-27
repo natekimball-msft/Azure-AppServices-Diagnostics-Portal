@@ -35,8 +35,7 @@
     [contentDisclaimerMessage]="contentDisclaimerMessage" [quotaEnforced]="true" [chatHeader]="chatHeader"
     [systemPhotoSource]="'/assets/img/bot_sparkle_icon.svg'" [responseTokenSize]="responseTokenSize"
     [preprocessUserMessage]="onUserMessageSend" [postProcessSystemMessage]="onSystemMessageReceived"
-    [postPrepareChatContext]="onPrepareChatContext" [stopMessageGeneration]="stopMessageGeneration"
-    [inputTextLimit]="300">
+    [postPrepareChatContext]="onPrepareChatContext" [stopMessageGeneration]="stopMessageGeneration">
   </openai-chat>
 
   <fab-dialog [hidden]="clearChatConfirmationHidden" (onDismiss)="showClearChatDialog(false)">
