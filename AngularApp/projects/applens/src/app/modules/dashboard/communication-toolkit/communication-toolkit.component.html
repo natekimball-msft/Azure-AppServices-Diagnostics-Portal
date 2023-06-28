@@ -1,103 +1,6 @@
 
-<div *ngIf = "!rcaLoading && !rcaDisplayed && !otherDisplayed &&!modifierDisplayed" class="rca-bot-container ">
-    <div class="rca-box-row-container rca-header-container">
-        <h1 class="rca-header-text">EasyRCA!</h1>
-        <!-- <div class = "rca-subtitle-text">{{mainCategoryPageText}}</div> -->
-    </div>
-    
-    <div class="rca-box-row-container rca-samples-container">
-        <div class = "rca-subtitle-text">
-            {{mainCategoryPageText}}
-        </div>
-        <div class="rca-box-row">
-            <ng-container>
-                <div class="rca-box rca-title-text"  
-                    (click) = "mainCategoryClicked(categories[categories.length-1])" [innerHTML] = "categories[categories.length-1]"></div>
-            </ng-container>
-        </div>
-        <div class="rca-box-row">
-            <ng-container *ngFor="let cat of [].constructor(12); let i = index">
-
-            <div class="rca-box rca-title-text" *ngIf = "i<=2 && ( i < categories.length) "  
-              (click) = "mainCategoryClicked(categories[i])" [innerHTML] = "categories[i]"></div>
-              <div class="empty-box" *ngIf = "i<=2 && ( i >= categories.length) "  
-                [innerHTML] = ""></div>
-            </ng-container>
-        </div>
-        <div class="rca-box-row">
-            <ng-container *ngFor="let cat of [].constructor(12); let i = index">
-                <div class="rca-box rca-title-text" *ngIf = "(i>=3 && i<=5) && ( i < categories.length) "  
-                    (click) = "mainCategoryClicked(categories[i])" [innerHTML] = "categories[i]"></div>
-                <div class="empty-box" *ngIf = "(i>=3 && i<=5) && ( i >= categories.length) "  
-                    [innerHTML] = ""></div>
-            </ng-container>
-        </div>
-        <div class="rca-box-row">
-            <ng-container *ngFor="let cat of [].constructor(12); let i = index">
-                <div class="rca-box rca-title-text" *ngIf = "(i>=6 && i<=8) && ( i < categories.length) "  
-                    (click) = "mainCategoryClicked(categories[i])" [innerHTML] = "categories[i]"></div>
-                <div class="empty-box" *ngIf = "(i>=6 && i<=8) && ( i >= categories.length) "  
-                    [innerHTML] = ""></div>
-            </ng-container>
-        </div>
-        <div class="rca-box-row">
-            <ng-container *ngFor="let cat of [].constructor(15); let i = index">
-                <div class="rca-box rca-title-text" *ngIf = "(i>=9 && i<=11) && ( i < categories.length) "  
-                    (click) = "mainCategoryClicked(categories[i])" [innerHTML] = "categories[i]"></div>
-                <div class="empty-box" *ngIf = "(i>=9 && i<=11) && ( i >= categories.length) "  
-                    [innerHTML] = ""></div>
-            </ng-container>
-        </div>
-    </div>
-</div>
-
-
-<!-- display loading when RCA is loading -->
-<div *ngIf = "rcaLoading" class="rca-bot-container loading-spinner">
-    <fab-spinner [size] = "loadingSize" [label] = "'Our premium plan loads faster...'" ></fab-spinner>
-</div>
-
-<!-- display the RCA -->
-<div *ngIf = "!rcaLoading && rcaDisplayed && !otherDisplayed" class = "rca-bot-container rca-template-box-header">
-    <div class="rca-box-row-container rca-header-container">
-        <h1 class="rca-header-text">EasyRCA!</h1>
-        <div class = "rca-body-container rca-subtitle-text">The RCA template for <b>{{currentSelectedRCATopic}}</b> is below:
-        </div>
-        <div class = "rca-body-container">
-            <div class=" rca-body-text rca-result-box" [innerHTML] = "currentSelectedRCA">
-            </div>
-            <button type = "button" class="btn btn-text" (click) = "copyClicked()">
-                <span class="fa fa-copy"></span>
-                {{copyButtonMessage}}
-            </button>
-            <button type="button" class="btn" (click) = "backButtonClicked()"><div class = "btn-text">Back</div></button>
-            <button type="button" class="btn" (click) = "modifierClicked()"><div class = "btn-text">Edit with ChatGPT!</div></button>
-
-            
-        </div>
-    </div>
-</div>
-
-<!-- displaying "other" mode when clicked  -->
-<div *ngIf = "!rcaLoading && !rcaDisplayed && otherDisplayed" class = "rca-bot-container rca-template-box-header">
-    <div class="rca-box-row-container rca-header-container">
-        <h1 class="rca-header-text">EasyRCA!</h1>
-        <div class = "rca-body-container rca-subtitle-text" >{{otherDisplayText}}
-            <form>
-                <textarea #textAreaTemplate class = "input-box" placeholder="Please enter your feedback..." ng-model="text"></textarea>
-            </form> 
-            <button type="submit" class = "btn btn-text" (click)="submitClicked(textAreaTemplate.value)">{{submitButtonMessage}}</button>
-            <button type="button" class="btn " (click) = "backButtonClicked()"><div class = "btn-text">Back</div></button>
-        </div>
-       
-    </div>
-    
-   
-</div>
-
-<div *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed">
-    <openai-chat #chatbot 
-      [userId]="userAlias"
+    <openai-chat-container #chatbot 
+      
       [persistChat]="false"
       [chatAlignment]="'center'"
       [chatIdentifier]="chatComponentIdentifier"
@@ -111,35 +14,11 @@
       [messageQuotaWarningThreshold]="10"
       [chatHeader]= "chatHeader"
       [systemPhotoSource]="'/assets/img/openailogo.svg'"
-      [customInitialPrompt]="customInitialPrompt"
+      [chatIdentifier]="'rcacopilot'"
       [customFirstMessage] = "customFirstMessageEdit"
+      [apiProtocol] = "apiProtocol"
+      [inputTextLimit] = "inputTextLimit"
+      [chatModel] = "chatModel"
+      [showCopyOption] = "showCopyOption"
     >
-    </openai-chat>
-    <!-- <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:0%; bottom: 40px; padding: 1px;" (click) = "backButtonClicked()"><div class = "btn-text">Return</div></button>
-    <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:4%; bottom: 40px; padding: 1px;" (click) = "clearChatClicked()"><div class = "btn-text">Clear Chat</div></button>
-    <button *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" type="button" class="btn" style = "position: absolute; margin-left:10%; bottom: 40px; padding: 1px;" (click) = "copyChatGPTClicked()"><div class = "btn-text">Copy</div></button> -->
-    <!-- <div class = "btn-text" style = "width:22.5%"> -->
-        <fab-command-bar tabindex="0"  [contentStyle]="'width:22.5%;margin-left:-3px;'" [contentClass]="'fab-command-bar-class'">
-            <items>
-                <fab-command-bar-item *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed" [buttonStyles] = "commandBarStyle" key = "back" text="Back" (click)="backButtonClicked()">
-                </fab-command-bar-item>
-                <fab-command-bar-item *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed"  [buttonStyles] = "commandBarStyle" key = "clearchat" text="Clear Chat" (click)="clearChatClicked()">
-                </fab-command-bar-item>
-                <fab-command-bar-item *ngIf="modifierDisplayed && isEnabledChecked && isEnabled && !rcaLoading && !rcaDisplayed && !otherDisplayed"  [buttonStyles] = "commandBarStyle" key = "copy" text="Copy" (click)="copyChatGPTClicked()">
-                </fab-command-bar-item>
-            </items>
-        </fab-command-bar>
-
-</div>
-
-  <div *ngIf="isEnabledChecked && !isEnabled">
-    <div class="chatgpt-bot-container">
-      ChatGPT is currently disabled in AppLens. Please check back later.
-    </div>
-  </div>
-  
-  <div *ngIf="!isEnabledChecked">
-    <div class="chatgpt-bot-container">
-      Checking ...
-    </div>
-  </div>
+    </openai-chat-container>

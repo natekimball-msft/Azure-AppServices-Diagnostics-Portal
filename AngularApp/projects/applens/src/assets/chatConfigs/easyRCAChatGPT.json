@@ -1,28 +1,40 @@
 {
     "samples": [
         {
-            "key": "Write an RCA about Health Check Issues",
+            "key": "Health Check Issues RCA",
             "value": "Write an RCA about Health Check issues"
         },
         {
-            "key": "Write an RCA about File Server Issues",
-            "value": "Write an RCA about file server issues."
+            "key": "Customer Code Issues RCA",
+            "value": "Write an RCA about Customer Code issues"
         },
         {
-            "key": "Write an RCA about Customer Code Issues",
-            "value": "Write an RCA about Customer Code issues"
+            "key": "Platform (Storage Volume) Issues RCA",
+            "value": "Write an RCA about Platform (Storage Volume) Issues"
+        },
+        {
+            "key": "File Server Upgrade Issues RCA",
+            "value": "Write an RCA about File Server Upgrade Issues"
+        },
+        {
+            "key": "File Server High CPU Issues RCA",
+            "value": "Write an RCA about File Server High CPU Issues"
+        },
+        {
+            "key": "File Server Noisy Neighbor / Single Site Stress Issues RCA",
+            "value": "Write an RCA about File Server Noisy Neighbor / Single Site Stress Issues"
         },
         {
             "key":"Modify/Edit my existing RCA to make it more customer-friendly",
             "value": "Modify/Edit my existing RCA to make it more customer-friendly. I will enter it in the next message"
         },
         {
-            "key": "Fix my grammar issues in this RCA",
-            "value": "Fix my grammar issues in this RCA"
+            "key": "Write an RCA about my custom issue",
+            "value": "Write an RCA about the following issue. I will provide the context in the next message."
         },
         {
-            "key": "Give me tips on communicating with the customer",
-            "value": "Can you give me tips on communicating with the customer. I need to be respectful and humble to the customer."
+            "key": "Tips on communicating with the customer",
+            "value": "Can you give me tips on communicating with the customer."
         }
     ]
 }
