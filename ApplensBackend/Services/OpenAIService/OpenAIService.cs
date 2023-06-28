@@ -425,7 +425,7 @@ namespace AppLensV3.Services
                 }
 
                 secondQuestion.AppendLine(analyticsKustoSecondPrompt);
-                secondQuestion.AppendLine($"Note: The current timestamp is {DateTime.UtcNow}");
+                secondQuestion.AppendLine($"Note: The current timestamp is {DateTime.UtcNow.ToString("yyyy-MM-dd HH:MM:SS")} UTC");
 
                 // Remove the original system prompt and replace it with the newly constructed system prompt.
                 chatCompletionsOptions.Messages.RemoveAt(0);
