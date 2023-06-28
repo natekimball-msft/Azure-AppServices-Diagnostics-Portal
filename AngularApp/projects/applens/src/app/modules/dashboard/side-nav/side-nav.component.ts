@@ -202,7 +202,7 @@ export class SideNavComponent implements OnInit {
       icon: null
     },
     {
-      label: 'KQL for Analytics',
+      label: 'KQL for Antares Analytics',
       id: "kustocopilot",
       onClick: () => {
         this.navigateTo("kustoQueryGenerator");

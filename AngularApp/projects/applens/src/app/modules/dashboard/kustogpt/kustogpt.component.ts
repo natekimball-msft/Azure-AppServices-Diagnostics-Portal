@@ -16,12 +16,12 @@ export class KustoGPTComponent {
   public apiProtocol = APIProtocol.WebSocket;
   public chatModel = ChatModel.GPT4;
   constructor(private _applensGlobal:ApplensGlobal) {
-    this._applensGlobal.updateHeader('KQL for Analytics'); // This sets the title of the HTML page
+    this._applensGlobal.updateHeader('KQL for Antares Analytics'); // This sets the title of the HTML page
     this._applensGlobal.updateHeader(''); // Clear the header title of the component as the chat header is being displayed in the chat UI
     this.prepareChatHeader();
   }
 
-  chatHeader = 'Kusto query generator for Analytics - Preview';
+  chatHeader = 'Kusto query generator for Antares Analytics - Preview';
   feedbackEmailAlias = 'applensv2team';
 
   private prepareChatHeader = () => {
