@@ -157,9 +157,9 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
     }
   }
 
-  loadChatFromStore() { 
+  loadChatFromStore() {
     if (this.persistChat && this.fetchChat) {
-      this.fetchChat(this.chatIdentifier).subscribe((chatMessages: ChatMessage[]) => { 
+      this.fetchChat(this.chatIdentifier).subscribe((chatMessages: ChatMessage[]) => {
         this._chatContextService.messageStore[this.chatIdentifier] = chatMessages;
         this.chatUIComponentRef.scrollToBottom(true);
         this._telemetryService.logEvent("OpenAIChatLoadedFromStore", { userId: this._chatContextService.userId, ts: new Date().getTime().toString() });
