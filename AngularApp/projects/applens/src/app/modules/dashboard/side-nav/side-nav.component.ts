@@ -202,15 +202,15 @@ export class SideNavComponent implements OnInit {
       icon: null
     },
     {
-      label: 'Kusto Copilot for Analytics',
+      label: 'KQL for Analytics',
       id: "kustocopilot",
       onClick: () => {
-        this.navigateTo("kustogpt");
+        this.navigateTo("kustoQueryGenerator");
       },
       expanded: false,
       subItems: null,
       isSelected: () => {
-        return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `kustogpt`;
+        return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `kustoQueryGenerator`;
       },
       icon: null
     }
