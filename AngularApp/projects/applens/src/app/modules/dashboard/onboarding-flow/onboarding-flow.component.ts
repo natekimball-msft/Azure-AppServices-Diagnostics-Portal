@@ -1607,7 +1607,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
           if (error.status === 403 && errorObj.Status === 10)  {
             var url = errorObj.DetailText;
             this.detailedCompilationTraces.push({
-              severity: HealthStatus.Critical,
+              severity: HealthStatus.ResourcePermission,
               message: `Visit this website to verify your access to the requested subscription: <a href= ${url} target=_blank> ${url} </a>`,
               location: {
                 start: {
