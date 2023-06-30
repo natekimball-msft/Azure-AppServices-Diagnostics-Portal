@@ -43,7 +43,7 @@ export class GenericApiService {
         // Enabling this flag to call both detectors and workflows
         //
 
-        let fetchDetectorsAndWorkflows = true;
+        let fetchDetectorsAndWorkflows = false;
         if (fetchDetectorsAndWorkflows) {
             return this.getDetectorsAndWorkflows(overrideResourceUri);
         }
