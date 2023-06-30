@@ -202,15 +202,15 @@ export class SideNavComponent implements OnInit {
       icon: null
     },
     {
-      label: 'Kusto Copilot for Analytics',
+      label: 'KQL for Antares Analytics',
       id: "kustocopilot",
       onClick: () => {
-        this.navigateTo("kustogpt");
+        this.navigateTo("kustoQueryGenerator");
       },
       expanded: false,
       subItems: null,
       isSelected: () => {
-        return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `kustogpt`;
+        return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `kustoQueryGenerator`;
       },
       icon: null
     }
@@ -379,6 +379,7 @@ export class SideNavComponent implements OnInit {
 
             categoryMenuItem.subItems.push(menuItem);
           });
+          this.gists = this.gists.sort((a, b) => a.label === 'Uncategorized' ? 1 : (a.label > b.label ? 1 : -1));
         });
         this.gistsCopy = this.deepCopyArray(this.gists);
       }
