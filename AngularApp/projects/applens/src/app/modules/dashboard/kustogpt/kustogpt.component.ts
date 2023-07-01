@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import {DomSanitizer,SafeResourceUrl,} from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
 import { DiagnosticApiService } from "../../../shared/services/diagnostic-api.service";
-import { APIProtocol, ChatModel } from 'diagnostic-data';
+import { APIProtocol, ChatMessage, ChatModel } from 'diagnostic-data';
 import { ApplensGlobal } from '../../../applens-global';
 
 @Component({
@@ -15,6 +15,15 @@ export class KustoGPTComponent {
 
   public apiProtocol = APIProtocol.WebSocket;
   public chatModel = ChatModel.GPT4;
+  public someRandomVar:string = 'anything value';
+
+  
+  onFeedbackClicked = (chatMessage:ChatMessage, feedbackType:string):void => {
+    console.log(`Feedback clicked for message: ${chatMessage.displayMessage} with feedback type: ${feedbackType}`);
+    console.log(this.chatHeader);
+    console.log(this.someRandomVar);
+  }
+
   constructor(private _applensGlobal:ApplensGlobal) {
     this._applensGlobal.updateHeader('KQL for Antares Analytics'); // This sets the title of the HTML page
     this._applensGlobal.updateHeader(''); // Clear the header title of the component as the chat header is being displayed in the chat UI
@@ -36,5 +45,5 @@ export class KustoGPTComponent {
     </div>
   </div>
   `;
-}
+  }
 }

@@ -11,7 +11,8 @@ import {
   ChatAlignment,
   ChatModel,
   ResponseTokensSize,
-  APIProtocol
+  APIProtocol,
+  FeedbackOptions
 
 } from "../../../public_api";
 import { HttpClient } from '@angular/common/http';
@@ -64,6 +65,7 @@ export class OpenAIChatContainerComponent implements OnInit {
 
   @Input() feedbackEmailAlias:string = 'applensv2team';
   @Input() customCommandBarButtons:CustomCommandBarButtons[] = [];
+  @Input() onFeedbackClicked: (chatMessage:ChatMessage, feedbackType:FeedbackOptions) => void;
 
   constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
     private _chatContextService: ChatUIContextService,

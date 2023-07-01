@@ -13,7 +13,7 @@ export interface ChatMessage {
     timestamp: number;
     messageDisplayDate: string;
     renderingType: MessageRenderingType;
-    userFeedback: string;
+    userFeedback: FeedbackOptions;
     status: MessageStatus;
 }
 
@@ -49,4 +49,10 @@ export enum ChatModel {
 export enum APIProtocol {
     Rest = "rest",
     WebSocket = "websocket"
+}
+
+export enum FeedbackOptions {
+    Like = "like",
+    Dislike = "dislike",
+    None = "none"
 }

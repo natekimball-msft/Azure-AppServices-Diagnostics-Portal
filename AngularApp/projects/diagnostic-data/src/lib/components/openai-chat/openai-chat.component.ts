@@ -17,7 +17,8 @@ import {
   CreateChatCompletionModel,
   ResponseTokensSize,
   TextModels,
-  APIProtocol
+  APIProtocol,
+  FeedbackOptions
 
 } from "../../../public_api";
 import { v4 as uuid } from 'uuid';
@@ -70,6 +71,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
   @Input() quotaEnforced: boolean = false;
   @Input() dailyMessageQuota: number = 20;
   @Input() messageQuotaWarningThreshold: number = 10;
+  @Input() onFeedbackClicked: (chatMessage:ChatMessage, feedbackType:FeedbackOptions) => void;
 
   constructor(private _activatedRoute: ActivatedRoute, private _router: Router,
     private _openAIService: GenericOpenAIChatService,
@@ -143,7 +145,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
         timestamp: new Date().getTime(),
         messageDisplayDate: TimeUtilities.displayMessageDate(new Date()),
         status: MessageStatus.Finished,
-        userFeedback: "none",
+        userFeedback: FeedbackOptions.None,
         renderingType: MessageRenderingType.Text
       };
       this.onUserSendMessage(message);
@@ -182,7 +184,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
     }
   }
 
-  logUserFeedback = (messageId: string, feedbackType: string) => {
+  logUserFeedback = (messageId: string, feedbackType: FeedbackOptions) => {
     var msgObj = this._chatContextService.messageStore[this.chatIdentifier].find(m => m.id == messageId);
     if (msgObj == undefined) {
       return;
@@ -191,13 +193,16 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
       msgObj.userFeedback = feedbackType;
     }
 
-    if (feedbackType == 'like') {
+    if (feedbackType == FeedbackOptions.Like) {
       this._telemetryService.logEvent("OpenAIChatUserFeedbackLike", { chatIdentifier: this.chatIdentifier, userId: this._chatContextService.userId, messageId: messageId, messageText: msgObj.displayMessage, ts: new Date().getTime().toString() });
     }
     else {
       this._telemetryService.logEvent("OpenAIChatUserFeedbackDislike", { chatIdentifier: this.chatIdentifier, userId: this._chatContextService.userId, messageId: messageId, messageText: msgObj.displayMessage, ts: new Date().getTime().toString() });
     }
     this.saveChatToStore();
+    if(this.onFeedbackClicked) {
+      this.onFeedbackClicked(msgObj, feedbackType);
+    }
   }
 
   checkQuota() {
@@ -475,7 +480,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
         timestamp: new Date().getTime(),
         messageDisplayDate: TimeUtilities.displayMessageDate(new Date()),
         status: MessageStatus.Created,
-        userFeedback: "none",
+        userFeedback: FeedbackOptions.None,
         renderingType: MessageRenderingType.Text
       };
 
