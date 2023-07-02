@@ -2426,7 +2426,6 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
     const text = await file.text();
     this.createWorkflow.uploadFlowData(text);
   }
-
   //#region Copilot Methods
 
   initalizeCoPilotServiceMembers() {
