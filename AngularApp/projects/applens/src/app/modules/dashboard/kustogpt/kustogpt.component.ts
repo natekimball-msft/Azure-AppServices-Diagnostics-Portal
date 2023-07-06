@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import {DomSanitizer,SafeResourceUrl,} from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
 import { DiagnosticApiService } from "../../../shared/services/diagnostic-api.service";
-import { APIProtocol, ChatMessage, ChatModel } from 'diagnostic-data';
+import { APIProtocol, ChatMessage, ChatModel, FeedbackOptions } from 'diagnostic-data';
 import { ApplensGlobal } from '../../../applens-global';
 
 @Component({
@@ -15,11 +15,24 @@ export class KustoGPTComponent {
 
   public apiProtocol = APIProtocol.WebSocket;
   public chatModel = ChatModel.GPT4;
-  public someRandomVar:string = 'anything value';
+  public feedbackPanelVisible: boolean = true;
+
+
+  public onDismissed() {
+    console.log('onDismissed clicked');
+    console.log(this.feedbackPanelVisible);
+    this.feedbackPanelVisible = false;
+    console.log(this.feedbackPanelVisible);
+  }
 
   
   onFeedbackClicked = (chatMessage:ChatMessage, feedbackType:string):void => {
-    
+    if(feedbackType === FeedbackOptions.Dislike) {
+      this.feedbackPanelVisible = true;
+    }
+    else {
+      this.feedbackPanelVisible = false;
+    }
   }
 
   constructor(private _applensGlobal:ApplensGlobal) {
