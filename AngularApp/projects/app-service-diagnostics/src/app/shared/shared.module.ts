@@ -127,6 +127,7 @@ import { FabLinkModule } from '@angular-react/fabric/lib/components/link';
 import { FabPivotModule } from '@angular-react/fabric/lib/components/pivot';
 import { DownloadReportComponent } from './components/download-report/download-report.component';
 import { OptInsightsService } from './services/optinsights/optinsights.service';
+import { CpuMonitoringRuleComponent } from './components/daas/cpu-monitoring/cpu-monitoring-rule/cpu-monitoring-rule.component';
 
 @NgModule({
     declarations: [
@@ -198,7 +199,8 @@ import { OptInsightsService } from './services/optinsights/optinsights.service';
         LinuxPythonCpuProfilerComponent,
         LinuxNodeHeapDumpComponent,
         LinuxNodeCpuProfilerComponent,
-        DownloadReportComponent
+        DownloadReportComponent,
+        CpuMonitoringRuleComponent
     ],
     imports: [
         HttpClientModule,

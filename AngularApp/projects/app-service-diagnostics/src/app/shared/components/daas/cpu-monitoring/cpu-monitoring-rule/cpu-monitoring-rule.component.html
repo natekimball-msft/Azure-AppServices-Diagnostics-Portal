@@ -1,0 +1,181 @@
+<div class="row input-row">
+  <div class="col-sm-6">
+    <div class="media">
+      <div class="media-left media-middle">
+        <i class="media-object fa fa-line-chart tile-icon"></i>
+      </div>
+      <div class="media-body">
+        <div class="media-heading label-header">CPU Threshold</div>
+        This is the CPU threshold at which the rule will be triggered
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-5">
+    <div *ngIf="editMode" class="custom-slider">
+      <ng5-slider [(value)]="monitoringSession.CpuThreshold" [options]="sliderOptionsCpuThreshold"
+        (userChange)="updateRuleSummary()">
+      </ng5-slider>
+    </div>
+    <div *ngIf="!editMode" class="readonly-mode">{{ monitoringSession.CpuThreshold }}%</div>
+  </div>
+</div>
+<div class="row input-row">
+  <div class="col-sm-6">
+    <div class="media">
+      <div class="media-left media-middle">
+        <i class="media-object fa fa-clock-o tile-icon"></i>
+      </div>
+      <div class="media-body">
+        <div class="media-heading label-header">Threshold Seconds</div>
+        For the rule to trigger, CPU should exceed {{monitoringSession.CpuThreshold}}% for this many seconds
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-5">
+    <div *ngIf="editMode" class="custom-slider">
+      <ng5-slider [(value)]="monitoringSession.ThresholdSeconds" [options]="sliderOptionsThresholdSeconds"
+        (userChange)="updateRuleSummary()">
+      </ng5-slider>
+    </div>
+    <div *ngIf="!editMode" class="readonly-mode">{{ monitoringSession.ThresholdSeconds }} seconds</div>
+  </div>
+</div>
+
+<div class="row input-row" *ngIf="ruleType === RuleType.Diagnostics">
+  <div class="col-sm-6">
+    <div class="media">
+      <div class="media-left media-middle">
+        <i class="media-object fa fa-tachometer tile-icon"></i>
+      </div>
+      <div class="media-body">
+        <div class="media-heading label-header">Monitor Frequency</div>
+        This is how frequently the rule will be evaluated
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-5">
+    <div *ngIf="editMode" class="custom-slider">
+      <ng5-slider [(value)]="monitoringSession.MonitorDuration" [options]="sliderOptionsMonitorDuration"
+        (userChange)="updateRuleSummary()">
+      </ng5-slider>
+    </div>
+    <div *ngIf="!editMode" class="readonly-mode">{{ monitoringSession.MonitorDuration }} seconds</div>
+  </div>
+</div>
+
+<div class="row input-row">
+  <div class="col-sm-6">
+    <div class="media">
+      <div class="media-left media-middle">
+        <i class="media-object fa fa-bolt tile-icon"></i>
+      </div>
+      <div class="media-body">
+        <div class="media-heading label-header">Configure Action</div>
+        An action that you want to take when the above condition is met
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-5">
+    <div *ngIf="editMode" style="margin-top:10px;">
+      <div class="form-group">
+        <select class="form-control" id="mode" (change)="selectMode($event.target.value)">
+          <option *ngFor="let md of sessionModeTypes" [selected]="md === mode">{{md}}</option>
+        </select>
+        <div style="font-size: smaller;padding:5px" [innerHTML]="modeDescription">
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!editMode" class="readonly-mode">{{mode}}</div>
+  </div>
+</div>
+
+<div class="row input-row" *ngIf="ruleType === RuleType.Diagnostics">
+  <div class="col-sm-6">
+    <div class="media">
+      <div class="media-left media-middle">
+        <i class="media-object fa fa-files-o tile-icon"></i>
+      </div>
+      <div class="media-body">
+        <div class="media-heading label-header">Maximum Actions</div>
+        Maximum number of memory dumps to be collected by this rule
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-5">
+    <div *ngIf="editMode" class="custom-slider">
+      <ng5-slider *ngIf="mode !=='Kill'" [(value)]="monitoringSession.MaxActions" [options]="sliderOptionsMaxActions"
+        (userChange)="updateRuleSummary()">
+      </ng5-slider>
+      <div *ngIf="mode ==='Kill'">
+        <div class="readonly-mode">
+          Not Applicable
+        </div>
+        <div style="font-size: smaller;margin-top:8px">
+          * When action is set to Kill, the <strong>Maximum Actions</strong> setting is not applicable and the
+          rule
+          will
+          stop after <strong>Maximum Duration</strong>.
+        </div>
+      </div>
+
+    </div>
+    <div *ngIf="!editMode" class="readonly-mode">
+      <div *ngIf="mode !=='Kill'">
+        {{ monitoringSession.MaxActions }} dumps
+      </div>
+      <div *ngIf="mode ==='Kill'">
+        Not Applicable
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row input-row" *ngIf="ruleType === RuleType.Diagnostics">
+  <div class="col-sm-6">
+    <div class="media">
+      <div class="media-left media-middle">
+        <i class="media-object fa fa-hourglass-half tile-icon"></i>
+      </div>
+      <div class="media-body">
+        <div class="media-heading label-header">Maximum Duration</div>
+        Rule will be deactivated after this duration even if no data is collected
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-5">
+    <div *ngIf="editMode" class="custom-slider">
+      <ng5-slider [(value)]="monitoringSession.MaximumNumberOfHours" [options]="sliderOptionsMaxDuration"
+        (userChange)="updateRuleSummary()">
+      </ng5-slider>
+    </div>
+    <div *ngIf="!editMode" class="readonly-mode">{{ monitoringSession.MaximumNumberOfHours }} hours</div>
+  </div>
+</div>
+
+<div class="row input-row">
+  <div class="col-sm-6">
+    <div class="media">
+      <div class="media-left media-middle">
+        <i class="media-object fa fa-cogs tile-icon"></i>
+      </div>
+      <div class="media-body">
+        <div class="media-heading label-header">Monitor Web job processes</div>
+        Enable this to monitor the process for Kudu site and webjobs
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-5">
+    <div *ngIf="editMode" class="custom-slider">
+      <toggle-button ToggleText="" [(selected)]="monitoringSession.MonitorScmProcesses"
+        (selectedChange)="updateRuleSummary()"></toggle-button>
+    </div>
+    <div *ngIf="!editMode" class="readonly-mode">{{ monitoringSession.MonitorScmProcesses }}</div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="summary-title">Rule Configuration</div>
+  <div class="col-sm-9 summary-box" [innerHTML]="ruleSummary">
+  </div>
+</div>
