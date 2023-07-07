@@ -246,6 +246,19 @@ export class SupportTopicService {
                     }
                     
                     if (matchingDetectors && matchingDetectors.length > 0) {
+                        this._telemetryService.logEvent("MatchingDetectorsInCaseSubmission", {
+                            "MatchingDetectors": JSON.stringify(matchingDetectors.map(detector => {
+                                return { 
+                                    id: detector.id, 
+                                    type: detector.type
+                                };
+                            })),
+                            "SapSupportTopicId": sapSupportTopicId,
+                            "SupportTopicId": supportTopicId,
+                            "PesId": pesId,
+                            "SapProductId": sapProductId,
+                            "CaseSubject": searchTerm
+                        });
                         if (matchingDetectors.length === 1 && matchingDetectors[0] && matchingDetectors[0].id) {
                             if (matchingDetectors[0].type === DetectorType.Analysis) {
                                 detectorPath = `/analysis/${matchingDetectors[0].id}`;
@@ -260,6 +273,14 @@ export class SupportTopicService {
                         }
                     }
                     else {
+                        this._telemetryService.logEvent("MatchingDetectorsInCaseSubmission", {
+                            "MatchingDetectors": '[]',
+                            "SapSupportTopicId": sapSupportTopicId,
+                            "SupportTopicId": supportTopicId,
+                            "PesId": pesId,
+                            "SapProductId": sapProductId,
+                            "CaseSubject": searchTerm
+                        });
                         detectorPath = `/analysis/searchResultsAnalysis/search`;
                     }
                 }
