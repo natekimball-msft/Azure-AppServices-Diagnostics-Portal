@@ -1567,7 +1567,8 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
           this.localDevButtonDisabled = false;
           this.markCodeLinesInEditor(this.detailedCompilationTraces);
         }, ((error: any) => {
-          const errorMessage = error?.error?.replace(/"/g, '');
+          let errorObj = JSON.parse(error.error);
+          const errorMessage = (error.status === 403 && errorObj.Status === 10) ? "" : error?.error?.replace(/"/g, '');
           this.enableRunButton();
           this.publishingPackage = null;
           this.localDevButtonDisabled = false;
@@ -1603,11 +1604,10 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
               }
             }
           });
-          let errorObj = JSON.parse(error.error);
           if (error.status === 403 && errorObj.Status === 10)  {
             var url = errorObj.DetailText;
             this.detailedCompilationTraces.push({
-              severity: HealthStatus.ResourcePermission,
+              severity: HealthStatus.Critical,
               message: `Visit this website to verify your access to the requested subscription: <a href= ${url} target=_blank> ${url} </a>`,
               location: {
                 start: {
