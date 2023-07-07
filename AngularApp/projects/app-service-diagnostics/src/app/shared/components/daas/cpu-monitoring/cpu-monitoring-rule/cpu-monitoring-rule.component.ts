@@ -176,8 +176,7 @@ export class CpuMonitoringRuleComponent implements OnInit, OnChanges {
   }
 
   saveCpuMonitoring() {
-    this.savingMonitoringConfiguration.emit(true);
-    this.savingSettings = true;
+    this.updateSavingSettings(true);
     if (this.monitoringEnabled) {
       let newSession: MonitoringSession = new MonitoringSession();
       newSession.MaxActions = this.monitoringSession.MaxActions;
@@ -191,13 +190,13 @@ export class CpuMonitoringRuleComponent implements OnInit, OnChanges {
 
       this._daasService.submitMonitoringSession(this.siteToBeDiagnosed, newSession).subscribe(
         result => {
-          this.savingSettings = false;
+          this.updateSavingSettings(false);
           this.updateEditMode(false);
           this.originalMonitoringSession = newSession;
           this.monitoringConfigurationChange.emit(true);
         }, error => {
           this.monitoringEnabled = !this.monitoringEnabled;
-          this.savingSettings = false;
+          this.updateSavingSettings(false);
           this.error = JSON.stringify(error);
           this.monitoringConfigurationChange.emit(true);
         });
@@ -206,12 +205,12 @@ export class CpuMonitoringRuleComponent implements OnInit, OnChanges {
     else {
       this._daasService.stopMonitoringSession(this.siteToBeDiagnosed).subscribe(
         resp => {
-          this.savingSettings = false;
+          this.updateSavingSettings(false);
           this.updateEditMode(false);
           this.originalMonitoringSession = null;
           this.monitoringConfigurationChange.emit(true);
         }, error => {
-          this.savingSettings = false;
+          this.updateSavingSettings(false);
           this.monitoringEnabled = !this.monitoringEnabled;
           this.error = JSON.stringify(error);
           this.monitoringConfigurationChange.emit(true);
@@ -245,8 +244,13 @@ export class CpuMonitoringRuleComponent implements OnInit, OnChanges {
     return this.monitoringSession;
   }
 
-  updateEditMode(editMode:boolean){
+  updateEditMode(editMode: boolean) {
     this.editMode = editMode;
     this.editModeChange.emit(editMode);
+  }
+
+  updateSavingSettings(saving: boolean) {
+    this.savingSettings = saving;
+    this.savingMonitoringConfiguration.emit(saving);
   }
 }
