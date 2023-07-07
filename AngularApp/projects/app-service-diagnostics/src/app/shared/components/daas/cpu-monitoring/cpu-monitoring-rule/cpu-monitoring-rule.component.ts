@@ -19,6 +19,7 @@ export class CpuMonitoringRuleComponent implements OnInit, OnChanges {
   @Output() monitoringConfigurationChange: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() monitoringEnabledChange: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() savingMonitoringConfiguration: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() editModeChange: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   RuleType = RuleType;
   editMode: boolean = false;
@@ -191,7 +192,7 @@ export class CpuMonitoringRuleComponent implements OnInit, OnChanges {
       this._daasService.submitMonitoringSession(this.siteToBeDiagnosed, newSession).subscribe(
         result => {
           this.savingSettings = false;
-          this.editMode = false;
+          this.updateEditMode(false);
           this.originalMonitoringSession = newSession;
           this.monitoringConfigurationChange.emit(true);
         }, error => {
@@ -206,7 +207,7 @@ export class CpuMonitoringRuleComponent implements OnInit, OnChanges {
       this._daasService.stopMonitoringSession(this.siteToBeDiagnosed).subscribe(
         resp => {
           this.savingSettings = false;
-          this.editMode = false;
+          this.updateEditMode(false);
           this.originalMonitoringSession = null;
           this.monitoringConfigurationChange.emit(true);
         }, error => {
@@ -225,15 +226,15 @@ export class CpuMonitoringRuleComponent implements OnInit, OnChanges {
     }
 
     if ((this.originalMonitoringSession == null && this.monitoringEnabled) || (this.originalMonitoringSession != null && this.monitoringEnabled === false)) {
-      this.editMode = true;
+      this.updateEditMode(true);
     }
     else {
-      this.editMode = false;
+      this.updateEditMode(false);
     }
   }
 
   cancelChanges() {
-    this.editMode = false;
+    this.updateEditMode(false);
     if (this.originalMonitoringSession == null && this.monitoringEnabled) {
       this.monitoringEnabled = false;
     }
@@ -242,5 +243,10 @@ export class CpuMonitoringRuleComponent implements OnInit, OnChanges {
 
   getMonitoringSession(): MonitoringSession {
     return this.monitoringSession;
+  }
+
+  updateEditMode(editMode:boolean){
+    this.editMode = editMode;
+    this.editModeChange.emit(editMode);
   }
 }

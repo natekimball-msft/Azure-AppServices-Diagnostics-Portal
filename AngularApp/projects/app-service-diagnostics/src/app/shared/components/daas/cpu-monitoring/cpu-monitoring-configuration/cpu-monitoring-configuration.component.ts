@@ -71,4 +71,8 @@ export class CpuMonitoringConfigurationComponent implements OnInit {
       this.diagnosticRuleRef.saveCpuMonitoring();
     }
   }
+
+  updateEditMode(event: boolean) {
+    this.editMode = event;
+  }
 }

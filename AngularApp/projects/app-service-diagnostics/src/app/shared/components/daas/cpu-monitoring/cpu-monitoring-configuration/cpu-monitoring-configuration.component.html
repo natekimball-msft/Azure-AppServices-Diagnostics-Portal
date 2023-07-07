@@ -13,13 +13,15 @@
           <cpu-monitoring-rule #diagnosticRuleRef [siteToBeDiagnosed]="siteToBeDiagnosed" [blobSasUri]="blobSasUri"
             [ruleType]="RuleType.Diagnostics" (monitoringConfigurationChange)="updateConfiguration($event)"
             (savingMonitoringConfiguration)="savingConfiguration($event)"
-            (monitoringConfigurationChange)="updateMonitoringEnabled($event)"></cpu-monitoring-rule>
+            (monitoringConfigurationChange)="updateMonitoringEnabled($event)"
+            (editModeChange)="updateEditMode($event)"></cpu-monitoring-rule>
         </fab-pivot-item>
         <fab-pivot-item [headerText]="'Always-On mode'">
           <cpu-monitoring-rule #alwaysonRuleRef [siteToBeDiagnosed]="siteToBeDiagnosed" [blobSasUri]="blobSasUri"
             [ruleType]="RuleType.AlwaysOn" (monitoringConfigurationChange)="updateConfiguration($event)"
             (savingMonitoringConfiguration)="savingConfiguration($event)"
-            (monitoringConfigurationChange)="updateMonitoringEnabled($event)"></cpu-monitoring-rule>
+            (monitoringConfigurationChange)="updateMonitoringEnabled($event)"
+            (editModeChange)="updateEditMode($event)"></cpu-monitoring-rule>
         </fab-pivot-item>
       </fab-pivot>
     </div>
