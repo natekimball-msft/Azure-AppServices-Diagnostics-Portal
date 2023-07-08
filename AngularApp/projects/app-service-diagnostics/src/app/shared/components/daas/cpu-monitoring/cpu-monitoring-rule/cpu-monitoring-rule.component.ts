@@ -21,10 +21,10 @@ export class CpuMonitoringRuleComponent implements OnInit, OnChanges {
   @Output() savingMonitoringConfiguration: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() editModeChange: EventEmitter<boolean> = new EventEmitter<boolean>();
 
+  monitoringEnabled: boolean = false;
   RuleType = RuleType;
   editMode: boolean = false;
   savingSettings: boolean = false;
-  monitoringEnabled: boolean = false;
   monitoringSession: MonitoringSession;
   originalMonitoringSession: MonitoringSession;
 
@@ -208,12 +208,12 @@ export class CpuMonitoringRuleComponent implements OnInit, OnChanges {
           this.updateSavingSettings(false);
           this.updateEditMode(false);
           this.originalMonitoringSession = null;
-          this.monitoringConfigurationChange.emit(true);
+          this.monitoringConfigurationChange.emit(this.monitoringEnabled);
         }, error => {
           this.updateSavingSettings(false);
           this.monitoringEnabled = !this.monitoringEnabled;
           this.error = JSON.stringify(error);
-          this.monitoringConfigurationChange.emit(true);
+          this.monitoringConfigurationChange.emit(this.monitoringEnabled);
         });
 
     }
