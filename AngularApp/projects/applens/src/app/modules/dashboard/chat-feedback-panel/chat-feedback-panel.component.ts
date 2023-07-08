@@ -3,9 +3,9 @@ import { ChatMessage, ChatModel, ChatResponse, ChatUIContextService, CreateChatC
   FeedbackOptions, GenericOpenAIChatService, MessageRenderingType, MessageSource, MessageStatus, ResponseTokensSize, StringUtilities, TextModels, TimeUtilities } from 'diagnostic-data';
 import { ApplensGlobal } from '../../../applens-global';
 import { IButtonStyles, ITextFieldProps, PanelType } from 'office-ui-fabric-react';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, of } from 'rxjs';
 import {v4 as uuid} from 'uuid';
-import { ChatFeedbackModel } from '../../../shared/models/openAIChatFeedbackModel';
+import { ChatFeedbackModel, ChatFeedbackValidationStatus } from '../../../shared/models/openAIChatFeedbackModel';
 
 @Component({
   selector: 'chat-feedback-panel',
@@ -38,7 +38,7 @@ export class ChatFeedbackPanelComponent implements OnInit {
   /// If chatMessages is empty or not supplied, then up to chatContextLength recent messages will be retrieved from chatContextService and used to generate feedback.
   @Input() chatIdentifier: string;
   
-  @Input() chatModel: ChatModel = ChatModel.GPT3;
+  @Input() chatModel: ChatModel = ChatModel.GPT4;
   @Input() responseTokenSize: ResponseTokensSize = ResponseTokensSize.Large;
 
   @Input() headerText: string = "Feedback to improve AI generated response.";
@@ -212,8 +212,8 @@ mostUsedOutputBinding
 
     this.chatMessages.push({
       id: "4",
-      message: "To analyze the daily trend of the most used outbound trigger by Function apps over the past week, you can use the WawsAn_omgsitefunctionsentity table.",
-      displayMessage: "To analyze the daily trend of the most used outbound trigger by Function apps over the past week, you can use the WawsAn_omgsitefunctionsentity table.",
+      message: this.anotherSystemResponse,//"To analyze the daily trend of the most used outbound trigger by Function apps over the past week, you can use the WawsAn_omgsitefunctionsentity table.",
+      displayMessage: this.anotherSystemResponse,//"To analyze the daily trend of the most used outbound trigger by Function apps over the past week, you can use the WawsAn_omgsitefunctionsentity table.",
       messageSource: MessageSource.System,
       userFeedback: FeedbackOptions.Dislike,
       timestamp: 1,
@@ -284,13 +284,23 @@ mostUsedOutputBinding
           this._openAIService.CheckEnabled().subscribe((enabled) => {
             if(enabled) {
               this.currentApiCallCount = 0;
-              this.fetchOpenAIResultUsingRest(this.prepareChatHistory(chatMessagesToConstructUserQuestionFrom), this.GetEmptyChatMessage(), true, true, this.chatModel, 
-               'You are a chat assistant that helps consolidate the users final message in the form of a question. Given the current chat history, help construct a question for the user that can be answered by the system.')
-               .subscribe((messageObj) => {
+
+              this.fetchOpenAIResultAsChatMessageUsingRest(this.prepareChatHistory(chatMessagesToConstructUserQuestionFrom), this.GetEmptyChatMessage(), true, true, this.chatModel, 
+                'You are a chat assistant that helps consolidate the users final message in the form of a question. Given the current chat history, help construct a question for the user that can be answered by the system. Do not answer the users question, the goal is to only contruct a consolidated user question.')
+                .subscribe((messageObj) => {
                   if(messageObj && messageObj.status === MessageStatus.Finished && !`${messageObj.displayMessage}`.startsWith('Error: ')  ) {
                     this.feedbackUserQuestion = messageObj;                  
                   }
-               });
+                });
+
+
+              // this.fetchOpenAIResultUsingRest(this.prepareChatHistory(chatMessagesToConstructUserQuestionFrom), this.GetEmptyChatMessage(), true, true, this.chatModel, 
+              //  'You are a chat assistant that helps consolidate the users final message in the form of a question. Given the current chat history, help construct a question for the user that can be answered by the system.')
+              //  .subscribe((messageObj) => {
+              //     if(messageObj && messageObj.status === MessageStatus.Finished && !`${messageObj.displayMessage}`.startsWith('Error: ')  ) {
+              //       this.feedbackUserQuestion = messageObj;                  
+              //     }
+              //  });
             }
           });
         }
@@ -311,6 +321,98 @@ mostUsedOutputBinding
       renderingType: MessageRenderingType.Text
     };
   }
+
+  private fetchOpenAIResultAsChatMessageUsingRest(chatHistory: any, messageObj: ChatMessage, retry: boolean = true, trimnewline: boolean = false, chatModel:ChatModel, customInitialPrompt:string): Observable<ChatMessage> {
+    if (this.currentApiCallCount >= this.openAIApiCallLimit) {
+      this.statusMessage = "Error: OpenAI API call limit reached.";
+      this.currentApiCallCount = 0;
+      return of(messageObj);
+    }
+  
+    this.currentApiCallCount++;
+  
+    if (messageObj.status == MessageStatus.Cancelled) {
+      this.currentApiCallCount = 0;
+      return of(messageObj);
+    }
+      
+  
+    let openAIAPICall: Observable<ChatResponse> = new Observable();
+    this.currentApiCallCount = 0;
+  
+    messageObj.status = messageObj.status == MessageStatus.Created ? MessageStatus.Waiting : messageObj.status;
+  
+    if (chatModel == ChatModel.GPT3) {
+      let openAIQueryModel = CreateTextCompletionModel(chatHistory, TextModels.Default, this.responseTokenSize);
+      openAIAPICall = this._openAIService.generateTextCompletion(openAIQueryModel, customInitialPrompt, true);
+    } else {
+      let chatCompletionQueryModel = CreateChatCompletionModel(chatHistory, messageObj.id, this.chatIdentifier, chatModel, this.responseTokenSize);
+      openAIAPICall = this._openAIService.getChatCompletion(chatCompletionQueryModel, customInitialPrompt);
+    }
+  
+    return new Observable<ChatMessage>((observer) => {
+      const subscription = openAIAPICall.subscribe( (response: ChatResponse) => {
+          if (messageObj.status == MessageStatus.Cancelled) {
+            this.currentApiCallCount = 0;
+            observer.next(messageObj);
+            observer.complete();
+            return;
+          }
+  
+          let trimmedText = chatModel == ChatModel.GPT3 ? (trimnewline ? StringUtilities.TrimBoth(response.text) : StringUtilities.TrimEnd(response.text)) : response.text;
+  
+          messageObj.message = StringUtilities.mergeOverlappingStrings(messageObj.message, trimmedText);
+          messageObj.status = response.truncated === true ? MessageStatus.InProgress : MessageStatus.Finished;
+          messageObj.displayMessage = StringUtilities.mergeOverlappingStrings(messageObj.displayMessage, trimmedText);
+
+  
+          if (response.truncated) {
+            // Do not trim newline for the next query
+            this.fetchOpenAIResultAsChatMessageUsingRest(chatHistory, messageObj, retry, false, chatModel, customInitialPrompt).subscribe( (result: ChatMessage) => {
+                observer.next(result);
+                observer.complete();
+              },
+              (error: any) => {
+                observer.error(error);
+              }
+            );
+          } else {
+            messageObj.status =  MessageStatus.Finished;
+            messageObj.timestamp = new Date().getTime();
+            messageObj.messageDisplayDate = TimeUtilities.displayMessageDate(new Date());
+            this.currentApiCallCount = 0;
+            this.statusMessage = '';
+            messageObj.displayMessage = messageObj.displayMessage.replace('System: ', '');
+            messageObj.displayMessage = messageObj.displayMessage.replace('Assistant: ', '');
+  
+            observer.next(messageObj);
+            observer.complete();
+          }
+        },
+        (error: any) => {
+          if (retry) {
+            this.fetchOpenAIResultAsChatMessageUsingRest(chatHistory, messageObj, false, trimnewline, chatModel, customInitialPrompt).subscribe(
+              (result: ChatMessage) => {
+                this.currentApiCallCount = 0;
+                observer.next(result);
+                observer.complete();
+              },
+              (error: any) => {
+                observer.error(error);
+              }
+            );
+          } else {
+            observer.error(error);
+          }
+        }
+      );
+  
+      return () => {
+        subscription.unsubscribe();
+      };
+    });
+  }
+  
 
   private fetchOpenAIResultUsingRest(chatHistory: any, messageObj: ChatMessage, retry: boolean = true, trimnewline: boolean = false, chatModel:ChatModel, customInitialPrompt:string):Observable<ChatMessage> {
     if (this.currentApiCallCount >= this.openAIApiCallLimit) {
@@ -449,12 +551,15 @@ mostUsedOutputBinding
         incorrectSystemResponse: this.systemResponse.displayMessage,
         expectedResponse: this.correctResponseFeedback,
         additionalFields: this.additionalFields,
-        validationStatusResponse: ''
+        validationStatus: <ChatFeedbackValidationStatus>{
+          succeeded:true,
+          validationStatusResponse: ''
+        } 
       } as ChatFeedbackModel;
       if(this.onValidate) {
         this.onValidate(chatFeedbackModel).subscribe((validatedChatFeedback) => {
-          if(validatedChatFeedback) {
-            this.correctResponseFeedbackReasoning = validatedChatFeedback.validationStatusResponse;
+          if(validatedChatFeedback && validatedChatFeedback.validationStatus && validatedChatFeedback.validationStatus.succeeded) {
+            this.correctResponseFeedbackReasoning = validatedChatFeedback.validationStatus.validationStatusResponse;
             this.feedbackUserQuestion.displayMessage = validatedChatFeedback.userQuestion;
             this.feedbackUserQuestion.message = validatedChatFeedback.userQuestion;
             this.systemResponse.displayMessage = validatedChatFeedback.incorrectSystemResponse;
@@ -463,7 +568,7 @@ mostUsedOutputBinding
             this.additionalFields = validatedChatFeedback.additionalFields;
           }
           else {
-            this.statusMessage = "Error: Failed to validate feedback";
+            this.statusMessage = `Error: Failed to validate feedback. ${validatedChatFeedback?.validationStatus?.validationStatusResponse}`;
           }
         });
       }
@@ -471,21 +576,21 @@ mostUsedOutputBinding
         this._openAIService.CheckEnabled().subscribe((enabled) => {
           if(enabled) {
             this.currentApiCallCount = 0;
-            this.fetchOpenAIResultUsingRest( null, this.GetEmptyChatMessage(), true, true, ChatModel.GPT3,
-            `You are a chat assistant that helps reason why an answer to a question is incorrect and generates detailed reasoning about why the answer is incorrect. Given the following User question, Incorrect answer and Correct answer, reason why the original answer was incorrect.
-            User question: ${this.feedbackUserQuestion.displayMessage}
-  
-            Incorrect answer: ${this.systemResponse.displayMessage}
-  
-            Correct answer: ${this.correctResponseFeedback}
-            `).subscribe((messageObj) => {
-              if(messageObj && messageObj.status === MessageStatus.Finished && !`${messageObj.displayMessage}`.startsWith('Error: ')  ) {
-                this.correctResponseFeedbackReasoning = messageObj.displayMessage;                  
-              }
-              else {
-                this.statusMessage = "Error: Calling OpenAI API failed. Please write an explanation of why the original answer is incorrect." ;
-              }
-           });
+            this.fetchOpenAIResultAsChatMessageUsingRest([], this.GetEmptyChatMessage(), true, true, this.chatModel,
+              `You are a chat assistant that helps reason why an answer to a question is incorrect and generates a summary reasoning about why the answer is incorrect. Given the following UserQuestion, IncorrectAnswer and CorrectAnswer, reason why the original answer was incorrect. Also include a short step by step summary of how the CorrectAnswer achieves the desired outcome.
+              UserQuestion: ${this.feedbackUserQuestion.displayMessage}
+
+              IncorrectAnswer: ${this.systemResponse.displayMessage}
+
+              CorrectAnswer: ${this.correctResponseFeedback}
+              `).subscribe((messageObj) => {
+                if(messageObj && messageObj.status === MessageStatus.Finished && !`${messageObj.displayMessage}`.startsWith('Error: ')  ) {
+                  this.correctResponseFeedbackReasoning = messageObj.displayMessage;
+                }
+                else {
+                  this.statusMessage = "Error: Calling OpenAI API failed";
+                }
+              });
           }
         });
       }

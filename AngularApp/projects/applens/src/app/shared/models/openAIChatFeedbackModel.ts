@@ -4,11 +4,16 @@ export interface ChatFeedbackAdditionalFields {
     value:string, 
     isMultiline:boolean
   }
+
+  export interface ChatFeedbackValidationStatus {
+    succeeded:boolean,
+    validationStatusResponse:string
+  }
   
   export interface ChatFeedbackModel {
     userQuestion: string;
     incorrectSystemResponse: string;
     expectedResponse: string;
     additionalFields: ChatFeedbackAdditionalFields[];
-    validationStatusResponse:string;
+    validationStatus:ChatFeedbackValidationStatus;
   }
