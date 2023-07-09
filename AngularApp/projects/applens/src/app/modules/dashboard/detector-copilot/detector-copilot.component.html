@@ -32,7 +32,7 @@
 
   <openai-chat [chatAlignment]="'left'" [chatIdentifier]="_copilotService.chatComponentIdentifier"
     [chatContextLength]="4" [chatModel]="chatModel" [chatQuerySamplesFileUri]="configFile" [apiProtocol]="apiProtocol"
-    [contentDisclaimerMessage]="contentDisclaimerMessage" [quotaEnforced]="true" [chatHeader]="chatHeader"
+    [contentDisclaimerMessage]="contentDisclaimerMessage" [quotaEnforced]="true" [chatHeader]="_copilotService.copilotChatHeader"
     [systemPhotoSource]="'/assets/img/bot_sparkle_icon.svg'" [responseTokenSize]="responseTokenSize"
     [preprocessUserMessage]="onUserMessageSend" [postProcessSystemMessage]="onSystemMessageReceived"
     [postPrepareChatContext]="onPrepareChatContext" [stopMessageGeneration]="stopMessageGeneration"

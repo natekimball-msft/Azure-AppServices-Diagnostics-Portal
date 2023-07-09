@@ -39,9 +39,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.prepareChatHeader();
     this.prepareCodeUpdateMessages();
-
 
     this.closeEventObservable = this._copilotService.onCloseCopilotPanelEvent.subscribe(event => {
       if (event) {
@@ -247,7 +245,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   sendFeedback = () => {
 
     let newline = '%0D%0A';
-    const subject = encodeURIComponent(`Detector Copilot Feedback`);
+    const subject = encodeURIComponent(`${this._copilotService.copilotHeaderTitle} Feedback`);
     let body = encodeURIComponent('Please provide feedback here:');
     let link = "";
 
@@ -309,7 +307,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
       this._copilotService.detectorCode : '';
 
     let message = this.codeUsedInPrompt != '' ?
-      `Here is the initial detector code : \n <$>\n${this.codeUsedInPrompt}\n` : '';
+      `Here is the initial ${this._copilotService.isGist ? 'gist' : 'detector'} code : \n <$>\n${this.codeUsedInPrompt}\n` : '';
 
     message = `${message}Action you need to take : ${chatMessageObj.message}\n`;
 
@@ -320,7 +318,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
     let linesCountInCode = this.codeUsedInPrompt != '' ? this.codeUsedInPrompt.split("\n").length : 0;
     let rules = `1. If you are responding with code, No need to write any explanation before or after the code. Just respond with the updated code.
-    2. Start the code with '<$>\n' line.
+    2. Always start the code with '<$>' line.
     3. Dont have extra white spaces at the end of the every lines of code. Make sure the code is properly linted.`;
 
     if (linesCountInCode > this.maxLinesLimitForCodeUpdate) {
@@ -331,17 +329,6 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
     message = `${message}Rules you have to follow :\n ${rules}`;
     return message;
-  }
-
-  private prepareChatHeader = () => {
-    this.chatHeader = `
-    <h1 class='copilot-header chatui-header-text'>
-      <!--<i data-icon-name="robot" aria-hidden="true" class="ms-Icon root-89 css-229 ms-Button-icon"></i>-->
-      <img  class='copilot-header-img' src="/assets/img/bot_sparkle_icon.svg" alt = ''>
-      Detector Copilot (Preview)
-      <img class='copilot-header-img-secondary' src='/assets/img/rocket.png' alt=''>
-      <img class='copilot-header-img-secondary' src='/assets/img/rocket.png' alt=''">
-    </h1>`;
   }
 
   private prepareCodeUpdateMessages = () => {

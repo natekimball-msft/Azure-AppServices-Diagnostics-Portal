@@ -465,6 +465,10 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
 
   onUserSendMessage = (messageObj: ChatMessage) => {
 
+    if (!this._chatContextService.messageStore.hasOwnProperty(this.chatIdentifier)) {
+      this._chatContextService.messageStore[this.chatIdentifier] = [];
+    }
+
     // Invoke Pre-processing callback for message
     messageObj = this.preprocessUserMessage(messageObj);
 
