@@ -22,7 +22,6 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
   stopMessageGeneration: boolean = false;
   clearChatConfirmationHidden: boolean = true;
   copilotExitConfirmationHidden: boolean = true;
-  configFile: string = 'assets/chatConfigs/detectorcopilot.json';
 
   private closeEventObservable: Subscription;
   private codeUsedInPrompt: string;
@@ -333,7 +332,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
   private prepareCodeUpdateMessages = () => {
 
-    this.http.get<any>(this.configFile).subscribe(res => {
+    this.http.get<any>(this._copilotService.chatConfigFile).subscribe(res => {
       this.codeProgressMessages = res?.codeProgressMessages?.length > 0 ?
         res.codeProgressMessages : ['Please wait while I am updating your code'];
 

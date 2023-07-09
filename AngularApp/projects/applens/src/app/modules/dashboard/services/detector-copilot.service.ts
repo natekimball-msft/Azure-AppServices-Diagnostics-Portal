@@ -27,6 +27,7 @@ export class DetectorCopilotService {
   public chatComponentIdentifier: string = 'detectorcopilot';
   public copilotHeaderTitle: string;
   public copilotChatHeader: string;
+  public chatConfigFile: string = 'assets/chatConfigs/detectorcopilot.json';
 
   constructor(private _chatContextService: ChatUIContextService) {
     this.onCodeSuggestion = new BehaviorSubject<{ code: string, append: boolean, source: string }>(null);
@@ -104,10 +105,12 @@ export class DetectorCopilotService {
     if (isGistMode) {
       this.chatComponentIdentifier = 'gistcopilot';
       this.copilotHeaderTitle = 'Gist Copilot (Preview)';
+      this.chatConfigFile = 'assets/chatConfigs/gistcopilot.json';
     }
     else {
       this.chatComponentIdentifier = 'detectorcopilot';
       this.copilotHeaderTitle = 'Detector Copilot (Preview)';
+      this.chatConfigFile = 'assets/chatConfigs/detectorcopilot.json';
     }
 
     this.copilotChatHeader = `
