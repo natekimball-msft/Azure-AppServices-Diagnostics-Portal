@@ -212,7 +212,8 @@ export class SideNavComponent implements OnInit {
       isSelected: () => {
         return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `kustoQueryGenerator`;
       },
-      icon: null
+      icon: null,
+      visible: false
     }
   ];
 
@@ -220,7 +221,7 @@ export class SideNavComponent implements OnInit {
     this._openAIService.CheckEnabled().subscribe(enabled => {
       this.showChatGPT = this._openAIService.isEnabled;
       this._diagnosticApi.get<boolean>('api/openai/kustocopilot/enabled').subscribe(kustoGPTEnabledStatus => {
-        this.tools.find(tool => tool.id === 'kustocopilot').visible = kustoGPTEnabledStatus;
+        this.tools.find(tool => tool.id === 'kustocopilot').visible = kustoGPTEnabledStatus && `${this.resourceService.ArmResource.provider}`.toLowerCase().indexOf('microsoft.web') > -1;
       });
     });
     this._documentationService.getDocsRepoSettings().subscribe(settings => {
