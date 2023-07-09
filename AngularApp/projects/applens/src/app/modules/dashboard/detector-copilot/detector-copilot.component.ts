@@ -346,7 +346,7 @@ export class DetectorCopilotComponent implements OnInit, OnDestroy {
 
   private log = (event: string, message: string) => {
 
-    let eventStr = `DetectorCopilot-${event}`;
+    let eventStr = `${this._copilotService.logPrefix}-${event}`;
     let time = new Date().getTime().toString();
     if (environment.production) {
       this.telemetryService.logEvent(eventStr, { message: message, ts: time });
