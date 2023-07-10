@@ -54,7 +54,7 @@
             <th>Id</th>
             <th>PesId</th>
             <th>SapSupportTopicId</th>
-            <th>SapPesId</th>
+            <th>SapProductId</th>
             <th>Action</th>
           </thead>
           <tbody>
@@ -62,14 +62,14 @@
               <td>{{ st.id}}</td>
               <td>{{ st.pesId }}</td>
               <td>{{ st.sapSupportTopicId }}</td>
-              <td>{{ st.sapPesId }}</td>
+              <td>{{ st.sapProductId }}</td>
               <td><button class="btn btn-sm" (click)="deleteSupportTopic(st.id)">Delete</button></td>
             </tr>
             <tr>
               <td><input type="text" name="txtId" [(ngModel)]="newSupportTopic.id" /></td>
               <td><input type="text" name="txtPesId" [(ngModel)]="newSupportTopic.pesId" /></td>
               <td><input type="text" name="txtSapId" [(ngModel)]="newSupportTopic.sapSupportTopicId" /></td>
-              <td><input type="text" name="txtSapPesId" [(ngModel)]="newSupportTopic.sapPesId" /></td>
+              <td><input type="text" name="txtSapPesId" [(ngModel)]="newSupportTopic.sapProductId" /></td>
               <td><button class="btn btn-sm" (click)="addSupportTopic()">Add</button></td>
             </tr>
           </tbody>

@@ -1,5 +1,5 @@
 import { CompilationProperties } from "./compilation-properties";
-import { DataTableResponseColumn, PropertyBag, SupportTopic } from "./detector";
+import { DataTableResponseColumn, PropertyBag } from "./detector";
 
 export interface Dictionary<T> {
   [K: string]: T;
@@ -127,7 +127,14 @@ export class workflowPublishBody {
   ResourceType: string;
   ResourceProvider: string;
   Category: string;
-  SupportTopicList: SupportTopic[] = [];
+  SupportTopicList: WorkflowSupportTopic[] = [];
+}
+
+export class WorkflowSupportTopic {
+  id: string;
+  pesId: string;
+  sapProductId: string;
+  sapSupportTopicId: string;
 }
 
 export interface workflowNodeResult {

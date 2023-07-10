@@ -6,7 +6,7 @@ import { NgFlowchart, NgFlowchartCanvasDirective, NgFlowchartStepRegistry } from
 import { DetectorNodeComponent } from '../detector-node/detector-node.component';
 import { KustoNodeComponent } from '../kusto-node/kusto-node.component';
 import { MarkdownNodeComponent } from '../markdown-node/markdown-node.component';
-import { kustoNode, nodeType, workflow, workflowNode, workflowNodeData, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
+import { WorkflowSupportTopic, kustoNode, nodeType, workflow, workflowNode, workflowNodeData, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
 import { IfElseConditionStepComponent } from '../ifelse-condition-step/ifelse-condition-step.component';
 import { ConditionIffalseStepComponent } from '../condition-iffalse-step/condition-iffalse-step.component';
 import { ConditionIftrueStepComponent } from '../condition-iftrue-step/condition-iftrue-step.component';
@@ -20,7 +20,6 @@ import { WorkflowRootNodeComponent } from '../workflow-root-node/workflow-root-n
 import { ForeachNodeComponent } from '../foreach-node/foreach-node.component';
 import { InputNodeComponent } from '../input-node/input-node.component';
 import { ApplensDiagnosticService } from '../../services/applens-diagnostic.service';
-import { SupportTopic } from 'diagnostic-data';
 
 @Component({
   selector: 'create-workflow',
@@ -46,7 +45,7 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   stackTypes: string[] = ['None', 'AspNet', 'NetCore', 'Php', 'Python', 'Node', 'Java', 'Static', 'SiteCore', 'Other', 'All'];
   selected = [];
   service: string = '';
-  newSupportTopic: SupportTopic = { id: '', pesId: '', sapPesId: '', sapSupportTopicId: '' };
+  newSupportTopic: WorkflowSupportTopic = { id: '', pesId: '', sapProductId: '', sapSupportTopicId: '' };
 
   @ViewChild("selectAppType", { static: false }) selectAppType: NgSelectComponent;
   @ViewChild("selectPlatformType", { static: false }) selectPlatformType: NgSelectComponent;
@@ -333,6 +332,7 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
     let idx = this.publishBody.SupportTopicList.findIndex(x => x.id === this.newSupportTopic.id);
     if (idx === -1){
       this.publishBody.SupportTopicList.push(this.newSupportTopic);
+      this.newSupportTopic = { id: '', pesId: '', sapProductId: '', sapSupportTopicId: '' };
     } else{
       this._workflowService.showMessageBox('Error', "The SupportTopic with the same Id already exists");
     }
