@@ -12,9 +12,10 @@ import { IChoiceGroupOption } from 'office-ui-fabric-react/lib/components/Choice
 })
 export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
 
+
   @Input() siteToBeDiagnosed: SiteDaasInfo;
   @Input() activeSession: MonitoringSession;
-  @Input() blobSasUri:string;
+  @Input() blobSasUri: string;
   @Output() monitoringConfigurationChange: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() savingMonitoringConfiguration: EventEmitter<boolean> = new EventEmitter<boolean>();
 
@@ -23,6 +24,8 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
   monitoringEnabled: boolean = false;
   monitoringSession: MonitoringSession;
   originalMonitoringSession: MonitoringSession;
+  RuleType = RuleType;
+  monitorWebJobs: boolean = false;
 
   operationInProgress: boolean = false;
   mode: CpuMonitoringMode;
@@ -49,6 +52,14 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
     }
   };
 
+  sliderOptionsCpuThresholdAlwaysOnMode: Options = {
+    floor: 75, ceil: 99, step: 1, showTicks: true,
+    translate: (value: number): string => {
+      return value + "%";
+    }
+  };
+
+
   sliderOptionsMonitorDuration: Options = {
     floor: 15, ceil: 60, step: 15, showTicks: true,
     translate: (value: number): string => {
@@ -63,7 +74,29 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
   };
 
   sliderOptionsMaxActions: Options = {
-    floor: 1, ceil: 5, showTicks: true
+    floor: 1, ceil: 5, showTicks: true,
+  };
+
+  sliderOptionsMaxActionsAlwaysOnRule: Options = {
+    floor: 5, ceil: 30, showTicks: true,
+  };
+
+  sliderOptionsActionsInInterval: Options = {
+    floor: 1, ceil: 5, showTicks: true,
+  };
+
+  sliderOptionsIntervalDays: Options = {
+    floor: 1, ceil: 30, showTicks: true, step: 1, logScale: true,
+    translate: (value: number): string => {
+      return value + " days";
+    }
+  };
+
+  sliderOptionsWarmupTime: Options = {
+    floor: 15, ceil: 120, step: 5, showTicks: true,
+    translate: (value: number): string => {
+      return value + " minutes";
+    }
   };
 
   sliderOptionsMaxDuration: Options = {
@@ -94,6 +127,10 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
       this.monitoringSession = this.getDefaultMonitoringSettings();
     }
     else {
+      if (this.activeSession.RuleType === RuleType.AlwaysOn) {
+        this.activeSession.ProcessWarmupTimeInMinutes = this.timeSpanToMinutes(this.activeSession.ProcessWarmupTime);
+      }
+
       this.monitoringSession = this.activeSession;
       this.mode = this.monitoringSession.Mode;
       this.originalMonitoringSession = this.activeSession;
@@ -152,22 +189,39 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
         actionToTake = "collect a memory dump and kill the process";
         break;
       case CpuMonitoringMode.CollectKillAndAnalyze:
-        actionToTake = "collect a memory dump and analyze when all the dumps have been collected";
+        actionToTake = this.monitoringSession.RuleType === RuleType.Diagnostics ? "collect a memory dump and analyze when all the dumps have been collected" : "collect a memory dump and analyze it";
         break;
       case CpuMonitoringMode.Kill:
         actionToTake = "kill the process";
         break;
 
     }
-    this.ruleSummary = `When the site's process or any child processes of the site's process takes <b>${this.monitoringSession.CpuThreshold}%</b> of CPU for more than <b>${this.monitoringSession.ThresholdSeconds}</b> seconds, <b>${actionToTake}</b>. Evaluate CPU usage every <b>${this.monitoringSession.MonitorDuration} seconds</b>.`;
-    if (this.monitoringSession.Mode != CpuMonitoringMode.Kill) {
-      this.ruleSummary = this.ruleSummary + ` Collect a maximum of <b>${this.monitoringSession.MaxActions} memory dumps</b>.`;
+    this.ruleSummary = `When the site's process or any child processes of the site's process takes <b>${this.monitoringSession.CpuThreshold}%</b> of CPU for more than <b>${this.monitoringSession.ThresholdSeconds}</b> seconds, <b>${actionToTake}</b>.`;
+
+    if (this.monitoringSession.RuleType === RuleType.Diagnostics) {
+      this.ruleSummary += ` Evaluate CPU usage every <b>${this.monitoringSession.MonitorDuration} seconds</b>.`;
+      if (this.monitoringSession.Mode != CpuMonitoringMode.Kill) {
+        this.ruleSummary = this.ruleSummary + ` Collect a maximum of <b>${this.monitoringSession.MaxActions} memory dumps</b>.`;
+      }
     }
 
-    this.ruleSummary += ` Monitoring will stop automatically after <b>${this.monitoringSession.MaximumNumberOfHours > 24 ? (this.getValueRounded(this.monitoringSession.MaximumNumberOfHours / 24)) + " days" : this.monitoringSession.MaximumNumberOfHours + " hours"}</b>.`;
+    if (this.monitoringSession.RuleType === RuleType.AlwaysOn) {
+      if (this.monitoringSession.Mode != CpuMonitoringMode.Kill) {
+        this.ruleSummary += ` Monitoring will continue to capture a maximum of <b>${this.monitoringSession.ActionsInInterval} memory dumps</b> in an interval of <b>${this.monitoringSession.IntervalDays} days</b> and a total of <b>${this.monitoringSession.MaxActions} dumps</b> will be retained and older ones will be deleted. If the threshold condition keeps meeting beyond <b>${this.monitoringSession.ActionsInInterval} times in ${this.monitoringSession.IntervalDays} days </b>, the process will be killed.`;
+      }
 
-    if (this.monitoringSession.MonitorScmProcesses){
+      this.ruleSummary += ` The process must be running for at-least <b>${this.monitoringSession.ProcessWarmupTimeInMinutes} minutes </b> before CPU monitoring starts monitoring it for CPU usage.`;
+    }
+    else {
+      this.ruleSummary += ` Monitoring will stop automatically after <b>${this.monitoringSession.MaximumNumberOfHours > 24 ? (this.getValueRounded(this.monitoringSession.MaximumNumberOfHours / 24)) + " days" : this.monitoringSession.MaximumNumberOfHours + " hours"}</b>.`;
+    }
+
+    if (this.monitoringSession.MonitorScmProcesses) {
       this.ruleSummary += " The worker process for the kudu site and the webjobs under this app will also be monitored."
+    }
+
+    if (this.monitoringSession.ProcessWarmupTimeInMinutes > 0) {
+      this.monitoringSession.ProcessWarmupTime = this.minutesToTimeSpan(this.monitoringSession.ProcessWarmupTimeInMinutes);
     }
   }
 
@@ -176,6 +230,7 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
     this.savingSettings = true;
     if (this.monitoringEnabled) {
       let newSession: MonitoringSession = new MonitoringSession();
+      newSession.RuleType = this.monitoringSession.RuleType;
       newSession.MaxActions = this.monitoringSession.MaxActions;
       newSession.Mode = this.monitoringSession.Mode;
       newSession.MonitorDuration = this.monitoringSession.MonitorDuration;
@@ -184,6 +239,10 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
       newSession.MaximumNumberOfHours = this.monitoringSession.MaximumNumberOfHours;
       newSession.MonitorScmProcesses = this.monitoringSession.MonitorScmProcesses;
       newSession.BlobSasUri = this.blobSasUri;
+      newSession.ProcessWarmupTimeInMinutes = this.monitoringSession.ProcessWarmupTimeInMinutes;
+      newSession.IntervalDays = this.monitoringSession.IntervalDays;
+      newSession.ActionsInInterval = this.monitoringSession.ActionsInInterval;
+      newSession.ProcessWarmupTime = this.minutesToTimeSpan(this.monitoringSession.ProcessWarmupTimeInMinutes);
 
       this._daasService.submitMonitoringSession(this.siteToBeDiagnosed, newSession).subscribe(
         result => {
@@ -192,7 +251,6 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
           this.originalMonitoringSession = newSession;
           this.monitoringConfigurationChange.emit(true);
         }, error => {
-          this.monitoringEnabled = !this.monitoringEnabled;
           this.savingSettings = false;
           this.error = JSON.stringify(error);
           this.monitoringConfigurationChange.emit(true);
@@ -231,6 +289,44 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
       this.monitoringEnabled = false;
     }
     this.checkForChanges();
+  }
+
+  updateRuleType(alwaysOn: boolean) {
+    this.monitoringSession.RuleType = alwaysOn ? RuleType.AlwaysOn : RuleType.Diagnostics;
+    if (this.monitoringSession.RuleType === RuleType.AlwaysOn) {
+      this.sessionModeTypes = ["Kill", "CollectAndKill", "CollectKillAndAnalyze"];
+      this.monitoringSession.CpuThreshold = 85;
+      this.monitoringSession.MaxActions = 5;
+    } else {
+      this.sessionModeTypes = ["Kill", "Collect", "CollectAndKill", "CollectKillAndAnalyze"];
+      this.monitoringSession.CpuThreshold = 50;
+      this.monitoringSession.MaxActions = 2;
+    }
+
+    this.updateRuleSummary();
+  }
+
+  minutesToTimeSpan(minutes: number): string {
+    var hours = Math.floor(minutes / 60);
+    var mins = minutes % 60;
+    var secs = 0;
+
+    if (mins >= 60) {
+      secs = mins % 60;
+      mins = Math.floor(mins / 60);
+    }
+
+    return hours.toString().padStart(2, '0') + ':' + mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+  }
+
+  timeSpanToMinutes(timeSpan: string): number {
+    var timeParts = timeSpan.split(':');
+    var hours = parseInt(timeParts[0]);
+    var mins = parseInt(timeParts[1]);
+    var secs = parseInt(timeParts[2]);
+
+    var totalMinutes = hours * 60 + mins + Math.round(secs / 60);
+    return totalMinutes;
   }
 
 }

@@ -150,7 +150,7 @@ export class MonitoringSession {
     StartDate: string;
     EndDate: string;
     ProcessesToMonitor: string;
-    MonitorScmProcesses: boolean;
+    MonitorScmProcesses: boolean = false;
     CpuThreshold: number;
     ThresholdSeconds: number;
     MonitorDuration: number;
@@ -161,6 +161,10 @@ export class MonitoringSession {
     FilesCollected: MonitoringFile[];
     AnalysisStatus: AnalysisStatus;
     AnalysisSubmitted: boolean = false;
+    IntervalDays: number = 5;
+    ActionsInInterval: number = 2;
+    ProcessWarmupTime:string = '00:00:30';
+    ProcessWarmupTimeInMinutes: number = 30;
     ErrorSubmittingAnalysis: string = "";
     BlobSasUri: string = "";
 }

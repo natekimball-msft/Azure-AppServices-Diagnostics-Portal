@@ -12,6 +12,49 @@
         <div class="col-sm-6">
           <div class="media">
             <div class="media-left media-middle">
+              <i class="media-object fa fa-refresh tile-icon"></i>
+            </div>
+            <div class="media-body">
+              <div class="media-heading label-header">Always-On Monitoring Enabled</div>
+              When Always-On monitoring is enabled, there is no end date for the monitoring rule
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-5">
+          <div *ngIf="editMode" class="custom-slider">
+            <toggle-button [selected]="monitoringSession.RuleType === RuleType.AlwaysOn"
+              (selectedChange)="updateRuleType($event)">
+            </toggle-button>
+          </div>
+          <div *ngIf="!editMode" class="readonly-mode">{{monitoringSession.RuleType === RuleType.AlwaysOn }}</div>
+        </div>
+      </div>
+
+      <div class="row input-row">
+        <div class="col-sm-6">
+          <div class="media">
+            <div class="media-left media-middle">
+              <i class="media-object fa fa-cogs tile-icon"></i>
+            </div>
+            <div class="media-body">
+              <div class="media-heading label-header">Monitor Web job processes</div>
+              Enable this to monitor the process for Kudu site and webjobs
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-5">
+          <div *ngIf="editMode" class="custom-slider">
+            <toggle-button [selected]="monitoringSession.MonitorScmProcesses"
+              (selectedChange)="monitoringSession.MonitorScmProcesses = $event; updateRuleSummary()"></toggle-button>
+          </div>
+          <div *ngIf="!editMode" class="readonly-mode">{{ monitoringSession.MonitorScmProcesses }}</div>
+        </div>
+      </div>
+
+      <div class="row input-row">
+        <div class="col-sm-6">
+          <div class="media">
+            <div class="media-left media-middle">
               <i class="media-object fa fa-line-chart tile-icon"></i>
             </div>
             <div class="media-body">
@@ -22,13 +65,15 @@
         </div>
         <div class="col-sm-5">
           <div *ngIf="editMode" class="custom-slider">
-            <ng5-slider [(value)]="monitoringSession.CpuThreshold" [options]="sliderOptionsCpuThreshold"
+            <ng5-slider [(value)]="monitoringSession.CpuThreshold"
+              [options]="monitoringSession.RuleType === RuleType.AlwaysOn ? sliderOptionsCpuThresholdAlwaysOnMode: sliderOptionsCpuThreshold"
               (userChange)="updateRuleSummary()">
             </ng5-slider>
           </div>
           <div *ngIf="!editMode" class="readonly-mode">{{ monitoringSession.CpuThreshold }}%</div>
         </div>
       </div>
+
       <div class="row input-row">
         <div class="col-sm-6">
           <div class="media">
@@ -51,7 +96,7 @@
         </div>
       </div>
 
-      <div class="row input-row">
+      <div class="row input-row" *ngIf="monitoringSession.RuleType === RuleType.Diagnostics">
         <div class="col-sm-6">
           <div class="media">
             <div class="media-left media-middle">
@@ -95,8 +140,69 @@
               </div>
             </div>
           </div>
-
           <div *ngIf="!editMode" class="readonly-mode">{{mode}}</div>
+        </div>
+      </div>
+
+      <div class="row input-row" *ngIf="monitoringSession.RuleType === RuleType.AlwaysOn">
+        <div class="col-sm-6">
+          <div class="media">
+            <div class="media-left media-middle">
+              <i class="media-object fa fa-calendar tile-icon"></i>
+            </div>
+            <div class="media-body">
+              <div class="media-heading label-header">Interval Days</div>
+              The total number of days in which the action should be executed
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-5">
+          <div *ngIf="editMode" class="custom-slider">
+            <ng5-slider *ngIf="mode !=='Kill'" [(value)]="monitoringSession.IntervalDays"
+              [options]="sliderOptionsIntervalDays" (userChange)="updateRuleSummary()">
+            </ng5-slider>
+            <div *ngIf="mode ==='Kill'">
+              <div class="readonly-mode">
+                Not Applicable
+              </div>
+              <div style="font-size: smaller;margin-top:8px">
+                * When action is set to Kill, the <strong>Interval Days</strong> setting is not applicable and the
+                rule will continue to kill the process whenever the threshold condition is met.
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!editMode" class="readonly-mode">{{ monitoringSession.IntervalDays }} days</div>
+        </div>
+      </div>
+
+      <div class="row input-row" *ngIf="monitoringSession.RuleType === RuleType.AlwaysOn">
+        <div class="col-sm-6">
+          <div class="media">
+            <div class="media-left media-middle">
+              <i class="media-object fa fa-hourglass-half tile-icon"></i>
+            </div>
+            <div class="media-body">
+              <div class="media-heading label-header">Actions Within Interval</div>
+              The maximum number of actions to be executed in {{ monitoringSession.IntervalDays }} days
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-5">
+          <div *ngIf="editMode" class="custom-slider">
+            <ng5-slider *ngIf="mode !=='Kill'" [(value)]="monitoringSession.ActionsInInterval"
+              [options]="sliderOptionsActionsInInterval" (userChange)="updateRuleSummary()">
+            </ng5-slider>
+            <div *ngIf="mode ==='Kill'">
+              <div class="readonly-mode">
+                Not Applicable
+              </div>
+              <div style="font-size: smaller;margin-top:8px">
+                * When action is set to Kill, the <strong>Actions Within Interval</strong> setting is not applicable and
+                the rule will continue to kill the process whenever the threshold condition is met.
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!editMode" class="readonly-mode">{{ monitoringSession.ActionsInInterval }} actions</div>
         </div>
       </div>
 
@@ -115,16 +221,17 @@
         <div class="col-sm-5">
           <div *ngIf="editMode" class="custom-slider">
             <ng5-slider *ngIf="mode !=='Kill'" [(value)]="monitoringSession.MaxActions"
-              [options]="sliderOptionsMaxActions" (userChange)="updateRuleSummary()">
+              [options]="monitoringSession.RuleType === RuleType.AlwaysOn ? sliderOptionsMaxActionsAlwaysOnRule : sliderOptionsMaxActions"
+              (userChange)="updateRuleSummary()">
             </ng5-slider>
             <div *ngIf="mode ==='Kill'">
               <div class="readonly-mode">
                 Not Applicable
               </div>
               <div style="font-size: smaller;margin-top:8px">
-                * When action is set to Kill, the <strong>Maximum Actions</strong> setting is not applicable and the rule
-                will
-                stop after <strong>Maximum Duration</strong>.
+                * When action is set to Kill, the <strong>Maximum Actions</strong> setting is not applicable
+                <ng-container *ngIf="monitoringSession.RuleType === RuleType.Diagnostics"> and the
+                  rule will stop after <strong>Maximum Duration</strong>.</ng-container>
               </div>
             </div>
 
@@ -140,7 +247,29 @@
         </div>
       </div>
 
-      <div class="row input-row">
+      <div class="row input-row" *ngIf="monitoringSession.RuleType === RuleType.AlwaysOn">
+        <div class="col-sm-6">
+          <div class="media">
+            <div class="media-left media-middle">
+              <i class="media-object fa fa-gear tile-icon"></i>
+            </div>
+            <div class="media-body">
+              <div class="media-heading label-header">Process Warmup Time</div>
+              The minimum time a process should be up before the rule gets triggered
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-5">
+          <div *ngIf="editMode" class="custom-slider">
+            <ng5-slider [(value)]="monitoringSession.ProcessWarmupTimeInMinutes" [options]="sliderOptionsWarmupTime"
+              (userChange)="updateRuleSummary()">
+            </ng5-slider>
+          </div>
+          <div *ngIf="!editMode" class="readonly-mode">{{ monitoringSession.ProcessWarmupTime }}</div>
+        </div>
+      </div>
+
+      <div class="row input-row" *ngIf="monitoringSession.RuleType === RuleType.Diagnostics">
         <div class="col-sm-6">
           <div class="media">
             <div class="media-left media-middle">
@@ -159,26 +288,6 @@
             </ng5-slider>
           </div>
           <div *ngIf="!editMode" class="readonly-mode">{{ monitoringSession.MaximumNumberOfHours }} hours</div>
-        </div>
-      </div>
-
-      <div class="row input-row">
-        <div class="col-sm-6">
-          <div class="media">
-            <div class="media-left media-middle">
-              <i class="media-object fa fa-cogs tile-icon"></i>
-            </div>
-            <div class="media-body">
-              <div class="media-heading label-header">Monitor Web job processes</div>
-              Enable this to monitor the process for Kudu site and webjobs
-            </div>
-          </div>
-        </div>
-        <div class="col-sm-5">
-          <div *ngIf="editMode" class="custom-slider">
-            <toggle-button ToggleText="" [(selected)]="monitoringSession.MonitorScmProcesses" (selectedChange)="updateRuleSummary()"></toggle-button>
-          </div>
-          <div *ngIf="!editMode" class="readonly-mode">{{ monitoringSession.MonitorScmProcesses }}</div>
         </div>
       </div>
 
