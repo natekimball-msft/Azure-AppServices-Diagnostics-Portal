@@ -662,7 +662,6 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
 
       this.copilotEnabled = res &&
         isSystemInvoker == false &&
-        this.gistMode == false &&
         this.isWorkflowDetector == false;
     });
   }
@@ -2432,6 +2431,7 @@ export class OnboardingFlowComponent implements OnInit, OnDestroy, IDeactivateCo
     this._detectorCopilotService.azureServiceType = this.resourceService.displayName;
     this._detectorCopilotService.detectorDevelopMode = this.mode;
     this._detectorCopilotService.detectorCode = StringUtilities.ReplaceNewlines(this.code);
+    this._detectorCopilotService.initializeMembers(this.gistMode);
     if (this.mode == DevelopMode.Create) {
       this._detectorCopilotService.detectorTemplate = StringUtilities.ReplaceNewlines(this.code);
     }

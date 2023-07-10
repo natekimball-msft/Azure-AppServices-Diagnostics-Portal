@@ -103,17 +103,7 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
       this.isEnabled = this._openAIService.isEnabled;
       if (this.isEnabled) {
 
-        if (this.chatQuerySamplesFileUri && this.chatQuerySamplesFileUri.length > 0) {
-          this.http.get<any>(this.chatQuerySamplesFileUri).subscribe((res) => {
-            if (res && res.samples) {
-              this.chatQuerySamples = res.samples;
-            }
-            this.isEnabledChecked = true;
-          },
-            (err) => {
-              this._telemetryService.logEvent("OpenAIChatQuerySamplesFileLoadError", { "chatQuerySamplesFileUri": this.chatQuerySamplesFileUri, userId: this._chatContextService.userId, ts: new Date().getTime().toString() });
-            });
-        }
+        this.loadChatQuerySamples();
 
         if (this.apiProtocol == APIProtocol.WebSocket) {
           this._openAIService.establishSignalRConnection().subscribe((result: boolean) => {
@@ -133,6 +123,17 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
 
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+
+    if (changes['chatQuerySamplesFileUri'] != undefined && this.chatQuerySamplesFileUri) {
+      this.loadChatQuerySamples();
+    }
+
+    if (changes['stopMessageGeneration'] != undefined && this.stopMessageGeneration) {
+      this.onStopMessageGeneration('Message cancelled by user');
+    }
+  }
+
   populateCustomFirstMessage() {
     if (this.customFirstMessage && this.customFirstMessage.length > 0) {
       let message = {
@@ -150,10 +151,18 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
     }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  loadChatQuerySamples() {
 
-    if (changes['stopMessageGeneration'] != undefined && this.stopMessageGeneration) {
-      this.onStopMessageGeneration('Message cancelled by user');
+    if (this.chatQuerySamplesFileUri && this.chatQuerySamplesFileUri.length > 0) {
+      this.http.get<any>(this.chatQuerySamplesFileUri).subscribe((res) => {
+        if (res && res.samples) {
+          this.chatQuerySamples = res.samples;
+        }
+        this.isEnabledChecked = true;
+      },
+        (err) => {
+          this._telemetryService.logEvent("OpenAIChatQuerySamplesFileLoadError", { "chatQuerySamplesFileUri": this.chatQuerySamplesFileUri, userId: this._chatContextService.userId, ts: new Date().getTime().toString() });
+        });
     }
   }
 
@@ -464,6 +473,10 @@ export class OpenAIChatComponent implements OnInit, OnChanges {
   }
 
   onUserSendMessage = (messageObj: ChatMessage) => {
+
+    if (!this._chatContextService.messageStore.hasOwnProperty(this.chatIdentifier)) {
+      this._chatContextService.messageStore[this.chatIdentifier] = [];
+    }
 
     // Invoke Pre-processing callback for message
     messageObj = this.preprocessUserMessage(messageObj);
