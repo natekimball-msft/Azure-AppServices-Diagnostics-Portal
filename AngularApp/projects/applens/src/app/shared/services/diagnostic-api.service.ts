@@ -16,7 +16,7 @@ import { List } from 'office-ui-fabric-react';
 import { dynamicExpressionBody } from '../../modules/dashboard/workflow/models/kusto';
 import { workflowNodeResult, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
 import { CommitStatus } from '../models/devopsCommitStatus';
-import { NoCodeDetectorJson, NoCodeExpressionBody } from '../../modules/dashboard/dynamic-node-settings/node-rendering-json-models';
+import { NoCodeDetectorJson, NoCodeExpressionBody, NoCodePackage } from '../../modules/dashboard/dynamic-node-settings/node-rendering-json-models';
 
 
 @Injectable()
@@ -378,6 +378,11 @@ export class DiagnosticApiService {
 
   public publishWorkflow(resourceId: string, publishBody: workflowPublishBody): Observable<any> {
     let path = `${resourceId}/diagnostics/publishworkflow`;
+    return this.invoke<string>(path, HttpMethod.POST, publishBody, false);
+  }
+
+  public publishNoCode(resourceId: string, publishBody: NoCodePackage): Observable<any> {
+    let path = `${resourceId}/diagnostics/publishnocodedetector`;
     return this.invoke<string>(path, HttpMethod.POST, publishBody, false);
   }
 
