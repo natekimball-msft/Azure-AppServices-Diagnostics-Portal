@@ -71,8 +71,7 @@ export class ChatFeedbackPanelComponent implements OnInit {
   @Input() onBeforeSubmit: (feedbackModel: ChatFeedbackModel) => Observable<ChatFeedbackModel> ;
 
   public statusMessage = '';
-  public validateFeedbackClicked:boolean = false;
-  
+    
   private openAIAPICallSubscription:Subscription;
   private currentApiCallCount:number = 0;
   private openAIApiCallLimit = 10;
@@ -228,7 +227,6 @@ mostUsedOutputBinding
 
   private initValues(): void {
     this.statusMessage = '';
-    this.validateFeedbackClicked = false;
     if(this.chatMessages && this.chatMessages.length > 0) {
       
       let chatMessagesToWorkWith:ChatMessage[] = [];
@@ -529,7 +527,6 @@ mostUsedOutputBinding
 
   public retainCursorPositon(e: { event: Event, newValue?: string }) {
     if(e && e.event && e.event.target) {
-      // Retain cursor position
       let target = e.event.target as HTMLInputElement;
       let cursorPosition = target.selectionStart;
       setTimeout(() => {
@@ -544,13 +541,12 @@ mostUsedOutputBinding
       this.feedbackUserQuestion.displayMessage = `${e.newValue}`;
       this.feedbackUserQuestion.message = `${e.newValue}`;
     }
-    
+
     this.retainCursorPositon(e);
   }
 
   validateFeedback() {
     if(this.correctResponseFeedback) {
-      this.validateFeedbackClicked = true;
       let chatFeedbackModel = {
         userQuestion: this.feedbackUserQuestion.displayMessage,
         incorrectSystemResponse: this.systemResponse.displayMessage,
@@ -578,35 +574,40 @@ mostUsedOutputBinding
         });
       }
       else {
-        this._openAIService.CheckEnabled().subscribe((enabled) => {
-          if(enabled) {
-            this.currentApiCallCount = 0;
-            this.statusMessage = '';
-            if(!this.feedbackUserQuestion.displayMessage) {
-              this.statusMessage = 'Error: User question is required.';
-            }
-            if(!this.correctResponseFeedback) {
-              this.statusMessage += '\nError:Expected response is required.';
-            }
-            // this.fetchOpenAIResultAsChatMessageUsingRest((this.chatModel == ChatModel.GPT3? null : []), this.GetEmptyChatMessage(), true, true, this.chatModel,
-            //   `You are a chat assistant that helps reason why an answer to a question is incorrect and generates a summary reasoning about why the answer is incorrect. Given the following UserQuestion, IncorrectAnswer and CorrectAnswer, reason why the original answer was incorrect. Also include a short step by step summary of how the CorrectAnswer achieves the desired outcome.
-            //   UserQuestion: ${this.feedbackUserQuestion.displayMessage}
+        this.statusMessage = '';
+        if(!this.feedbackUserQuestion.displayMessage) {
+          this.statusMessage = 'Error: User question is required.';
+        }
+        if(!this.correctResponseFeedback) {
+          this.statusMessage += '\nError:Expected response is required.';
+        }
 
-            //   IncorrectAnswer: ${this.systemResponse.displayMessage}
+        // this._openAIService.CheckEnabled().subscribe((enabled) => {
+        //   if(enabled) {
+        //     this.currentApiCallCount = 0;            
+        //     this.fetchOpenAIResultAsChatMessageUsingRest((this.chatModel == ChatModel.GPT3? null : []), this.GetEmptyChatMessage(), true, true, this.chatModel,
+        //       `You are a chat assistant that helps reason why an answer to a question is incorrect and generates a summary reasoning about why the answer is incorrect. Given the following UserQuestion, IncorrectAnswer and CorrectAnswer, reason why the original answer was incorrect. Also include a short step by step summary of how the CorrectAnswer achieves the desired outcome.
+        //       UserQuestion: ${this.feedbackUserQuestion.displayMessage}
 
-            //   CorrectAnswer: ${this.correctResponseFeedback}
-            //   `).subscribe((messageObj) => {
-            //     if(messageObj && messageObj.status === MessageStatus.Finished && !`${messageObj.displayMessage}`.startsWith('Error: ')  ) {
-            //       this.correctResponseFeedbackReasoning = messageObj.displayMessage;
-            //     }
-            //     else {
-            //       this.statusMessage = "Error: Calling OpenAI API failed";
-            //     }
-            //   });
-          }
-        });
+        //       IncorrectAnswer: ${this.systemResponse.displayMessage}
+
+        //       CorrectAnswer: ${this.correctResponseFeedback}
+        //       `).subscribe((messageObj) => {
+        //         if(messageObj && messageObj.status === MessageStatus.Finished && !`${messageObj.displayMessage}`.startsWith('Error: ')  ) {
+        //           this.correctResponseFeedbackReasoning = messageObj.displayMessage;
+        //         }
+        //         else {
+        //           this.statusMessage = "Error: Calling OpenAI API failed";
+        //         }
+        //       });
+        //   }
+        // });
       }
       
     }
+  }
+
+  submitChatFeedback() {
+    this.validateFeedback();
   }
 }
