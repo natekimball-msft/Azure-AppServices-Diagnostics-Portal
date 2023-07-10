@@ -68,7 +68,7 @@ export class ChatFeedbackPanelComponent implements OnInit {
   }
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() onDismissed = new EventEmitter<void>();
-  @Input() onValidate: (feedbackModel: ChatFeedbackModel) => Observable<ChatFeedbackModel> ;
+  @Input() onBeforeSubmit: (feedbackModel: ChatFeedbackModel) => Observable<ChatFeedbackModel> ;
 
   public statusMessage = '';
   public validateFeedbackClicked:boolean = false;
@@ -102,8 +102,7 @@ export class ChatFeedbackPanelComponent implements OnInit {
   feedbackUserQuestion:ChatMessage;
   systemResponse:ChatMessage;
   correctResponseFeedback:string = '';
-  correctResponseFeedbackReasoning:string = '';
-
+  
   // correct question to ask for this is "What is the daily trend of most used outbound trigger by Function apps over the past week?"
   anotherSystemResponse: string = `WawsAn_omgsitefunctionsentity
   | where pdate >= ago(7d)
@@ -151,7 +150,7 @@ mostUsedOutputBinding
     this.visibleChange.emit(this.visible);
     this.onDismissed.emit();
   }
-  
+
   constructor(private _applensGlobal:ApplensGlobal, private _openAIService: GenericOpenAIChatService, private _chatContextService: ChatUIContextService) {
     // this._applensGlobal.updateHeader('KQL for Antares Analytics'); // This sets the title of the HTML page
     // this._applensGlobal.updateHeader(''); // Clear the header title of the component as the chat header is being displayed in the chat UI
@@ -289,18 +288,10 @@ mostUsedOutputBinding
                 'You are a chat assistant that helps consolidate the users final message in the form of a question. Given the current chat history, help construct a question for the user that can be answered by the system. Do not answer the users question, the goal is to only contruct a consolidated user question.')
                 .subscribe((messageObj) => {
                   if(messageObj && messageObj.status === MessageStatus.Finished && !`${messageObj.displayMessage}`.startsWith('Error: ')  ) {
-                    this.feedbackUserQuestion = messageObj;                  
+                    this.feedbackUserQuestion = messageObj;
+                    this.statusMessage = 'Note: User question was updated based on the chat history. Please validate the question before submitting.';
                   }
                 });
-
-
-              // this.fetchOpenAIResultUsingRest(this.prepareChatHistory(chatMessagesToConstructUserQuestionFrom), this.GetEmptyChatMessage(), true, true, this.chatModel, 
-              //  'You are a chat assistant that helps consolidate the users final message in the form of a question. Given the current chat history, help construct a question for the user that can be answered by the system.')
-              //  .subscribe((messageObj) => {
-              //     if(messageObj && messageObj.status === MessageStatus.Finished && !`${messageObj.displayMessage}`.startsWith('Error: ')  ) {
-              //       this.feedbackUserQuestion = messageObj;                  
-              //     }
-              //  });
             }
           });
         }
@@ -536,11 +527,25 @@ mostUsedOutputBinding
     return null;
   }
 
+  public retainCursorPositon(e: { event: Event, newValue?: string }) {
+    if(e && e.event && e.event.target) {
+      // Retain cursor position
+      let target = e.event.target as HTMLInputElement;
+      let cursorPosition = target.selectionStart;
+      setTimeout(() => {
+        target.setSelectionRange(cursorPosition, cursorPosition);
+      }
+      , 0);
+    }
+  }
+
   updateFeedbackUserQuestion(e: { event: Event, newValue?: string }) {
     if(this.feedbackUserQuestion && e && e.newValue) {
       this.feedbackUserQuestion.displayMessage = `${e.newValue}`;
       this.feedbackUserQuestion.message = `${e.newValue}`;
     }
+    
+    this.retainCursorPositon(e);
   }
 
   validateFeedback() {
@@ -556,10 +561,10 @@ mostUsedOutputBinding
           validationStatusResponse: ''
         } 
       } as ChatFeedbackModel;
-      if(this.onValidate) {
-        this.onValidate(chatFeedbackModel).subscribe((validatedChatFeedback) => {
+      if(this.onBeforeSubmit) {
+        this.onBeforeSubmit(chatFeedbackModel).subscribe((validatedChatFeedback) => {
           if(validatedChatFeedback && validatedChatFeedback.validationStatus && validatedChatFeedback.validationStatus.succeeded) {
-            this.correctResponseFeedbackReasoning = validatedChatFeedback.validationStatus.validationStatusResponse;
+            this.statusMessage = validatedChatFeedback.validationStatus.validationStatusResponse;
             this.feedbackUserQuestion.displayMessage = validatedChatFeedback.userQuestion;
             this.feedbackUserQuestion.message = validatedChatFeedback.userQuestion;
             this.systemResponse.displayMessage = validatedChatFeedback.incorrectSystemResponse;
@@ -576,21 +581,28 @@ mostUsedOutputBinding
         this._openAIService.CheckEnabled().subscribe((enabled) => {
           if(enabled) {
             this.currentApiCallCount = 0;
-            this.fetchOpenAIResultAsChatMessageUsingRest([], this.GetEmptyChatMessage(), true, true, this.chatModel,
-              `You are a chat assistant that helps reason why an answer to a question is incorrect and generates a summary reasoning about why the answer is incorrect. Given the following UserQuestion, IncorrectAnswer and CorrectAnswer, reason why the original answer was incorrect. Also include a short step by step summary of how the CorrectAnswer achieves the desired outcome.
-              UserQuestion: ${this.feedbackUserQuestion.displayMessage}
+            this.statusMessage = '';
+            if(!this.feedbackUserQuestion.displayMessage) {
+              this.statusMessage = 'Error: User question is required.';
+            }
+            if(!this.correctResponseFeedback) {
+              this.statusMessage += '\nError:Expected response is required.';
+            }
+            // this.fetchOpenAIResultAsChatMessageUsingRest((this.chatModel == ChatModel.GPT3? null : []), this.GetEmptyChatMessage(), true, true, this.chatModel,
+            //   `You are a chat assistant that helps reason why an answer to a question is incorrect and generates a summary reasoning about why the answer is incorrect. Given the following UserQuestion, IncorrectAnswer and CorrectAnswer, reason why the original answer was incorrect. Also include a short step by step summary of how the CorrectAnswer achieves the desired outcome.
+            //   UserQuestion: ${this.feedbackUserQuestion.displayMessage}
 
-              IncorrectAnswer: ${this.systemResponse.displayMessage}
+            //   IncorrectAnswer: ${this.systemResponse.displayMessage}
 
-              CorrectAnswer: ${this.correctResponseFeedback}
-              `).subscribe((messageObj) => {
-                if(messageObj && messageObj.status === MessageStatus.Finished && !`${messageObj.displayMessage}`.startsWith('Error: ')  ) {
-                  this.correctResponseFeedbackReasoning = messageObj.displayMessage;
-                }
-                else {
-                  this.statusMessage = "Error: Calling OpenAI API failed";
-                }
-              });
+            //   CorrectAnswer: ${this.correctResponseFeedback}
+            //   `).subscribe((messageObj) => {
+            //     if(messageObj && messageObj.status === MessageStatus.Finished && !`${messageObj.displayMessage}`.startsWith('Error: ')  ) {
+            //       this.correctResponseFeedbackReasoning = messageObj.displayMessage;
+            //     }
+            //     else {
+            //       this.statusMessage = "Error: Calling OpenAI API failed";
+            //     }
+            //   });
           }
         });
       }

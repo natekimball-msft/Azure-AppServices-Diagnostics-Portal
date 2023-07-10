@@ -3,21 +3,15 @@
   [isLightDismiss]="true" [hasCloseButton]="true" [isBlocking]="false" [closeButtonAriaLabel]="'close'" (onDismiss)="dismissedHandler()"
   [headerText]="headerText">
     <div style="margin: 5px;">
-      <fab-text-field [ariaLabel]="'Question'"  [label]="'Question'" [styles]="fabTextFieldStyles" [rows] = 4 [multiline]="true" (onChange) = "updateFeedbackUserQuestion($event)" [value] = "feedbackUserQuestion.displayMessage">
+      <fab-text-field [ariaLabel]="'Question'" [required]="'{true}'" [label]="'Question'" [styles]="fabTextFieldStyles" [rows] = 4 [multiline]="true" (onChange) = "updateFeedbackUserQuestion($event)" [value] = "feedbackUserQuestion.displayMessage">
       </fab-text-field>
-      <fab-text-field [ariaLabel]="'System response'"  [label]="'System response'" [styles]="fabTextFieldStyles" [disabled]="true" [rows] = 5 [resizable]="false" [autoAdjustHeight] = "true" [multiline]="true" [value] = "systemResponse.displayMessage">
+      <fab-text-field [ariaLabel]="'System response'"  [required]="'{true}'" [label]="'System response'" [styles]="fabTextFieldStyles" [disabled]="true" aria-disabled="true" [rows] = 5 [resizable]="false" [autoAdjustHeight] = "true" [multiline]="true" [value] = "systemResponse.displayMessage">
       </fab-text-field>
-      <fab-text-field [ariaLabel]="'Expected response'"  [label]="'Expected response'" [styles]="fabTextFieldStyles" [rows] = 15 [autoAdjustHeight] = "true" [multiline]="true"  [(value)] = "correctResponseFeedback">
+      <fab-text-field [ariaLabel]="'Expected response'" [required]="'{true}'" [label]="'Expected response'" [styles]="fabTextFieldStyles" [rows] = 15 [autoAdjustHeight] = "true" [multiline]="true" (onChange) = "retainCursorPositon($event)"   [(value)] = "correctResponseFeedback">
       </fab-text-field>
-
-      <fab-text-field *ngFor = "let elements of additionalFields" [ariaLabel]="elements.labelText"  [label]="elements.labelText" [styles]="fabTextFieldStyles" [rows] = 5 [autoAdjustHeight] = "true" [multiline]="elements.isMultiline"  [(value)] = "elements.value">
+      <fab-text-field *ngFor = "let elements of additionalFields" [ariaLabel]="elements.labelText"  [label]="elements.labelText" [styles]="fabTextFieldStyles" [rows] = 5 [autoAdjustHeight] = "true" [multiline]="elements.isMultiline"  (onChange) = "retainCursorPositon($event)"   [(value)] = "elements.value">
       </fab-text-field>
-
-      <fab-default-button [text]="'Validate'" [styles]="fabDefaultButtonStyle" (onClick)="validateFeedback()"></fab-default-button>
-
-      <fab-text-field [ariaLabel]="'Validation result'"  [label]="'Validation result'" [styles]="fabTextFieldStyles" [rows] = 15 [autoAdjustHeight] = "true" [multiline]="true"  [(value)] = "correctResponseFeedbackReasoning">
-      </fab-text-field>
-
+      <div *ngIf = "statusMessage" style="color: brown;margin:2em;" role="text" aria-label="Status message" aria-disabled="true"  >{{statusMessage}}</div>
     </div>
   </fab-panel>
 </div>
