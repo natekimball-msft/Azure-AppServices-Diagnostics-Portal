@@ -1,5 +1,5 @@
 import { CompilationProperties } from "./compilation-properties";
-import { DataTableResponseColumn, PropertyBag } from "./detector";
+import { DataTableResponseColumn, PropertyBag, SupportTopic } from "./detector";
 
 export interface Dictionary<T> {
   [K: string]: T;
@@ -127,6 +127,7 @@ export class workflowPublishBody {
   ResourceType: string;
   ResourceProvider: string;
   Category: string;
+  SupportTopicList: SupportTopic[] = [];
 }
 
 export interface workflowNodeResult {

@@ -20,6 +20,7 @@ import { WorkflowRootNodeComponent } from '../workflow-root-node/workflow-root-n
 import { ForeachNodeComponent } from '../foreach-node/foreach-node.component';
 import { InputNodeComponent } from '../input-node/input-node.component';
 import { ApplensDiagnosticService } from '../../services/applens-diagnostic.service';
+import { SupportTopic } from 'diagnostic-data';
 
 @Component({
   selector: 'create-workflow',
@@ -45,6 +46,7 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   stackTypes: string[] = ['None', 'AspNet', 'NetCore', 'Php', 'Python', 'Node', 'Java', 'Static', 'SiteCore', 'Other', 'All'];
   selected = [];
   service: string = '';
+  newSupportTopic: SupportTopic = { id: '', pesId: '', sapPesId: '', sapSupportTopicId: '' };
 
   @ViewChild("selectAppType", { static: false }) selectAppType: NgSelectComponent;
   @ViewChild("selectPlatformType", { static: false }) selectPlatformType: NgSelectComponent;
@@ -325,5 +327,27 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
 
   addRootNode() {
     this._workflowService.addRootNode(this.canvas.getFlow());
+  }
+
+  addSupportTopic() {
+    let idx = this.publishBody.SupportTopicList.findIndex(x => x.id === this.newSupportTopic.id);
+    if (idx === -1){
+      this.publishBody.SupportTopicList.push(this.newSupportTopic);
+    } else{
+      this._workflowService.showMessageBox('Error', "The SupportTopic with the same Id already exists");
+    }
+    
+  }
+
+  deleteSupportTopic(id: string) {
+    if (this.publishBody == null || this.publishBody.SupportTopicList == null) {
+      return;
+    }
+
+    let idx = this.publishBody.SupportTopicList.findIndex(x => x.id === id);
+    if (idx > -1) {
+      this.publishBody.SupportTopicList = this.publishBody.SupportTopicList.splice(idx, 1);
+    }
+
   }
 }

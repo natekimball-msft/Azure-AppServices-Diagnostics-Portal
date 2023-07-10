@@ -45,6 +45,38 @@
         <input name="category" class="form-control input-sm" [(ngModel)]="publishBody.Category">
       </div>
     </div>
+
+    <div class="form-row" *ngIf="!publishBody.IsInternal">
+      <div class="form-group col-md-12">
+        <label for="internalOnly">Support Topics</label>
+        <table class="table table-bordered">
+          <thead>
+            <th>Id</th>
+            <th>PesId</th>
+            <th>SapSupportTopicId</th>
+            <th>SapPesId</th>
+            <th>Action</th>
+          </thead>
+          <tbody>
+            <tr *ngFor="let st of publishBody.SupportTopicList">
+              <td>{{ st.id}}</td>
+              <td>{{ st.pesId }}</td>
+              <td>{{ st.sapSupportTopicId }}</td>
+              <td>{{ st.sapPesId }}</td>
+              <td><button class="btn btn-sm" (click)="deleteSupportTopic(st.id)">Delete</button></td>
+            </tr>
+            <tr>
+              <td><input type="text" name="txtId" [(ngModel)]="newSupportTopic.id" /></td>
+              <td><input type="text" name="txtPesId" [(ngModel)]="newSupportTopic.pesId" /></td>
+              <td><input type="text" name="txtSapId" [(ngModel)]="newSupportTopic.sapSupportTopicId" /></td>
+              <td><input type="text" name="txtSapPesId" [(ngModel)]="newSupportTopic.sapPesId" /></td>
+              <td><button class="btn btn-sm" (click)="addSupportTopic()">Add</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="form-row">
       <ng-container *ngIf="service === 'SiteService'">
         <div class="form-group col-md-3">
