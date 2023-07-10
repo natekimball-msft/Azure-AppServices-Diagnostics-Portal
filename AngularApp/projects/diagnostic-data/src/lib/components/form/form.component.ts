@@ -119,7 +119,9 @@ export class FormComponent extends DataRenderBaseComponent {
               formInputs[ip]["isVisible"] != undefined ? formInputs[ip]["isVisible"] : true
             ));
             if(formInputs[ip]["submitOnSelection"] !=null && JSON.parse(formInputs[ip]["submitOnSelection"]) == true){
-              this.OnSubmitFormAction(this.detectorForms[i].formId, -1);
+              if(formInputs[ip]["defaultSelectedKey"] != null && formInputs[ip]["defaultSelectedKey"] != ""){
+                this.OnSubmitFormAction(this.detectorForms[i].formId, -1);
+              }
             }
           }
           else if(this.isDateTimePicker(formInputs[ip]["inputType"])) {
