@@ -10,6 +10,7 @@ import { ResourceService } from '../../../shared/services/resource.service';
 import { UserSettingService } from '../services/user-setting.service';
 import { UserChatGPTSetting } from '../../../shared/models/user-setting';
 import { ClipboardService } from 'projects/diagnostic-data/src/lib/services/clipboard.service';
+import { CustomCommandBarButtons } from 'projects/diagnostic-data/src/lib/models/openai-chat-container-models';
 
 @Component({
   selector: 'communication-toolkit',
@@ -24,11 +25,11 @@ export class CommunicationToolkitComponent implements OnInit {
   
   userPhotoSource: string = '';
   userNameInitial: string = '';
-  chatHeader: string = `<h1 class='chatui-header-text'><b>SUPER</b>EasyRCA!</h1>`;
+  chatHeader: string = `<h1 class='chatui-header-text'><b>RCA Co-Pilot</b>!</h1>`;
 
   
   // Variables to be passed down to the OpenAI Chat component
-  chatComponentIdentifier: string = "EasyRCAChatGPT";
+  chatComponentIdentifier: string = "rcacopilot";
   showContentDisclaimer: boolean = true;
   contentDisclaimerMessage: string = "* Please do not send any sensitive data in your queries. Please VERIFY the given RCA before sending to customers...I'm still learning :)";
 
@@ -43,11 +44,13 @@ export class CommunicationToolkitComponent implements OnInit {
   currentResourceProvider: string; 
   customFirstMessageEdit: string = ""; 
 
-  chatQuerySamplesFileURIPath = "assets/chatConfigs/easyRCAChatGPT.json"; 
+  chatQuerySamplesFileURIPath = "assets/chatConfigs/rcacopilot.json"; 
   apiProtocol : APIProtocol = APIProtocol.WebSocket; 
   inputTextLimit = 1000;
-  showCopyOption = false; 
+  showCopyOption = true; 
   chatModel: ChatModel = ChatModel.GPT4; 
+
+  //customCommandBarButtons : CustomCommandBarButtons[] = [ { displayText : "Copy", iconName : "Copy", disabled : false, onClick : this.copyChatGPTClicked}];
 
   // Component's internal variables
   isEnabled: boolean = false;
@@ -65,11 +68,11 @@ export class CommunicationToolkitComponent implements OnInit {
     public _chatUIContextService: ChatUIContextService,
     private _clipboard: ClipboardService) { 
 
-
   }
 
   ngOnInit(): void {
     this.originalResourceProvider = `${this._resourceService.ArmResource.provider}/${this._resourceService.ArmResource.resourceTypeName}`.toLowerCase();
+    
     if (this.originalResourceProvider === 'microsoft.web/sites') {
       this.currentResourceProvider = `${this.originalResourceProvider}${this._resourceService.displayName}`;
     }
@@ -97,14 +100,12 @@ export class CommunicationToolkitComponent implements OnInit {
     }
   }
 
-//might need this method for later 
-  // copyChatGPTClicked(){
-  //   var id = this.OpenAICHATComponentRef.chatIdentifier;
-  //   var length = this.OpenAICHATComponentRef._chatContextService.messageStore[id].length; 
-  //   var message = this.OpenAICHATComponentRef._chatContextService.messageStore[id][length-1].displayMessage;
-  //   this._clipboard.copyAsHtml(message);
-  //   this._telemetryService.logEvent("ChatGPTRCACopied", { rcaCopied: message, userId: this._chatUIContextService.userId, timestamp: new Date().getTime().toString() });
-  // }
+//custom copy method 
+  copyChatGPTClicked(textToCopy: string){
+    debugger; 
+    this._clipboard.copyAsHtml(textToCopy);
+    this._telemetryService.logEvent("ChatGPTRCACopied", { rcaCopied: textToCopy, userId: this._chatUIContextService.userId, timestamp: new Date().getTime().toString() });
+  }
 
 
 }

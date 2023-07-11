@@ -214,23 +214,10 @@ export class SideNavComponent implements OnInit {
       },
       icon: null
     },
-    {
-      label: 'RCA Toolkit',
-      id: "",
-      onClick: () => {
-        this.navigateTo("communicationToolkit");
-      },
-      expanded: false,
-      subItems: null,
-      isSelected: () => {
-        return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `communicationToolkit`.toLowerCase();
-      },
-      icon: null
-    }
-  ,
-  ];
+    ];
 
   ngOnInit() {
+    this.checkRCAToolkitEnabled(); 
     this._openAIService.CheckEnabled().subscribe(enabled => {
       this.showChatGPT = this._openAIService.isEnabled;
       this._diagnosticApi.get<boolean>('api/openai/kustocopilot/enabled').subscribe(kustoGPTEnabledStatus => {
@@ -268,6 +255,35 @@ export class SideNavComponent implements OnInit {
     }
 
     this.toolsCopy = this.deepCopyArray(this.tools);
+  }
+
+  checkRCAToolkitEnabled(){
+    //check if rca toolkit is present/enabled
+    let isPresent = this.tools.find(tool => tool.label === "RCA Toolkit");
+    if(isPresent){
+      return; 
+    }
+
+    //if not present/enabled
+    var tempResourceId = this.resourceService.getCurrentResourceId();
+   
+    if(tempResourceId.indexOf("Microsoft.Web/sites") != -1){
+
+      this.tools.push(
+        {
+        label: 'RCA Toolkit',
+        id: "",
+        onClick: () => {
+          this.navigateTo("communicationToolkit");
+        },
+        expanded: false,
+        subItems: null,
+        isSelected: () => {
+          return this.currentRoutePath && this.currentRoutePath.join('/').toLowerCase() === `communicationToolkit`.toLowerCase();
+        },
+        icon: null
+      })
+    }
   }
 
   navigateToOverview() {

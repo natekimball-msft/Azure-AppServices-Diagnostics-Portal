@@ -53,6 +53,8 @@ export class OpenAIChatContainerComponent implements OnInit {
     return context;
   };
 
+  @Input() onCopyClick: Function = (textToCopy: string) => { };
+
   // Variables that can be taken as input
   @Input() showFeedbackOptions: boolean = true;
   @Input() showContentDisclaimer: boolean = true;

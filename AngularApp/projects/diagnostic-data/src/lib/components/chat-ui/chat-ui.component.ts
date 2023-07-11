@@ -24,6 +24,8 @@ export class ChatUIComponent implements OnInit {
     @Input() showCopyOption: boolean = false;
     @Input() onFeedbackClick: Function = (messageId: string, feedbackType: string) => { };
 
+    @Input() onCopyClick: Function = (textToCopy: string) => { };
+
     @Input() userNameInitial: string = '';
     @Input() userPhotoSource: string = '';
 
@@ -128,6 +130,15 @@ export class ChatUIComponent implements OnInit {
     }
 
     copySystemMessageToClipboard(textToCopy:string) {
-        navigator.clipboard.writeText(textToCopy);
+        debugger; 
+        if(this.onCopyClick){
+            this.onCopyClick(textToCopy);
+        }
+        //default handling 
+        else{
+            navigator.clipboard.writeText(textToCopy);
+        }
     }
+
+    
 }  
