@@ -22,7 +22,6 @@ import { InputNodeComponent } from '../input-node/input-node.component';
 import { ApplensDiagnosticService } from '../../services/applens-diagnostic.service';
 import { ApplensSupportTopicService } from '../../services/applens-support-topic.service';
 import { SupportTopicResult } from '../../resource-home/resource-home.component';
-import { SupportTopic } from 'diagnostic-data';
 
 @Component({
   selector: 'create-workflow',
@@ -64,6 +63,7 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   supportTopicsLoaded: boolean = false;
   supportTopicPaths: string[] = [];
   chosenSupportTopic: string = '';
+  allSupportTopics: SupportTopicResult[] = [];
 
   @Input() id: string = '';
   @Input() Branch: string = '';
@@ -76,16 +76,14 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   }
 
   ngOnInit(): void {
-    this.initialize();
     this._supportTopicService.getSupportTopics().subscribe((allSupportTopics: SupportTopicResult[]) => {
       this.supportTopicsLoaded = true;
+      this.allSupportTopics = allSupportTopics;
       allSupportTopics.forEach(st => {
-        let supportTopicPath = st.supportTopicPath;
-        const pieces = supportTopicPath.split('/');
-        supportTopicPath = pieces.join('\\');
-        this.supportTopicPaths.push(supportTopicPath);
+        this.supportTopicPaths.push(this.correctSupportTopicPath(st.supportTopicPath));
       });
       this.chosenSupportTopic = this.supportTopicPaths[0];
+      this.initialize();
     });
   }
 
@@ -358,7 +356,19 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
     }
   }
 
-  getSupportTopicPaths(supportTopicList: []):string[] {
-    return [];
+  getSupportTopicPaths(supportTopicList: []): string[] {
+    let supportTopicPaths: string[] = [];
+    supportTopicList.forEach((supportTopic: any) => {
+      let idx = this.allSupportTopics.findIndex(x => x.sapProductId === supportTopic.SapProductId && x.sapSupportTopicId === supportTopic.SapSupportTopicId);
+      if (idx > -1) {
+        supportTopicPaths.push(this.correctSupportTopicPath(this.allSupportTopics[idx].supportTopicPath));
+      }
+    });
+    return supportTopicPaths;
+  }
+
+  correctSupportTopicPath(supportTopicPath: string): string {
+    const pieces = supportTopicPath.split('/');
+    return pieces.join('\\');
   }
 }
