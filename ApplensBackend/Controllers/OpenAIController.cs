@@ -159,7 +159,7 @@ namespace AppLensV3.Controllers
                 }
 
                 var userAlias = Utilities.GetUserIdFromToken(Request.Headers.Authorization).Split(new char[] { '@' }).FirstOrDefault();
-                var allowedUsers = _configuration["KustoCopilot:AllowedUserAliases"].Trim()
+                var allowedUsers = (string.IsNullOrWhiteSpace((string)_configuration["KustoCopilot:AllowedUserAliases"]) ? string.Empty : _configuration["KustoCopilot:AllowedUserAliases"].Trim())
                     .Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
                 isKustoCopilotEnabled &= allowedUsers.Length == 0 || allowedUsers.Any(p => p.Trim().ToLower().Equals(userAlias));
 
