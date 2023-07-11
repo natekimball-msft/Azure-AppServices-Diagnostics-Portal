@@ -5,6 +5,8 @@ import { environment } from '../../../../environments/environment';
 import { DiagnosticApiService } from "../../../shared/services/diagnostic-api.service";
 import { APIProtocol, ChatMessage, ChatModel, FeedbackOptions } from 'diagnostic-data';
 import { ApplensGlobal } from '../../../applens-global';
+import { ChatFeedbackModel } from '../../../shared/models/openAIChatFeedbackModel';
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'kustogpt',
@@ -18,11 +20,18 @@ export class KustoGPTComponent {
   public feedbackPanelVisible: boolean = true;
 
 
-  public onDismissed() {
+  public onDismissed(feedbackModel:ChatFeedbackModel) {
     console.log('onDismissed clicked');
     console.log(this.feedbackPanelVisible);
     this.feedbackPanelVisible = false;
     console.log(this.feedbackPanelVisible);
+    console.log(feedbackModel);
+  }
+
+  onBeforeSubmit = (chatFeedbackModel:ChatFeedbackModel): Observable<ChatFeedbackModel> => {
+    chatFeedbackModel.validationStatus.succeeded = false;
+    chatFeedbackModel.validationStatus.validationStatusResponse = 'Validation failed';
+    return of(chatFeedbackModel);
   }
 
   

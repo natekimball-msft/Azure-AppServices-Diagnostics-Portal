@@ -1,7 +1,8 @@
 export interface ChatFeedbackAdditionalFields {
     id:string, 
     labelText:string, 
-    value:string, 
+    defaultValue:string,
+    value:string,
     isMultiline:boolean
   }
 

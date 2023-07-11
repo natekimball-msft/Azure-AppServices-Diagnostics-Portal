@@ -12,5 +12,5 @@
       [onFeedbackClicked] = "onFeedbackClicked"
       >
     </openai-chat-container>
-    <chat-feedback-panel [(visible)] = "feedbackPanelVisible" (onDismissed) = "onDismissed()"></chat-feedback-panel>
+    <chat-feedback-panel [(visible)] = "feedbackPanelVisible" (onDismissed) = "onDismissed($event)" [onBeforeSubmit] = "onBeforeSubmit"></chat-feedback-panel>
 </div>

@@ -8,16 +8,16 @@
         </fab-text-field>
         <fab-text-field [ariaLabel]="'System response'"  [required]="'{true}'" [label]="'System response'" [styles]="fabTextFieldStyles" [disabled]="true" aria-disabled="true" [rows] = 5 [resizable]="false" [autoAdjustHeight] = "true" [multiline]="true" [value] = "systemResponse.displayMessage">
         </fab-text-field>
-        <fab-text-field [ariaLabel]="'Expected response'" [required]="'{true}'" [label]="'Expected response'" [styles]="fabTextFieldStyles" [rows] = 15 [autoAdjustHeight] = "true" [multiline]="true" (onChange) = "retainCursorPositon($event)"   [(value)] = "correctResponseFeedback">
+        <fab-text-field [ariaLabel]="'Expected response'" [required]="'{true}'" [label]="'Expected response'" [styles]="fabTextFieldStyles" [rows] = 15 [autoAdjustHeight] = "true" [multiline]="true" [(value)] = "correctResponseFeedback">
         </fab-text-field>
-        <fab-text-field *ngFor = "let elements of additionalFields" [ariaLabel]="elements.labelText"  [label]="elements.labelText" [styles]="fabTextFieldStyles" [rows] = 5 [autoAdjustHeight] = "true" [multiline]="elements.isMultiline"  (onChange) = "retainCursorPositon($event)"   [(value)] = "elements.value">
+        <fab-text-field *ngFor = "let elements of additionalFields" [ariaLabel]="elements.labelText"  [label]="elements.labelText" [styles]="fabTextFieldStyles" [rows] = 5 [autoAdjustHeight] = "true" [multiline]="elements.isMultiline"  [(value)] = "elements.value">
         </fab-text-field>
         <div *ngIf = "statusMessage" style="color: brown;margin:2em;" role="text" aria-label="Status message" aria-disabled="true"  >{{statusMessage}}</div>
       </div>
       <div class="chat-feedback-panel-footer">
         <hr class="chat-feedback-panel-divider">
-        <div>
-          <fab-primary-button (onClick)="submitChatFeedback()" [disabled]="'false'" [contentClass]="'feedback-submit-button'">Submit feedback</fab-primary-button>
+        <div style="margin:1.5em;">
+          <fab-primary-button (onClick)="submitChatFeedback()" [disabled]="!correctResponseFeedback || correctResponseFeedback?.length < 1" [contentClass]="'feedback-submit-button'">Submit feedback</fab-primary-button>
         </div>
       </div>
     </div>

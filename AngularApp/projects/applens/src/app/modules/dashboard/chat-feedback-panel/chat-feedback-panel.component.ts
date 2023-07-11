@@ -5,7 +5,8 @@ import { ApplensGlobal } from '../../../applens-global';
 import { IButtonStyles, ITextFieldProps, PanelType } from 'office-ui-fabric-react';
 import { Observable, Subscription, of } from 'rxjs';
 import {v4 as uuid} from 'uuid';
-import { ChatFeedbackModel, ChatFeedbackValidationStatus } from '../../../shared/models/openAIChatFeedbackModel';
+import { ChatFeedbackAdditionalFields, ChatFeedbackModel, ChatFeedbackValidationStatus } from '../../../shared/models/openAIChatFeedbackModel';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'chat-feedback-panel',
@@ -37,21 +38,26 @@ export class ChatFeedbackPanelComponent implements OnInit {
   
   /// If chatMessages is empty or not supplied, then up to chatContextLength recent messages will be retrieved from chatContextService and used to generate feedback.
   @Input() chatIdentifier: string;
+
+  /// If chatIdentifier is supplied, then the feedback will be autosaved else no action is taken and the calling component is responsible for saving the feedback. Feedback can be accessed via onDismissed event.
+  @Input() autoSaveFeedback: boolean = true;
   
   @Input() chatModel: ChatModel = ChatModel.GPT4;
   @Input() responseTokenSize: ResponseTokensSize = ResponseTokensSize.Large;
-
+  
   @Input() headerText: string = "Feedback to improve AI generated response.";
 
-  @Input() additionalFields: {id:string, labelText:string, value:string, isMultiline:boolean}[]= [{
+  @Input() additionalFields: ChatFeedbackAdditionalFields[]= [{
     id: 'cluster',
     labelText: 'Cluster',
+    defaultValue: '@AntaresStampCluster',
     value: '@AntaresStampCluster',
     isMultiline: false
   },
   {
     id: 'database',
     labelText: 'Database',
+    defaultValue: '@AntaresStampCluster',
     value: 'wawsprod',
     isMultiline: false
   }];
@@ -67,9 +73,10 @@ export class ChatFeedbackPanelComponent implements OnInit {
 
   }
   @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() onDismissed = new EventEmitter<void>();
-  @Input() onBeforeSubmit: (feedbackModel: ChatFeedbackModel) => Observable<ChatFeedbackModel> ;
 
+  @Output() onDismissed = new EventEmitter<ChatFeedbackModel>();
+  @Input() onBeforeSubmit: (feedbackModel: ChatFeedbackModel) => Observable<ChatFeedbackModel> ;
+  
   public statusMessage = '';
     
   private openAIAPICallSubscription:Subscription;
@@ -102,7 +109,7 @@ export class ChatFeedbackPanelComponent implements OnInit {
   systemResponse:ChatMessage;
   correctResponseFeedback:string = '';
   
-  // correct question to ask for this is "What is the daily trend of most used outbound trigger by Function apps over the past week?"
+  // correct question to ask for this is "What is the daily trend of most used outbound binding by Function apps over the past week?"
   anotherSystemResponse: string = `WawsAn_omgsitefunctionsentity
   | where pdate >= ago(7d)
   | summarize Count = count() by OutputBindings, bin(pdate, 1d)
@@ -147,7 +154,20 @@ mostUsedOutputBinding
   public dismissedHandler() {
     this.visible = false;
     this.visibleChange.emit(this.visible);
-    this.onDismissed.emit();
+
+    let chatFeedbackModel = {
+      userQuestion: this.feedbackUserQuestion.displayMessage,
+      incorrectSystemResponse: this.systemResponse.displayMessage,
+      expectedResponse: this.correctResponseFeedback,
+      additionalFields: this.additionalFields,
+      validationStatus: <ChatFeedbackValidationStatus>{
+        succeeded:true,
+        validationStatusResponse: ''
+      }
+    } as ChatFeedbackModel
+
+    this.onDismissed.emit(chatFeedbackModel);    
+    
   }
 
   constructor(private _applensGlobal:ApplensGlobal, private _openAIService: GenericOpenAIChatService, private _chatContextService: ChatUIContextService) {
@@ -525,27 +545,18 @@ mostUsedOutputBinding
     return null;
   }
 
-  public retainCursorPositon(e: { event: Event, newValue?: string }) {
-    if(e && e.event && e.event.target) {
-      let target = e.event.target as HTMLInputElement;
-      let cursorPosition = target.selectionStart;
-      setTimeout(() => {
-        target.setSelectionRange(cursorPosition, cursorPosition);
-      }
-      , 0);
-    }
+  public onKeyUp(event:any) {
+    console.log(event);
   }
 
   updateFeedbackUserQuestion(e: { event: Event, newValue?: string }) {
-    if(this.feedbackUserQuestion && e && e.newValue) {
-      this.feedbackUserQuestion.displayMessage = `${e.newValue}`;
-      this.feedbackUserQuestion.message = `${e.newValue}`;
+    if(this.feedbackUserQuestion && e) {
+      this.feedbackUserQuestion.displayMessage = (e.newValue)? `${e.newValue}` : '';
+      this.feedbackUserQuestion.message =  (e.newValue)? `${e.newValue}` : '';
     }
-
-    this.retainCursorPositon(e);
   }
 
-  validateFeedback() {
+  validateFeedback():Observable<boolean> {
     if(this.correctResponseFeedback) {
       let chatFeedbackModel = {
         userQuestion: this.feedbackUserQuestion.displayMessage,
@@ -558,7 +569,7 @@ mostUsedOutputBinding
         } 
       } as ChatFeedbackModel;
       if(this.onBeforeSubmit) {
-        this.onBeforeSubmit(chatFeedbackModel).subscribe((validatedChatFeedback) => {
+        return this.onBeforeSubmit(chatFeedbackModel).pipe(map((validatedChatFeedback) => {          
           if(validatedChatFeedback && validatedChatFeedback.validationStatus && validatedChatFeedback.validationStatus.succeeded) {
             this.statusMessage = validatedChatFeedback.validationStatus.validationStatusResponse;
             this.feedbackUserQuestion.displayMessage = validatedChatFeedback.userQuestion;
@@ -567,20 +578,24 @@ mostUsedOutputBinding
             this.systemResponse.message = validatedChatFeedback.incorrectSystemResponse;
             this.correctResponseFeedback = validatedChatFeedback.expectedResponse;
             this.additionalFields = validatedChatFeedback.additionalFields;
+            chatFeedbackModel = validatedChatFeedback;
+            return true;
           }
           else {
             this.statusMessage = `Error: Failed to validate feedback. ${validatedChatFeedback?.validationStatus?.validationStatusResponse}`;
+            return false;
           }
-        });
+        }));
       }
       else {
         this.statusMessage = '';
         if(!this.feedbackUserQuestion.displayMessage) {
-          this.statusMessage = 'Error: User question is required.';
+          this.statusMessage = 'Error: User question is required.\n';
         }
         if(!this.correctResponseFeedback) {
-          this.statusMessage += '\nError:Expected response is required.';
+          this.statusMessage += 'Error:Expected response is required.';
         }
+        
 
         // this._openAIService.CheckEnabled().subscribe((enabled) => {
         //   if(enabled) {
@@ -602,12 +617,32 @@ mostUsedOutputBinding
         //       });
         //   }
         // });
+
+        if(this.statusMessage) {
+          return of(false);
+        }
+        else {
+          return of(true);
+        }
       }
       
     }
   }
 
   submitChatFeedback() {
-    this.validateFeedback();
+    this.validateFeedback().subscribe((validated) => {
+      if(validated){
+        console.log('submitChatFeedback - Validated. Time to close the panel');
+        if(this.autoSaveFeedback && this.chatIdentifier) {
+          console.log('Auto save feedback and raise the event.');
+        }
+        else {
+          console.log('Raise the event and let the caller save this feedback');
+        }
+      }
+      else {
+        console.log('submitChatFeedback - Validation failed. Keep the panel open');
+      }
+    });
   }
 }
