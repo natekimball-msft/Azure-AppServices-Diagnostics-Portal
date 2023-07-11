@@ -130,11 +130,12 @@ export class workflowPublishBody {
   SupportTopicList: WorkflowSupportTopic[] = [];
 }
 
-export class WorkflowSupportTopic {
-  id: string;
-  pesId: string;
-  sapProductId: string;
-  sapSupportTopicId: string;
+export interface WorkflowSupportTopic {
+  Id: string;
+  PesId: string;
+  SapSupportTopicId: string;
+  SapProductId: string;
+  Editing: boolean;
 }
 
 export interface workflowNodeResult {

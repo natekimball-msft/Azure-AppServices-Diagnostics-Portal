@@ -6,7 +6,7 @@ import { NgFlowchart, NgFlowchartCanvasDirective, NgFlowchartStepRegistry } from
 import { DetectorNodeComponent } from '../detector-node/detector-node.component';
 import { KustoNodeComponent } from '../kusto-node/kusto-node.component';
 import { MarkdownNodeComponent } from '../markdown-node/markdown-node.component';
-import { WorkflowSupportTopic, kustoNode, nodeType, workflow, workflowNode, workflowNodeData, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
+import { WorkflowSupportTopic, kustoNode, nodeType, workflow, workflowNode, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
 import { IfElseConditionStepComponent } from '../ifelse-condition-step/ifelse-condition-step.component';
 import { ConditionIffalseStepComponent } from '../condition-iffalse-step/condition-iffalse-step.component';
 import { ConditionIftrueStepComponent } from '../condition-iftrue-step/condition-iftrue-step.component';
@@ -45,7 +45,9 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   stackTypes: string[] = ['None', 'AspNet', 'NetCore', 'Php', 'Python', 'Node', 'Java', 'Static', 'SiteCore', 'Other', 'All'];
   selected = [];
   service: string = '';
-  newSupportTopic: WorkflowSupportTopic = { id: '', pesId: '', sapProductId: '', sapSupportTopicId: '' };
+  newSupportTopic: WorkflowSupportTopic = { Id: '', PesId: '', SapProductId: '', SapSupportTopicId: '', Editing: false };
+  editST: WorkflowSupportTopic = { Id: '', PesId: '', SapProductId: '', SapSupportTopicId: '', Editing: false };
+  addingSupportTopic: boolean = false;
 
   @ViewChild("selectAppType", { static: false }) selectAppType: NgSelectComponent;
   @ViewChild("selectPlatformType", { static: false }) selectPlatformType: NgSelectComponent;
@@ -135,6 +137,7 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
       this.publishBody.IsInternal = packageJson.IsInternal;
       this.publishBody.WorkflowName = packageJson.name;
       this.publishBody.Category = packageJson.Category;
+      this.publishBody.SupportTopicList = packageJson.SupportTopicList;
 
       if (this.resourceService.service === 'SiteService') {
         this.publishBody.AppType = packageJson.AppType;
@@ -329,14 +332,43 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   }
 
   addSupportTopic() {
-    let idx = this.publishBody.SupportTopicList.findIndex(x => x.id === this.newSupportTopic.id);
-    if (idx === -1){
+    if (!this.isValidSupportTopic(this.newSupportTopic)){
+      return;
+    }
+
+    let idx = this.publishBody.SupportTopicList.findIndex(x => x.Id === this.newSupportTopic.Id);
+    if (idx === -1) {
       this.publishBody.SupportTopicList.push(this.newSupportTopic);
-      this.newSupportTopic = { id: '', pesId: '', sapProductId: '', sapSupportTopicId: '' };
-    } else{
+      this.newSupportTopic = { Id: '', PesId: '', SapProductId: '', SapSupportTopicId: '', Editing: false };
+    } else {
       this._workflowService.showMessageBox('Error', "The SupportTopic with the same Id already exists");
     }
-    
+
+    this.addingSupportTopic = false;
+  }
+
+  isValidSupportTopic(st):boolean{
+    if (!st.Id) {
+      this._workflowService.showMessageBox('Error', "Please specify a Support Topic Id");
+      return false;
+    }
+
+    if (!st.PesId) {
+      this._workflowService.showMessageBox('Error', "Please specify a PesId");
+      return false;
+    }
+
+    if (!st.SapSupportTopicId) {
+      this._workflowService.showMessageBox('Error', "Please specify SapSupportTopicId");
+      return false;
+    }
+
+    if (!st.SapProductId) {
+      this._workflowService.showMessageBox('Error', "Please specify SapProductId");
+      return false;
+    }
+
+    return true;
   }
 
   deleteSupportTopic(id: string) {
@@ -344,10 +376,36 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
       return;
     }
 
-    let idx = this.publishBody.SupportTopicList.findIndex(x => x.id === id);
+    let idx = this.publishBody.SupportTopicList.findIndex(x => x.Id === id);
     if (idx > -1) {
-      this.publishBody.SupportTopicList = this.publishBody.SupportTopicList.splice(idx, 1);
+      this.publishBody.SupportTopicList.splice(idx, 1);
+    }
+  }
+
+  editSupportTopic(id: string) {
+    let idx = this.publishBody.SupportTopicList.findIndex(x => x.Id === id);
+    if (idx > -1) {
+      this.publishBody.SupportTopicList[idx].Editing = true;
+      let chosenST = this.publishBody.SupportTopicList[idx];
+      this.editST = { Id: chosenST.Id, PesId: chosenST.PesId, SapProductId: chosenST.SapProductId, SapSupportTopicId: chosenST.SapSupportTopicId, Editing: true };
+    }
+  }
+
+  saveSupportTopic(id: string) {
+    if (!this.isValidSupportTopic(this.editST)){
+      return;
     }
 
+    let idx = this.publishBody.SupportTopicList.findIndex(x => x.Id === id);
+    if (idx > -1) {
+      this.publishBody.SupportTopicList[idx] = { Id: this.editST.Id, PesId: this.editST.PesId, SapProductId: this.editST.SapProductId, SapSupportTopicId: this.editST.SapSupportTopicId, Editing: false };
+    }
+  }
+
+  cancelSupportTopicEdit(id: string) {
+    let idx = this.publishBody.SupportTopicList.findIndex(x => x.Id === id);
+    if (idx > -1) {
+      this.publishBody.SupportTopicList[idx].Editing = false;
+    }
   }
 }

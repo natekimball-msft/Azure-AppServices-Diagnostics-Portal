@@ -49,28 +49,72 @@
     <div class="form-row" *ngIf="!publishBody.IsInternal">
       <div class="form-group col-md-12">
         <label for="internalOnly">Support Topics</label>
-        <table class="table table-bordered">
+        <table class="table table-bordered table-condensed" style="margin-bottom: 0px;">
           <thead>
-            <th>Id</th>
-            <th>PesId</th>
-            <th>SapSupportTopicId</th>
-            <th>SapProductId</th>
-            <th>Action</th>
+            <tr>
+              <th class="header-column">Id</th>
+              <th class="header-column">PesId</th>
+              <th class="header-column">SapSupportTopicId</th>
+              <th class="header-column">SapProductId</th>
+              <th class="control-column">
+                <button class="btn btn-sm ml" (click)="addingSupportTopic = true">
+                  <i class="fa fa-lg  fa-plus text-success"></i>
+                </button>
+              </th>
+            </tr>
           </thead>
           <tbody>
             <tr *ngFor="let st of publishBody.SupportTopicList">
-              <td>{{ st.id}}</td>
-              <td>{{ st.pesId }}</td>
-              <td>{{ st.sapSupportTopicId }}</td>
-              <td>{{ st.sapProductId }}</td>
-              <td><button class="btn btn-sm" (click)="deleteSupportTopic(st.id)">Delete</button></td>
+              <ng-container *ngIf="!st.Editing">
+                <td>{{ st.Id}}</td>
+                <td>{{ st.PesId }}</td>
+                <td>{{ st.SapSupportTopicId }}</td>
+                <td>{{ st.SapProductId }}</td>
+                <td>
+                  <button class="btn btn-sm ml-1" (click)="editSupportTopic(st.Id)">
+                    <i class="fa fa-lg fa-pencil text-primary"></i>
+                  </button>
+                  <button class="btn btn-sm ml-1" (click)="deleteSupportTopic(st.Id)">
+                    <i class="fa fa-lg fa-trash text-danger"></i>
+                  </button>
+                </td>
+              </ng-container>
+              <ng-container *ngIf="st.Editing">
+                <td><input class="form-control" placeholder="Support Topic Id" type="text" name="txtEditId"
+                    [(ngModel)]="editST.Id" /></td>
+                <td><input class="form-control" placeholder="Pes Id" type="text" name="txtEditPesId"
+                    [(ngModel)]="editST.PesId" /></td>
+                <td><input class="form-control" placeholder="Sap Support Topic Id" type="text" name="txtEditSapId"
+                    [(ngModel)]="editST.SapSupportTopicId" />
+                </td>
+                <td><input class="form-control" placeholder="Sap Product Id" type="text" name="txtEditSapProductId"
+                    [(ngModel)]="editST.SapProductId" />
+                </td>
+                <td><button class="btn btn-sm" (click)="saveSupportTopic(st.Id)">
+                    <i class="fa fa-lg fa-floppy-o text-primary"></i>
+                  </button>
+                  <button class="btn btn-sm" (click)="cancelSupportTopicEdit(st.Id)">
+                    <i class="fa fa-lg fa-times-circle text-primary"></i>
+                  </button>
+                </td>
+              </ng-container>
             </tr>
-            <tr>
-              <td><input type="text" name="txtId" [(ngModel)]="newSupportTopic.id" /></td>
-              <td><input type="text" name="txtPesId" [(ngModel)]="newSupportTopic.pesId" /></td>
-              <td><input type="text" name="txtSapId" [(ngModel)]="newSupportTopic.sapSupportTopicId" /></td>
-              <td><input type="text" name="txtSapPesId" [(ngModel)]="newSupportTopic.sapProductId" /></td>
-              <td><button class="btn btn-sm" (click)="addSupportTopic()">Add</button></td>
+            <tr *ngIf="addingSupportTopic">
+              <td><input class="form-control" placeholder="Support Topic Id" type="text" name="txtId"
+                  [(ngModel)]="newSupportTopic.Id" /></td>
+              <td><input class="form-control" placeholder="Pes Id" type="text" name="txtPesId"
+                  [(ngModel)]="newSupportTopic.PesId" /></td>
+              <td><input class="form-control" placeholder="Sap Support Topic Id" type="text" name="txtSapId"
+                  [(ngModel)]="newSupportTopic.SapSupportTopicId" /></td>
+              <td><input class="form-control" placeholder="Sap Product Id" type="text" name="txtSapProductId"
+                  [(ngModel)]="newSupportTopic.SapProductId" /></td>
+              <td><button class="btn btn-sm" (click)="addSupportTopic()">
+                  <i class="fa fa-lg fa-floppy-o text-primary"></i>
+                </button>
+                <button class="btn btn-sm" (click)="addingSupportTopic = false">
+                  <i class="fa fa-lg fa-times-circle text-primary"></i>
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
