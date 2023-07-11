@@ -127,15 +127,7 @@ export class workflowPublishBody {
   ResourceType: string;
   ResourceProvider: string;
   Category: string;
-  SupportTopicList: WorkflowSupportTopic[] = [];
-}
-
-export interface WorkflowSupportTopic {
-  Id: string;
-  PesId: string;
-  SapSupportTopicId: string;
-  SapProductId: string;
-  Editing: boolean;
+  SupportTopicPaths: string[] = [];
 }
 
 export interface workflowNodeResult {

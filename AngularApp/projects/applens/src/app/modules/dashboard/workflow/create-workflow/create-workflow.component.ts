@@ -6,7 +6,7 @@ import { NgFlowchart, NgFlowchartCanvasDirective, NgFlowchartStepRegistry } from
 import { DetectorNodeComponent } from '../detector-node/detector-node.component';
 import { KustoNodeComponent } from '../kusto-node/kusto-node.component';
 import { MarkdownNodeComponent } from '../markdown-node/markdown-node.component';
-import { WorkflowSupportTopic, kustoNode, nodeType, workflow, workflowNode, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
+import { kustoNode, nodeType, workflow, workflowNode, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
 import { IfElseConditionStepComponent } from '../ifelse-condition-step/ifelse-condition-step.component';
 import { ConditionIffalseStepComponent } from '../condition-iffalse-step/condition-iffalse-step.component';
 import { ConditionIftrueStepComponent } from '../condition-iftrue-step/condition-iftrue-step.component';
@@ -20,6 +20,9 @@ import { WorkflowRootNodeComponent } from '../workflow-root-node/workflow-root-n
 import { ForeachNodeComponent } from '../foreach-node/foreach-node.component';
 import { InputNodeComponent } from '../input-node/input-node.component';
 import { ApplensDiagnosticService } from '../../services/applens-diagnostic.service';
+import { ApplensSupportTopicService } from '../../services/applens-support-topic.service';
+import { SupportTopicResult } from '../../resource-home/resource-home.component';
+import { SupportTopic } from 'diagnostic-data';
 
 @Component({
   selector: 'create-workflow',
@@ -45,8 +48,6 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   stackTypes: string[] = ['None', 'AspNet', 'NetCore', 'Php', 'Python', 'Node', 'Java', 'Static', 'SiteCore', 'Other', 'All'];
   selected = [];
   service: string = '';
-  newSupportTopic: WorkflowSupportTopic = { Id: '', PesId: '', SapProductId: '', SapSupportTopicId: '', Editing: false };
-  editST: WorkflowSupportTopic = { Id: '', PesId: '', SapProductId: '', SapSupportTopicId: '', Editing: false };
   addingSupportTopic: boolean = false;
 
   @ViewChild("selectAppType", { static: false }) selectAppType: NgSelectComponent;
@@ -60,18 +61,32 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   nodeType = nodeType;
   chosenNodeType: nodeType = nodeType.kustoQuery;
   workflowJsonString: string = '';
+  supportTopicsLoaded: boolean = false;
+  supportTopicPaths: string[] = [];
+  chosenSupportTopic: string = '';
 
   @Input() id: string = '';
   @Input() Branch: string = '';
 
   constructor(private stepRegistry: NgFlowchartStepRegistry, private _workflowService: WorkflowService,
     private _route: ActivatedRoute, private resourceService: ResourceService, private _adalService: AdalService,
-    private githubService: GithubApiService, private diagnosticApiService: ApplensDiagnosticService) {
+    private githubService: GithubApiService, private diagnosticApiService: ApplensDiagnosticService,
+    private _supportTopicService: ApplensSupportTopicService) {
     this.callbacks.afterRender = this.afterRender.bind(this);
   }
 
   ngOnInit(): void {
     this.initialize();
+    this._supportTopicService.getSupportTopics().subscribe((allSupportTopics: SupportTopicResult[]) => {
+      this.supportTopicsLoaded = true;
+      allSupportTopics.forEach(st => {
+        let supportTopicPath = st.supportTopicPath;
+        const pieces = supportTopicPath.split('/');
+        supportTopicPath = pieces.join('\\');
+        this.supportTopicPaths.push(supportTopicPath);
+      });
+      this.chosenSupportTopic = this.supportTopicPaths[0];
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -137,7 +152,7 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
       this.publishBody.IsInternal = packageJson.IsInternal;
       this.publishBody.WorkflowName = packageJson.name;
       this.publishBody.Category = packageJson.Category;
-      this.publishBody.SupportTopicList = packageJson.SupportTopicList;
+      this.publishBody.SupportTopicPaths = this.getSupportTopicPaths(packageJson.SupportTopicList);
 
       if (this.resourceService.service === 'SiteService') {
         this.publishBody.AppType = packageJson.AppType;
@@ -332,80 +347,18 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   }
 
   addSupportTopic() {
-    if (!this.isValidSupportTopic(this.newSupportTopic)){
-      return;
-    }
-
-    let idx = this.publishBody.SupportTopicList.findIndex(x => x.Id === this.newSupportTopic.Id);
-    if (idx === -1) {
-      this.publishBody.SupportTopicList.push(this.newSupportTopic);
-      this.newSupportTopic = { Id: '', PesId: '', SapProductId: '', SapSupportTopicId: '', Editing: false };
-    } else {
-      this._workflowService.showMessageBox('Error', "The SupportTopic with the same Id already exists");
-    }
-
-    this.addingSupportTopic = false;
+    this.publishBody.SupportTopicPaths.push(this.chosenSupportTopic);
+    this.addingSupportTopic = false
   }
 
-  isValidSupportTopic(st):boolean{
-    if (!st.Id) {
-      this._workflowService.showMessageBox('Error', "Please specify a Support Topic Id");
-      return false;
-    }
-
-    if (!st.PesId) {
-      this._workflowService.showMessageBox('Error', "Please specify a PesId");
-      return false;
-    }
-
-    if (!st.SapSupportTopicId) {
-      this._workflowService.showMessageBox('Error', "Please specify SapSupportTopicId");
-      return false;
-    }
-
-    if (!st.SapProductId) {
-      this._workflowService.showMessageBox('Error', "Please specify SapProductId");
-      return false;
-    }
-
-    return true;
-  }
-
-  deleteSupportTopic(id: string) {
-    if (this.publishBody == null || this.publishBody.SupportTopicList == null) {
-      return;
-    }
-
-    let idx = this.publishBody.SupportTopicList.findIndex(x => x.Id === id);
+  deleteSupportTopic(supportTopicPath: string) {
+    let idx = this.publishBody.SupportTopicPaths.findIndex(x => x === supportTopicPath);
     if (idx > -1) {
-      this.publishBody.SupportTopicList.splice(idx, 1);
+      this.publishBody.SupportTopicPaths.splice(idx, 1);
     }
   }
 
-  editSupportTopic(id: string) {
-    let idx = this.publishBody.SupportTopicList.findIndex(x => x.Id === id);
-    if (idx > -1) {
-      this.publishBody.SupportTopicList[idx].Editing = true;
-      let chosenST = this.publishBody.SupportTopicList[idx];
-      this.editST = { Id: chosenST.Id, PesId: chosenST.PesId, SapProductId: chosenST.SapProductId, SapSupportTopicId: chosenST.SapSupportTopicId, Editing: true };
-    }
-  }
-
-  saveSupportTopic(id: string) {
-    if (!this.isValidSupportTopic(this.editST)){
-      return;
-    }
-
-    let idx = this.publishBody.SupportTopicList.findIndex(x => x.Id === id);
-    if (idx > -1) {
-      this.publishBody.SupportTopicList[idx] = { Id: this.editST.Id, PesId: this.editST.PesId, SapProductId: this.editST.SapProductId, SapSupportTopicId: this.editST.SapSupportTopicId, Editing: false };
-    }
-  }
-
-  cancelSupportTopicEdit(id: string) {
-    let idx = this.publishBody.SupportTopicList.findIndex(x => x.Id === id);
-    if (idx > -1) {
-      this.publishBody.SupportTopicList[idx].Editing = false;
-    }
+  getSupportTopicPaths(supportTopicList: []):string[] {
+    return [];
   }
 }
