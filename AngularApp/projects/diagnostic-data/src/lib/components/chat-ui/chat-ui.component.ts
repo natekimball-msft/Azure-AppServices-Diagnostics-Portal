@@ -18,13 +18,13 @@ export class ChatUIComponent implements OnInit {
     @Input() messages: string = '';
     @Input() showSearchBox: boolean = true;
     @Input() chatInputText: string = '';
-    @Input() onSendMessage: Function = (message: ChatMessage) => { };
+    @Input() onSendMessage: Function;
     @Input() chatAlignment: ChatAlignment = ChatAlignment.Center;
     @Input() showFeedbackOptions: boolean = false;
     @Input() showCopyOption: boolean = false;
-    @Input() onFeedbackClick: Function = (messageId: string, feedbackType: string) => { };
+    @Input() onFeedbackClick: Function;
 
-    @Input() onCopyClick: Function = (textToCopy: string) => { };
+    @Input() onCopyClick: Function;
 
     @Input() userNameInitial: string = '';
     @Input() userPhotoSource: string = '';
@@ -130,7 +130,6 @@ export class ChatUIComponent implements OnInit {
     }
 
     copySystemMessageToClipboard(textToCopy:string) {
-        debugger; 
         if(this.onCopyClick){
             this.onCopyClick(textToCopy);
         }

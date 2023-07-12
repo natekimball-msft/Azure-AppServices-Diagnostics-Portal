@@ -50,6 +50,8 @@ export class CommunicationToolkitComponent implements OnInit {
   showCopyOption = true; 
   chatModel: ChatModel = ChatModel.GPT4; 
 
+  //onCopyClick = this.copyChatGPTClicked; 
+
   //customCommandBarButtons : CustomCommandBarButtons[] = [ { displayText : "Copy", iconName : "Copy", disabled : false, onClick : this.copyChatGPTClicked}];
 
   // Component's internal variables
@@ -100,9 +102,8 @@ export class CommunicationToolkitComponent implements OnInit {
     }
   }
 
-//custom copy method 
-  copyChatGPTClicked(textToCopy: string){
-    debugger; 
+//custom copy method/callback 
+  copyChatGPTClicked = (textToCopy: string) => {
     this._clipboard.copyAsHtml(textToCopy);
     this._telemetryService.logEvent("ChatGPTRCACopied", { rcaCopied: textToCopy, userId: this._chatUIContextService.userId, timestamp: new Date().getTime().toString() });
   }
