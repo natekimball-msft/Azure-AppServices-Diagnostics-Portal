@@ -22,6 +22,7 @@ import { InputNodeComponent } from '../input-node/input-node.component';
 import { ApplensDiagnosticService } from '../../services/applens-diagnostic.service';
 import { ApplensSupportTopicService } from '../../services/applens-support-topic.service';
 import { SupportTopicResult } from '../../resource-home/resource-home.component';
+import { DetectorMetaData, SupportTopic } from 'diagnostic-data';
 
 @Component({
   selector: 'create-workflow',
@@ -64,6 +65,8 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   supportTopicPaths: string[] = [];
   chosenSupportTopic: string = '';
   allSupportTopics: SupportTopicResult[] = [];
+  supportTopicsInUse: any[] = [];
+  loadingExistingSupportTopics: boolean = true;
 
   @Input() id: string = '';
   @Input() Branch: string = '';
@@ -76,6 +79,7 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   }
 
   ngOnInit(): void {
+    this.service = this.resourceService.service;
     this._supportTopicService.getSupportTopics().subscribe((allSupportTopics: SupportTopicResult[]) => {
       this.supportTopicsLoaded = true;
       this.allSupportTopics = allSupportTopics;
@@ -83,6 +87,7 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
         this.supportTopicPaths.push(this.correctSupportTopicPath(st.supportTopicPath));
       });
       this.chosenSupportTopic = this.supportTopicPaths[0];
+      this.populateSupportTopicsInUse();
       this.initialize();
     });
   }
@@ -102,7 +107,6 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   }
 
   initialize() {
-    this.service = this.resourceService.service;
     if (this.id === '') {
       this.publishBody.IsInternal = true;
       let alias = this._adalService.userInfo.profile ? this._adalService.userInfo.profile.upn : '';
@@ -177,7 +181,7 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
     this.stepRegistry.registerStep('rootNode', WorkflowRootNodeComponent);
 
     if (this.id === '') {
-      if (this.service === 'SiteService') {
+      if (this.resourceService.service === 'SiteService') {
         let item = this.selectAppType.itemsList.findByLabel('WebApp');
         this.selectAppType.select(item);
 
@@ -345,8 +349,19 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   }
 
   addSupportTopic() {
-    this.publishBody.SupportTopicPaths.push(this.chosenSupportTopic);
-    this.addingSupportTopic = false
+    let existingIndex = this.supportTopicsInUse.findIndex(x => x.supportTopicPath === this.chosenSupportTopic);
+    if (existingIndex > -1) {
+      let existingEntity = this.supportTopicsInUse[existingIndex].id;
+      this._workflowService.showMessageBox("Error", `The support topic <strong>${this.chosenSupportTopic}</strong> cannot be used as it is already mapped to an existing detector or workflow - <strong>${existingEntity}</strong>. Please first remove the support topic mapping for the existing detector or choose a different support topic.`);
+      return;
+    }
+    let idx = this.publishBody.SupportTopicPaths.findIndex(x => x === this.chosenSupportTopic);
+    if (idx === -1) {
+      this.publishBody.SupportTopicPaths.push(this.chosenSupportTopic);
+      this.addingSupportTopic = false
+    } else {
+      this._workflowService.showMessageBox("Error", `The Support Topic '${this.chosenSupportTopic}' is already selected for this workflow`);
+    }
   }
 
   deleteSupportTopic(supportTopicPath: string) {
@@ -370,5 +385,34 @@ export class CreateWorkflowComponent implements OnInit, AfterViewInit, OnChanges
   correctSupportTopicPath(supportTopicPath: string): string {
     const pieces = supportTopicPath.split('/');
     return pieces.join('\\');
+  }
+
+  populateSupportTopicsInUse() {
+    this.diagnosticApiService.getDetectors().subscribe(detectors => {
+      this.addSupportTopicEntitiesToCache(detectors);
+      this.diagnosticApiService.getWorkflows().subscribe(workflows => {
+        this.addSupportTopicEntitiesToCache(workflows);
+        this.loadingExistingSupportTopics = false;
+      });
+    });
+  }
+
+  addSupportTopicEntitiesToCache(entities: DetectorMetaData[]) {
+    if (entities && entities.length > 0) {
+      entities.forEach(entity => {
+        if (entity.supportTopicList && entity.supportTopicList.length > 0 && entity.id != this.id) {
+          entity.supportTopicList.forEach(st => {
+            this.addExistingSupportTopic(entity.id, st);
+          });
+        }
+      });
+    }
+  }
+
+  addExistingSupportTopic(id: string, st: SupportTopic) {
+    let idx = this.allSupportTopics.findIndex(x => x.sapSupportTopicId === st.sapSupportTopicId && x.sapProductId === st.sapProductId);
+    if (idx > -1) {
+      this.supportTopicsInUse.push({ id: id, supportTopicPath: this.correctSupportTopicPath(this.allSupportTopics[idx].supportTopicPath) });
+    }
   }
 }

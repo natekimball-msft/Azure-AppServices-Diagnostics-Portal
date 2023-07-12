@@ -46,17 +46,17 @@ textarea {
 .table-condensed>thead>tr>td,
 .table-condensed>tbody>tr>td,
 .table-condensed>tfoot>tr>td {
-  padding: 2px;
+  padding: 5px;
 }
 
 .btn {
   background: none;
 }
 
-.header-column {
-  width: 23%
+.table {
+  font-size: smaller;
 }
 
-.control-column {
-  width: 8%;
+th {
+  vertical-align: middle !important;
 }
