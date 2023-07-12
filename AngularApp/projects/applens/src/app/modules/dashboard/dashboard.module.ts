@@ -505,7 +505,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
                 component: NetworkTraceAnalysisComponent
             },
             {
-                path: 'kustogpt',
+                path: 'kustoQueryGenerator',
                 component: KustoGPTComponent
             },
             { 
