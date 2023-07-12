@@ -11,6 +11,7 @@ import { UserSettingService } from '../services/user-setting.service';
 import { UserChatGPTSetting } from '../../../shared/models/user-setting';
 import { ClipboardService } from 'projects/diagnostic-data/src/lib/services/clipboard.service';
 import { CustomCommandBarButtons } from 'projects/diagnostic-data/src/lib/models/openai-chat-container-models';
+import { PortalUtils } from '../../../shared/utilities/portal-util';
 
 @Component({
   selector: 'communication-toolkit',
@@ -98,7 +99,7 @@ export class CommunicationToolkitComponent implements OnInit {
 //custom copy method/callback 
   copyChatGPTClicked = (textToCopy: string) => {
     this._clipboard.copyAsHtml(textToCopy);
-    this._telemetryService.logEvent("ChatGPTRCACopied", { rcaCopied: textToCopy, userId: this._chatUIContextService.userId, timestamp: new Date().getTime().toString() });
+    PortalUtils.logEvent("rcacopilot-messagecopied", textToCopy, this._telemetryService); 
   }
 
 
