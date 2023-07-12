@@ -274,6 +274,7 @@ export class SideNavComponent implements OnInit {
         label: 'RCA Toolkit',
         id: "",
         onClick: () => {
+          this._telemetryService.logEvent("RCACoPilotClicked", {timestamp: new Date().getTime().toString() });
           this.navigateTo("communicationToolkit");
         },
         expanded: false,
