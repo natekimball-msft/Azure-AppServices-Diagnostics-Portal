@@ -21,13 +21,10 @@ import { CustomCommandBarButtons } from 'projects/diagnostic-data/src/lib/models
 export class CommunicationToolkitComponent implements OnInit {
   @ViewChild('chatbot') OpenAICHATComponentRef: OpenAIChatComponent;
 
-
-  
   userPhotoSource: string = '';
   userNameInitial: string = '';
   chatHeader: string = `<h1 class='chatui-header-text'><b>RCA Co-Pilot</b>!</h1>`;
 
-  
   // Variables to be passed down to the OpenAI Chat component
   chatComponentIdentifier: string = "rcacopilot";
   showContentDisclaimer: boolean = true;
@@ -49,10 +46,6 @@ export class CommunicationToolkitComponent implements OnInit {
   inputTextLimit = 1000;
   showCopyOption = true; 
   chatModel: ChatModel = ChatModel.GPT4; 
-
-  //onCopyClick = this.copyChatGPTClicked; 
-
-  //customCommandBarButtons : CustomCommandBarButtons[] = [ { displayText : "Copy", iconName : "Copy", disabled : false, onClick : this.copyChatGPTClicked}];
 
   // Component's internal variables
   isEnabled: boolean = false;
