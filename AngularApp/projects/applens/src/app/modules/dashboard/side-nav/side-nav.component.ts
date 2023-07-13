@@ -18,6 +18,7 @@ import { ApplensDocumentationService } from '../services/applens-documentation.s
 import { DocumentationRepoSettings } from '../../../shared/models/documentationRepoSettings';
 import { DocumentationFilesList } from './documentationFilesList';
 import { ApplensOpenAIChatService } from '../../../shared/services/applens-openai-chat.service';
+import { PortalUtils } from '../../../shared/utilities/portal-util';
 
 @Component({
   selector: 'side-nav',
@@ -275,7 +276,7 @@ export class SideNavComponent implements OnInit {
         label: 'RCA Toolkit',
         id: "",
         onClick: () => {
-          this._telemetryService.logEvent("RCACoPilotClicked", {timestamp: new Date().getTime().toString() });
+          PortalUtils.logEvent("rcacopilot-toolopened", "", this._telemetryService);
           this.navigateTo("communicationToolkit");
         },
         expanded: false,
