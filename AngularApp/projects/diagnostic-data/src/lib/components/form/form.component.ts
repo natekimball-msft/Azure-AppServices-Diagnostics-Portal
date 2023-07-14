@@ -116,8 +116,14 @@ export class FormComponent extends DataRenderBaseComponent {
               formInputs[ip]["toolTip"] != undefined ? formInputs[ip]["toolTip"] : "",
               formInputs[ip]["tooltipIcon"] != "" ? formInputs[ip]["tooltipIcon"] : "fa-info-circle",
               formInputs[ip]["children"] != undefined ? formInputs[ip]["children"] : [],
-              formInputs[ip]["isVisible"] != undefined ? formInputs[ip]["isVisible"] : true
+              formInputs[ip]["isVisible"] != undefined ? formInputs[ip]["isVisible"] : true,
+              formInputs[ip]["submitOnSelection"] != undefined ? formInputs[ip]["submitOnSelection"] : false
             ));
+            if(formInputs[ip]["submitOnSelection"] !=null && formInputs[ip]["submitOnSelection"] == true){
+              if(formInputs[ip]["defaultSelectedKey"] != null && formInputs[ip]["defaultSelectedKey"] != ""){
+                this.OnSubmitFormAction(this.detectorForms[i].formId, -1);
+              }
+            }
           }
           else if(this.isDateTimePicker(formInputs[ip]["inputType"])) {
             this.detectorForms[i].formInputs.push(new DateTimePicker(
@@ -351,6 +357,7 @@ export class FormComponent extends DataRenderBaseComponent {
     let data = event.option["data"];
     let isMultiSelect = data["isMultiSelect"];
     let internalId = data["internalId"];
+   
     let formId = internalId.split("-")[1];
     let inputId = internalId.split("-")[2];
     // Find matching form
@@ -367,6 +374,12 @@ export class FormComponent extends DataRenderBaseComponent {
         this.changeVisibility(children, form.formInputs, formInput);
       }
     }
+    let submitOnSelection = formInput["submitOnSelection"] ?? false;
+
+    if(submitOnSelection){
+      this.OnSubmitFormAction(formId, -1);
+    }
+
   }
 
   getQueryParamForDropdown(formInput: FormInput): string {
