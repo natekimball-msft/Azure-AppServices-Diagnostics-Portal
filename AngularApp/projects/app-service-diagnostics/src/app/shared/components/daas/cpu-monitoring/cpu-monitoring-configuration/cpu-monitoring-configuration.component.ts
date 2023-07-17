@@ -329,4 +329,9 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
     return totalMinutes;
   }
 
+  updateRule(ruleType:RuleType){
+    this.monitoringSession.RuleType = ruleType;
+    this.updateRuleSummary();
+  }
+
 }
