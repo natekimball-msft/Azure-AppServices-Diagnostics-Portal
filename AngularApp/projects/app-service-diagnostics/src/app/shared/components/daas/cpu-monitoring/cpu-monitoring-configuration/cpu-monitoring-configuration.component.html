@@ -5,9 +5,9 @@
         <div class="mb-2"><span class="radio-header">Monitoring Enabled</span></div>
         <label class="radio-inline"><input type="radio" name="optradio" (click)="updateRule(RuleType.Diagnostics)"
             [checked]="selectedKey === 'on'" [disabled]="radioDisabledStates[0]">On</label>
-        <label class="radio-inline" style="margin-left: 40px;"><input type="radio" name="optradio" (click)="updateRule(RuleType.AlwaysOn)"
+        <label class="radio-inline" style="margin-left: 80px;"><input type="radio" name="optradio" (click)="updateRule(RuleType.AlwaysOn)"
             [checked]="selectedKey === 'alwayson'" [disabled]="radioDisabledStates[1]">Always-On</label>
-        <label class="radio-inline" style="margin-left: 40px;"><input type="radio" name="optradio" (click)="updateRule(null)"
+        <label class="radio-inline" style="margin-left: 80px;"><input type="radio" name="optradio" (click)="updateRule(null)"
             [checked]="selectedKey === 'off'">Off</label>
 
       </div>
