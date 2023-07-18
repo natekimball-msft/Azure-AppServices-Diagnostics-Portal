@@ -139,6 +139,7 @@ import { KustoGPTComponent } from './kustogpt/kustogpt.component';
 import { ChatFeedbackPanelComponent } from './chat-feedback-panel/chat-feedback-panel.component';
 import * as moment from 'moment';
 import { ApplensOpenAIChatComponent } from './applens-openai-chat/applens-openai-chat.component';
+import { CommunicationToolkitComponent } from './communication-toolkit/communication-toolkit.component';
 import { DetectorCopilotService } from 'projects/applens/src/app/modules/dashboard/services/detector-copilot.service';
 
 @Injectable()
@@ -508,6 +509,10 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
                 path: 'kustoQueryGenerator',
                 component: KustoGPTComponent
             },
+            { 
+                path: 'communicationToolkit',
+                component: CommunicationToolkitComponent
+            }
         ]
     },
 
@@ -616,6 +621,6 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
         KustoQueryDialogComponent, DetectorNodeComponent, KustoNodeComponent, MarkdownNodeComponent, NodeActionsComponent, ConfigureVariablesComponent, CommonNodePropertiesComponent,
         NodeTitleComponent, ErrorMessageComponent, MarkdownQueryDialogComponent, WorkflowComponent, WorkflowRunDialogComponent, UpdateDetectorReferencesComponent, WorkflowRootNodeComponent,
         WorkflowUserAccessComponent, ForeachNodeComponent, DevopsDeploymentsComponent, InputNodeComponent, NetworkTraceAnalysisComponent,
-        ApplensOpenAIChatComponent, KustoGPTComponent, ChatFeedbackPanelComponent]
+        ApplensOpenAIChatComponent, KustoGPTComponent, CommunicationToolkitComponent, ChatFeedbackPanelComponent]
 })
 export class DashboardModule { }

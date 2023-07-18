@@ -97,7 +97,7 @@ export class KustoGPTComponent {
   private prepareChatHeader = () => {
   this.chatHeader = `
   <div class='copilot-header chatui-header-text'>
-    <img  class='copilot-header-img' src="/assets/img/bot_sparkle_icon.svg" alt = ''>
+    <img  class='copilot-header-img' src="/assets/img/Azure-Data-Explorer-Clusters.svg" alt = ''>
     ${this.chatHeader}
     <img class='copilot-header-img-secondary' src='/assets/img/rocket.png' alt=''>
     <img class='copilot-header-img-secondary' src='/assets/img/rocket.png' alt=''">
