@@ -44,6 +44,8 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
 
   modeDescription: string = "";
 
+  selectedKey: string = "on";
+  radioDisabledStates: boolean[] = [true, true];
 
   sliderOptionsCpuThreshold: Options = {
     floor: 50, ceil: 95, step: 5, showTicks: true,
@@ -78,7 +80,7 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
   };
 
   sliderOptionsMaxActionsAlwaysOnRule: Options = {
-    floor: 5, ceil: 30, showTicks: true,
+    floor: 5, ceil: 20, showTicks: true,
   };
 
   sliderOptionsActionsInInterval: Options = {
@@ -125,6 +127,7 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
   ngOnInit() {
     if (this.activeSession == null) {
       this.monitoringSession = this.getDefaultMonitoringSettings();
+      this.updateRule(null);
     }
     else {
       if (this.activeSession.RuleType === RuleType.AlwaysOn) {
@@ -135,9 +138,11 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
       this.mode = this.monitoringSession.Mode;
       this.originalMonitoringSession = this.activeSession;
       this.monitoringEnabled = true;
+      this.updateRule(this.monitoringSession.RuleType);
     }
 
     this.updateRuleSummary();
+    this.updateChoiceGroup();
   }
 
   ngOnChanges() {
@@ -226,6 +231,7 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
   }
 
   saveCpuMonitoring() {
+    this.error = null;
     this.savingMonitoringConfiguration.emit(true);
     this.savingSettings = true;
     if (this.monitoringEnabled) {
@@ -249,6 +255,8 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
           this.savingSettings = false;
           this.editMode = false;
           this.originalMonitoringSession = newSession;
+          this.activeSession = newSession;
+          this.updateChoiceGroup();
           this.monitoringConfigurationChange.emit(true);
         }, error => {
           this.savingSettings = false;
@@ -263,6 +271,8 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
           this.savingSettings = false;
           this.editMode = false;
           this.originalMonitoringSession = null;
+          this.activeSession = null;
+          this.updateChoiceGroup();
           this.monitoringConfigurationChange.emit(true);
         }, error => {
           this.savingSettings = false;
@@ -291,21 +301,6 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
     this.checkForChanges();
   }
 
-  updateRuleType(alwaysOn: boolean) {
-    this.monitoringSession.RuleType = alwaysOn ? RuleType.AlwaysOn : RuleType.Diagnostics;
-    if (this.monitoringSession.RuleType === RuleType.AlwaysOn) {
-      this.sessionModeTypes = ["Kill", "CollectAndKill", "CollectKillAndAnalyze"];
-      this.monitoringSession.CpuThreshold = 85;
-      this.monitoringSession.MaxActions = 5;
-    } else {
-      this.sessionModeTypes = ["Kill", "Collect", "CollectAndKill", "CollectKillAndAnalyze"];
-      this.monitoringSession.CpuThreshold = 50;
-      this.monitoringSession.MaxActions = 2;
-    }
-
-    this.updateRuleSummary();
-  }
-
   minutesToTimeSpan(minutes: number): string {
     var hours = Math.floor(minutes / 60);
     var mins = minutes % 60;
@@ -329,9 +324,43 @@ export class CpuMonitoringConfigurationComponent implements OnInit, OnChanges {
     return totalMinutes;
   }
 
-  updateRule(ruleType:RuleType){
-    this.monitoringSession.RuleType = ruleType;
-    this.updateRuleSummary();
+  updateRule(ruleType: RuleType) {
+    if (ruleType == null) {
+      this.monitoringEnabled = false;
+      this.selectedKey = 'off';
+    } else {
+      this.selectedKey = ruleType === RuleType.AlwaysOn ? 'alwayson' : 'on';
+      this.monitoringEnabled = true;
+      this.monitoringSession.RuleType = ruleType;
+
+      if (this.monitoringSession.RuleType === RuleType.AlwaysOn) {
+        this.sessionModeTypes = ["Kill", "CollectAndKill", "CollectKillAndAnalyze"];
+        this.monitoringSession.CpuThreshold = 85;
+        this.monitoringSession.MaxActions = 5;
+      } else {
+        this.sessionModeTypes = ["Kill", "Collect", "CollectAndKill", "CollectKillAndAnalyze"];
+        this.monitoringSession.CpuThreshold = 50;
+        this.monitoringSession.MaxActions = 2;
+      }
+      this.updateRuleSummary();
+    }
+
+    this.checkForChanges();
+  }
+
+  updateChoiceGroup() {
+    if (this.activeSession == null) {
+      this.radioDisabledStates[0] = false;
+      this.radioDisabledStates[1] = false;
+    } else {
+      if (this.activeSession.RuleType === RuleType.AlwaysOn) {
+        this.radioDisabledStates[0] = true;
+        this.radioDisabledStates[1] = false;
+      } else {
+        this.radioDisabledStates[0] = false;
+        this.radioDisabledStates[1] = true;
+      }
+    }
   }
 
 }

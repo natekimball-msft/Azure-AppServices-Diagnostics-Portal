@@ -7,6 +7,17 @@
     min-height: 100px;
 }
 
+.rule-title {
+    background: #0058ad;
+    width: 120px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    padding: 2px;
+    padding-left: 5px;
+    color: whitesmoke;
+    margin-left: 0px;
+}
+
 .mode-text {
     min-height: 50px;
     margin-top: 20px;
@@ -45,6 +56,19 @@
     font-size: large;
     color: #0058ad;
     margin-top: 10px;
+}
+
+.radio-header {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+label {
+    font-size: 16px;
+}
+
+input[name="optradio"] {
+    accent-color: #0058ad;
 }
 
 ::ng-deep {
