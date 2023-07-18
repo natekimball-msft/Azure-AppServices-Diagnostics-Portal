@@ -5,8 +5,12 @@ import { ApplensGlobal } from '../../../applens-global';
 import { IButtonStyles, ITextFieldProps, PanelType } from 'office-ui-fabric-react';
 import { Observable, Subscription, of } from 'rxjs';
 import {v4 as uuid} from 'uuid';
-import { ChatFeedbackAdditionalFields, ChatFeedbackModel, ChatFeedbackValidationStatus } from '../../../shared/models/openAIChatFeedbackModel';
 import { map } from 'rxjs/operators';
+import { ChatFeedbackAdditionalField, ChatFeedbackModel, ChatFeedbackValidationStatus } from '../../../shared/models/openAIChatFeedbackModel';
+import { AdalService } from 'adal-angular4';
+import { KeyValuePair } from 'dist/diagnostic-data/lib/models/common-models';
+import { ResourceService } from '../../../shared/services/resource.service';
+import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
 
 @Component({
   selector: 'chat-feedback-panel',
@@ -47,22 +51,9 @@ export class ChatFeedbackPanelComponent implements OnInit {
   
   @Input() headerText: string = "Feedback to improve AI generated response.";
 
-  @Input() additionalFields: ChatFeedbackAdditionalFields[]= [{
-    id: 'cluster',
-    labelText: 'Cluster',
-    defaultValue: '@AntaresStampCluster',
-    value: '@AntaresStampCluster',
-    isMultiline: false
-  },
-  {
-    id: 'database',
-    labelText: 'Database',
-    defaultValue: '@AntaresStampCluster',
-    value: 'wawsprod',
-    isMultiline: false
-  }];
+  @Input() additionalFields: ChatFeedbackAdditionalField[];
 
-
+  @Input() resourceSpecificInfo: KeyValuePair[] = [];
 
   _visible: boolean = false;
   get visible(): boolean {
@@ -70,14 +61,14 @@ export class ChatFeedbackPanelComponent implements OnInit {
   }
   @Input() set visible(value:boolean) {
     this._visible = value;
-
-  }
+  }  
   @Output() visibleChange = new EventEmitter<boolean>();
 
   @Output() onDismissed = new EventEmitter<ChatFeedbackModel>();
-  @Input() onBeforeSubmit: (feedbackModel: ChatFeedbackModel) => Observable<ChatFeedbackModel> ;
+  @Input() onBeforeSubmit: (feedbackModel: ChatFeedbackModel) => Observable<ChatFeedbackModel>;
   
   public statusMessage = '';
+  public savingInProgress = false;
     
   private openAIAPICallSubscription:Subscription;
   private currentApiCallCount:number = 0;
@@ -108,6 +99,7 @@ export class ChatFeedbackPanelComponent implements OnInit {
   feedbackUserQuestion:ChatMessage;
   systemResponse:ChatMessage;
   correctResponseFeedback:string = '';
+  correctResponseFeedbackReasoning:string = '';
   
   // correct question to ask for this is "What is the daily trend of most used outbound binding by Function apps over the past week?"
   anotherSystemResponse: string = `WawsAn_omgsitefunctionsentity
@@ -151,29 +143,76 @@ mostUsedOutputBinding
 | render timechart`;
   
 
-  public dismissedHandler() {
+  public dismissedHandler(source?:string) {
+    this.savingInProgress = false;
     this.visible = false;
     this.visibleChange.emit(this.visible);
-
-    let chatFeedbackModel = {
-      userQuestion: this.feedbackUserQuestion.displayMessage,
-      incorrectSystemResponse: this.systemResponse.displayMessage,
-      expectedResponse: this.correctResponseFeedback,
-      additionalFields: this.additionalFields,
-      validationStatus: <ChatFeedbackValidationStatus>{
+    
+    if(source === 'Close') {
+      this.onDismissed.emit(null);
+    }
+    else {
+      let chatFeedbackModel = new ChatFeedbackModel(this.chatIdentifier, this.userAlias, this.provider, this.resourceType);
+      chatFeedbackModel.userQuestion = this.feedbackUserQuestion.displayMessage;
+      chatFeedbackModel.incorrectSystemResponse = this.systemResponse.displayMessage;
+      chatFeedbackModel.expectedResponse = this.correctResponseFeedback;
+      chatFeedbackModel.feedbackExplanation = this.correctResponseFeedbackReasoning;
+      chatFeedbackModel.additionalFields = this.additionalFields;
+      chatFeedbackModel.resourceSpecificInfo = this.resourceSpecificInfo;
+      chatFeedbackModel.validationStatus = <ChatFeedbackValidationStatus>{
         succeeded:true,
         validationStatusResponse: ''
-      }
-    } as ChatFeedbackModel
+      };    
 
-    this.onDismissed.emit(chatFeedbackModel);    
-    
+      this.onDismissed.emit(chatFeedbackModel);
+    }
   }
 
-  constructor(private _applensGlobal:ApplensGlobal, private _openAIService: GenericOpenAIChatService, private _chatContextService: ChatUIContextService) {
-    // this._applensGlobal.updateHeader('KQL for Antares Analytics'); // This sets the title of the HTML page
-    // this._applensGlobal.updateHeader(''); // Clear the header title of the component as the chat header is being displayed in the chat UI
-    // this.prepareChatHeader();
+  userAlias:string;
+  resource:any;
+  provider:string;
+  resourceType:string;
+
+  private addOrUpdateResourceSpecificInfo(key:string, value:string) {
+    if(key) {
+      let existing =  this.resourceSpecificInfo.find(kvp => kvp.key === key);
+      if(existing) {
+        existing.value = value;
+      }
+      else {
+        this.resourceSpecificInfo.push(<KeyValuePair>{
+          key: key,
+          value: value
+        });
+      }
+    }
+  }
+
+  constructor(private _adalService: AdalService, private _applensGlobal:ApplensGlobal, private _openAIService: GenericOpenAIChatService, 
+    private _chatContextService: ChatUIContextService, private _resourceService: ResourceService, private _diagnosticService: ApplensDiagnosticService) {
+
+    this.userAlias = `${this._adalService.userInfo.profile.upn}`.split('@')[0];
+    
+    this.provider = this._resourceService.ArmResource.provider;
+    this.resourceType = this._resourceService.ArmResource.resourceTypeName;
+    this.addOrUpdateResourceSpecificInfo('provider', this.provider);
+    this.addOrUpdateResourceSpecificInfo('resourceTypeName', this.resourceType );
+
+    let resourceReady: Observable<any>;
+    resourceReady = !!this._resourceService.ArmResource.resourceGroup && !!this._resourceService.ArmResource.resourceName? this._resourceService.getCurrentResource() : of(null);    
+    resourceReady.subscribe(resource => {
+      if (resource) {
+        this.resource = resource;
+        let valuesToAdd = ['IsLinux', 'Kind', 'IsXenon'];
+        valuesToAdd.forEach(key => {
+          if(this.resource[key]) {
+            this.addOrUpdateResourceSpecificInfo(key, this.resource[key]);
+          }
+        });
+      }
+    });
+    
+
     this.chatMessages = [];
     
     this.chatMessages.push({
@@ -545,10 +584,6 @@ mostUsedOutputBinding
     return null;
   }
 
-  public onKeyUp(event:any) {
-    console.log(event);
-  }
-
   updateFeedbackUserQuestion(e: { event: Event, newValue?: string }) {
     if(this.feedbackUserQuestion && e) {
       this.feedbackUserQuestion.displayMessage = (e.newValue)? `${e.newValue}` : '';
@@ -556,18 +591,32 @@ mostUsedOutputBinding
     }
   }
 
+  updateFeedbackUserResponse(e: { event: Event, newValue?: string }) {
+      this.correctResponseFeedback = (e?.newValue)? `${e.newValue}` : '';
+      this.correctResponseFeedbackReasoning = '';
+  }
+  
+  updateAdditionalFieldValue(element: ChatFeedbackAdditionalField, e: { event: Event, newValue?: string }) {
+    if(element && e) {
+      element.value = (e.newValue)? `${e.newValue}` : '';
+    }
+  }
+
   validateFeedback():Observable<boolean> {
     if(this.correctResponseFeedback) {
-      let chatFeedbackModel = {
-        userQuestion: this.feedbackUserQuestion.displayMessage,
-        incorrectSystemResponse: this.systemResponse.displayMessage,
-        expectedResponse: this.correctResponseFeedback,
-        additionalFields: this.additionalFields,
-        validationStatus: <ChatFeedbackValidationStatus>{
-          succeeded:true,
-          validationStatusResponse: ''
-        } 
-      } as ChatFeedbackModel;
+
+      let chatFeedbackModel = new ChatFeedbackModel(this.chatIdentifier, this.userAlias, this.provider, this.resourceType);
+      chatFeedbackModel.userQuestion = this.feedbackUserQuestion.displayMessage;
+      chatFeedbackModel.incorrectSystemResponse = this.systemResponse.displayMessage;
+      chatFeedbackModel.expectedResponse = this.correctResponseFeedback;
+      chatFeedbackModel.feedbackExplanation = this.correctResponseFeedbackReasoning;
+      chatFeedbackModel.additionalFields = this.additionalFields;
+      chatFeedbackModel.resourceSpecificInfo = this.resourceSpecificInfo;
+      chatFeedbackModel.validationStatus = <ChatFeedbackValidationStatus>{
+        succeeded:true,
+        validationStatusResponse: ''
+      };      
+
       if(this.onBeforeSubmit) {
         return this.onBeforeSubmit(chatFeedbackModel).pipe(map((validatedChatFeedback) => {          
           if(validatedChatFeedback && validatedChatFeedback.validationStatus && validatedChatFeedback.validationStatus.succeeded) {
@@ -577,6 +626,7 @@ mostUsedOutputBinding
             this.systemResponse.displayMessage = validatedChatFeedback.incorrectSystemResponse;
             this.systemResponse.message = validatedChatFeedback.incorrectSystemResponse;
             this.correctResponseFeedback = validatedChatFeedback.expectedResponse;
+            this.correctResponseFeedbackReasoning = validatedChatFeedback.feedbackExplanation;
             this.additionalFields = validatedChatFeedback.additionalFields;
             chatFeedbackModel = validatedChatFeedback;
             return true;
@@ -587,62 +637,73 @@ mostUsedOutputBinding
           }
         }));
       }
-      else {
+      else {        
         this.statusMessage = '';
-        if(!this.feedbackUserQuestion.displayMessage) {
-          this.statusMessage = 'Error: User question is required.\n';
-        }
-        if(!this.correctResponseFeedback) {
-          this.statusMessage += 'Error:Expected response is required.';
-        }
-        
-
-        // this._openAIService.CheckEnabled().subscribe((enabled) => {
-        //   if(enabled) {
-        //     this.currentApiCallCount = 0;            
-        //     this.fetchOpenAIResultAsChatMessageUsingRest((this.chatModel == ChatModel.GPT3? null : []), this.GetEmptyChatMessage(), true, true, this.chatModel,
-        //       `You are a chat assistant that helps reason why an answer to a question is incorrect and generates a summary reasoning about why the answer is incorrect. Given the following UserQuestion, IncorrectAnswer and CorrectAnswer, reason why the original answer was incorrect. Also include a short step by step summary of how the CorrectAnswer achieves the desired outcome.
-        //       UserQuestion: ${this.feedbackUserQuestion.displayMessage}
-
-        //       IncorrectAnswer: ${this.systemResponse.displayMessage}
-
-        //       CorrectAnswer: ${this.correctResponseFeedback}
-        //       `).subscribe((messageObj) => {
-        //         if(messageObj && messageObj.status === MessageStatus.Finished && !`${messageObj.displayMessage}`.startsWith('Error: ')  ) {
-        //           this.correctResponseFeedbackReasoning = messageObj.displayMessage;
-        //         }
-        //         else {
-        //           this.statusMessage = "Error: Calling OpenAI API failed";
-        //         }
-        //       });
-        //   }
-        // });
-
-        if(this.statusMessage) {
-          return of(false);
-        }
-        else {
-          return of(true);
-        }
+        this.statusMessage += (!this.feedbackUserQuestion.displayMessage) ? 'Error: User question is required.\n': '';
+        this.statusMessage += (!this.correctResponseFeedback) ? 'Error:Expected response is required.': '';
+        return of(!this.statusMessage);        
       }
       
     }
   }
 
   submitChatFeedback() {
-    this.validateFeedback().subscribe((validated) => {
-      if(validated){
-        console.log('submitChatFeedback - Validated. Time to close the panel');
-        if(this.autoSaveFeedback && this.chatIdentifier) {
-          console.log('Auto save feedback and raise the event.');
+    this.savingInProgress = true;
+    try
+    {
+      this.validateFeedback().subscribe((validated) => {
+        if(validated){
+          if(this.correctResponseFeedbackReasoning) {
+            this.handleFeedbackAutoSaveAndEvent();
+          }
+          else {
+            this._openAIService.CheckEnabled().subscribe((enabled) => {
+              if(enabled && this.feedbackUserQuestion.displayMessage && this.systemResponse.displayMessage && this.correctResponseFeedback) {            
+                this.currentApiCallCount = 0;
+                this.fetchOpenAIResultAsChatMessageUsingRest((this.chatModel == ChatModel.GPT3? null : []), this.GetEmptyChatMessage(), true, true, this.chatModel,
+                  `You are a chat assistant that helps reason why an answer to a question is incorrect and generates a summary reasoning about why the answer is incorrect. Given the following UserQuestion, IncorrectAnswer and CorrectAnswer, reason why the original answer was incorrect. Also include a short step by step summary of how the CorrectAnswer achieves the desired outcome.
+                  UserQuestion: ${this.feedbackUserQuestion.displayMessage}
+    
+                  IncorrectAnswer: ${this.systemResponse.displayMessage}
+    
+                  CorrectAnswer: ${this.correctResponseFeedback}
+                  `).subscribe((messageObj) => {
+                    if(messageObj && messageObj.status === MessageStatus.Finished && !`${messageObj.displayMessage}`.startsWith('Error: ')  ) {
+                      this.correctResponseFeedbackReasoning = messageObj.displayMessage;
+                    }
+
+                    this.handleFeedbackAutoSaveAndEvent();
+                  }, (error) => {
+                    this.statusMessage = `Error saving feedback: ${error}`;
+                    this.savingInProgress = false;
+                  });
+              }
+            }, (error) => {
+              this.statusMessage = `Error saving feedback: ${error}`;
+              this.savingInProgress = false;
+            });
+          }
         }
         else {
-          console.log('Raise the event and let the caller save this feedback');
+          console.log('submitChatFeedback - Validation failed. Keep the panel open');
         }
-      }
-      else {
-        console.log('submitChatFeedback - Validation failed. Keep the panel open');
-      }
-    });
+      }, (error) => {
+        this.savingInProgress = false;
+      });
+    }
+    catch(ex) {
+      this.statusMessage = `Error saving feedback: ${ex}`;
+      this.savingInProgress = false;
+    }
+    
+  }
+
+  private handleFeedbackAutoSaveAndEvent() {
+    if (this.autoSaveFeedback && this.chatIdentifier) {
+      console.log('Auto save feedback and raise the event.');
+    } else {
+      console.log('Raise the event and let the caller save this feedback');
+    }
+    this.dismissedHandler();
   }
 }

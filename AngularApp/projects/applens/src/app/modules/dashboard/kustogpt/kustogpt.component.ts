@@ -5,8 +5,10 @@ import { environment } from '../../../../environments/environment';
 import { DiagnosticApiService } from "../../../shared/services/diagnostic-api.service";
 import { APIProtocol, ChatMessage, ChatModel, FeedbackOptions } from 'diagnostic-data';
 import { ApplensGlobal } from '../../../applens-global';
-import { ChatFeedbackModel } from '../../../shared/models/openAIChatFeedbackModel';
+import { ChatFeedbackAdditionalField, ChatFeedbackModel } from '../../../shared/models/openAIChatFeedbackModel';
 import { Observable, of } from 'rxjs';
+import { ApplensDiagnosticService } from '../services/applens-diagnostic.service';
+import { ResourceService } from '../../../shared/services/resource.service';
 
 @Component({
   selector: 'kustogpt',
@@ -19,6 +21,24 @@ export class KustoGPTComponent {
   public chatModel = ChatModel.GPT4;
   public feedbackPanelVisible: boolean = true;
 
+  public clusterName: string = '@AntaresStampKustoCluster';
+  public databaseName: string = '@AnataresStampKustoDB';
+  public additionalFields: ChatFeedbackAdditionalField[] = [
+    {
+      id: 'clusterName',
+      labelText: 'Cluster Name',
+      value: this.clusterName,
+      defaultValue: this.clusterName,
+      isMultiline: false
+    },
+    {
+      id: 'databaseName',
+      labelText: 'Database Name',
+      value: this.databaseName,
+      defaultValue: this.databaseName,
+      isMultiline: false
+    }
+  ];
 
   public onDismissed(feedbackModel:ChatFeedbackModel) {
     console.log('onDismissed clicked');
@@ -29,8 +49,8 @@ export class KustoGPTComponent {
   }
 
   onBeforeSubmit = (chatFeedbackModel:ChatFeedbackModel): Observable<ChatFeedbackModel> => {
-    chatFeedbackModel.validationStatus.succeeded = false;
-    chatFeedbackModel.validationStatus.validationStatusResponse = 'Validation failed';
+    chatFeedbackModel.validationStatus.succeeded = true;
+    chatFeedbackModel.validationStatus.validationStatusResponse = 'Validation succeeded';
     return of(chatFeedbackModel);
   }
 
@@ -44,10 +64,31 @@ export class KustoGPTComponent {
     }
   }
 
-  constructor(private _applensGlobal:ApplensGlobal) {
+  constructor(private _applensGlobal:ApplensGlobal, private _diagnosticService: ApplensDiagnosticService, private _resourceService: ResourceService)  {
     this._applensGlobal.updateHeader('KQL for Antares Analytics'); // This sets the title of the HTML page
     this._applensGlobal.updateHeader(''); // Clear the header title of the component as the chat header is being displayed in the chat UI
     this.prepareChatHeader();
+    
+    if(`${this._resourceService.ArmResource.provider}/${this._resourceService.ArmResource.resourceTypeName}`.toLowerCase() !== 'microsoft.web/sites') {
+      this._diagnosticService.getKustoMappings().subscribe((response) => {
+        // Find the first entry with non empty publicClusterName in the response Array
+        let kustoMapping = response.find((mapping) => {
+          return mapping.publicClusterName && mapping.publicClusterName.length > 0 && mapping.publicDatabaseName && mapping.publicDatabaseName.length > 0;
+        });
+        if(kustoMapping) {
+          this.clusterName = kustoMapping.publicClusterName;
+          this.databaseName = kustoMapping.publicDatabaseName;
+        }
+        else {
+          this.clusterName = '';
+          this.databaseName = '';
+        }
+        this.additionalFields[0].value = this.clusterName;
+        this.additionalFields[0].defaultValue = this.clusterName;
+        this.additionalFields[1].value = this.databaseName;
+        this.additionalFields[1].defaultValue = this.databaseName;
+      });
+    }
   }
 
   chatHeader = 'Kusto query generator for Antares Analytics - Preview';

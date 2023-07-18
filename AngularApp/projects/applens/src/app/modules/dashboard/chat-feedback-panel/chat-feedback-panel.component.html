@@ -1,6 +1,6 @@
 <div>
   <fab-panel [isOpen] = 'visible' [type]="type" [customWidth]="width" [isHiddenOnDismiss]="true"
-  [isLightDismiss]="true" [hasCloseButton]="true" [isBlocking]="false" [closeButtonAriaLabel]="'close'" (onDismiss)="dismissedHandler()"
+  [isLightDismiss]="true" [hasCloseButton]="true" [isBlocking]="true" [closeButtonAriaLabel]="'close'" (onDismiss)="dismissedHandler('Close')"
   [headerText]="headerText">
     <div style="margin: 5px; display:flex;flex-direction: column; height: 90vh;">
       <div style="height:95%">
@@ -8,16 +8,17 @@
         </fab-text-field>
         <fab-text-field [ariaLabel]="'System response'"  [required]="'{true}'" [label]="'System response'" [styles]="fabTextFieldStyles" [disabled]="true" aria-disabled="true" [rows] = 5 [resizable]="false" [autoAdjustHeight] = "true" [multiline]="true" [value] = "systemResponse.displayMessage">
         </fab-text-field>
-        <fab-text-field [ariaLabel]="'Expected response'" [required]="'{true}'" [label]="'Expected response'" [styles]="fabTextFieldStyles" [rows] = 15 [autoAdjustHeight] = "true" [multiline]="true" [(value)] = "correctResponseFeedback">
+        <fab-text-field [ariaLabel]="'Expected response'" [required]="'{true}'" [label]="'Expected response'" [styles]="fabTextFieldStyles" [rows] = 15 [autoAdjustHeight] = "true" [multiline]="true" (onChange) = "updateFeedbackUserResponse($event)" [defaultValue] = "correctResponseFeedback">
         </fab-text-field>
-        <fab-text-field *ngFor = "let elements of additionalFields" [ariaLabel]="elements.labelText"  [label]="elements.labelText" [styles]="fabTextFieldStyles" [rows] = 5 [autoAdjustHeight] = "true" [multiline]="elements.isMultiline"  [(value)] = "elements.value">
+        <fab-text-field *ngFor = "let element of additionalFields" [ariaLabel]="element.labelText"  [label]="element.labelText" [styles]="fabTextFieldStyles" [rows] = 5 [autoAdjustHeight] = "true" [multiline]="element.isMultiline"  [defaultValue] = "element.defaultValue" (onChange)="updateAdditionalFieldValue(element, $event)">
         </fab-text-field>
         <div *ngIf = "statusMessage" style="color: brown;margin:2em;" role="text" aria-label="Status message" aria-disabled="true"  >{{statusMessage}}</div>
       </div>
       <div class="chat-feedback-panel-footer">
         <hr class="chat-feedback-panel-divider">
-        <div style="margin:1.5em;">
-          <fab-primary-button (onClick)="submitChatFeedback()" [disabled]="!correctResponseFeedback || correctResponseFeedback?.length < 1" [contentClass]="'feedback-submit-button'">Submit feedback</fab-primary-button>
+        <div style="margin:1.5em;display:flex;align-items: center;">
+          <fab-primary-button (onClick)="submitChatFeedback()" [disabled]="(!correctResponseFeedback || correctResponseFeedback?.length < 1 || savingInProgress)" [contentClass]="'feedback-submit-button'">Submit feedback</fab-primary-button>          
+          <div *ngIf = "savingInProgress" style="margin: 2em;"><fab-spinner [ariaLabel]="'Saving'" [label] = "'Saving...'"></fab-spinner></div>
         </div>
       </div>
     </div>
