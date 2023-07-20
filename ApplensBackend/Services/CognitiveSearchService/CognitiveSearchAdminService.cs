@@ -1,5 +1,6 @@
 ﻿using AppLensV3.Models;
 using Azure.Search.Documents.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,10 +24,21 @@ namespace AppLensV3.Services.CognitiveSearchService
             _baseService = baseService;
         }
 
+        private CognitiveSearchDocumentWrapper CreateDocumentModel(CognitiveSearchDocument document)
+        {
+            return new CognitiveSearchDocumentWrapper()
+            {
+                Text = document.Content,
+                Description = document.Title,
+                Id = document.Id,
+                AdditionalMetadata = JsonConvert.SerializeObject(document)
+            };
+        }
+
         public async Task<bool> AddDocuments(List<CognitiveSearchDocument> documents, string indexName)
         {
-            IndexDocumentsBatch<CognitiveSearchDocument> batch = IndexDocumentsBatch.Create(
-                documents.Select(document => IndexDocumentsAction.Upload(document)).ToArray());
+            IndexDocumentsBatch<CognitiveSearchDocumentWrapper> batch = IndexDocumentsBatch.Create(
+                documents.Select(document => IndexDocumentsAction.Upload(CreateDocumentModel(document))).ToArray());
             try
             {
                 var searchClient = await _baseService.GetIndexClientForAdmin(indexName);

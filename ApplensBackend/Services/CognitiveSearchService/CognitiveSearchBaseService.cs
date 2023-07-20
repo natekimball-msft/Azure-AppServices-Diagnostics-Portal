@@ -25,7 +25,7 @@ namespace AppLensV3.Services.CognitiveSearchService
     {
         private readonly CognitiveSearchConfiguration _configuration;
         private readonly bool isEnabled;
-        private readonly ConcurrentDictionary<string, SearchClient> _queryClientMapping;
+        private readonly ConcurrentDictionary<string, SearchClient> _queryClientMapping = new ConcurrentDictionary<string, SearchClient>();
         private readonly SearchIndexClient _indexClient;
         public CognitiveSearchBaseService(CognitiveSearchConfiguration configuration)
         {
@@ -38,7 +38,14 @@ namespace AppLensV3.Services.CognitiveSearchService
             }
             else
             {
-                _indexClient = new SearchIndexClient(new Uri(_configuration.EndPoint), new AzureKeyCredential(_configuration.AdminApiKey));
+                if (!string.IsNullOrWhiteSpace(_configuration.AdminApiKey))
+                {
+                    _indexClient = new SearchIndexClient(new Uri(_configuration.EndPoint), new AzureKeyCredential(_configuration.AdminApiKey));
+                }
+                else
+                {
+                    throw new Exception("Cognitive search is enabled but AdminApiKey is not provided");
+                }
             }
         }
 
