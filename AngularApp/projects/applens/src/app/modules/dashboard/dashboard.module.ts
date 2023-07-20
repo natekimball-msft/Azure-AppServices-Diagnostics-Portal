@@ -25,7 +25,7 @@ import { ApplensDiagnosticService } from './services/applens-diagnostic.service'
 import { ApplensCommsService } from './services/applens-comms.service';
 import { ApplensSupportTopicService } from './services/applens-support-topic.service';
 import { ApplensContentService } from './services/applens-content.service';
-import { DiagnosticService, DiagnosticDataModule, CommsService, DetectorControlService, GenericSupportTopicService, GenericContentService, GenericDocumentsSearchService, GenieGlobals, SolutionOrchestratorComponent, TimePickerOptions, GenericBreadcrumbService, GenericUserSettingService, OpenAIArmService } from 'diagnostic-data';
+import { DiagnosticService, DiagnosticDataModule, CommsService, DetectorControlService, GenericSupportTopicService, GenericContentService, GenericDocumentsSearchService, GenieGlobals, SolutionOrchestratorComponent, TimePickerOptions, GenericBreadcrumbService, GenericUserSettingService } from 'diagnostic-data';
 import { CollapsibleMenuModule } from '../../collapsible-menu/collapsible-menu.module';
 import { ObserverService } from '../../shared/services/observer.service';
 import { TabDataSourcesComponent } from './tabs/tab-data-sources/tab-data-sources.component';
@@ -151,8 +151,6 @@ import { DynamicNodeSettings } from './dynamic-node-settings/dynamic-node-settin
 import { RenderingSettingsBaseComponent } from './rendering-settings-components/rendering-settings-base/rendering-settings-base.component';
 import { TableRenderingSettingsComponent } from './rendering-settings-components/table-rendering-settings/table-rendering-settings.component';
 import { InsightRenderingSettingsComponent } from './rendering-settings-components/insight-rendering-settings/insight-rendering-settings.component';
-import * as moment from 'moment';
-import { NetworkTraceAnalysisComponent } from './network-trace-analysis/network-trace-analysis.component';
 import { NoCodeDetectorPanelComponent } from './no-code-detector-panel/no-code-detector-panel.component';
 import { NoCodeDetectorViewComponent } from './no-code-detector-view/no-code-detector-view.component';
 @Injectable()
@@ -524,6 +522,7 @@ export const DashboardModuleRoutes: ModuleWithProviders<DashboardModule> = Route
             {
                 path: 'deployments',
                 component: DevopsDeploymentsComponent
+            },
             {
                 path: 'networkTraceAnalysis',
                 component: NetworkTraceAnalysisComponent
