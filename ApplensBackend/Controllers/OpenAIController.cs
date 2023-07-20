@@ -26,13 +26,15 @@ namespace AppLensV3.Controllers
         private ILogger<OpenAIController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IHubContext<OpenAIChatCompletionHub> _hubContext;
+        private readonly ICosmosDBOpenAIChatFeedbackHandler _chatFeedbackCosmosDBHandler;
 
-        public OpenAIController(IOpenAIService openAIService, ILogger<OpenAIController> logger, IConfiguration config, IHubContext<OpenAIChatCompletionHub> hubContext)
+        public OpenAIController(IOpenAIService openAIService, ILogger<OpenAIController> logger, IConfiguration config, IHubContext<OpenAIChatCompletionHub> hubContext, ICosmosDBOpenAIChatFeedbackHandler chatFeedbackCosmosDBHandler)
         {
             _logger = logger;
             _openAIService = openAIService;
             _configuration = config;
             _hubContext = hubContext;
+            _chatFeedbackCosmosDBHandler = chatFeedbackCosmosDBHandler;
         }
 
         [HttpGet("enabled")]
@@ -185,6 +187,13 @@ namespace AppLensV3.Controllers
             }
 
             return defaultValue;
+        }
+
+        [HttpPost("saveChatFeedback")]
+        public async Task<IActionResult> SaveChatFeedback([FromBody] ChatFeedback feedbackPayload)
+        {
+            await _chatFeedbackCosmosDBHandler.SaveFeedback(feedbackPayload);
+            return Ok(feedbackPayload);
         }
     }
 }

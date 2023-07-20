@@ -1,6 +1,8 @@
 ﻿using Azure;
 using Azure.AI.OpenAI;
+using Newtonsoft.Json;
 using SendGrid.Helpers.Mail;
+using System;
 using System.Collections.Generic;
 
 namespace AppLensV3.Models
@@ -121,5 +123,55 @@ namespace AppLensV3.Models
         public int Prompt_Tokens { get; set; }
         public int Completion_Tokens { get; set; }
         public int Total_Tokens { get; set; }
+    }
+
+    public class ChatFeedback
+    {
+        [JsonProperty(PropertyName = "id")]
+        public string Id { get; set; }
+
+        [JsonProperty]
+        public DateTime Timestamp { get; set; }
+
+        [JsonProperty]
+        public string Provider { get; set; }
+
+        [JsonProperty]
+        public string ResourceType { get; set; }
+
+        [JsonProperty]
+        public string ChatIdentifier { get; set; }
+
+        [JsonProperty]
+        public string SubmittedBy { get; set; }
+
+        [JsonProperty]
+        public string UserQuestion { get; set; }
+
+        [JsonProperty]
+        public string IncorrectSystemResponse { get; set; }
+
+        [JsonProperty]
+        public string ExpectedResponse { get; set; }
+
+        [JsonProperty]
+        public string FeedbackExplanation { get; set; }
+
+        [JsonProperty]
+        public Dictionary<string, string> AdditionalFields { get; set; }
+
+        [JsonProperty]
+        public Dictionary<string, string> ResourceSpecificInfo { get; set; }
+
+        [JsonProperty]
+        public List<string> LinkedFeedbackIds { get; set; }
+
+        [JsonProperty]
+        public string PartitionKey => $"{ChatFeedback.GetPartitionKey(ChatIdentifier, Provider, ResourceType)}";
+        
+        public static string GetPartitionKey(string chatIdentifier, string provider, string resourceType)
+        {
+            return $"{(string.IsNullOrWhiteSpace(chatIdentifier) ? "DEFAULT" : chatIdentifier).ToUpperInvariant()}_{provider?.ToUpperInvariant()}/{resourceType?.ToUpperInvariant()}";
+        }
     }
 }

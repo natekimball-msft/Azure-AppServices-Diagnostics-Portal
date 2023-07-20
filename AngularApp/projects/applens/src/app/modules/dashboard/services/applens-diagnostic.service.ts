@@ -10,6 +10,7 @@ import { map } from 'rxjs/operators';
 import { dynamicExpressionBody } from '../workflow/models/kusto';
 import { workflowNodeResult, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
 import { CommitStatus } from '../../../shared/models/devopsCommitStatus';
+import { ChatFeedbackPostBody } from '../../../shared/models/openAIChatFeedbackModel';
 
 
 @Injectable()
@@ -366,5 +367,9 @@ export class ApplensDiagnosticService {
 
   addWorkflowUser(useralias: string): Observable<any> {
     return this._diagnosticApi.addWorkflowUser(useralias);
+  }
+
+  saveChatFeedback(chatFeedback: ChatFeedbackPostBody): Observable<any> {
+    return this._diagnosticApi.saveChatFeedback(chatFeedback);
   }
 }

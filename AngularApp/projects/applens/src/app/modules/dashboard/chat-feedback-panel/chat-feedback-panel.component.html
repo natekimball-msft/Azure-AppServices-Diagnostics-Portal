@@ -2,7 +2,7 @@
   <fab-panel [isOpen] = 'visible' [type]="type" [customWidth]="width" [isHiddenOnDismiss]="true"
   [isLightDismiss]="true" [hasCloseButton]="true" [isBlocking]="true" [closeButtonAriaLabel]="'close'" (onDismiss)="dismissedHandler('Close')"
   [headerText]="headerText">
-    <div style="margin: 5px; display:flex;flex-direction: column; height: 90vh;">
+    <div style="margin: 5px; display:flex;flex-direction: column; min-height: 92vh;">
       <div style="height:95%">
         <fab-text-field [ariaLabel]="'Question'" [required]="'{true}'" [label]="'Question'" [styles]="fabTextFieldStyles" [rows] = 4 [multiline]="true" (onChange) = "updateFeedbackUserQuestion($event)" [value] = "feedbackUserQuestion.displayMessage">
         </fab-text-field>
@@ -18,7 +18,7 @@
         <hr class="chat-feedback-panel-divider">
         <div style="margin:1.5em;display:flex;align-items: center;">
           <fab-primary-button (onClick)="submitChatFeedback()" [disabled]="(!correctResponseFeedback || correctResponseFeedback?.length < 1 || savingInProgress)" [contentClass]="'feedback-submit-button'">Submit feedback</fab-primary-button>          
-          <div *ngIf = "savingInProgress" style="margin: 2em;"><fab-spinner [ariaLabel]="'Saving'" [label] = "'Saving...'"></fab-spinner></div>
+          <div *ngIf = "savingInProgress" style="margin: 2em;"><fab-spinner [ariaLabel]="'Saving'" [label] = "savingProgressText"></fab-spinner></div>
         </div>
       </div>
     </div>

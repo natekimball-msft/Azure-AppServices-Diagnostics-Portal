@@ -16,6 +16,7 @@ import { List } from 'office-ui-fabric-react';
 import { dynamicExpressionBody } from '../../modules/dashboard/workflow/models/kusto';
 import { workflowNodeResult, workflowPublishBody } from 'projects/diagnostic-data/src/lib/models/workflow';
 import { CommitStatus } from '../models/devopsCommitStatus';
+import { ChatFeedbackPostBody } from '../models/openAIChatFeedbackModel';
 
 
 @Injectable()
@@ -728,5 +729,12 @@ export class DiagnosticApiService {
       'TargetResourceType': targetResourceType
     };
     return this.invoke<any>(path, HttpMethod.POST, body, false, false, true, false);
+  }
+
+  public saveChatFeedback(chatFeedback: ChatFeedbackPostBody): Observable<any> {
+    let path = 'api/openai/saveChatFeedback';
+    return this.post<any, ChatFeedbackPostBody>(path, chatFeedback).pipe(map(res => {
+      return res;
+    }));
   }
 }

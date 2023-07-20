@@ -106,6 +106,8 @@ namespace AppLensV3
 
             services.AddSingletonWhenEnabled<ICosmosDBWorkflowUsersHandler, CosmosDBWorkflowUsersHandler, NullableCosmosDBWorkflowUsersHandler>(Configuration, "Workflow");
 
+            services.AddSingletonWhenEnabled<ICosmosDBOpenAIChatFeedbackHandler, CosmosDBOpenAIChatFeedbackHandler, NullableCosmosDBOpenAIChatFeedbackHandler>(Configuration, "OpenAIChatFeedback");
+
             services.AddSingletonWhenEnabled<IDetectorGistTemplateService, TemplateService>(Configuration, "DetectorGistTemplateService");
 
             services.AddSingletonWhenEnabled<IAppSvcUxDiagnosticDataService, AppSvcUxDiagnosticDataService, NullableAppSvcUxDiagnosticDataService>(Configuration, "LocationPlacementIdService");

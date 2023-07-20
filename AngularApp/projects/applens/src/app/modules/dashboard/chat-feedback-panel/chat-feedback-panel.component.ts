@@ -142,6 +142,20 @@ mostUsedOutputBinding
 | project pdate, OutputBindings, Count
 | render timechart`;
   
+  private GetChatFeedbackModel(): ChatFeedbackModel {
+    let chatFeedbackModel = new ChatFeedbackModel(this.chatIdentifier, this.userAlias, this.provider, this.resourceType);
+      chatFeedbackModel.userQuestion = this.feedbackUserQuestion.displayMessage;
+      chatFeedbackModel.incorrectSystemResponse = this.systemResponse.displayMessage;
+      chatFeedbackModel.expectedResponse = this.correctResponseFeedback;
+      chatFeedbackModel.feedbackExplanation = this.correctResponseFeedbackReasoning;
+      chatFeedbackModel.additionalFields = this.additionalFields;
+      chatFeedbackModel.resourceSpecificInfo = this.resourceSpecificInfo;
+      chatFeedbackModel.validationStatus = <ChatFeedbackValidationStatus>{
+        succeeded:true,
+        validationStatusResponse: ''
+      };
+      return chatFeedbackModel;
+  }
 
   public dismissedHandler(source?:string) {
     this.savingInProgress = false;
@@ -152,18 +166,7 @@ mostUsedOutputBinding
       this.onDismissed.emit(null);
     }
     else {
-      let chatFeedbackModel = new ChatFeedbackModel(this.chatIdentifier, this.userAlias, this.provider, this.resourceType);
-      chatFeedbackModel.userQuestion = this.feedbackUserQuestion.displayMessage;
-      chatFeedbackModel.incorrectSystemResponse = this.systemResponse.displayMessage;
-      chatFeedbackModel.expectedResponse = this.correctResponseFeedback;
-      chatFeedbackModel.feedbackExplanation = this.correctResponseFeedbackReasoning;
-      chatFeedbackModel.additionalFields = this.additionalFields;
-      chatFeedbackModel.resourceSpecificInfo = this.resourceSpecificInfo;
-      chatFeedbackModel.validationStatus = <ChatFeedbackValidationStatus>{
-        succeeded:true,
-        validationStatusResponse: ''
-      };    
-
+      let chatFeedbackModel = this.GetChatFeedbackModel();
       this.onDismissed.emit(chatFeedbackModel);
     }
   }
@@ -172,6 +175,7 @@ mostUsedOutputBinding
   resource:any;
   provider:string;
   resourceType:string;
+  savingProgressText:string = 'Saving...';
 
   private addOrUpdateResourceSpecificInfo(key:string, value:string) {
     if(key) {
@@ -605,17 +609,7 @@ mostUsedOutputBinding
   validateFeedback():Observable<boolean> {
     if(this.correctResponseFeedback) {
 
-      let chatFeedbackModel = new ChatFeedbackModel(this.chatIdentifier, this.userAlias, this.provider, this.resourceType);
-      chatFeedbackModel.userQuestion = this.feedbackUserQuestion.displayMessage;
-      chatFeedbackModel.incorrectSystemResponse = this.systemResponse.displayMessage;
-      chatFeedbackModel.expectedResponse = this.correctResponseFeedback;
-      chatFeedbackModel.feedbackExplanation = this.correctResponseFeedbackReasoning;
-      chatFeedbackModel.additionalFields = this.additionalFields;
-      chatFeedbackModel.resourceSpecificInfo = this.resourceSpecificInfo;
-      chatFeedbackModel.validationStatus = <ChatFeedbackValidationStatus>{
-        succeeded:true,
-        validationStatusResponse: ''
-      };      
+      let chatFeedbackModel = this.GetChatFeedbackModel();
 
       if(this.onBeforeSubmit) {
         return this.onBeforeSubmit(chatFeedbackModel).pipe(map((validatedChatFeedback) => {          
@@ -649,19 +643,23 @@ mostUsedOutputBinding
 
   submitChatFeedback() {
     this.savingInProgress = true;
+    this.savingProgressText = 'Saving...';
     try
     {
+      this.savingProgressText = 'Validating feedback...';
       this.validateFeedback().subscribe((validated) => {
         if(validated){
           if(this.correctResponseFeedbackReasoning) {
             this.handleFeedbackAutoSaveAndEvent();
           }
           else {
+            this.statusMessage = '';
+            this.savingProgressText = 'Fetching feedback explanation...';
             this._openAIService.CheckEnabled().subscribe((enabled) => {
               if(enabled && this.feedbackUserQuestion.displayMessage && this.systemResponse.displayMessage && this.correctResponseFeedback) {            
                 this.currentApiCallCount = 0;
                 this.fetchOpenAIResultAsChatMessageUsingRest((this.chatModel == ChatModel.GPT3? null : []), this.GetEmptyChatMessage(), true, true, this.chatModel,
-                  `You are a chat assistant that helps reason why an answer to a question is incorrect and generates a summary reasoning about why the answer is incorrect. Given the following UserQuestion, IncorrectAnswer and CorrectAnswer, reason why the original answer was incorrect. Also include a short step by step summary of how the CorrectAnswer achieves the desired outcome.
+                  `You are a chat assistant that helps reason why an answer to a question is incorrect and generates a summary reasoning about why the answer is incorrect. Given the following UserQuestion, IncorrectAnswer and CorrectAnswer, compare the correct and incorrect answers. Please provide a detailed explanation of why the correct response is indeed correct and why the incorrect response is wrong. Break down the reasoning step by step to help the user understand the concepts better. You can also highlight any key points or examples that illustrate the differences between the two responses. Make the explanation clear, concise, and informative so that the user gains a deeper understanding of the topic.
                   UserQuestion: ${this.feedbackUserQuestion.displayMessage}
     
                   IncorrectAnswer: ${this.systemResponse.displayMessage}
@@ -674,12 +672,12 @@ mostUsedOutputBinding
 
                     this.handleFeedbackAutoSaveAndEvent();
                   }, (error) => {
-                    this.statusMessage = `Error saving feedback: ${error}`;
+                    this.statusMessage = `Error saving feedback: ${error.message}`;
                     this.savingInProgress = false;
                   });
               }
             }, (error) => {
-              this.statusMessage = `Error saving feedback: ${error}`;
+              this.statusMessage = `Error saving feedback: ${error.message}`;
               this.savingInProgress = false;
             });
           }
@@ -692,18 +690,28 @@ mostUsedOutputBinding
       });
     }
     catch(ex) {
-      this.statusMessage = `Error saving feedback: ${ex}`;
+      this.statusMessage = `Error saving feedback: ${ex.message}`;
       this.savingInProgress = false;
     }
     
   }
 
   private handleFeedbackAutoSaveAndEvent() {
-    if (this.autoSaveFeedback && this.chatIdentifier) {
-      console.log('Auto save feedback and raise the event.');
+    if (this.autoSaveFeedback) {
+      this.savingProgressText = 'Saving feedback...';
+      this._diagnosticService.saveChatFeedback(this.GetChatFeedbackModel().toChatFeedbackPostBody()).subscribe((result) => {
+        console.log('Feedback saved');
+        this.statusMessage = '';
+        this.dismissedHandler();
+      }
+      , (error) => {
+        this.statusMessage = `Error saving feedback: ${error.message}`;
+        this.savingInProgress = false;
+      });
     } else {
       console.log('Raise the event and let the caller save this feedback');
+      this.dismissedHandler();
     }
-    this.dismissedHandler();
+    
   }
 }

@@ -12,6 +12,48 @@ export interface ChatFeedbackAdditionalField {
     succeeded:boolean,
     validationStatusResponse:string
   }
+
+  export class ChatFeedbackPostBody {
+    id:string;
+    timestamp:Date;
+    provider:string;
+    resourceType:string;
+    chatIdentifier: string;
+    submittedBy:string;
+    userQuestion:string;
+    incorrectSystemResponse: string;
+    expectedResponse: string;
+    feedbackExplanation:string;
+    additionalFields:  { [key: string]: string };
+    resourceSpecificInfo:{ [key: string]: string };
+    linkedFeedbackIds:string[];
+
+    public constructor(chatFeedbackModel: ChatFeedbackModel) {
+      this.id = chatFeedbackModel.id;
+      this.timestamp = chatFeedbackModel.timestamp;
+      this.provider = chatFeedbackModel.provider;
+      this.resourceType = chatFeedbackModel.resourceType;
+      this.chatIdentifier = chatFeedbackModel.chatIdentifier;
+      this.submittedBy = chatFeedbackModel.submittedBy;
+      this.userQuestion = chatFeedbackModel.userQuestion;
+      this.incorrectSystemResponse = chatFeedbackModel.incorrectSystemResponse;
+      this.expectedResponse = chatFeedbackModel.expectedResponse;
+      this.feedbackExplanation = chatFeedbackModel.feedbackExplanation;
+
+      this.additionalFields = {};
+      chatFeedbackModel.additionalFields.forEach((additionalField:ChatFeedbackAdditionalField) => {
+          this.additionalFields[additionalField.id] = !additionalField.value && additionalField.defaultValue ? additionalField.defaultValue : additionalField.value;
+      });
+
+      this.resourceSpecificInfo = {};
+      chatFeedbackModel.resourceSpecificInfo.forEach((resourceSpecificInfo:KeyValuePair) => {
+        this.resourceSpecificInfo[resourceSpecificInfo.key] = resourceSpecificInfo.value;
+      });
+
+      this.linkedFeedbackIds = chatFeedbackModel.linkedFeedbackIds;
+
+    }
+  }
   
   export class ChatFeedbackModel {
     private _id: string;
@@ -31,7 +73,7 @@ export interface ChatFeedbackAdditionalField {
     feedbackExplanation:string;
     validationStatus:ChatFeedbackValidationStatus;
     resourceSpecificInfo:KeyValuePair[];
-    feedbackIdsLinkedToIncorrectResponse:string[];
+    linkedFeedbackIds:string[];
 
     public constructor(chatIdentidier:string, submittedBy:string, provider:string, resourceType:string) {
       this._id = uuid();
@@ -49,6 +91,10 @@ export interface ChatFeedbackAdditionalField {
         validationStatusResponse: 'Uninitialized'
       };
       this.resourceSpecificInfo = [];
-      this.feedbackIdsLinkedToIncorrectResponse = [];      
+      this.linkedFeedbackIds = [];      
+    }
+
+    public toChatFeedbackPostBody():ChatFeedbackPostBody {
+      return new ChatFeedbackPostBody(this);
     }
   }
