@@ -820,6 +820,7 @@
             "templateFileName": "ACSEmail",
             "imgSrc": "assets/img/Azure-CommunicationServicesEmail-Logo.svg",
             "versionPrefix": "",
+            "pesId": "17327",
             "staticSelfHelpContent": "",
             "searchSuffix": "AZURE COMMUNICATION SERVICES EMAIL",
             "displayName": "Azure Communication Services Email"
