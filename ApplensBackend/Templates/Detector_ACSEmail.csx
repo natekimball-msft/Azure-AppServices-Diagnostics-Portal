@@ -20,7 +20,7 @@ public async static Task<Response> Run(DataProviders dp, OperationContext<ArmRes
 {
     res.Dataset.Add(new DiagnosticData()
     {
-        Table = await dp.Kusto.ExecuteClusterQuery(GetQuery(cxt), "KustoClusterName", "KustoDatabaseName", null, "GetQuery"), 
+        Table = await dp.Kusto.ExecuteClusterQuery(GetQuery(cxt), "KustoClusterName", "KustoDatabaseName", null, "LogicalNameForKustoQueryNoSpace"), 
         RenderingProperties = new Rendering(RenderingType.Table){
             Title = "Sample Table", 
             Description = "Some description here"
